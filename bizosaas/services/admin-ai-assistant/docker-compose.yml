@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  admin-ai-assistant:
+    build: .
+    container_name: bizosaas-admin-ai-assistant
+    ports:
+      - "8028:8028"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379
+      - BRAIN_API_URL=http://brain-api:8001
+      - INTEGRATION_MONITOR_URL=http://integration-monitor:8025
+      - PRODUCT_SOURCING_URL=http://product-sourcing:8026
+      - SUPPLIER_VALIDATION_URL=http://supplier-validation:8027
+      - ADMIN_API_KEY=admin-secure-key-2024
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./templates:/app/templates
+      - ./static:/app/static
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: bizosaas-postgres
+    environment:
+      - POSTGRES_DB=bizosaas
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  bizosaas-network:
+    driver: bridge

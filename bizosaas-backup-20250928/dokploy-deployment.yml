@@ -1,0 +1,223 @@
+# Dokploy Deployment Configuration
+# This file contains the complete deployment setup for BizoSaaS Multi-Platform Architecture
+
+version: '3.8'
+
+services:
+  # ===== FRONTEND SERVICES =====
+  
+  # Bizoholic Marketing Agency Platform
+  bizoholic-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_PLATFORM=bizoholic
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.${DOMAIN:-yourdomain.com}
+      - NEXT_PUBLIC_AI_SERVICE_URL=https://ai.bizoholic.${DOMAIN:-yourdomain.com}
+      - NEXT_PUBLIC_IDENTITY_SERVICE_URL=https://auth.bizoholic.${DOMAIN:-yourdomain.com}
+    volumes:
+      - frontend_uploads:/app/uploads
+    networks:
+      - bizosaas-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic.rule=Host(`bizoholic.${DOMAIN:-yourdomain.com}`) || Host(`www.bizoholic.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.bizoholic.tls=true"
+      - "traefik.http.routers.bizoholic.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic.loadbalancer.server.port=3000"
+      # Redirect www to non-www
+      - "traefik.http.middlewares.bizoholic-redirect.redirectregex.regex=^https?://www.bizoholic.${DOMAIN:-yourdomain.com}/(.*)"
+      - "traefik.http.middlewares.bizoholic-redirect.redirectregex.replacement=https://bizoholic.${DOMAIN:-yourdomain.com}/$${1}"
+      - "traefik.http.routers.bizoholic.middlewares=bizoholic-redirect"
+
+  # CoreLDove E-commerce/Dropshipping Platform  
+  coreldove-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_PLATFORM=coreldove
+      - NEXT_PUBLIC_API_URL=https://api.coreldove.${DOMAIN:-yourdomain.com}
+      - NEXT_PUBLIC_AI_SERVICE_URL=https://ai.coreldove.${DOMAIN:-yourdomain.com}
+      - NEXT_PUBLIC_MEDUSA_URL=https://store.coreldove.${DOMAIN:-yourdomain.com}
+    volumes:
+      - frontend_uploads:/app/uploads
+    networks:
+      - bizosaas-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove.rule=Host(`coreldove.${DOMAIN:-yourdomain.com}`) || Host(`www.coreldove.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.coreldove.tls=true"
+      - "traefik.http.routers.coreldove.tls.certresolver=letsencrypt"
+      - "traefik.http.services.coreldove.loadbalancer.server.port=3000"
+
+  # ===== BACKEND SERVICES =====
+
+  # Strapi CMS for Content Management
+  strapi-cms:
+    image: strapi/strapi:4.15.5-alpine
+    environment:
+      - NODE_ENV=production
+      - DATABASE_CLIENT=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=strapi
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - JWT_SECRET=${STRAPI_JWT_SECRET}
+      - ADMIN_JWT_SECRET=${STRAPI_ADMIN_JWT_SECRET}
+      - APP_KEYS=${STRAPI_APP_KEYS}
+      - API_TOKEN_SALT=${STRAPI_API_TOKEN_SALT}
+    volumes:
+      - strapi_data:/srv/app
+    networks:
+      - bizosaas-network
+    depends_on:
+      - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.strapi.rule=Host(`cms.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.strapi.tls=true"
+      - "traefik.http.routers.strapi.tls.certresolver=letsencrypt"
+      - "traefik.http.services.strapi.loadbalancer.server.port=1337"
+
+  # MedusaJS E-commerce Backend for CoreLDove
+  medusa-backend:
+    build:
+      context: ./services/medusa-coreldove
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/medusa
+      - REDIS_URL=redis://dragonfly:6379
+      - JWT_SECRET=${MEDUSA_JWT_SECRET}
+      - COOKIE_SECRET=${MEDUSA_COOKIE_SECRET}
+      - STORE_CORS=https://coreldove.${DOMAIN:-yourdomain.com}
+      - ADMIN_CORS=https://admin.coreldove.${DOMAIN:-yourdomain.com}
+    volumes:
+      - medusa_uploads:/app/uploads
+    networks:
+      - bizosaas-network
+    depends_on:
+      - postgres
+      - dragonfly
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.medusa.rule=Host(`store.coreldove.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.medusa.tls=true"
+      - "traefik.http.routers.medusa.tls.certresolver=letsencrypt"
+      - "traefik.http.services.medusa.loadbalancer.server.port=9000"
+
+  # AI Agents Service
+  ai-agents:
+    build:
+      context: ./services/ai-agents
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/bizosaas
+      - REDIS_URL=redis://dragonfly:6379
+      - TEMPORAL_ADDRESS=temporal:7233
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - bizosaas-network
+    depends_on:
+      - postgres
+      - temporal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-bizoholic.rule=Host(`ai.bizoholic.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.ai-coreldove.rule=Host(`ai.coreldove.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.ai-bizoholic.tls=true"
+      - "traefik.http.routers.ai-coreldove.tls=true"
+      - "traefik.http.routers.ai-bizoholic.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ai-coreldove.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ai-agents.loadbalancer.server.port=8000"
+
+  # ===== INFRASTRUCTURE SERVICES =====
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=bizosaas
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_MULTIPLE_DATABASES=strapi,medusa
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Dragonfly Cache (Redis-compatible)
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.21.0
+    volumes:
+      - dragonfly_data:/data
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Temporal Workflow Orchestration
+  temporal:
+    image: temporalio/auto-setup:1.22.0
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=${POSTGRES_PASSWORD}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./temporal-config:/etc/temporal/config/dynamicconfig
+    networks:
+      - bizosaas-network
+
+  # Temporal Web UI
+  temporal-web:
+    image: temporalio/web:1.15.0
+    environment:
+      - TEMPORAL_GRPC_ENDPOINT=temporal:7233
+      - TEMPORAL_PERMIT_WRITE_API=true
+    depends_on:
+      - temporal
+    networks:
+      - bizosaas-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.temporal.rule=Host(`temporal.${DOMAIN:-yourdomain.com}`)"
+      - "traefik.http.routers.temporal.tls=true"
+      - "traefik.http.routers.temporal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.temporal.loadbalancer.server.port=8088"
+      # Add basic auth for security
+      - "traefik.http.middlewares.temporal-auth.basicauth.users=${TEMPORAL_AUTH_USERS}"
+      - "traefik.http.routers.temporal.middlewares=temporal-auth"
+
+volumes:
+  postgres_data:
+  dragonfly_data:
+  strapi_data:
+  medusa_uploads:
+  frontend_uploads:
+
+networks:
+  bizosaas-network:
+    driver: bridge

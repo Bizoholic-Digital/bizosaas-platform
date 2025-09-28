@@ -1,0 +1,147 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+.dockerignore
+
+# Database
+data/postgres/
+data/redis/
+data/n8n/
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# SSL certificates
+certs/
+*.pem
+*.key
+*.crt
+
+# Backup files
+*.tar.gz
+*.zip
+*.backup
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# WordPress Core Files
+wp-config.php
+wp-config-local.php
+wp-config-sample.php
+wp-admin/
+wp-includes/
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/mu-plugins/
+.htaccess
+sitemap.xml
+sitemap.xml.gz
+
+# WordPress Sensitive Files
+wp-cli.local.yml
+.wp-cli/
+
+# WordPress Backups
+wordpress-backup-*/
+production-sync-*/
+*.sql
+
+# Project-specific exclusions
+mariadb/
+database/
+n8n/data/
+n8n/logs/
+n8n/certs/
+check-services.sh
+fix-*.sh
+test-*.sh
+verify-*.sh
+*-emergency-*.sh
+manual-*.md
+DOCKER-TROUBLESHOOTING.md
+MIGRATION-README.md
+DEVELOPMENT-SETUP-GUIDE.md
+automated-wordpress-sync.sh
+sync-wordpress-production.sh
+bizoholic.code-workspace*
+wordpress-custom/
+.claude/.env.project
+.last-wordpress-backup
+
+# But keep important structure files
+!n8n/crewai/
+!n8n/wordpress/themes/
+!n8n/wordpress/plugins/
+!n8n/workflows/
+!scripts/data-sync/
+!database/migrations/
+!database/init/
+
+# Zone Identifier files (Windows)
+*.Zone.Identifier
+
+# Large build files that exceed GitHub limits
+.next/
+.next-backup*/
+*.pack
+*.pack.gz
+vault
+*.avif
+
+# Temporary - n8n directory until properly structured
+n8n/

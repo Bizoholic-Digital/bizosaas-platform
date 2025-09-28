@@ -1,0 +1,3720 @@
+{
+  "analysis_timestamp": "2025-09-15T13:07:45.102241",
+  "project_root": "/home/alagiri/projects/bizoholic/bizosaas",
+  "services_analysis": {
+    "total_services": 60,
+    "active_services": [
+      {
+        "name": "temporal-integration",
+        "type": "python",
+        "status": "unknown",
+        "port": 5432,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "crm-service-v2",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "auth-service-v2",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "ai-governance-layer",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "frontend-nextjs",
+        "type": "nodejs",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "domain-repository",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "django-crm",
+        "type": "python",
+        "status": "unknown",
+        "port": 5432,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "gamification-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "bizosaas-brain",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "bizoholic-frontend",
+        "type": "nodejs",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "campaign-service",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "analytics-ai-service",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "marketing-ai-service",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "gdpr-compliance-service",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "saleor-storefront",
+        "type": "nodejs",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-bridge",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "amazon-integration-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "campaign-management",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "crm-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "saleor-backend",
+        "type": "nodejs",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "image-integration",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "auth-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-saleor",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "saleor-storage",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "notification",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "analytics",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "integration",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "marketing-automation-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-frontend",
+        "type": "nodejs",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-sourcing",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "super-admin-dashboard",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "telegram-integration",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "marketing-apis-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "temporal-orchestration",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "analytics-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "business-directory",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "client-sites",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "agent-monitor",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "event-bus",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "wagtail-cms",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "identity-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "payment-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "agent-orchestration-service",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-bridge-saleor",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "user-management",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "logging-service",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "ai-integration-service",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "vault-integration",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "claude-telegram-bot",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-storefront",
+        "type": "nodejs",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "api-gateway",
+        "type": "python",
+        "status": "unknown",
+        "port": 8080,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "coreldove-ai-sourcing",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "ai-agents",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "client-dashboard",
+        "type": "unknown",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "byok-health-monitor",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      },
+      {
+        "name": "unified-dashboard",
+        "type": "python",
+        "status": "unknown",
+        "port": null,
+        "health_endpoint": "/health",
+        "dependencies": []
+      }
+    ],
+    "deprecated_services": [
+      {
+        "name": "medusa-official",
+        "reason": "Migrated to Saleor for e-commerce functionality",
+        "migration_target": "saleor-backend",
+        "size_mb": 1.0
+      },
+      {
+        "name": "medusa-coreldove",
+        "reason": "Migrated to Saleor for e-commerce functionality",
+        "migration_target": "saleor-backend",
+        "size_mb": 1.0
+      },
+      {
+        "name": "strapi",
+        "reason": "Migrated to Wagtail CMS for content management",
+        "migration_target": "wagtail-cms",
+        "size_mb": 1.0
+      },
+      {
+        "name": "medusa",
+        "reason": "Migrated to Saleor for e-commerce functionality",
+        "migration_target": "saleor-backend",
+        "size_mb": 1325.0
+      }
+    ],
+    "service_types": {},
+    "port_conflicts": [],
+    "missing_health_checks": [],
+    "docker_configurations": {},
+    "service_dependencies": {}
+  },
+  "configuration_analysis": {
+    "docker_compose_files": [
+      {
+        "file": "docker-compose.coreldove-saleor.yml",
+        "services_count": 5,
+        "size_kb": 6
+      },
+      {
+        "file": "docker-compose.final.yml",
+        "services_count": 5,
+        "size_kb": 5
+      },
+      {
+        "file": "docker-compose.production.yml",
+        "services_count": 16,
+        "size_kb": 13
+      },
+      {
+        "file": "docker-compose.platforms.yml",
+        "services_count": 2,
+        "size_kb": 1
+      },
+      {
+        "file": "docker-compose.yml",
+        "services_count": 17,
+        "size_kb": 10
+      },
+      {
+        "file": "docker-compose.client-sites.yml",
+        "services_count": 2,
+        "size_kb": 6
+      },
+      {
+        "file": "docker-compose.dev.yml",
+        "services_count": 14,
+        "size_kb": 6
+      },
+      {
+        "file": "docker-compose.saleor-complete.yml",
+        "services_count": 7,
+        "size_kb": 8
+      },
+      {
+        "file": "docker-compose.staging.yml",
+        "services_count": 9,
+        "size_kb": 5
+      },
+      {
+        "file": "docker-compose.test.yml",
+        "services_count": 5,
+        "size_kb": 5
+      },
+      {
+        "file": "docker-compose.saleor.yml",
+        "services_count": 3,
+        "size_kb": 4
+      },
+      {
+        "file": "docker-compose.prod.yml",
+        "services_count": 21,
+        "size_kb": 15
+      },
+      {
+        "file": "docker-compose.saleor-full.yml",
+        "services_count": 7,
+        "size_kb": 11
+      },
+      {
+        "file": "docker-compose.coreldove.yml",
+        "services_count": 5,
+        "size_kb": 4
+      },
+      {
+        "file": "docker-compose.temporal.yml",
+        "services_count": 4,
+        "size_kb": 1
+      },
+      {
+        "file": "docker-compose.shared.yml",
+        "services_count": 16,
+        "size_kb": 11
+      },
+      {
+        "file": "docker-compose.coreldove-storefront.yml",
+        "services_count": 1,
+        "size_kb": 0
+      },
+      {
+        "file": "docker-compose.coreldove-integrated.yml",
+        "services_count": 7,
+        "size_kb": 6
+      },
+      {
+        "file": "docker-compose.auth-security.yml",
+        "services_count": 12,
+        "size_kb": 10
+      },
+      {
+        "file": "docker-compose.isolated.yml",
+        "services_count": 10,
+        "size_kb": 5
+      },
+      {
+        "file": "docker-compose.secure.yml",
+        "services_count": 5,
+        "size_kb": 2
+      },
+      {
+        "file": "docker-compose.containerized.yml",
+        "services_count": 10,
+        "size_kb": 13
+      },
+      {
+        "file": "docker-compose.business-directory.yml",
+        "services_count": 2,
+        "size_kb": 4
+      },
+      {
+        "file": "docker-compose.current.yml",
+        "services_count": 8,
+        "size_kb": 8
+      },
+      {
+        "file": "docker-compose.saleor-minimal.yml",
+        "services_count": 1,
+        "size_kb": 1
+      },
+      {
+        "file": "docker-compose.infrastructure.yml",
+        "services_count": 9,
+        "size_kb": 4
+      },
+      {
+        "file": "docker-compose.production.optimized.yml",
+        "services_count": 14,
+        "size_kb": 21
+      },
+      {
+        "file": "docker-compose.vault-integrated.yml",
+        "services_count": 9,
+        "size_kb": 6
+      },
+      {
+        "file": "docker-compose.coreldove-saleor-shared.yml",
+        "services_count": 3,
+        "size_kb": 4
+      },
+      {
+        "file": "docker-compose.coreldove-official.yml",
+        "services_count": 4,
+        "size_kb": 2
+      },
+      {
+        "file": "docker-compose.strapi-v5.yml",
+        "services_count": 1,
+        "size_kb": 0
+      },
+      {
+        "file": "docker-compose.sso.yml",
+        "services_count": 14,
+        "size_kb": 7
+      },
+      {
+        "file": "docker-compose.unified-dashboard.yml",
+        "services_count": 1,
+        "size_kb": 2
+      },
+      {
+        "file": "docker-compose.saleor-working.yml",
+        "services_count": 2,
+        "size_kb": 2
+      },
+      {
+        "file": "docker-compose.coreldove-shared.yml",
+        "services_count": 3,
+        "size_kb": 3
+      },
+      {
+        "file": "docker-compose.wagtail.yml",
+        "services_count": 2,
+        "size_kb": 5
+      },
+      {
+        "file": "docker-compose.crm.yml",
+        "services_count": 2,
+        "size_kb": 3
+      },
+      {
+        "file": "docker-compose.dokploy.yml",
+        "services_count": 12,
+        "size_kb": 7
+      },
+      {
+        "file": "docker-compose.central-brain.yml",
+        "services_count": 4,
+        "size_kb": 8
+      },
+      {
+        "file": "docker-compose.unified-architecture.yml",
+        "services_count": 12,
+        "size_kb": 8
+      },
+      {
+        "file": "docker-compose.saleor-optimized.yml",
+        "services_count": 5,
+        "size_kb": 6
+      },
+      {
+        "file": "docker-compose.simple.yml",
+        "services_count": 5,
+        "size_kb": 2
+      },
+      {
+        "file": "docker-compose.enhanced.yml",
+        "services_count": 15,
+        "size_kb": 14
+      }
+    ],
+    "environment_files": [
+      {
+        "file": ".env.production.secure",
+        "variables_count": 97
+      },
+      {
+        "file": ".env.dokploy",
+        "variables_count": 28
+      },
+      {
+        "file": ".env.secure.example",
+        "variables_count": 13
+      },
+      {
+        "file": ".env.saleor",
+        "variables_count": 36
+      },
+      {
+        "file": ".env.coreldove-saleor",
+        "variables_count": 36
+      },
+      {
+        "file": ".env",
+        "variables_count": 108
+      },
+      {
+        "file": ".env.staging",
+        "variables_count": 15
+      },
+      {
+        "file": ".env.classification",
+        "variables_count": 14
+      },
+      {
+        "file": ".env.example",
+        "variables_count": 71
+      },
+      {
+        "file": ".env.test",
+        "variables_count": 108
+      },
+      {
+        "file": "deployment/dokploy/bizosaas-platform/.env.example",
+        "variables_count": 86
+      },
+      {
+        "file": "services/frontend-nextjs/.env.example",
+        "variables_count": 74
+      },
+      {
+        "file": "services/domain-repository/.env",
+        "variables_count": 18
+      },
+      {
+        "file": "services/django-crm/.env",
+        "variables_count": 25
+      },
+      {
+        "file": "services/django-crm/.env.example",
+        "variables_count": 27
+      },
+      {
+        "file": "services/bizosaas-brain/.env.analytics",
+        "variables_count": 29
+      },
+      {
+        "file": "services/bizosaas-brain/.env.facebook.example",
+        "variables_count": 15
+      },
+      {
+        "file": "services/bizosaas-brain/.env.google-my-business.example",
+        "variables_count": 11
+      },
+      {
+        "file": "services/saleor-storefront/.env.example",
+        "variables_count": 3
+      },
+      {
+        "file": "services/saleor-storefront/.env.local",
+        "variables_count": 5
+      },
+      {
+        "file": "services/saleor-backend/.env.example",
+        "variables_count": 6
+      },
+      {
+        "file": "services/coreldove-frontend/.env.local",
+        "variables_count": 17
+      },
+      {
+        "file": "services/medusa-coreldove/.env",
+        "variables_count": 9
+      },
+      {
+        "file": "services/business-directory/.env.ai.example",
+        "variables_count": 89
+      },
+      {
+        "file": "services/business-directory/frontend/.env.example",
+        "variables_count": 9
+      },
+      {
+        "file": "services/business-directory/frontend/.env.local",
+        "variables_count": 9
+      },
+      {
+        "file": "services/event-bus/.env",
+        "variables_count": 16
+      },
+      {
+        "file": "services/wagtail-cms/.env",
+        "variables_count": 10
+      },
+      {
+        "file": "services/strapi/.env",
+        "variables_count": 16
+      },
+      {
+        "file": "services/api-gateway/.env",
+        "variables_count": 15
+      },
+      {
+        "file": "strapi-v5/.env",
+        "variables_count": 16
+      },
+      {
+        "file": "strapi-v5/.env.example",
+        "variables_count": 8
+      },
+      {
+        "file": "frontend/.env.local",
+        "variables_count": 34
+      },
+      {
+        "file": "coreldove-storefront/.env",
+        "variables_count": 5
+      },
+      {
+        "file": "coreldove-storefront/.env.example",
+        "variables_count": 3
+      }
+    ],
+    "kubernetes_manifests": [
+      {
+        "file": "k8s-simple-multi-domain-ingress.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-bizoholic-simple.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ai-assistant-lightweight.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-adaptive-resource-manager.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-local-domain-ingress.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-multi-domain-ingress.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-frontend-service-only.yaml",
+        "type": "Service"
+      },
+      {
+        "file": "k8s-agents-ultra-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-traefik-ingress-complete.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-devops-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-web-dashboard.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-crewai-hierarchy.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-documentation-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-vault-deployment.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-coreldove-frontend.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-frontend-dashboard-fixed.yaml",
+        "type": "Deployment"
+      },
+      {
+        "file": "k8s-auth-service-fixed.yaml",
+        "type": "Deployment"
+      },
+      {
+        "file": "k8s-adaptive-ultra-light-agents.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-focused-ai-services.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-junior-developer-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-coreldove-medusa-resources.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-payment-service-fixed.yaml",
+        "type": "Deployment"
+      },
+      {
+        "file": "k8s-simple-ingress.yaml",
+        "type": "Ingress"
+      },
+      {
+        "file": "k8s-billing-channels.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ai-data-collector.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-api-gateway-onboarding.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-onboarding-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-identity-service-fixed.yaml",
+        "type": "Deployment"
+      },
+      {
+        "file": "k8s-strapi-cms-deployment.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-setup-agent-lightweight.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ingress-complete-with-mautic.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-vault-simple.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-crm-service-fixed.yaml",
+        "type": "Deployment"
+      },
+      {
+        "file": "k8s-ingress-complete.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-coreldove-medusa.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-bizoholic-minimal.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-qa-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-bizoholic-enhanced.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-auth-service-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ingress-updated.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-reuse-infrastructure.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ai-orchestrator-light-fixed.yaml",
+        "type": "Deployment"
+      },
+      {
+        "file": "k8s-ai-assistant-service.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-payment-service-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-crm-service-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-traefik-dashboard-ingress.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-frontend-nextjs-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-strategy-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-bizoholic-website.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ai-assistant-minimal.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-website-builder-service.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-website-builder-clusterip.yaml",
+        "type": "Service"
+      },
+      {
+        "file": "BIZOSAAS_AGENT_HIERARCHY.yaml",
+        "type": "AgentHierarchy"
+      },
+      {
+        "file": "k8s-frontend-service.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-senior-developer-agent.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-strapi-multi-company.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-core-infrastructure.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-bizoholic-working.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-adaptive-minimal-test.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-focused-ai-services-simple.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-bizosaas-deployment.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ai-assistant-clusterip-service.yaml",
+        "type": "Service"
+      },
+      {
+        "file": "k8s-ai-integration-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s-ai-orchestrator-light.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s/manifests/bizosaas-complete.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "k8s/services/mautic.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/services/identity-service.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/services/meilisearch.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/services/dragonfly.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/services/redis.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/services/postgres.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/services/ai-orchestrator.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/base/namespace.yaml",
+        "type": "unknown"
+      },
+      {
+        "file": "infrastructure/k8s/base/storage.yaml",
+        "type": "unknown"
+      }
+    ],
+    "nginx_configs": [],
+    "database_configs": [],
+    "vault_configs": [],
+    "monitoring_configs": []
+  },
+  "dependencies_analysis": {
+    "python_requirements": [
+      "fastapi",
+      "uvicorn[standard]",
+      "python-multipart",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "asyncpg",
+      "sqlalchemy[asyncio]",
+      "alembic",
+      "psycopg2-binary",
+      "redis[hiredis]",
+      "celery",
+      "kombu",
+      "pydantic[email]",
+      "pydantic-settings",
+      "python-jose",
+      "cryptography",
+      "bcrypt",
+      "argon2-cffi",
+      "httpx",
+      "aiohttp",
+      "requests",
+      "crewai",
+      "langchain",
+      "langchain-openai",
+      "langchain-anthropic",
+      "openai",
+      "anthropic",
+      "jinja2",
+      "markupsafe",
+      "python-dateutil",
+      "pytz",
+      "pydantic",
+      "typing-extensions",
+      "python-dotenv",
+      "click",
+      "rich",
+      "prometheus-client",
+      "structlog",
+      "colorama",
+      "aiosmtplib",
+      "email-validator",
+      "twilio",
+      "firebase-admin",
+      "aiofiles",
+      "python-magic",
+      "pillow",
+      "orjson",
+      "msgpack",
+      "pytest",
+      "pytest-asyncio",
+      "pytest-cov",
+      "httpx",
+      "faker",
+      "black",
+      "isort",
+      "flake8",
+      "mypy",
+      "pre-commit",
+      "google-ads",
+      "google-api-python-client",
+      "google-auth",
+      "google-auth-oauthlib",
+      "google-auth-httplib2",
+      "facebook-business",
+      "python-linkedin-v2",
+      "stripe",
+      "tweepy",
+      "python-telegram-bot",
+      "pandas",
+      "numpy",
+      "scipy",
+      "dynaconf",
+      "python-decouple",
+      "asyncio-mqtt",
+      "aioredis",
+      "ujson",
+      "cachetools",
+      "boto3",
+      "azure-storage-blob",
+      "google-cloud-storage",
+      "hmac",
+      "hashlib",
+      "jsonschema",
+      "marshmallow",
+      "prefect",
+      "airflow-client",
+      "opencv-python-headless",
+      "pytesseract",
+      "beautifulsoup4",
+      "scrapy",
+      "selenium",
+      "spacy",
+      "nltk",
+      "textblob",
+      "mkdocs",
+      "mkdocs-material",
+      "docker",
+      "kubernetes",
+      "opentelemetry-api",
+      "opentelemetry-sdk",
+      "opentelemetry-instrumentation-fastapi",
+      "opentelemetry-instrumentation-httpx",
+      "opentelemetry-instrumentation-redis",
+      "opentelemetry-instrumentation-sqlalchemy",
+      "prometheus-fastapi-instrumentator",
+      "healthcheck",
+      "slowapi",
+      "fastapi-cors",
+      "starlette",
+      "zoneinfo",
+      "factory-boy",
+      "responses",
+      "urllib3",
+      "certifi",
+      "charset-normalizer",
+      "idna",
+      "setuptools",
+      "wheel",
+      "pip",
+      "fastapi",
+      "uvicorn[standard]",
+      "python-multipart",
+      "httpx",
+      "pydantic",
+      "pandas",
+      "numpy",
+      "crewai",
+      "langchain",
+      "openai",
+      "sqlalchemy",
+      "psycopg2-binary",
+      "redis",
+      "pytest",
+      "pytest-asyncio",
+      "pytest-mock",
+      "python-dotenv",
+      "pyyaml",
+      "jinja2",
+      "Pillow",
+      "websockets",
+      "prometheus-client",
+      "structlog",
+      "black",
+      "isort",
+      "mypy",
+      "fastapi",
+      "uvicorn",
+      "sqlalchemy",
+      "alembic",
+      "psycopg2-binary",
+      "redis",
+      "python-jose[cryptography]",
+      "python-multipart",
+      "python-dotenv",
+      "pydantic",
+      "pydantic-settings",
+      "requests",
+      "aiofiles",
+      "httpx",
+      "openai",
+      "langchain",
+      "emails",
+      "jinja2",
+      "pandas",
+      "numpy",
+      "aiohttp",
+      "aiohttp-cors",
+      "aiohttp-session",
+      "asyncpg",
+      "redis",
+      "pydantic",
+      "email-validator",
+      "bcrypt",
+      "PyJWT",
+      "cryptography",
+      "pyotp",
+      "qrcode[pil]",
+      "asyncpg",
+      "psycopg2-binary",
+      "python-multipart",
+      "uvloop",
+      "orjson",
+      "pytest",
+      "pytest-asyncio",
+      "pytest-mock",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "asyncio-mqtt",
+      "python-multipart",
+      "httpx",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "sqlalchemy",
+      "alembic",
+      "asyncpg",
+      "redis",
+      "celery",
+      "crewai",
+      "langchain",
+      "langchain-community",
+      "langchain-openai",
+      "openai",
+      "psycopg2-binary",
+      "numpy",
+      "pandas",
+      "fastapi",
+      "uvicorn",
+      "pydantic",
+      "sqlalchemy",
+      "alembic",
+      "asyncpg",
+      "redis",
+      "structlog",
+      "pydantic-settings",
+      "python-multipart",
+      "aiofiles",
+      "httpx",
+      "asyncio-mqtt",
+      "python-dateutil",
+      "email-validator",
+      "bcrypt",
+      "passlib",
+      "python-jose[cryptography]",
+      "pytest",
+      "pytest-asyncio",
+      "pytest-mock",
+      "Django",
+      "djangorestframework",
+      "django-cors-headers",
+      "psycopg2",
+      "redis",
+      "celery",
+      "django-tenant-schemas",
+      "django-filter",
+      "Pillow",
+      "python-decouple",
+      "gunicorn",
+      "whitenoise",
+      "django-extensions",
+      "django-debug-toolbar",
+      "pyjwt",
+      "cryptography",
+      "requests",
+      "httpx",
+      "pydantic",
+      "django-health-check",
+      "fastapi",
+      "uvicorn[standard]",
+      "python-multipart",
+      "pydantic",
+      "pydantic-settings",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "python-multipart",
+      "asyncpg",
+      "psycopg2-binary",
+      "sqlalchemy",
+      "alembic",
+      "redis",
+      "aioredis",
+      "httpx",
+      "aiohttp",
+      "openai",
+      "anthropic",
+      "numpy",
+      "scikit-learn",
+      "pandas",
+      "python-dateutil",
+      "pytz",
+      "structlog",
+      "prometheus-client",
+      "python-dotenv",
+      "pyyaml",
+      "celery",
+      "kombu",
+      "Pillow",
+      "beautifulsoup4",
+      "tweepy",
+      "python-linkedin-v2",
+      "jinja2",
+      "markupsafe",
+      "validators",
+      "phonenumbers",
+      "scipy",
+      "matplotlib",
+      "pytest",
+      "pytest-asyncio",
+      "pytest-cov",
+      "httpx",
+      "black",
+      "flake8",
+      "mypy",
+      "cachetools",
+      "lru-dict",
+      "geoip2",
+      "user-agents",
+      "ipaddress",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "httpx",
+      "asyncpg",
+      "redis",
+      "python-multipart",
+      "python-dotenv",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "sqlalchemy",
+      "alembic",
+      "hvac",
+      "aiohttp",
+      "boto3",
+      "botocore",
+      "aws-requests-auth",
+      "cryptography",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "sqlalchemy[asyncio]",
+      "asyncpg",
+      "redis[hiredis]",
+      "hiredis",
+      "httpx",
+      "python-jose[cryptography]",
+      "python-multipart",
+      "python-dotenv",
+      "structlog",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "python-dotenv",
+      "boto3",
+      "python-jose[cryptography]",
+      "requests-aws4auth",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "python-dotenv",
+      "boto3",
+      "python-jose[cryptography]",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "python-dotenv",
+      "sp-api",
+      "boto3",
+      "python-jose[cryptography]",
+      "asyncio-throttle",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "python-dotenv",
+      "boto3",
+      "python-jose[cryptography]",
+      "amazon-paapi",
+      "requests-aws4auth",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "sqlalchemy",
+      "alembic",
+      "asyncpg",
+      "redis[hiredis]",
+      "python-multipart",
+      "python-jose[cryptography]",
+      "requests",
+      "celery",
+      "python-dotenv",
+      "loguru",
+      "aiofiles",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic[email]",
+      "pydantic-settings",
+      "python-multipart",
+      "httpx",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "sqlalchemy",
+      "alembic",
+      "asyncpg",
+      "redis",
+      "psycopg2-binary",
+      "numpy",
+      "pandas",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "Pillow",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic[email]",
+      "sqlalchemy",
+      "asyncpg",
+      "fastapi-users[sqlalchemy]",
+      "fastapi-users-db-sqlalchemy",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "redis",
+      "httpx",
+      "python-multipart",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "gql[all]",
+      "graphql-core",
+      "sqlalchemy[asyncio]",
+      "asyncpg",
+      "redis[hiredis]",
+      "hiredis",
+      "httpx",
+      "python-jose[cryptography]",
+      "python-multipart",
+      "passlib[bcrypt]",
+      "python-dotenv",
+      "structlog",
+      "Pillow",
+      "celery[redis]",
+      "python-slugify",
+      "email-validator",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "aiohttp",
+      "python-multipart",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "sqlalchemy",
+      "alembic",
+      "psycopg2-binary",
+      "redis",
+      "python-dotenv",
+      "loguru",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "sqlalchemy[asyncio]",
+      "asyncpg",
+      "alembic",
+      "redis[hiredis]",
+      "hiredis",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "python-multipart",
+      "httpx",
+      "aiohttp",
+      "requests",
+      "structlog",
+      "prometheus-client",
+      "pytest",
+      "pytest-asyncio",
+      "pytest-cov",
+      "python-dotenv",
+      "typer",
+      "fastapi",
+      "uvicorn",
+      "pydantic",
+      "python-multipart",
+      "aiofiles",
+      "aiohttp",
+      "asyncpg",
+      "redis",
+      "psycopg2-binary",
+      "Pillow",
+      "opencv-python",
+      "numpy",
+      "openai",
+      "langchain",
+      "transformers",
+      "torch",
+      "beautifulsoup4",
+      "requests",
+      "lxml",
+      "scrapy",
+      "google-ads",
+      "pytrends",
+      "python-amazon-paapi",
+      "ebaysdk",
+      "shopify-python-api",
+      "rembg",
+      "wand",
+      "python-dotenv",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "python-dateutil",
+      "typing-extensions",
+      "pytest",
+      "pytest-asyncio",
+      "black",
+      "flake8",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "psycopg2-binary",
+      "redis",
+      "websockets",
+      "speech-recognition",
+      "pydub",
+      "openai",
+      "python-telegram-bot",
+      "aiofiles",
+      "numpy",
+      "sqlalchemy",
+      "alembic",
+      "pgvector",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "python-multipart",
+      "python-dotenv",
+      "google-ads",
+      "google-auth",
+      "google-auth-oauthlib",
+      "facebook-business",
+      "python-telegram-bot",
+      "tweepy",
+      "linkedin-api",
+      "openai",
+      "anthropic",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "python-multipart",
+      "httpx",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "sqlalchemy",
+      "alembic",
+      "asyncpg",
+      "redis",
+      "psycopg2-binary",
+      "numpy",
+      "pandas",
+      "openpyxl",
+      "xlsxwriter",
+      "reportlab",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "httpx",
+      "asyncpg",
+      "redis",
+      "python-multipart",
+      "python-dotenv",
+      "psycopg2-binary",
+      "sqlalchemy",
+      "alembic",
+      "crewai",
+      "langchain",
+      "openai",
+      "langchain-openai",
+      "langchain-community",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "httpx",
+      "asyncpg",
+      "redis",
+      "python-multipart",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "jinja2",
+      "aiofiles",
+      "python-dotenv",
+      "psycopg2-binary",
+      "sqlalchemy",
+      "alembic",
+      "fastapi",
+      "uvicorn",
+      "websockets",
+      "redis",
+      "pydantic",
+      "python-multipart",
+      "fastapi",
+      "uvicorn[standard]",
+      "redis",
+      "asyncio-mqtt",
+      "pydantic",
+      "pydantic-settings",
+      "asyncpg",
+      "sqlalchemy[asyncio]",
+      "sqlalchemy-utils",
+      "alembic",
+      "python-json-logger",
+      "structlog",
+      "tenacity",
+      "aio-pika",
+      "aiokafka",
+      "celery",
+      "python-multipart",
+      "httpx",
+      "psutil",
+      "prometheus-client",
+      "opentelemetry-api",
+      "opentelemetry-sdk",
+      "opentelemetry-instrumentation-fastapi",
+      "py-health-check",
+      "cryptography",
+      "Django",
+      "wagtail",
+      "psycopg2-binary",
+      "redis",
+      "requests",
+      "python-decouple",
+      "celery",
+      "gunicorn",
+      "django-cors-headers",
+      "Pillow",
+      "djangorestframework",
+      "PyJWT",
+      "cryptography",
+      "wagtail-modeladmin",
+      "django-extensions",
+      "django-storages",
+      "boto3",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "python-multipart",
+      "sqlalchemy[asyncio]",
+      "asyncpg",
+      "alembic",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "python-multipart",
+      "redis",
+      "aioredis",
+      "httpx",
+      "aiohttp",
+      "celery",
+      "kombu",
+      "stripe",
+      "aiosmtplib",
+      "jinja2",
+      "structlog",
+      "sentry-sdk[fastapi]",
+      "pytest",
+      "pytest-asyncio",
+      "httpx",
+      "factory-boy",
+      "black",
+      "isort",
+      "flake8",
+      "mypy",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "httpx",
+      "stripe",
+      "razorpay",
+      "python-multipart",
+      "python-jose[cryptography]",
+      "python-dotenv",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "gql[all]",
+      "graphql-core",
+      "aiohttp",
+      "sqlalchemy[asyncio]",
+      "asyncpg",
+      "redis[hiredis]",
+      "hiredis",
+      "httpx",
+      "python-jose[cryptography]",
+      "python-multipart",
+      "python-dotenv",
+      "structlog",
+      "celery[redis]",
+      "Pillow",
+      "python-slugify",
+      "email-validator",
+      "fastapi",
+      "uvicorn",
+      "redis",
+      "aiofiles",
+      "pydantic",
+      "fastapi",
+      "uvicorn",
+      "httpx",
+      "pydantic",
+      "python-multipart",
+      "python-telegram-bot",
+      "fastapi",
+      "uvicorn",
+      "redis",
+      "asyncio-mqtt",
+      "requests",
+      "python-dotenv",
+      "fastapi",
+      "uvicorn",
+      "httpx",
+      "python-jose[cryptography]",
+      "python-multipart",
+      "python-dotenv",
+      "pydantic",
+      "redis",
+      "psycopg2-binary",
+      "sqlalchemy",
+      "alembic",
+      "requests",
+      "aiofiles",
+      "PyJWT",
+      "bcrypt",
+      "pydantic[email]",
+      "fastapi",
+      "uvicorn",
+      "crewai",
+      "langchain",
+      "openai",
+      "psycopg2-binary",
+      "redis",
+      "python-multipart",
+      "python-dotenv",
+      "pydantic",
+      "requests",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "sqlalchemy[asyncio]",
+      "asyncpg",
+      "redis[hiredis]",
+      "hiredis",
+      "python-jose[cryptography]",
+      "python-multipart",
+      "httpx",
+      "requests",
+      "structlog",
+      "python-dotenv",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "httpx",
+      "python-multipart",
+      "python-dotenv",
+      "jinja2",
+      "fastapi",
+      "uvicorn[standard]",
+      "pydantic",
+      "pydantic-settings",
+      "asyncio-mqtt",
+      "python-multipart",
+      "httpx",
+      "python-jose[cryptography]",
+      "passlib[bcrypt]",
+      "sqlalchemy",
+      "alembic",
+      "asyncpg",
+      "redis",
+      "celery",
+      "crewai",
+      "langchain",
+      "langchain-community",
+      "langchain-openai",
+      "openai",
+      "psycopg2-binary",
+      "numpy",
+      "pandas"
+    ],
+    "nodejs_packages": [
+      "dotenv",
+      "turbo",
+      "concurrently",
+      "@types/node",
+      "typescript",
+      "prettier",
+      "eslint",
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "eslint-config-next",
+      "eslint-config-prettier",
+      "@bizosaas/shared-ui",
+      "@hookform/resolvers",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-aspect-ratio",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@tanstack/react-query",
+      "axios",
+      "class-variance-authority",
+      "clsx",
+      "date-fns",
+      "lucide-react",
+      "next",
+      "next-themes",
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "recharts",
+      "tailwind-merge",
+      "tailwindcss-animate",
+      "zod",
+      "zustand",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "postcss",
+      "prettier",
+      "tailwindcss",
+      "typescript",
+      "@bizosaas/shared-ui",
+      "@hookform/resolvers",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-aspect-ratio",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@stripe/stripe-js",
+      "@tanstack/react-query",
+      "@tanstack/react-table",
+      "axios",
+      "class-variance-authority",
+      "clsx",
+      "date-fns",
+      "lucide-react",
+      "next",
+      "next-themes",
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "recharts",
+      "tailwind-merge",
+      "tailwindcss-animate",
+      "zod",
+      "zustand",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "postcss",
+      "prettier",
+      "tailwindcss",
+      "typescript",
+      "@bizosaas/shared-ui",
+      "@hookform/resolvers",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-aspect-ratio",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@tanstack/react-query",
+      "@stripe/stripe-js",
+      "axios",
+      "class-variance-authority",
+      "clsx",
+      "date-fns",
+      "lucide-react",
+      "next",
+      "next-themes",
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "recharts",
+      "tailwind-merge",
+      "tailwindcss-animate",
+      "zod",
+      "zustand",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "postcss",
+      "prettier",
+      "tailwindcss",
+      "typescript",
+      "@bizosaas/shared-ui",
+      "@hookform/resolvers",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-aspect-ratio",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@tanstack/react-query",
+      "@tanstack/react-table",
+      "axios",
+      "class-variance-authority",
+      "clsx",
+      "date-fns",
+      "lucide-react",
+      "next",
+      "next-themes",
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "recharts",
+      "tailwind-merge",
+      "tailwindcss-animate",
+      "zod",
+      "zustand",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "postcss",
+      "prettier",
+      "tailwindcss",
+      "typescript",
+      "next",
+      "react",
+      "react-dom",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-form",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-navigation-menu",
+      "@radix-ui/react-progress",
+      "@radix-ui/react-scroll-area",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@radix-ui/react-tooltip",
+      "class-variance-authority",
+      "clsx",
+      "cmdk",
+      "date-fns",
+      "lucide-react",
+      "recharts",
+      "react-hook-form",
+      "react-query",
+      "tailwind-merge",
+      "tailwindcss",
+      "tailwindcss-animate",
+      "uuid",
+      "zod",
+      "zustand",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "@types/uuid",
+      "autoprefixer",
+      "postcss",
+      "typescript",
+      "next",
+      "react",
+      "react-dom",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "typescript",
+      "tailwindcss",
+      "autoprefixer",
+      "postcss",
+      "@tailwindcss/typography",
+      "@tailwindcss/forms",
+      "clsx",
+      "lucide-react",
+      "axios",
+      "@headlessui/react",
+      "framer-motion",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "eslint",
+      "eslint-config-next",
+      "typescript",
+      "@adyen/adyen-web",
+      "@adyen/api-library",
+      "@headlessui/react",
+      "@saleor/auth-sdk",
+      "@stripe/react-stripe-js",
+      "@stripe/stripe-js",
+      "@tailwindcss/container-queries",
+      "clsx",
+      "editorjs-html",
+      "formik",
+      "libphonenumber-js",
+      "lodash-es",
+      "lucide-react",
+      "next",
+      "query-string",
+      "react",
+      "react-dom",
+      "react-error-boundary",
+      "react-spinners",
+      "react-test-renderer",
+      "react-toastify",
+      "sharp",
+      "ts-invariant",
+      "url-join",
+      "urql",
+      "xss",
+      "yup",
+      "zustand",
+      "@graphql-codegen/cli",
+      "@graphql-codegen/client-preset",
+      "@graphql-typed-document-node/core",
+      "@next/env",
+      "@parcel/watcher",
+      "@playwright/test",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@types/lodash-es",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "@types/url-join",
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "eslint-config-prettier",
+      "eslint-plugin-import",
+      "eslint-plugin-playwright",
+      "graphql-tag",
+      "husky",
+      "lint-staged",
+      "postcss",
+      "prettier",
+      "prettier-plugin-tailwindcss",
+      "schema-dts",
+      "tailwindcss",
+      "typescript",
+      "wonka",
+      "@release-it/bumper",
+      "release-it",
+      "next",
+      "react",
+      "react-dom",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "typescript",
+      "tailwindcss",
+      "@tailwindcss/forms",
+      "@tailwindcss/aspect-ratio",
+      "autoprefixer",
+      "postcss",
+      "lucide-react",
+      "clsx",
+      "@tanstack/react-query",
+      "graphql",
+      "graphql-request",
+      "@headlessui/react",
+      "framer-motion",
+      "react-hot-toast",
+      "zustand",
+      "sharp",
+      "react-intersection-observer",
+      "swiper",
+      "class-variance-authority",
+      "tailwind-merge",
+      "@radix-ui/react-slot",
+      "eslint",
+      "eslint-config-next",
+      "@medusajs/admin",
+      "@medusajs/cache-inmemory",
+      "@medusajs/cache-redis",
+      "@medusajs/event-bus-local",
+      "@medusajs/event-bus-redis",
+      "@medusajs/file-local",
+      "@medusajs/medusa",
+      "@tanstack/react-query",
+      "body-parser",
+      "cors",
+      "dotenv",
+      "express",
+      "medusa-fulfillment-manual",
+      "medusa-interfaces",
+      "medusa-payment-manual",
+      "medusa-payment-stripe",
+      "prism-react-renderer",
+      "typeorm",
+      "@babel/cli",
+      "@babel/core",
+      "@babel/preset-typescript",
+      "@medusajs/medusa-cli",
+      "@stdlib/number-float64-base-normalize",
+      "@types/express",
+      "@types/jest",
+      "@types/node",
+      "babel-preset-medusa-package",
+      "cross-env",
+      "eslint",
+      "jest",
+      "mongoose",
+      "rimraf",
+      "ts-jest",
+      "ts-loader",
+      "typescript",
+      "next",
+      "react",
+      "react-dom",
+      "@radix-ui/react-slot",
+      "class-variance-authority",
+      "clsx",
+      "lucide-react",
+      "tailwind-merge",
+      "tailwindcss-animate",
+      "axios",
+      "date-fns",
+      "react-hook-form",
+      "@hookform/resolvers",
+      "zod",
+      "typescript",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "postcss",
+      "tailwindcss",
+      "@strapi/strapi",
+      "@strapi/plugin-users-permissions",
+      "@strapi/plugin-i18n",
+      "@strapi/plugin-graphql",
+      "pg",
+      "@medusajs/admin",
+      "@medusajs/cache-inmemory",
+      "@medusajs/cache-redis",
+      "@medusajs/event-bus-local",
+      "@medusajs/event-bus-redis",
+      "@medusajs/file-local",
+      "@medusajs/medusa",
+      "@tanstack/react-query",
+      "body-parser",
+      "cors",
+      "dotenv",
+      "express",
+      "medusa-fulfillment-manual",
+      "medusa-interfaces",
+      "medusa-payment-manual",
+      "medusa-payment-stripe",
+      "prism-react-renderer",
+      "typeorm",
+      "@babel/cli",
+      "@babel/core",
+      "@babel/preset-typescript",
+      "@medusajs/medusa-cli",
+      "@stdlib/number-float64-base-normalize",
+      "@types/express",
+      "@types/jest",
+      "@types/node",
+      "babel-preset-medusa-package",
+      "cross-env",
+      "eslint",
+      "jest",
+      "mongoose",
+      "rimraf",
+      "ts-jest",
+      "ts-loader",
+      "typescript",
+      "@strapi/plugin-users-permissions",
+      "@strapi/strapi",
+      "pg",
+      "express",
+      "cors",
+      "node-fetch",
+      "@strapi/plugin-cloud",
+      "@strapi/plugin-users-permissions",
+      "@strapi/strapi",
+      "better-sqlite3",
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "styled-components",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "typescript",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "class-variance-authority",
+      "clsx",
+      "lucide-react",
+      "next",
+      "next-themes",
+      "react",
+      "react-dom",
+      "tailwind-merge",
+      "tailwindcss-animate",
+      "zustand",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "tailwindcss",
+      "typescript",
+      "@craftjs/core",
+      "@hookform/resolvers",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-aspect-ratio",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-collapsible",
+      "@radix-ui/react-context-menu",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-hover-card",
+      "@radix-ui/react-icons",
+      "@radix-ui/react-label",
+      "@radix-ui/react-menubar",
+      "@radix-ui/react-navigation-menu",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-progress",
+      "@radix-ui/react-radio-group",
+      "@radix-ui/react-scroll-area",
+      "@radix-ui/react-select",
+      "@radix-ui/react-separator",
+      "@radix-ui/react-slider",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-toast",
+      "@radix-ui/react-toggle",
+      "@radix-ui/react-toggle-group",
+      "@radix-ui/react-tooltip",
+      "@stripe/stripe-js",
+      "@tanstack/react-query",
+      "@tanstack/react-table",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "axios",
+      "class-variance-authority",
+      "clsx",
+      "cmdk",
+      "critters",
+      "date-fns",
+      "embla-carousel-react",
+      "input-otp",
+      "lucide-react",
+      "meilisearch",
+      "mermaid",
+      "next",
+      "next-themes",
+      "react",
+      "react-day-picker",
+      "react-dom",
+      "react-hook-form",
+      "react-resizable-panels",
+      "recharts",
+      "sonner",
+      "tailwind-merge",
+      "tailwindcss",
+      "tailwindcss-animate",
+      "typescript",
+      "vaul",
+      "zod",
+      "zustand",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "postcss",
+      "prettier",
+      "next",
+      "react",
+      "react-dom",
+      "typescript",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "tailwindcss",
+      "autoprefixer",
+      "postcss",
+      "framer-motion",
+      "lucide-react",
+      "@headlessui/react",
+      "clsx",
+      "axios",
+      "@tanstack/react-query",
+      "zustand",
+      "eslint",
+      "eslint-config-next",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@adyen/adyen-web",
+      "@adyen/api-library",
+      "@headlessui/react",
+      "@saleor/auth-sdk",
+      "@stripe/react-stripe-js",
+      "@stripe/stripe-js",
+      "@tailwindcss/container-queries",
+      "clsx",
+      "editorjs-html",
+      "formik",
+      "libphonenumber-js",
+      "lodash-es",
+      "lucide-react",
+      "next",
+      "query-string",
+      "react",
+      "react-dom",
+      "react-error-boundary",
+      "react-spinners",
+      "react-test-renderer",
+      "react-toastify",
+      "sharp",
+      "ts-invariant",
+      "url-join",
+      "urql",
+      "xss",
+      "yup",
+      "zustand",
+      "@graphql-codegen/cli",
+      "@graphql-codegen/client-preset",
+      "@graphql-typed-document-node/core",
+      "@next/env",
+      "@parcel/watcher",
+      "@playwright/test",
+      "@tailwindcss/forms",
+      "@tailwindcss/typography",
+      "@types/lodash-es",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "@types/url-join",
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "autoprefixer",
+      "eslint",
+      "eslint-config-next",
+      "eslint-config-prettier",
+      "eslint-plugin-import",
+      "eslint-plugin-playwright",
+      "graphql-tag",
+      "husky",
+      "lint-staged",
+      "postcss",
+      "prettier",
+      "prettier-plugin-tailwindcss",
+      "schema-dts",
+      "tailwindcss",
+      "typescript",
+      "wonka"
+    ],
+    "system_dependencies": [],
+    "docker_images": [
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "builder",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "base",
+      "base",
+      "builder",
+      "python:3.11-slim",
+      "python:3.11-slim-bullseye",
+      "python:3.11-slim",
+      "base",
+      "base",
+      "builder",
+      "python:3.11-slim",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "node:20-alpine",
+      "base",
+      "base",
+      "package.json",
+      "base",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "builder",
+      "python:3.12",
+      "python:3.12-slim",
+      "mcr.microsoft.com/devcontainers/python:3.12",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "builder",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "node:18-alpine",
+      "node:18-alpine",
+      "node:18-alpine",
+      "node:18-alpine",
+      "node:18-alpine",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "builder",
+      "python:3.12-slim",
+      "python:3.11-slim",
+      "node:18-alpine",
+      "base",
+      "frontend",
+      "base",
+      "base",
+      "node:18-alpine",
+      "base",
+      "base",
+      "base",
+      "python:3.12-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "base",
+      "base",
+      "builder",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "builder",
+      "python:3.11-slim",
+      "node:18-alpine",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "node:18-alpine",
+      "node:18-alpine",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "node:18-alpine",
+      "python:3.11-slim",
+      "python:3.11-slim",
+      "builder",
+      "python:3.10-slim",
+      "node:18-alpine",
+      "node:18-alpine",
+      "node:18-alpine",
+      "node:20-alpine",
+      "base",
+      "base",
+      "package.json",
+      "base"
+    ],
+    "external_services": []
+  },
+  "infrastructure_analysis": {
+    "databases": [
+      {
+        "type": "postgres",
+        "files": [
+          "postgres-optimization.conf",
+          "secrets/postgres_password.txt",
+          "services/saleor-backend/saleor/core/postgres.py",
+          "services/saleor-backend/saleor/core/db/tests/test_postgres_json_concatenate.py",
+          "services/saleor-backend/saleor/core/tests/test_postgresql_search.py"
+        ]
+      },
+      {
+        "type": "mongodb",
+        "files": [
+          "services/medusa/services/strapi/node_modules/umzug/lib/storage/mongodb.js",
+          "services/medusa/services/strapi/node_modules/umzug/lib/storage/mongodb.d.ts",
+          "services/medusa/services/strapi/node_modules/umzug/lib/storage/mongodb.js.map",
+          "services/medusa/node_modules/mongodb-connection-string-url",
+          "services/medusa/node_modules/@mongodb-js"
+        ]
+      },
+      {
+        "type": "redis",
+        "files": [
+          "services/saleor-backend/saleor/webhook/tests/circuit_breaker/test_redis_storage.py",
+          "services/medusa/node_modules/redis-errors",
+          "services/medusa/node_modules/redis-parser",
+          "services/medusa/node_modules/ioredis",
+          "services/medusa/node_modules/ioredis-mock"
+        ]
+      },
+      {
+        "type": "mysql",
+        "files": [
+          "services/medusa/services/strapi/node_modules/@strapi/database/dist/dialects/mysql",
+          "services/medusa/services/strapi/node_modules/@strapi/generate-new/dist/resources/templates/database-templates/mysql2.template",
+          "services/medusa/services/strapi/node_modules/@strapi/generate-new/dist/resources/templates/database-templates/mysql.template",
+          "services/medusa/services/strapi/node_modules/knex/scripts/stress-test/mysql2-random-hanging-every-now-and-then.js",
+          "services/medusa/services/strapi/node_modules/knex/scripts/stress-test/mysql2-sudden-exit-without-error.js"
+        ]
+      }
+    ],
+    "cache_systems": [],
+    "message_queues": [],
+    "load_balancers": [],
+    "monitoring_systems": [
+      {
+        "type": "prometheus",
+        "files": [
+          "monitoring/prometheus.yml"
+        ]
+      }
+    ],
+    "secrets_management": [],
+    "storage_systems": []
+  },
+  "documentation_analysis": {
+    "readme_files": [
+      {
+        "file": "README.md",
+        "size_kb": 6
+      },
+      {
+        "file": "README-IMPLEMENTATION.md",
+        "size_kb": 6
+      },
+      {
+        "file": "deployment/dokploy/bizosaas-platform/README.md",
+        "size_kb": 7
+      },
+      {
+        "file": "services/temporal-integration/README.md",
+        "size_kb": 7
+      },
+      {
+        "file": "services/temporal-integration/README_AMAZON_SOURCING.md",
+        "size_kb": 0
+      },
+      {
+        "file": "services/crm-service-v2/README.md",
+        "size_kb": 11
+      },
+      {
+        "file": "services/frontend-nextjs/README.md",
+        "size_kb": 12
+      },
+      {
+        "file": "services/domain-repository/README.md",
+        "size_kb": 12
+      },
+      {
+        "file": "services/django-crm/README.md",
+        "size_kb": 11
+      },
+      {
+        "file": "services/django-crm/apps/leads/README.md",
+        "size_kb": 10
+      },
+      {
+        "file": "services/bizosaas-brain/README_GOOGLE_SEARCH_CONSOLE.md",
+        "size_kb": 10
+      },
+      {
+        "file": "services/saleor-storefront/README.md",
+        "size_kb": 5
+      },
+      {
+        "file": "services/saleor-backend/README.md",
+        "size_kb": 9
+      },
+      {
+        "file": "services/coreldove-frontend/README.md",
+        "size_kb": 10
+      },
+      {
+        "file": "services/coreldove-sourcing/README.md",
+        "size_kb": 14
+      },
+      {
+        "file": "services/business-directory/frontend/README.md",
+        "size_kb": 5
+      },
+      {
+        "file": "services/event-bus/README.md",
+        "size_kb": 15
+      },
+      {
+        "file": ".pytest_cache/README.md",
+        "size_kb": 0
+      },
+      {
+        "file": "strapi-v5/README.md",
+        "size_kb": 2
+      },
+      {
+        "file": "coreldove-storefront/README.md",
+        "size_kb": 5
+      }
+    ],
+    "api_documentation": [],
+    "deployment_docs": [
+      {
+        "file": "DOKPLOY_DEPLOYMENT_STRATEGY.md",
+        "size_kb": 9
+      },
+      {
+        "file": "DEPLOYMENT_GUIDE.md",
+        "size_kb": 7
+      },
+      {
+        "file": "BIZOSAAS_DEPLOYMENT_STATUS.md",
+        "size_kb": 5
+      },
+      {
+        "file": "SALEOR_DEPLOYMENT_GUIDE.md",
+        "size_kb": 9
+      },
+      {
+        "file": "LOCAL_DNS_SETUP.md",
+        "size_kb": 4
+      },
+      {
+        "file": "SALEOR_DEPLOYMENT_SUMMARY.md",
+        "size_kb": 10
+      },
+      {
+        "file": "DOCKER_INTEGRATION_SETUP.md",
+        "size_kb": 2
+      },
+      {
+        "file": "DOKPLOY_DEPLOYMENT_GUIDE.md",
+        "size_kb": 1
+      },
+      {
+        "file": "READY_FOR_DOKPLOY_DEPLOYMENT.md",
+        "size_kb": 4
+      },
+      {
+        "file": "DEPLOYMENT_SUMMARY.md",
+        "size_kb": 4
+      },
+      {
+        "file": "WORKSPACE_SETUP.md",
+        "size_kb": 7
+      },
+      {
+        "file": "DEPLOYMENT_STATUS_FINAL.md",
+        "size_kb": 5
+      },
+      {
+        "file": "PRODUCTION_DEPLOYMENT_GUIDE.md",
+        "size_kb": 14
+      },
+      {
+        "file": "ALTERNATIVE_DEPLOYMENT.md",
+        "size_kb": 3
+      },
+      {
+        "file": "DEPLOYMENT_STRATEGY_FINAL.md",
+        "size_kb": 5
+      },
+      {
+        "file": "PLATFORM_DEPLOYMENT_SUCCESS.md",
+        "size_kb": 5
+      },
+      {
+        "file": "STRAPI_V5_SETUP_COMPLETE.md",
+        "size_kb": 4
+      },
+      {
+        "file": "strapi-v5-setup-guide.md",
+        "size_kb": 4
+      },
+      {
+        "file": "deployment/dokploy/DEPLOYMENT_GUIDE.md",
+        "size_kb": 9
+      },
+      {
+        "file": "services/saleor-storefront/INTEGRATION_SETUP.md",
+        "size_kb": 3
+      },
+      {
+        "file": "services/business-directory/frontend/DEPLOYMENT_SUCCESS.md",
+        "size_kb": 7
+      }
+    ],
+    "architecture_docs": [
+      {
+        "file": "FRONTEND_ARCHITECTURE_SPLIT_IMPLEMENTATION.md",
+        "size_kb": 6
+      },
+      {
+        "file": "IMPLEMENTATION_GUIDE_UNIFIED_ARCHITECTURE.md",
+        "size_kb": 9
+      },
+      {
+        "file": "MULTI_FRONTEND_ARCHITECTURE_DOCUMENTATION.md",
+        "size_kb": 9
+      },
+      {
+        "file": "UNIFIED_FRONTEND_BACKEND_ARCHITECTURE.md",
+        "size_kb": 8
+      },
+      {
+        "file": "DOKPLOY_PROJECT_ARCHITECTURE.md",
+        "size_kb": 6
+      },
+      {
+        "file": "BIZOSAAS_TECH_STACK_REFERENCE.md",
+        "size_kb": 11
+      },
+      {
+        "file": "services/bizosaas-brain/4_AGENT_ARCHITECTURE_AUDIT_REPORT.md",
+        "size_kb": 10
+      },
+      {
+        "file": "docs/ARCHITECTURE.md",
+        "size_kb": 16
+      },
+      {
+        "file": "docs/MULTI_DOMAIN_ARCHITECTURE.md",
+        "size_kb": 15
+      }
+    ],
+    "loose_md_files": [
+      {
+        "file": "DOCKER_CONTAINERIZATION_SUCCESS_REPORT.md",
+        "size_kb": 4
+      },
+      {
+        "file": "IMPLEMENTATION_COMPLETE.md",
+        "size_kb": 9
+      },
+      {
+        "file": "CLEANUP_SUMMARY_AND_WSL2_UPGRADE.md",
+        "size_kb": 6
+      },
+      {
+        "file": "INFRASTRUCTURE_RESOURCE_ANALYSIS.md",
+        "size_kb": 6
+      },
+      {
+        "file": "SALEOR_INFRASTRUCTURE_GUIDE.md",
+        "size_kb": 9
+      },
+      {
+        "file": "IMMEDIATE_WORKING_SOLUTION.md",
+        "size_kb": 4
+      },
+      {
+        "file": "CHANNEL_COVERAGE_MATRIX.md",
+        "size_kb": 16
+      },
+      {
+        "file": "SALEOR_IMPLEMENTATION_SUMMARY.md",
+        "size_kb": 9
+      },
+      {
+        "file": "FACEBOOK_ADS_INTEGRATION_SUMMARY.md",
+        "size_kb": 14
+      },
+      {
+        "file": "coreldove-saleor-status.md",
+        "size_kb": 3
+      },
+      {
+        "file": "PROJECT_ORGANIZATION_STRATEGY.md",
+        "size_kb": 5
+      },
+      {
+        "file": "BRANDING_FIX_SUMMARY.md",
+        "size_kb": 5
+      },
+      {
+        "file": "PERSONAL_AI_ASSISTANT_TESTING_REPORT.md",
+        "size_kb": 18
+      },
+      {
+        "file": "CORELDOVE_COMPREHENSIVE_PRD.md",
+        "size_kb": 16
+      },
+      {
+        "file": "ARCHITECTURAL_RECOMMENDATION_FINAL.md",
+        "size_kb": 4
+      },
+      {
+        "file": "IMPLEMENTATION_TASK_PLAN.md",
+        "size_kb": 20
+      },
+      {
+        "file": "DEVELOPMENT_TEAM_WORKFLOW.md",
+        "size_kb": 10
+      },
+      {
+        "file": "LOCAL_ACCESS_GUIDE.md",
+        "size_kb": 6
+      },
+      {
+        "file": "PLATFORM_STATUS_UPDATE.md",
+        "size_kb": 3
+      },
+      {
+        "file": "QUICK_ACCESS_GUIDE.md",
+        "size_kb": 32
+      },
+      {
+        "file": "UNIFIED_DASHBOARD_README.md",
+        "size_kb": 12
+      },
+      {
+        "file": "RECOMMENDED_PORT_ALLOCATION_STRATEGY.md",
+        "size_kb": 5
+      },
+      {
+        "file": "CREWAI_INTEGRATION_SUCCESS.md",
+        "size_kb": 7
+      },
+      {
+        "file": "N8N_TO_TEMPORAL_MIGRATION_STRATEGY.md",
+        "size_kb": 13
+      },
+      {
+        "file": "DATABASE_CONSOLIDATION_PLAN.md",
+        "size_kb": 9
+      },
+      {
+        "file": "CMS_AND_ECOMMERCE_ADMIN_ACCESS_GUIDE.md",
+        "size_kb": 5
+      },
+      {
+        "file": "SERVICE_HEALTH_REPORT.md",
+        "size_kb": 6
+      },
+      {
+        "file": "VIRTUAL_ENVIRONMENT_GUIDE.md",
+        "size_kb": 7
+      },
+      {
+        "file": "DEVELOPMENT_WORKFLOW.md",
+        "size_kb": 6
+      },
+      {
+        "file": "PLATFORM_COMPLIANCE_REMEDIATION_PLAN.md",
+        "size_kb": 17
+      },
+      {
+        "file": "GDPR_IMPLEMENTATION_GUIDE.md",
+        "size_kb": 38
+      },
+      {
+        "file": "K3S_OPTIMIZATION_ANALYSIS.md",
+        "size_kb": 6
+      },
+      {
+        "file": "PLATFORM_STATUS_FINAL.md",
+        "size_kb": 8
+      },
+      {
+        "file": "WAGTAIL_PORT_STANDARDIZATION.md",
+        "size_kb": 2
+      },
+      {
+        "file": "PRODUCTION_READINESS_CHECKLIST.md",
+        "size_kb": 10
+      },
+      {
+        "file": "COMPLETE_IMPLEMENTATION_PLAN.md",
+        "size_kb": 5
+      },
+      {
+        "file": "BIZOSAAS_PLATFORM_COMPLETE.md",
+        "size_kb": 10
+      },
+      {
+        "file": "FINAL_SERVICE_HEALTH_STATUS.md",
+        "size_kb": 7
+      },
+      {
+        "file": "BACKEND_SERVICES_ACCESS_GUIDE.md",
+        "size_kb": 10
+      },
+      {
+        "file": "BIZOSAAS_CRITICAL_ISSUES_FIXED.md",
+        "size_kb": 8
+      },
+      {
+        "file": "ONBOARDING_WORKFLOW.md",
+        "size_kb": 19
+      },
+      {
+        "file": "SECURITY_IMPLEMENTATION_GUIDE.md",
+        "size_kb": 12
+      }
+    ]
+  },
+  "deprecated_components": [
+    {
+      "type": "service",
+      "name": "medusa",
+      "path": "services/medusa",
+      "reason": "Migrated to Saleor",
+      "size_mb": 1325.0,
+      "can_backup": true
+    },
+    {
+      "type": "service",
+      "name": "medusa-coreldove",
+      "path": "services/medusa-coreldove",
+      "reason": "Migrated to Saleor",
+      "size_mb": 1.0,
+      "can_backup": true
+    },
+    {
+      "type": "service",
+      "name": "medusa-official",
+      "path": "services/medusa-official",
+      "reason": "Migrated to Saleor",
+      "size_mb": 1.0,
+      "can_backup": true
+    },
+    {
+      "type": "service",
+      "name": "strapi",
+      "path": "services/strapi",
+      "reason": "Migrated to Wagtail",
+      "size_mb": 1.0,
+      "can_backup": true
+    },
+    {
+      "type": "documentation",
+      "name": "STRAPI_V5_SETUP_COMPLETE.md",
+      "path": "STRAPI_V5_SETUP_COMPLETE.md",
+      "reason": "Legacy documentation",
+      "size_kb": 4,
+      "can_backup": true
+    }
+  ],
+  "essential_components": {
+    "core_services": [
+      "auth-service",
+      "auth-service-v2",
+      "user-management",
+      "api-gateway",
+      "ai-governance-layer",
+      "gdpr-compliance-service",
+      "wagtail-cms"
+    ],
+    "ecommerce_services": [
+      "saleor-backend",
+      "saleor-storefront",
+      "coreldove-saleor",
+      "payment-service"
+    ],
+    "ai_services": [
+      "ai-agents",
+      "bizosaas-brain",
+      "ai-integration-service",
+      "personal-ai-assistant"
+    ],
+    "configuration_files": [
+      "docker-compose.yml",
+      "docker-compose.production.yml",
+      ".env.example"
+    ],
+    "infrastructure_configs": [
+      "k8s/",
+      "deployment/",
+      "database/",
+      "vault-config/"
+    ],
+    "critical_scripts": [
+      "scripts/",
+      "deployment/"
+    ]
+  },
+  "test_requirements": {
+    "services_to_test": [
+      {
+        "service": "client-sites",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "saleor-backend",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "agent-orchestration-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "api-gateway",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "saleor-storefront",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-ai-sourcing",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "identity-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "frontend-nextjs",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "gamification-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "ai-integration-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "marketing-apis-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "amazon-integration-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "agent-monitor",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "claude-telegram-bot",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "analytics-ai-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "ai-governance-layer",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "bizoholic-frontend",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "marketing-automation-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "bizosaas-brain",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "campaign-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "ai-agents",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-frontend",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "gdpr-compliance-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "integration",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "super-admin-dashboard",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-storefront",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "payment-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "logging-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "byok-health-monitor",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "telegram-integration",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "analytics-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-bridge",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "vault-integration",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "analytics",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "crm-service-v2",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "business-directory",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "saleor-storage",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "client-dashboard",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "marketing-ai-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "event-bus",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "crm-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "wagtail-cms",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "domain-repository",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-saleor",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "django-crm",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-bridge-saleor",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "temporal-orchestration",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "auth-service",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "notification",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "temporal-integration",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "auth-service-v2",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "image-integration",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "campaign-management",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "user-management",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "unified-dashboard",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      },
+      {
+        "service": "coreldove-sourcing",
+        "tests": [
+          "health_check",
+          "port_availability",
+          "dependencies"
+        ]
+      }
+    ],
+    "configurations_to_validate": [
+      {
+        "config": "docker-compose.yml",
+        "tests": [
+          "syntax_check",
+          "service_references",
+          "port_conflicts"
+        ]
+      },
+      {
+        "config": "docker-compose.production.yml",
+        "tests": [
+          "syntax_check",
+          "service_references",
+          "port_conflicts"
+        ]
+      },
+      {
+        "config": ".env.example",
+        "tests": [
+          "syntax_check",
+          "service_references",
+          "port_conflicts"
+        ]
+      },
+      {
+        "config": "k8s/manifests/",
+        "tests": [
+          "syntax_check",
+          "service_references",
+          "port_conflicts"
+        ]
+      }
+    ],
+    "dependencies_to_check": [],
+    "data_to_backup": []
+  },
+  "deployment_readiness": {
+    "overall_score": 20.0,
+    "checks": {
+      "essential_services_present": true,
+      "no_port_conflicts": false,
+      "configurations_valid": false,
+      "dependencies_resolved": false,
+      "backup_plan_ready": false
+    },
+    "recommendations": []
+  }
+}

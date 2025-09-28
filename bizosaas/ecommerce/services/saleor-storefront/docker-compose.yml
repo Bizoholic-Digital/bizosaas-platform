@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  saleor-storefront:
+    container_name: coreldove-storefront
+    build:
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SALEOR_API_URL: http://localhost:8024/graphql/
+        NEXT_PUBLIC_STOREFRONT_URL: http://localhost:3001
+    restart: always
+    ports:
+      - 3001:3000
+    environment:
+      - NEXT_PUBLIC_SALEOR_API_URL=http://localhost:8024/graphql/
+      - NEXT_PUBLIC_STOREFRONT_URL=http://localhost:3001
+      - NODE_ENV=development
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - coreldove_network
+
+networks:
+  coreldove_network:
+    driver: bridge
+    external: false

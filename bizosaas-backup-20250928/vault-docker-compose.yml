@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  vault:
+    image: hashicorp/vault:1.15.4
+    container_name: bizosaas-vault
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "bizosaas-root-token-change-in-production"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+    command: >
+      vault server -dev 
+      -dev-root-token-id=bizosaas-root-token-change-in-production
+      -dev-listen-address=0.0.0.0:8200
+    volumes:
+      - vault_data:/vault/data
+      - ./vault-init.sh:/vault/init.sh
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bizosaas-network
+
+  vault-init:
+    image: hashicorp/vault:1.15.4
+    container_name: bizosaas-vault-init
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: "bizosaas-root-token-change-in-production"
+    volumes:
+      - ./vault-secrets-setup.sh:/setup.sh
+    entrypoint: ["/bin/sh", "/setup.sh"]
+    networks:
+      - bizosaas-network
+
+volumes:
+  vault_data:
+    name: bizosaas_vault_data
+
+networks:
+  bizosaas-network:
+    external: true

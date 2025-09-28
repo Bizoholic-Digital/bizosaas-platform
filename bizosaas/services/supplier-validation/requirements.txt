@@ -1,0 +1,55 @@
+# Supplier Validation Workflow [P9] Dependencies
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Database & Caching
+asyncpg==0.29.0
+redis==5.0.1
+sqlalchemy[asyncio]==2.0.23
+
+# HTTP Client
+aiohttp==3.9.1
+httpx==0.25.2
+requests==2.31.0
+
+# AI & ML
+scikit-learn==1.3.2
+numpy==1.24.4
+pandas==2.1.4
+textblob==0.17.1
+
+# Document Processing & OCR
+pytesseract==0.3.10
+Pillow==10.1.0
+opencv-python==4.8.1.78
+
+# File Handling & Storage
+boto3==1.34.0
+python-multipart==0.0.6
+
+# Phone Number Validation
+phonenumbers==8.13.25
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# Background Tasks
+celery==5.3.4
+
+# Utilities
+python-dotenv==1.0.0
+python-json-logger==2.0.7
+email-validator==2.1.0
+jinja2==3.1.2
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-mock==3.12.0
+black==23.11.0
+flake8==6.1.0

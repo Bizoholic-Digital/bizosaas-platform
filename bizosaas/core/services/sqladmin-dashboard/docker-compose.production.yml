@@ -1,0 +1,110 @@
+version: '3.8'
+
+# Production Docker Compose for SQLAdmin Dashboard
+# Integrates with existing BizOSaaS infrastructure
+
+services:
+  sqladmin-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - BUILD_ENV=production
+    image: bizosaas/sqladmin-dashboard:latest
+    container_name: sqladmin-dashboard
+    restart: unless-stopped
+    
+    ports:
+      - "5000:5000"
+    
+    environment:
+      # Production database (use existing shared database)
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - DATABASE_SYNC_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      
+      # Authentication service URLs (container-to-container)
+      - UNIFIED_AUTH_URL=http://auth-service-v2:3002
+      - UNIFIED_AUTH_BROWSER_URL=https://${DOMAIN}/auth
+      - TAILADMIN_URL=https://${DOMAIN}/admin
+      
+      # Production security settings
+      - SECRET_KEY=${SQLADMIN_SECRET_KEY}
+      - DEBUG=false
+      - LOG_LEVEL=warning
+      - AUTH_TIMEOUT=10.0
+      
+      # Performance settings
+      - WORKERS=2
+      - MAX_CONNECTIONS=100
+      
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - LOG_FILE=/app/logs/sqladmin.log
+      
+    volumes:
+      # Persistent logs
+      - sqladmin_logs:/app/logs
+      # SSL certificates (if needed)
+      - ${SSL_CERTS_PATH}:/app/certs:ro
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service-v2:
+        condition: service_started
+    
+    networks:
+      - bizosaas-network
+      - database-network
+      - auth-network
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sqladmin.rule=Host(`${DOMAIN}`) && PathPrefix(`/sqladmin`)"
+      - "traefik.http.routers.sqladmin.entrypoints=websecure"
+      - "traefik.http.routers.sqladmin.tls.certresolver=letsencrypt"
+      - "traefik.http.middlewares.sqladmin-strip.stripprefix.prefixes=/sqladmin"
+      - "traefik.http.routers.sqladmin.middlewares=sqladmin-strip@docker"
+      - "traefik.http.services.sqladmin.loadbalancer.server.port=5000"
+      
+      # Security labels
+      - "traefik.http.middlewares.sqladmin-secure.headers.sslredirect=true"
+      - "traefik.http.middlewares.sqladmin-secure.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.sqladmin-secure.headers.stsSeconds=31536000"
+      - "traefik.http.routers.sqladmin.middlewares=sqladmin-strip@docker,sqladmin-secure@docker"
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/system/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  sqladmin_logs:
+    driver: local
+
+networks:
+  bizosaas-network:
+    external: true
+  database-network:
+    external: true
+  auth-network:
+    external: true
