@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-25T14:13:10.171Z",
+  "baseUrl": "http://localhost:3000",
+  "timeout": 5000,
+  "summary": {
+    "total": 14,
+    "passed": 9,
+    "failed": 5,
+    "successRate": 64.3,
+    "duration": 155890
+  },
+  "criticalFailures": [],
+  "warnings": [
+    "API Analytics API: timeout of 5000ms exceeded",
+    "API Wagtail API: socket hang up",
+    "API Integrations API: read ECONNRESET"
+  ],
+  "cicdResult": "FAIL",
+  "failureReason": "Success rate 64.3% below minimum 70%"
+}

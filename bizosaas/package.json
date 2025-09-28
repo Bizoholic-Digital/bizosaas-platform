@@ -1,0 +1,27 @@
+{
+  "name": "bizosaas-ux-testing-framework",
+  "version": "1.0.0",
+  "description": "Comprehensive UX Testing Framework for BizOSaaS Platform Ecosystem",
+  "main": "ux-testing-framework.js",
+  "scripts": {
+    "test:ux": "node ux-testing-framework.js",
+    "test:accessibility": "node -e \"const UXFramework = require('./ux-testing-framework'); const f = new UXFramework(); f.initializeBrowser().then(() => f.testPlatformAccessibility('clientPortal'))\"",
+    "test:mobile": "node -e \"const UXFramework = require('./ux-testing-framework'); const f = new UXFramework(); f.initializeBrowser().then(() => f.testResponsiveDesign('coreldove'))\"",
+    "test:journeys": "node -e \"const UXFramework = require('./ux-testing-framework'); const f = new UXFramework(); f.initializeBrowser().then(() => f.testUserJourney('productPurchase'))\"",
+    "install:deps": "npm install puppeteer playwright axe-core"
+  },
+  "dependencies": {
+    "puppeteer": "^21.6.1",
+    "playwright": "^1.50.1",
+    "axe-core": "^4.8.3"
+  },
+  "keywords": [
+    "ux-testing",
+    "accessibility",
+    "user-journey",
+    "multi-platform",
+    "saas-testing"
+  ],
+  "author": "BizOSaaS UX Research Team",
+  "license": "MIT"
+}

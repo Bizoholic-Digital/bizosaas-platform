@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  coreldove-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coreldove-frontend-3012
+    ports:
+      - "3012:3012"
+    environment:
+      - NODE_ENV=production
+      - PORT=3012
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain-core-8001:8001
+      - NEXT_PUBLIC_SALEOR_API_URL=http://bizosaas-saleor-api-8003:8000
+    networks:
+      - bizosaas-network
+    depends_on:
+      - brain-api
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3012/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove.rule=Host(`coreldove.localhost`) || Host(`coreldove.com`) || Host(`www.coreldove.com`)"
+      - "traefik.http.services.coreldove.loadbalancer.server.port=3012"
+      - "traefik.http.routers.coreldove.tls=true"
+
+  # Include Brain API as a dependency
+  brain-api:
+    image: bizosaas-brain-core:latest
+    container_name: bizosaas-brain-core-8001
+    ports:
+      - "8001:8001"
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  bizosaas-network:
+    external: true
+    name: bizosaas-network
+
+volumes:
+  coreldove_data:
+    driver: local

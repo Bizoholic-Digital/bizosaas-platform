@@ -1,0 +1,131 @@
+# BizOSaaS Storage Services - Storage-only backend services (no business logic)
+# Dokploy Project: bizosaas-storage
+# Dependencies: Requires bizosaas-infrastructure to be running first
+
+services:
+  # ========================================================================================
+  # WAGTAIL CMS STORAGE - Python CMS replacing Strapi
+  # ========================================================================================
+  wagtail-cms:
+    image: bizosaas/wagtail:latest
+    container_name: wagtail-cms
+    ports:
+      - "4000:4000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=wagtail_storage
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - WAGTAIL_SECRET_KEY=${WAGTAIL_SECRET_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
+      - DEBUG=false
+      - WAGTAIL_SITE_NAME=BizOSaaS CMS
+      - ALLOWED_HOSTS=cms.bizoholic.com,localhost,127.0.0.1
+    networks:
+      - dokploy-network
+    volumes:
+      - wagtail-media:/app/media
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wagtail-cms.rule=Host(`cms.bizoholic.com`)"
+      - "traefik.http.services.wagtail-cms.loadbalancer.server.port=4000"
+      - "traefik.http.routers.wagtail-cms.tls=true"
+      - "traefik.http.routers.wagtail-cms.tls.certresolver=letsencrypt"
+
+  # ========================================================================================
+  # BUSINESS DIRECTORY STORAGE
+  # ========================================================================================
+  business-directory:
+    image: bizosaas/directory:latest
+    container_name: business-directory
+    ports:
+      - "4001:4001"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - BRAIN_API_URL=http://bizosaas-brain:8001
+      - DEBUG=false
+      - LOG_LEVEL=info
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.business-directory.rule=Host(`directory.bizoholic.com`)"
+      - "traefik.http.services.business-directory.loadbalancer.server.port=4001"
+      - "traefik.http.routers.business-directory.tls=true"
+      - "traefik.http.routers.business-directory.tls.certresolver=letsencrypt"
+
+  # ========================================================================================
+  # SALEOR E-COMMERCE STORAGE - Python E-commerce replacing Medusa.js
+  # ========================================================================================
+  saleor-backend:
+    image: ghcr.io/saleor/saleor:latest
+    container_name: saleor-backend
+    ports:
+      - "4003:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/saleor_storage
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/2
+      - SECRET_KEY=${SALEOR_SECRET_KEY}
+      - ALLOWED_HOSTS=store.coreldove.com,api.coreldove.com,localhost,127.0.0.1
+      - DEFAULT_FROM_EMAIL=noreply@coreldove.com
+      - DEBUG=false
+      - ENABLE_SSL=true
+      - CREATE_IMAGES_ON_DEMAND=true
+      - DEFAULT_CURRENCY=USD
+      - DEFAULT_COUNTRY=US
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.saleor-backend.rule=Host(`api.coreldove.com`) && PathPrefix(`/graphql`, `/media`)"
+      - "traefik.http.services.saleor-backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.saleor-backend.tls=true"
+      - "traefik.http.routers.saleor-backend.tls.certresolver=letsencrypt"
+
+  # ========================================================================================
+  # SALEOR STOREFRONT - Frontend for Saleor
+  # ========================================================================================
+  saleor-storefront:
+    image: bizosaas/saleor-storefront:latest
+    container_name: saleor-storefront
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_SALEOR_API_URL=https://api.coreldove.com/graphql/
+      - NEXT_PUBLIC_STOREFRONT_NAME=CoreLDove
+      - NEXT_PUBLIC_STOREFRONT_URL=https://store.coreldove.com
+      - NODE_ENV=production
+      - NEXT_PUBLIC_DOMAIN=coreldove.com
+    networks:
+      - dokploy-network
+    depends_on:
+      - saleor-backend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.saleor-storefront.rule=Host(`store.coreldove.com`)"
+      - "traefik.http.services.saleor-storefront.loadbalancer.server.port=3000"
+      - "traefik.http.routers.saleor-storefront.tls=true"
+      - "traefik.http.routers.saleor-storefront.tls.certresolver=letsencrypt"
+
+# ========================================================================================
+# VOLUMES
+# ========================================================================================
+volumes:
+  wagtail-media:
+    name: bizosaas-wagtail-media
+
+# ========================================================================================
+# NETWORKS (External - created by Dokploy)
+# ========================================================================================
+networks:
+  dokploy-network:
+    external: true

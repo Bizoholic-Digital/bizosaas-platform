@@ -1,0 +1,292 @@
+version: '3.8'
+
+networks:
+  bizosaas-platform-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  vault_data:
+  superset_home:
+
+services:
+  # Infrastructure Services
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: bizosaas-postgres-unified
+    environment:
+      POSTGRES_DB: bizosaas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Bizoholic2024Alagiri
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bizosaas-platform-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-unified
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bizosaas-platform-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  vault:
+    image: vault:1.13.3
+    container_name: bizosaas-vault-unified
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root-token-dev
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    volumes:
+      - vault_data:/vault/data
+    networks:
+      - bizosaas-platform-network
+    command: ["vault", "server", "-dev"]
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Core Backend Services
+  brain-gateway:
+    image: bizosaas-platform-bizosaas-brain:latest
+    container_name: bizosaas-brain-unified
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@postgres:5432/bizosaas
+      REDIS_URL: redis://redis:6379
+      VAULT_URL: http://vault:8200
+      VAULT_TOKEN: root-token-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  auth-service:
+    image: bizosaas-platform-auth-service-v2:latest
+    container_name: bizosaas-auth-unified
+    ports:
+      - "8007:8007"
+    environment:
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@postgres:5432/bizosaas
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key-here
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  wagtail-cms:
+    image: bizosaas-platform-wagtail-cms:latest
+    container_name: bizosaas-wagtail-unified
+    ports:
+      - "8006:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@postgres:5432/bizosaas
+      REDIS_URL: redis://redis:6379
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-unified
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@postgres:5432/bizosaas
+      REDIS_URL: redis://redis:6379/1
+      SECRET_KEY: super-secret-saleor-key
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DEFAULT_FROM_EMAIL: noreply@bizosaas.com
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  # Admin & Management Services
+  sqladmin-dashboard:
+    image: bizosaas-sqladmin-superadmin:latest
+    container_name: bizosaas-sqladmin-unified
+    ports:
+      - "8005:8005"
+    environment:
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@postgres:5432/bizosaas
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  superset:
+    image: bizosaas-platform-apache-superset:latest
+    container_name: bizosaas-superset-8088
+    ports:
+      - "8088:8088"
+    environment:
+      # Core Configuration
+      SUPERSET_CONFIG_PATH: /app/superset_config.py
+      SUPERSET_SECRET_KEY: production-secret-key-superset-bizosaas-2024
+      
+      # Database Configuration
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Bizoholic2024Alagiri  
+      POSTGRES_HOST: bizosaas-postgres-unified
+      POSTGRES_PORT: 5432
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@bizosaas-postgres-unified:5432/bizosaas
+      
+      # Redis Configuration  
+      REDIS_HOST: bizosaas-redis-unified
+      REDIS_PORT: 6379
+      REDIS_URL: redis://bizosaas-redis-unified:6379/2
+      
+      # Python Path
+      PYTHONPATH: /app/pythonpath
+      
+      # BizOSaaS Integration
+      BIZOSAAS_BRAIN_API_URL: http://bizosaas-brain-unified:8001
+      DEFAULT_TENANT_ID: bizosaas
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    volumes:
+      - ./admin/services/superset/superset_config.py:/app/superset_config.py
+      - superset_home:/app/superset_home
+    command: >
+      bash -c "
+        echo 'Installing dependencies...' &&
+        pip install --no-cache-dir psycopg2-binary redis celery &&
+        echo 'Waiting for database...' &&
+        while ! pg_isready -h bizosaas-postgres-unified -p 5432 -U postgres; do sleep 2; done &&
+        echo 'Upgrading database...' &&
+        superset db upgrade &&
+        echo 'Creating admin user...' &&
+        superset fab create-admin --username admin --firstname Admin --lastname User --email admin@bizosaas.com --password Bizoholic2024Admin || echo 'Admin user already exists' &&
+        echo 'Initializing Superset...' &&
+        superset init &&
+        echo 'Starting Superset server...' &&
+        superset run -h 0.0.0.0 -p 8088 --with-threads --reload
+      "
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # Frontend Applications (only ones with available images)
+  business-directory:
+    image: bizosaas-platform-business-directory:latest
+    container_name: bizosaas-business-directory-unified
+    ports:
+      - "3004:3004"
+    environment:
+      NODE_ENV: production
+      PORT: 3004
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8001
+    depends_on:
+      brain-gateway:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  analytics-dashboard:
+    image: bizosaas-platform-analytics-dashboard:latest
+    container_name: bizosaas-analytics-dashboard-unified
+    ports:
+      - "3010:3010"
+    environment:
+      NODE_ENV: production
+      PORT: 3010
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8001
+    depends_on:
+      brain-gateway:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  # Monitoring & Observability (Optional)
+  temporal-server:
+    image: temporalio/auto-setup:1.22.0
+    container_name: bizosaas-temporal-unified
+    ports:
+      - "7233:7233"
+    environment:
+      DB: postgresql
+      DB_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PWD: Bizoholic2024Alagiri
+      POSTGRES_SEEDS: postgres
+      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development.yaml
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+
+  temporal-ui:
+    image: temporalio/ui:2.21.0
+    container_name: bizosaas-temporal-ui-unified
+    ports:
+      - "8082:8080"
+    environment:
+      TEMPORAL_ADDRESS: temporal-server:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:3000,http://localhost:8082
+    depends_on:
+      - temporal-server
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped

@@ -1,0 +1,332 @@
+version: '3.8'
+
+# BizOSaaS Core Platform - Complete Platform Services
+# Dokploy Project: bizosaas-core
+# All core platform services, frontends, and infrastructure
+
+services:
+  # ===========================================
+  # FRONTEND APPLICATIONS (PRD Compliant Ports)
+  # ===========================================
+  
+  # Port 3000: BizOSaaS Admin Dashboard (TailAdmin v2)
+  bizosaas-admin:
+    image: bizosaas/tailadmin-v2-unified:latest
+    container_name: bizosaas-admin-3000
+    ports:
+      - "3000:8080"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://bizosaas-auth-v2:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://wagtail-cms:8000
+      - NEXT_PUBLIC_SUPERSET_URL=http://bizosaas-brain:8001/analytics
+      - NEXT_PUBLIC_WEBSOCKET_URL=ws://bizosaas-brain:8001/ws/realtime
+      - NEXT_PUBLIC_PLATFORM=bizosaas-admin
+      - DASHBOARD_TYPE=tailadmin-v2
+      - DEFAULT_DASHBOARD_URL=http://localhost:3000
+      - PORT=8080
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-brain
+      - bizosaas-auth-v2
+      - wagtail-cms
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Port 3001: Bizoholic Marketing Frontend
+  bizoholic-marketing:
+    image: bizoholic-coreldove-frontend:latest
+    container_name: bizoholic-marketing-3001
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:3002
+      - NEXT_PUBLIC_WAGTAIL_URL=http://wagtail-cms:8000
+      - NEXT_PUBLIC_PLATFORM=bizoholic-marketing
+      - WAGTAIL_API_BASE_URL=http://wagtail-cms:8000/api
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-brain
+      - wagtail-cms
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Port 3002: CoreLDove E-commerce Frontend  
+  coreldove-ecommerce:
+    image: bizoholic-bizoholic-frontend:latest
+    container_name: coreldove-ecommerce-3002
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://bizosaas-auth-v2:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://wagtail-cms:8000
+      - NEXT_PUBLIC_PLATFORM=bizoholic-marketing
+      - WAGTAIL_API_BASE_URL=http://wagtail-cms:8000/api
+      - NEXT_PUBLIC_DASHBOARD_REDIRECT_URL=http://localhost:3000
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-brain
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # CORE API SERVICES
+  # ===========================================
+
+  # Port 8001: FastAPI Brain Gateway
+  bizosaas-brain:
+    build:
+      context: ./ai/services/bizosaas-brain-simple
+      dockerfile: Dockerfile
+    image: bizosaas/brain-gateway:latest
+    container_name: bizosaas-brain-8001
+    ports:
+      - "8001:8001"
+    environment:
+      # Database connections
+      - DATABASE_URL=postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      - REDIS_URL=redis://bizosaas-redis:6379/0
+      # API Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-dummy-key}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key}
+      - ENVIRONMENT=production
+      # Service URLs
+      - WAGTAIL_URL=http://wagtail-cms:8000
+      - VAULT_URL=http://bizosaas-vault:8200
+      - AUTH_SERVICE_URL=http://bizosaas-auth-v2:8007
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-postgres
+      - bizosaas-redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Port 8007: Auth Service v2
+  bizosaas-auth-v2:
+    build:
+      context: ./core/services/auth-service-v2
+      dockerfile: Dockerfile
+    image: bizosaas/auth-service-v2:latest
+    container_name: bizosaas-auth-v2-8007
+    ports:
+      - "8007:8007"
+    environment:
+      # Database connections
+      - DATABASE_URL=postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      - REDIS_URL=redis://bizosaas-redis:6379/1
+      # Security configuration
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key}
+      - SECRET_KEY=auth-service-secret-key-production
+      - ENVIRONMENT=production
+      - PORT=8007
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-postgres
+      - bizosaas-redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Port 8006: Wagtail CMS
+  wagtail-cms:
+    image: bizosaas/wagtail-cms:latest
+    container_name: wagtail-cms-8006
+    ports:
+      - "8006:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      - REDIS_URL=redis://bizosaas-redis:6379/2
+      - SECRET_KEY=wagtail-secret-key-production
+      - DEBUG=false
+      - ALLOWED_HOSTS=localhost,127.0.0.1,wagtail-cms,*.bizosaas.local
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-postgres
+      - bizosaas-redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NOTE: Saleor Backend removed - E-commerce functionality integrated into BizOSaaS Brain Gateway
+  # All e-commerce features now available at: http://bizosaas-brain:8001/ecommerce/
+
+  # ===========================================
+  # INFRASTRUCTURE SERVICES
+  # ===========================================
+
+  # PostgreSQL Main Database
+  bizosaas-postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: bizosaas-postgres-5432
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=bizosaas
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - bizosaas_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Main Cache
+  bizosaas-redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-6379
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - bizosaas_redis_data:/data
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Saleor PostgreSQL
+  bizosaas-saleor-db:
+    image: postgres:15-alpine
+    container_name: bizosaas-saleor-db-5433
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=saleor
+      - POSTGRES_USER=saleor
+      - POSTGRES_PASSWORD=saleor
+    volumes:
+      - bizosaas_saleor_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saleor -d saleor"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Saleor Redis
+  bizosaas-saleor-redis:
+    image: redis:7-alpine
+    container_name: bizosaas-saleor-redis-6380
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - bizosaas_saleor_redis_data:/data
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # HashiCorp Vault
+  bizosaas-vault:
+    image: hashicorp/vault:1.15
+    container_name: bizosaas-vault-8200
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-only-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8200/v1/sys/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Traefik Reverse Proxy
+  bizosaas-traefik:
+    image: traefik:3.0
+    container_name: bizosaas-traefik-80
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - bizosaas-network
+    labels:
+      - "traefik.enable=true"
+
+# ===========================================
+# NETWORKS
+# ===========================================
+networks:
+  bizosaas-network:
+    driver: bridge
+    name: bizosaas-network
+
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+  bizosaas_postgres_data:
+    name: bizosaas-postgres-data
+  bizosaas_redis_data:
+    name: bizosaas-redis-data
+  bizosaas_saleor_postgres_data:
+    name: bizosaas-saleor-postgres-data
+  bizosaas_saleor_redis_data:
+    name: bizosaas-saleor-redis-data

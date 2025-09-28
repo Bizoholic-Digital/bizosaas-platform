@@ -1,0 +1,113 @@
+# Windows 11 Hosts File Configuration for WSL2 K3s Cluster
+# File Location: C:\Windows\System32\drivers\etc\hosts
+# Instructions: 
+# 1. Open Notepad as Administrator
+# 2. Open C:\Windows\System32\drivers\etc\hosts
+# 3. Add the following entries at the end of the file
+# 4. Save and close
+
+# WSL2 K3s Cluster IP: 172.25.198.116
+# All domains point to this IP for Traefik ingress routing
+
+# ==========================================
+# BIZOHOLIC PLATFORM DOMAINS
+# ==========================================
+172.25.198.116 bizoholic.local
+172.25.198.116 www.bizoholic.local
+172.25.198.116 saas.bizoholic.local
+172.25.198.116 platform.bizoholic.local
+172.25.198.116 api.bizoholic.local
+172.25.198.116 cms.bizoholic.local
+172.25.198.116 content.bizoholic.local
+172.25.198.116 agents.bizoholic.local
+172.25.198.116 app.bizoholic.local
+172.25.198.116 workflows.bizoholic.local
+
+# BIZOHOLIC ADMIN & PORTAL DOMAINS
+172.25.198.116 admin.bizoholic.local
+172.25.198.116 agency.bizoholic.local
+172.25.198.116 client.bizoholic.local
+172.25.198.116 dashboard.bizoholic.local
+
+# BIZOHOLIC INTEGRATION & SERVICES
+172.25.198.116 integration.bizoholic.local
+172.25.198.116 auth.bizoholic.local
+172.25.198.116 proxy.bizoholic.local
+172.25.198.116 trade.bizoholic.local
+
+# ==========================================
+# CORELDOVE E-COMMERCE DOMAINS
+# ==========================================
+172.25.198.116 coreldove.local
+172.25.198.116 www.coreldove.local
+172.25.198.116 api.coreldove.local
+172.25.198.116 admin.coreldove.local
+
+# ==========================================
+# BIZOSAAS PLATFORM DOMAINS
+# ==========================================
+172.25.198.116 bizosaas.local
+172.25.198.116 api.bizosaas.local
+172.25.198.116 app.bizosaas.local
+172.25.198.116 admin.bizosaas.local
+172.25.198.116 websites.bizosaas.local
+
+# BIZOSAAS AI & SERVICES
+172.25.198.116 ai.bizosaas.local
+172.25.198.116 onboarding.bizosaas.local
+172.25.198.116 strategy.bizosaas.local
+172.25.198.116 automation.bizosaas.local
+172.25.198.116 workflows.bizosaas.local
+
+# BIZOSAAS SPECIALIZED SERVICES
+172.25.198.116 setup.bizosaas.local
+172.25.198.116 monitor.bizosaas.local
+172.25.198.116 billing.bizosaas.local
+172.25.198.116 channels.bizosaas.local
+172.25.198.116 cms.bizosaas.local
+172.25.198.116 vault.bizosaas.local
+172.25.198.116 crm.bizosaas.local
+
+# BIZOSAAS CREWAI HIERARCHY
+172.25.198.116 ceo.bizosaas.local
+172.25.198.116 marketing-director.bizosaas.local
+172.25.198.116 ppc.bizosaas.local
+172.25.198.116 orchestration.bizosaas.local
+
+# BIZOSAAS INFRASTRUCTURE & MONITORING
+172.25.198.116 health.bizosaas.local
+172.25.198.116 dev.bizosaas.local
+172.25.198.116 setuptest.bizosaas.local
+172.25.198.116 traefik.bizosaas.local
+
+# BIZOSAAS CLIENT WEBSITES (LOCAL)
+172.25.198.116 demo-business.bizosaas.local
+172.25.198.116 sample-restaurant.bizosaas.local
+172.25.198.116 portfolio-creative.bizosaas.local
+172.25.198.116 agency-marketing.bizosaas.local
+172.25.198.116 startup-tech.bizosaas.local
+172.25.198.116 ecommerce-fashion.bizosaas.local
+
+# ==========================================
+# FUTURE PLATFORMS & OTHER DOMAINS
+# ==========================================
+172.25.198.116 thrillring.local
+172.25.198.116 aiassist.local
+172.25.198.116 api.aiassist.local
+172.25.198.116 quanttrade.local
+172.25.198.116 api.quanttrade.local
+172.25.198.116 analytics.local
+172.25.198.116 auth.local
+
+# ==========================================
+# INTEGRATION LAYER DOMAINS
+# ==========================================
+172.25.198.116 api.integration.local
+172.25.198.116 auth.integration.local
+172.25.198.116 ws.integration.local
+172.25.198.116 sync.integration.local
+
+# ==========================================
+# LOCALHOST ROUTING (Optional)
+# ==========================================
+172.25.198.116 localhost

@@ -1,0 +1,253 @@
+# Traefik Dynamic Configuration for Production
+# Security headers, middleware, and advanced routing
+
+http:
+  middlewares:
+    # Security Headers Middleware
+    security-headers:
+      headers:
+        # HSTS (HTTP Strict Transport Security)
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        
+        # Content Security Policy
+        contentSecurityPolicy: |
+          default-src 'self';
+          script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google-analytics.com https://www.googletagmanager.com;
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          font-src 'self' https://fonts.gstatic.com;
+          img-src 'self' data: https: blob:;
+          connect-src 'self' https://api.openai.com https://openrouter.ai wss:;
+          frame-ancestors 'none';
+          base-uri 'self';
+          form-action 'self';
+        
+        # Security Headers
+        referrerPolicy: "strict-origin-when-cross-origin"
+        customFrameOptionsValue: "DENY"
+        contentTypeNosniff: true
+        browserXssFilter: true
+        forceSTSHeader: true
+        customRequestHeaders:
+          X-Real-IP: ""
+          X-Forwarded-Proto: ""
+        customResponseHeaders:
+          X-Content-Type-Options: "nosniff"
+          X-Frame-Options: "DENY"
+          X-XSS-Protection: "1; mode=block"
+          Permissions-Policy: "camera=(), microphone=(), geolocation=()"
+
+    # Rate Limiting Middleware
+    rate-limit:
+      rateLimit:
+        burst: 100
+        period: 1m
+        average: 1000
+
+    # CORS Middleware for API
+    cors-api:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowHeaders:
+          - Content-Type
+          - Authorization
+          - X-Requested-With
+          - Accept
+          - Origin
+        accessControlAllowOriginList:
+          - "https://bizoholic.com"
+          - "https://www.bizoholic.com"
+          - "https://admin.bizoholic.com"
+          - "https://portal.bizoholic.com"
+          - "https://coreldove.bizoholic.com"
+        accessControlAllowCredentials: true
+        accessControlMaxAge: 3600
+
+    # Compression Middleware
+    compression:
+      compress:
+        excludedContentTypes:
+          - "text/event-stream"
+          - "application/grpc"
+
+    # Authentication Middleware
+    auth:
+      forwardAuth:
+        address: "http://bizosaas-brain-api:8000/auth/verify"
+        authResponseHeaders:
+          - "X-User-ID"
+          - "X-User-Role"
+          - "X-Tenant-ID"
+
+    # IP Whitelist for Admin (Configure as needed)
+    admin-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+
+    # Redirect HTTP to HTTPS
+    https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  # Router Configuration with Middleware Chains
+  routers:
+    # API Routes with Security
+    api-secure:
+      rule: "Host(`api.bizoholic.com`) && PathPrefix(`/api`)"
+      service: "bizosaas-brain-api"
+      middlewares:
+        - "https-redirect"
+        - "security-headers"
+        - "rate-limit"
+        - "cors-api"
+        - "compression"
+      tls:
+        certResolver: "letsencrypt"
+
+    # Admin Panel with Extra Security
+    admin-secure:
+      rule: "Host(`admin.bizoholic.com`)"
+      service: "bizosaas-admin-frontend"
+      middlewares:
+        - "https-redirect"
+        - "security-headers"
+        - "rate-limit"
+        - "compression"
+        # Uncomment for IP restriction: - "admin-whitelist"
+      tls:
+        certResolver: "letsencrypt"
+
+    # Main Website
+    website-secure:
+      rule: "Host(`bizoholic.com`) || Host(`www.bizoholic.com`)"
+      service: "bizosaas-bizoholic-frontend"
+      middlewares:
+        - "https-redirect"
+        - "security-headers"
+        - "compression"
+      tls:
+        certResolver: "letsencrypt"
+
+    # Client Portal
+    portal-secure:
+      rule: "Host(`portal.bizoholic.com`)"
+      service: "bizosaas-client-portal"
+      middlewares:
+        - "https-redirect"
+        - "security-headers"
+        - "rate-limit"
+        - "compression"
+      tls:
+        certResolver: "letsencrypt"
+
+    # CoreLDove E-commerce
+    coreldove-secure:
+      rule: "Host(`coreldove.bizoholic.com`) || Host(`www.coreldove.bizoholic.com`)"
+      service: "bizosaas-coreldove-frontend"
+      middlewares:
+        - "https-redirect"
+        - "security-headers"
+        - "compression"
+      tls:
+        certResolver: "letsencrypt"
+
+    # Monitoring Dashboard (Protected)
+    monitoring-secure:
+      rule: "Host(`monitoring.bizoholic.com`)"
+      service: "bizosaas-grafana"
+      middlewares:
+        - "https-redirect"
+        - "security-headers"
+        - "admin-whitelist"
+      tls:
+        certResolver: "letsencrypt"
+
+  # Service Definitions
+  services:
+    bizosaas-brain-api:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-brain-api:8000"
+        healthCheck:
+          path: "/health"
+          interval: "30s"
+          timeout: "10s"
+
+    bizosaas-admin-frontend:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-admin-frontend:3000"
+        healthCheck:
+          path: "/api/health"
+          interval: "30s"
+          timeout: "10s"
+
+    bizosaas-bizoholic-frontend:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-bizoholic-frontend:3000"
+        healthCheck:
+          path: "/api/health"
+          interval: "30s"
+          timeout: "10s"
+
+    bizosaas-client-portal:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-client-portal:3000"
+        healthCheck:
+          path: "/api/health"
+          interval: "30s"
+          timeout: "10s"
+
+    bizosaas-coreldove-frontend:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-coreldove-frontend:3000"
+        healthCheck:
+          path: "/api/health"
+          interval: "30s"
+          timeout: "10s"
+
+    bizosaas-grafana:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-grafana:3000"
+
+# TLS Configuration
+tls:
+  options:
+    # Modern TLS Configuration
+    modern:
+      minVersion: "VersionTLS12"
+      maxVersion: "VersionTLS13"
+      cipherSuites:
+        - "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+      curvePreferences:
+        - "X25519"
+        - "CurveP384"
+        - "CurveP256"
+      sniStrict: true
+
+  # Certificate stores
+  stores:
+    default:
+      defaultCertificate:
+        certFile: "/letsencrypt/bizoholic.com.crt"
+        keyFile: "/letsencrypt/bizoholic.com.key"

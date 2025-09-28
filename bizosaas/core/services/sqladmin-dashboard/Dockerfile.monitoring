@@ -1,0 +1,83 @@
+# Monitoring Collector Service for BizOSaaS Infrastructure
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd -r monitoring && useradd -r -g monitoring monitoring
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy monitoring-specific files
+COPY monitoring_service.py .
+COPY monitoring_models.py .
+
+# Create monitoring collector script
+RUN cat > collector.py << 'EOF'
+#!/usr/bin/env python3
+"""
+Standalone Monitoring Collector Service
+Runs monitoring collection independently from the main dashboard
+"""
+import asyncio
+import logging
+from monitoring_service import MonitoringService, create_monitoring_config
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+async def main():
+    """Main entry point for monitoring collector"""
+    logger.info("Starting BizOSaaS Monitoring Collector Service")
+    
+    config = create_monitoring_config()
+    service = MonitoringService(config)
+    
+    try:
+        # Start monitoring service
+        await service.start()
+    except KeyboardInterrupt:
+        logger.info("Received interrupt signal")
+    except Exception as e:
+        logger.error(f"Monitoring service error: {e}")
+    finally:
+        await service.stop()
+        logger.info("Monitoring collector stopped")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+EOF
+
+# Make collector script executable
+RUN chmod +x collector.py
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data
+
+# Set ownership and permissions
+RUN chown -R monitoring:monitoring /app
+
+# Switch to non-root user
+USER monitoring
+
+# Environment variables
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Health check
+HEALTHCHECK --interval=60s --timeout=30s --start-period=10s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)" || exit 1
+
+# Default command
+CMD ["python", "collector.py"]

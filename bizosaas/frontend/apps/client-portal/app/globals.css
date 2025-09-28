@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #7c2d92;
+  --secondary-color: #a855f7;
+  --accent-color: #ec4899;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+  
+  .portal-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  }
+  
+  .client-gradient {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  }
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer components {
+  .portal-header {
+    @apply sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-800;
+  }
+  
+  .portal-sidebar {
+    @apply fixed left-0 top-0 z-40 h-screen w-64 bg-white shadow-lg border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .portal-main {
+    @apply ml-64 min-h-screen bg-gray-50 dark:bg-gray-950;
+  }
+  
+  .service-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .billing-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .metric-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge.active {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+  }
+  
+  .status-badge.inactive {
+    @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300;
+  }
+  
+  .status-badge.pending {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+  }
+  
+  .status-badge.overdue {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+  }
+  
+  .usage-bar {
+    @apply w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700;
+  }
+  
+  .usage-fill {
+    @apply h-2 rounded-full transition-all duration-300;
+  }
+  
+  .usage-fill.low {
+    @apply bg-green-500;
+  }
+  
+  .usage-fill.medium {
+    @apply bg-yellow-500;
+  }
+  
+  .usage-fill.high {
+    @apply bg-red-500;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .portal-blur {
+    backdrop-filter: blur(8px);
+  }
+  
+  /* Ensure interactive elements are clickable */
+  .interactive {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  
+  .interactive:hover {
+    opacity: 0.9;
+  }
+  
+  .interactive:active {
+    transform: scale(0.98);
+  }
+  
+  /* Sidebar navigation styles */
+  .sidebar-nav {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .sidebar-nav button {
+    @apply cursor-pointer select-none;
+    pointer-events: auto;
+  }
+  
+  .sidebar-nav button:hover {
+    @apply scale-105;
+    transform-origin: left center;
+  }
+  
+  /* Theme toggle button */
+  .theme-toggle {
+    @apply transition-transform duration-200;
+  }
+  
+  .theme-toggle:hover {
+    @apply scale-110;
+  }
+  
+  /* Focus styles for accessibility */
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    @apply outline-none ring-2 ring-purple-500 ring-opacity-50;
+  }
+  
+  /* Animation for section expansion */
+  @keyframes expand {
+    from {
+      opacity: 0;
+      max-height: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      max-height: 500px;
+      transform: translateY(0);
+    }
+  }
+  
+  .expand-animation {
+    animation: expand 0.3s ease-out;
+  }
+
+  /* Debug styles for layout issues */
+  .dashboard-layout-debug {
+    border: 2px solid red !important;
+  }
+
+  .sidebar-debug {
+    border: 2px solid blue !important;
+    background: rgba(0, 0, 255, 0.1) !important;
+  }
+
+  /* Force sidebar visibility */
+  .dashboard-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative !important;
+    min-width: 320px !important;
+  }
+
+  /* Ensure main content doesn't overlap */
+  .dashboard-main-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+}

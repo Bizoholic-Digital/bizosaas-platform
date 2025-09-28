@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # Port 3000: BizOSaaS Admin Dashboard
+  bizosaas-admin:
+    build:
+      context: ./frontend/apps/bizosaas-admin
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_PLATFORM=bizosaas-admin
+    volumes:
+      - ./frontend/apps/bizosaas-admin:/app
+      - /app/node_modules
+      - ./frontend/shared:/app/shared
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-brain
+      - auth-service-v2
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizosaas-admin.rule=Host(`localhost`) && PathPrefix(`/admin`) || Host(`admin.bizosaas.com`)"
+      - "traefik.http.services.bizosaas-admin.loadbalancer.server.port=3000"
+
+  # Port 3001: Bizoholic Marketing Frontend  
+  bizoholic-marketing:
+    build:
+      context: ./frontend/apps/bizoholic-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8082
+      - NEXT_PUBLIC_PLATFORM=bizoholic-marketing
+    volumes:
+      - ./frontend/apps/bizoholic-frontend:/app
+      - /app/node_modules
+      - ./frontend/shared:/app/shared
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-brain
+      - wagtail-cms
+      - auth-service-v2
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-marketing.rule=Host(`localhost:3001`) || Host(`bizoholic.bizosaas.com`)"
+      - "traefik.http.services.bizoholic-marketing.loadbalancer.server.port=3001"
+
+  # Port 3002: CoreLDove E-commerce Frontend
+  coreldove-ecommerce:
+    build:
+      context: ./frontend/apps/coreldove-frontend  
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_SALEOR_URL=http://localhost:8010
+      - NEXT_PUBLIC_PLATFORM=coreldove-ecommerce
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+    volumes:
+      - ./frontend/apps/coreldove-frontend:/app
+      - /app/node_modules
+      - ./frontend/shared:/app/shared
+    networks:
+      - bizosaas-network
+    depends_on:
+      - bizosaas-brain
+      - saleor-backend
+      - auth-service-v2
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-ecommerce.rule=Host(`localhost:3002`) || Host(`coreldove.bizosaas.com`)"
+      - "traefik.http.services.coreldove-ecommerce.loadbalancer.server.port=3002"
+
+networks:
+  bizosaas-network:
+    external: true
+
+volumes:
+  node_modules:

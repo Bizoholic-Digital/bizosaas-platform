@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "case_studies",
+  "info": {
+    "singularName": "case-study",
+    "pluralName": "case-studies",
+    "displayName": "Case Study"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "client": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "challenge": {
+      "type": "text"
+    },
+    "solution": {
+      "type": "richtext"
+    },
+    "results": {
+      "type": "text"
+    },
+    "metrics": {
+      "type": "json"
+    },
+    "platform": {
+      "type": "enumeration",
+      "enum": [
+        "bizoholic",
+        "coreldove",
+        "both"
+      ],
+      "default": "both"
+    }
+  }
+}
