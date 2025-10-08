@@ -23,7 +23,10 @@ import {
   Menu,
   X,
   Bot,
-  MessageCircle
+  MessageCircle,
+  Brain,
+  ToggleLeft,
+  FileText
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -51,7 +54,28 @@ const navigation: NavigationItem[] = [
     description: 'AI workflows and automation control',
     category: 'main'
   },
-  
+  {
+    name: 'LLM Providers',
+    href: '/llm-providers',
+    icon: Brain,
+    description: 'AI model provider management and configuration',
+    category: 'main'
+  },
+  {
+    name: 'Feature Toggles',
+    href: '/features',
+    icon: ToggleLeft,
+    description: 'Global feature enable/disable controls',
+    category: 'main'
+  },
+  {
+    name: 'Documentation',
+    href: '/documentation',
+    icon: FileText,
+    description: 'AI-powered documentation generation and management',
+    category: 'main'
+  },
+
   // Management
   {
     name: 'Tenant Management',

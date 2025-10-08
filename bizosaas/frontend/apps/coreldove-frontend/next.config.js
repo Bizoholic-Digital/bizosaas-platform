@@ -179,6 +179,12 @@ const nextConfig = {
   
   // Webpack configuration
   webpack: (config, { isServer }) => {
+    // Add path aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': __dirname,
+    };
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

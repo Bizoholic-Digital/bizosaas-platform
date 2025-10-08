@@ -2,16 +2,16 @@
 const nextConfig = {
   // Enable standalone output for Docker optimization
   output: 'standalone',
-  
+
   // Skip type checking during build (for faster container builds)
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   // Optimize for production
   compress: true,
   poweredByHeader: false,
-  
+
   // Environment variables
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
@@ -56,7 +56,7 @@ const nextConfig = {
 
   // Move external packages out of experimental
   serverExternalPackages: ['axios'],
-  
+
   // Experimental features
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons'],

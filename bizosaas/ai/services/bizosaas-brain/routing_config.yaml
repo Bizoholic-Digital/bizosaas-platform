@@ -1,0 +1,409 @@
+# Smart LLM Router Configuration
+# Defines routing rules, costs, and provider capabilities for the BizOSaaS Platform
+
+version: "1.0"
+last_updated: "2025-10-06"
+
+# Provider Definitions
+providers:
+  # Primary Gateway
+  openrouter:
+    name: "OpenRouter"
+    type: "gateway"
+    status: "active"
+    cost_per_million_tokens: 5.00  # Average across models
+    max_context_window: 32000
+    capabilities: ["chat", "reasoning", "code", "multi-model"]
+    region: "global"
+    sla: false
+    compliance: []
+
+  # Very High Priority Providers
+  deepseek:
+    name: "DeepSeek"
+    type: "direct"
+    status: "active"
+    cost_per_million_tokens: 0.69
+    max_context_window: 64000
+    capabilities: ["chat", "reasoning", "code"]
+    region: "global"
+    sla: false
+    compliance: []
+    models:
+      - deepseek-chat
+      - deepseek-r1
+      - deepseek-coder
+
+  mistral:
+    name: "Mistral AI"
+    type: "direct"
+    status: "active"
+    cost_per_million_tokens: 1.35  # Medium tier
+    max_context_window: 32000
+    capabilities: ["chat", "reasoning", "embedding"]
+    region: "eu"
+    sla: false
+    compliance: ["gdpr", "eu_data_residency"]
+    self_hosting: true
+    models:
+      - mistral-large
+      - mistral-medium-3
+      - mistral-small
+      - ministral-3b
+
+  # High Priority Providers
+  cohere:
+    name: "Cohere"
+    type: "direct"
+    status: "active"
+    cost_per_million_tokens: 1.50
+    max_context_window: 128000
+    capabilities: ["chat", "rag", "rerank", "embedding", "classify"]
+    region: "global"
+    sla: false
+    compliance: []
+    specialization: "rag"
+    models:
+      - command-r-plus
+      - command-r
+      - rerank-3
+      - embed-v3
+
+  # Cloud Platform Providers
+  bedrock:
+    name: "Amazon Bedrock"
+    type: "cloud_platform"
+    status: "active"
+    cost_per_million_tokens: 15.00  # Average
+    max_context_window: 200000  # Claude via Bedrock
+    capabilities: ["chat", "reasoning", "vision", "image_generation", "multi-model"]
+    region: "us"
+    sla: true
+    compliance: ["soc2", "hipaa"]
+    cloud_provider: "aws"
+    models:
+      - anthropic.claude-3-opus
+      - anthropic.claude-3-sonnet
+      - meta.llama3-70b
+      - mistral.mixtral-8x7b
+      - stability.stable-diffusion-xl
+
+  azure-openai:
+    name: "Azure OpenAI Service"
+    type: "cloud_platform"
+    status: "active"
+    cost_per_million_tokens: 20.00
+    max_context_window: 128000
+    capabilities: ["chat", "reasoning", "vision", "image_generation", "embedding"]
+    region: "global"
+    sla: true
+    sla_uptime: "99.9%"
+    compliance: ["soc2", "iso27001", "hipaa", "gdpr"]
+    cloud_provider: "azure"
+    models:
+      - gpt-4-turbo
+      - gpt-4
+      - gpt-35-turbo
+      - dall-e-3
+
+  vertex-ai:
+    name: "Google Vertex AI"
+    type: "cloud_platform"
+    status: "active"
+    cost_per_million_tokens: 2.50
+    max_context_window: 1000000  # Gemini
+    capabilities: ["chat", "vision", "code", "embedding", "multi-modal"]
+    region: "global"
+    sla: true
+    compliance: ["soc2", "iso27001"]
+    cloud_provider: "gcp"
+    custom_training: true
+    models:
+      - gemini-pro
+      - gemini-pro-vision
+      - code-bison
+      - text-embedding-gecko
+
+  # Specialized Providers
+  perplexity:
+    name: "Perplexity API"
+    type: "specialized"
+    status: "active"
+    cost_per_million_tokens: 2.00
+    max_context_window: 128000
+    capabilities: ["web_search", "research", "summarization"]
+    region: "global"
+    sla: false
+    compliance: []
+    specialization: "real_time_search"
+    models:
+      - sonar-pro
+      - sonar
+      - sonar-small
+
+  huggingface:
+    name: "Hugging Face Inference API"
+    type: "open_source"
+    status: "active"
+    cost_per_million_tokens: 0.00  # Free tier
+    max_context_window: 8192
+    capabilities: ["chat", "code", "embedding", "image_generation", "vision"]
+    region: "global"
+    sla: false
+    compliance: []
+    self_hosting: true
+    open_source: true
+    models_count: 1000
+
+  # Direct API Providers (Existing)
+  openai:
+    name: "OpenAI"
+    type: "direct"
+    status: "active"
+    cost_per_million_tokens: 20.00  # GPT-4
+    max_context_window: 128000
+    capabilities: ["chat", "reasoning", "vision", "image_generation", "embedding"]
+    region: "us"
+    sla: false
+    compliance: []
+    models:
+      - gpt-4-turbo
+      - gpt-4
+      - gpt-3.5-turbo
+      - dall-e-3
+      - text-embedding-ada-002
+
+  anthropic:
+    name: "Anthropic Claude"
+    type: "direct"
+    status: "active"
+    cost_per_million_tokens: 45.00  # Opus
+    max_context_window: 200000
+    capabilities: ["chat", "reasoning", "vision"]
+    region: "us"
+    sla: false
+    compliance: []
+    models:
+      - claude-3-opus
+      - claude-3-sonnet
+      - claude-3-haiku
+
+  gemini:
+    name: "Google Gemini"
+    type: "direct"
+    status: "active"
+    cost_per_million_tokens: 2.00
+    max_context_window: 1000000
+    capabilities: ["chat", "vision", "multi-modal"]
+    region: "global"
+    sla: false
+    compliance: []
+    models:
+      - gemini-pro
+      - gemini-pro-vision
+
+# Routing Rules
+routing_rules:
+  # Budget-based routing
+  budget_tiers:
+    free:
+      providers: ["huggingface"]
+      max_cost_per_million: 0.0
+
+    low:
+      providers: ["deepseek", "mistral", "huggingface", "gemini"]
+      max_cost_per_million: 2.0
+      savings_target: 60  # % savings vs GPT-4
+
+    medium:
+      providers: ["mistral", "cohere", "gemini", "openrouter", "vertex-ai"]
+      max_cost_per_million: 10.0
+      savings_target: 25  # % savings vs GPT-4
+
+    high:
+      providers: ["openai", "anthropic", "mistral", "azure-openai"]
+      max_cost_per_million: 50.0
+      quality_focus: true
+
+    unlimited:
+      providers: ["openai", "anthropic", "azure-openai", "bedrock"]
+      sla_priority: true
+
+  # Task-specific routing
+  task_routing:
+    chat:
+      primary: ["openrouter", "deepseek", "mistral"]
+      fallback: ["openai", "anthropic", "gemini"]
+      quality_tier: "medium"
+
+    reasoning:
+      primary: ["anthropic", "deepseek", "openai"]
+      fallback: ["mistral", "openrouter"]
+      quality_tier: "high"
+
+    code_generation:
+      primary: ["vertex-ai", "huggingface", "openai"]
+      fallback: ["deepseek", "anthropic"]
+      quality_tier: "high"
+
+    rag:
+      primary: ["cohere", "openrouter"]
+      fallback: ["anthropic", "openai"]
+      quality_tier: "high"
+      specialized: true
+
+    vision:
+      primary: ["openai", "gemini", "vertex-ai"]
+      fallback: ["huggingface", "azure-openai"]
+      quality_tier: "high"
+
+    embedding:
+      primary: ["cohere", "huggingface", "openai"]
+      fallback: ["mistral", "vertex-ai"]
+      quality_tier: "medium"
+
+    image_generation:
+      primary: ["huggingface", "azure-openai", "bedrock"]
+      fallback: ["openai"]
+      quality_tier: "high"
+
+    web_search:
+      primary: ["perplexity"]
+      fallback: ["openrouter", "openai"]
+      quality_tier: "high"
+      specialized: true
+
+    summarization:
+      primary: ["anthropic", "perplexity", "cohere"]
+      fallback: ["mistral", "openai"]
+      quality_tier: "medium"
+
+    translation:
+      primary: ["gemini", "openai", "mistral"]
+      fallback: ["openrouter", "deepseek"]
+      quality_tier: "medium"
+
+  # Regional compliance routing
+  regional_routing:
+    eu:
+      required_providers: ["mistral", "azure-openai"]
+      compliance: ["gdpr", "eu_data_residency"]
+      fallback: ["openrouter", "gemini"]
+
+    us:
+      preferred_providers: ["openai", "anthropic", "bedrock"]
+      compliance: ["soc2"]
+      fallback: ["azure-openai", "vertex-ai"]
+
+    global:
+      preferred_providers: ["openrouter", "gemini", "deepseek"]
+      fallback: ["openai", "anthropic"]
+
+  # Context window routing
+  context_routing:
+    small:  # 0-8K tokens
+      providers: ["openai", "deepseek", "mistral", "huggingface"]
+
+    medium:  # 8K-32K tokens
+      providers: ["openai", "anthropic", "mistral", "openrouter"]
+
+    large:  # 32K-200K tokens
+      providers: ["anthropic", "bedrock", "azure-openai"]
+
+    xlarge:  # 200K+ tokens
+      providers: ["gemini", "vertex-ai"]
+
+  # Enterprise requirements
+  enterprise_routing:
+    sla_required:
+      providers: ["azure-openai", "bedrock", "vertex-ai"]
+      min_uptime: "99.9%"
+
+    compliance_required:
+      providers: ["azure-openai", "mistral", "bedrock"]
+      required_certs: ["soc2", "iso27001"]
+
+    self_hosting_preferred:
+      providers: ["mistral", "huggingface", "vertex-ai"]
+
+# Performance Thresholds
+performance:
+  health_check:
+    min_success_rate: 0.90  # 90%
+    max_consecutive_failures: 3
+    health_check_interval: 300  # 5 minutes
+
+  response_time:
+    excellent: 1.0  # < 1 second
+    good: 3.0       # < 3 seconds
+    acceptable: 5.0 # < 5 seconds
+    poor: 10.0      # > 10 seconds
+
+  cost_optimization:
+    target_savings_vs_gpt4: 30  # 30% minimum savings target
+    alert_threshold_per_day: 100.00  # Alert if daily cost > $100
+
+# Fallback Strategy
+fallback:
+  max_retries: 3
+  retry_delay_seconds: 1
+  exponential_backoff: true
+
+  default_chain:
+    - openrouter
+    - deepseek
+    - mistral
+    - openai
+    - anthropic
+    - gemini
+
+  task_specific_chains:
+    rag:
+      - cohere
+      - anthropic
+      - openai
+
+    web_search:
+      - perplexity
+      - openrouter
+      - openai
+
+    vision:
+      - openai
+      - gemini
+      - vertex-ai
+
+# Monitoring and Analytics
+monitoring:
+  track_metrics:
+    - success_rate
+    - response_time
+    - cost_per_request
+    - cost_per_day
+    - provider_health
+    - fallback_frequency
+
+  alerts:
+    - type: "provider_down"
+      threshold: "3_consecutive_failures"
+      action: "switch_to_fallback"
+
+    - type: "high_cost"
+      threshold: "daily_cost_over_100"
+      action: "notify_admin"
+
+    - type: "slow_response"
+      threshold: "avg_response_over_5s"
+      action: "route_to_faster_provider"
+
+  analytics_export:
+    frequency: "daily"
+    formats: ["json", "csv"]
+    destinations: ["elasticsearch", "s3"]
+
+# Cost Budgets (Per Day)
+budgets:
+  development: 10.00
+  staging: 50.00
+  production: 500.00
+  enterprise: 5000.00
