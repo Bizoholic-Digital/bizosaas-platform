@@ -63,7 +63,7 @@ interface SourcingFilters {
 
 export default function AmazonSourcingSection() {
   const [products, setProducts] = useState<AmazonProduct[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState<SourcingFilters>({
     query: 'fitness equipment',
     category: 'fitness',

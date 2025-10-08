@@ -11,8 +11,9 @@ import Image from 'next/image'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
-import { useTenantTheme } from '../hooks/useTenantTheme'
-import Header from '../components/navigation/header'
+// Temporarily removing problematic imports to fix chunk loading
+// import { useTenantTheme } from '../hooks/useTenantTheme'
+// import Header from '../components/navigation/header'
 import { 
   ArrowRight, 
   ShoppingCart, 
@@ -25,6 +26,7 @@ import {
   Heart,
   Eye
 } from 'lucide-react'
+import CategoryImage from '../components/category-image'
 
 // Types for Saleor e-commerce data
 interface Product {
@@ -86,14 +88,98 @@ interface HomepageData {
   }
 }
 
+// Helper function to get category-specific Unsplash images
+const getCategoryImageUrl = (categoryName: string): string => {
+  const categoryImages = {
+    "Mobile Accessories": "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=600&h=400&fit=crop&auto=format&q=80",
+    "Home & Kitchen": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=400&fit=crop&auto=format&q=80", 
+    "Clothing": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format&q=80",
+    "Electronics": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop&auto=format&q=80",
+    "Fitness Equipment": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop&auto=format&q=80",
+    "Beauty Products": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=400&fit=crop&auto=format&q=80",
+    "Home Decor": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=400&fit=crop&auto=format&q=80",
+    "Automotive Accessories": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&h=400&fit=crop&auto=format&q=80",
+    "Sports & Outdoor": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop&auto=format&q=80",
+    "Books": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=400&fit=crop&auto=format&q=80",
+    "Toys": "https://images.unsplash.com/photo-1558877385-9daf4b6a7f62?w=600&h=400&fit=crop&auto=format&q=80",
+    "Jewelry": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=400&fit=crop&auto=format&q=80"
+  };
+
+  // Normalize category name for matching (case insensitive, trim whitespace)
+  const normalizedName = categoryName?.trim() || '';
+  
+  // Try exact match first
+  if (categoryImages[normalizedName as keyof typeof categoryImages]) {
+    return categoryImages[normalizedName as keyof typeof categoryImages];
+  }
+  
+  // Try case-insensitive partial matching
+  const categoryKeys = Object.keys(categoryImages);
+  const matchedKey = categoryKeys.find(key => 
+    key.toLowerCase().includes(normalizedName.toLowerCase()) ||
+    normalizedName.toLowerCase().includes(key.toLowerCase())
+  );
+  
+  if (matchedKey) {
+    return categoryImages[matchedKey as keyof typeof categoryImages];
+  }
+  
+  // Default fallback to Electronics category image
+  return categoryImages["Electronics"];
+};
+
 export default function CorelDoveHomepage() {
-  const { config } = useTenantTheme()
+  // const { config } = useTenantTheme()
   const [homepageData, setHomepageData] = useState<HomepageData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [heroImages, setHeroImages] = useState<any[]>([])
+  const [imageCache, setImageCache] = useState<{[key: string]: any}>({})
 
   useEffect(() => {
     fetchHomepageData()
+    fetchHeroImages()
   }, [])
+
+  const fetchHeroImages = async () => {
+    try {
+      const response = await fetch('/api/brain/images/hero')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.images) {
+          setHeroImages(data.images)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching hero images:', error)
+    }
+  }
+
+  const getCategoryImage = async (categoryName: string) => {
+    // Check cache first
+    if (imageCache[categoryName]) {
+      return imageCache[categoryName]
+    }
+
+    try {
+      const response = await fetch(`/api/brain/images/categories?category=${encodeURIComponent(categoryName)}&size=medium`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.image) {
+          // Cache the result
+          setImageCache(prev => ({...prev, [categoryName]: data.image}))
+          return data.image
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching category image:', error)
+    }
+    
+    // Fallback to direct function
+    return {
+      url: getCategoryImageUrl(categoryName),
+      alt: `${categoryName} - Premium Products Category`
+    }
+  }
 
   const fetchHomepageData = async () => {
     try {
@@ -131,19 +217,56 @@ export default function CorelDoveHomepage() {
         ]);
       }
       
-      const [productsRes, categoriesRes] = await Promise.allSettled([
+      const [productsRes, categoriesRes, testProductRes] = await Promise.allSettled([
         fetchWithTimeout('/api/brain/saleor/products?featured=true&first=8'),
-        fetchWithTimeout('/api/brain/saleor/categories?first=6')
+        fetchWithTimeout('/api/brain/saleor/categories?first=6'),
+        fetchWithTimeout('/api/brain/saleor/test-product')
       ])
       
       let featuredProducts: Product[] = []
       let categories: Category[] = []
-      
+
+      // Add our test sports product first
+      if (testProductRes.status === 'fulfilled' && testProductRes.value.ok) {
+        const testData = await testProductRes.value.json()
+        if (testData.success && testData.product) {
+          const testProduct = testData.product
+          featuredProducts.push({
+            id: testProduct.id,
+            name: testProduct.name,
+            slug: testProduct.slug,
+            description: testProduct.description,
+            thumbnail: testProduct.images?.[0] ? {
+              url: testProduct.images[0].url,
+              alt: testProduct.images[0].alt
+            } : undefined,
+            pricing: {
+              priceRange: {
+                start: {
+                  gross: {
+                    amount: testProduct.price?.amount || 0,
+                    currency: testProduct.price?.currency || 'INR'
+                  }
+                }
+              }
+            },
+            category: {
+              name: testProduct.category?.name || 'Sports & Fitness',
+              slug: testProduct.category?.slug || 'sports-fitness'
+            },
+            rating: testProduct.rating || 4.3,
+            reviews: testProduct.reviews || 2847,
+            inStock: testProduct.inStock !== undefined ? testProduct.inStock : true,
+            featured: true
+          })
+        }
+      }
+
       if (productsRes.status === 'fulfilled' && productsRes.value.ok) {
         const productsData = await productsRes.value.json()
         // Transform backend data structure to match frontend expectations
         const backendProducts = productsData.products || []
-        featuredProducts = backendProducts.map((product: any) => ({
+        const backendFeaturedProducts = backendProducts.map((product: any) => ({
           id: product.id,
           name: product.name,
           slug: product.slug,
@@ -171,6 +294,9 @@ export default function CorelDoveHomepage() {
           inStock: product.inventory?.available || true,
           featured: true
         }))
+
+        // Add backend products after test product
+        featuredProducts = [...featuredProducts, ...backendFeaturedProducts]
       }
       
       if (categoriesRes.status === 'fulfilled' && categoriesRes.value.ok) {
@@ -182,10 +308,7 @@ export default function CorelDoveHomepage() {
           name: category.name,
           slug: category.slug,
           description: category.description,
-          backgroundImage: category.image ? {
-            url: category.image.url,
-            alt: category.image.alt
-          } : undefined,
+          backgroundImage: undefined, // Backend doesn't provide images yet
           productsCount: category.products_count || 0
         }))
       }
@@ -230,7 +353,24 @@ export default function CorelDoveHomepage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header - CorelDove branded */}
-      <Header currentPath="/" />
+      {/* <Header currentPath="/" /> */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
+                <Package className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-gray-900">CoreLDove</span>
+            </div>
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link href="/products" className="text-gray-700 hover:text-red-600">Products</Link>
+              <Link href="/categories" className="text-gray-700 hover:text-red-600">Categories</Link>
+              <Link href="/about" className="text-gray-700 hover:text-red-600">About</Link>
+            </nav>
+          </div>
+        </div>
+      </header>
 
       {/* Hero Section */}
       <section className="py-20 lg:py-28 bg-red-50">
@@ -266,39 +406,80 @@ export default function CorelDoveHomepage() {
             </div>
             
             <div className="relative">
-              {/* Hero Images: 4 medium images in 2x2 grid */}
+              {/* Hero Images: 4 medium images in 2x2 grid using API integration */}
               <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-                <Card className="card-hover">
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
-                    <div className="w-full h-full image-placeholder-primary flex items-center justify-center">
-                      <Package className="h-12 w-12 text-red-500" />
-                    </div>
-                    <Badge className="absolute top-2 right-2 bg-red-500">
-                      Featured
-                    </Badge>
-                  </div>
-                </Card>
-                <Card className="card-hover">
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
-                    <div className="w-full h-full image-placeholder-primary flex items-center justify-center">
-                      <Package className="h-12 w-12 text-red-500" />
-                    </div>
-                  </div>
-                </Card>
-                <Card className="card-hover">
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
-                    <div className="w-full h-full image-placeholder-primary flex items-center justify-center">
-                      <Package className="h-12 w-12 text-red-500" />
-                    </div>
-                  </div>
-                </Card>
-                <Card className="card-hover">
-                  <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
-                    <div className="w-full h-full image-placeholder-primary flex items-center justify-center">
-                      <Package className="h-12 w-12 text-red-500" />
-                    </div>
-                  </div>
-                </Card>
+                {heroImages.length > 0 ? (
+                  heroImages.map((image, index) => (
+                    <Card key={image.id || index} className="card-hover">
+                      <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
+                        <img 
+                          src={image.url}
+                          alt={image.alt}
+                          title={image.title}
+                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                          onError={(e) => {
+                            // Fallback to static images if API fails
+                            const fallbackImages = [
+                              "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&h=300&fit=crop&auto=format&q=80",
+                              "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&h=300&fit=crop&auto=format&q=80", 
+                              "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=300&fit=crop&auto=format&q=80",
+                              "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop&auto=format&q=80"
+                            ]
+                            e.currentTarget.src = fallbackImages[index] || fallbackImages[0]
+                          }}
+                        />
+                        {image.featured && (
+                          <Badge className="absolute top-2 right-2 bg-red-500">
+                            Featured
+                          </Badge>
+                        )}
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  // Fallback static images while loading
+                  <>
+                    <Card className="card-hover">
+                      <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
+                        <img 
+                          src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&h=300&fit=crop&auto=format&q=80"
+                          alt="Electronics - Premium Quality Products"
+                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                        />
+                        <Badge className="absolute top-2 right-2 bg-red-500">
+                          Featured
+                        </Badge>
+                      </div>
+                    </Card>
+                    <Card className="card-hover">
+                      <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
+                        <img 
+                          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&h=300&fit=crop&auto=format&q=80"
+                          alt="Fashion - Trendy Clothing Collection"
+                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                        />
+                      </div>
+                    </Card>
+                    <Card className="card-hover">
+                      <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
+                        <img 
+                          src="https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=300&fit=crop&auto=format&q=80"
+                          alt="Home & Kitchen - Quality Home Products"
+                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                        />
+                      </div>
+                    </Card>
+                    <Card className="card-hover">
+                      <div className="aspect-square relative overflow-hidden rounded-lg bg-muted">
+                        <img 
+                          src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop&auto=format&q=80"
+                          alt="Beauty Products - Premium Cosmetics"
+                          className="w-full h-full object-cover transition-transform hover:scale-105"
+                        />
+                      </div>
+                    </Card>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -366,13 +547,12 @@ export default function CorelDoveHomepage() {
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full image-placeholder-secondary flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-2">
-                              <Package className="h-8 w-8 text-blue-500" />
-                            </div>
-                            <span className="text-sm font-medium text-white">Category</span>
-                          </div>
+                        <div className="w-full h-full relative overflow-hidden">
+                          <CategoryImage
+                            categoryName={category.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            alt={`${category.name} - Premium Products Category`}
+                          />
                         </div>
                       )}
                     </div>
@@ -412,7 +592,7 @@ export default function CorelDoveHomepage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {homepageData.featuredProducts.map((product) => (
                 <Card key={product.id} className="group card-hover flex flex-col h-full">
-                  <Link href={`/products/${product.slug}`}>
+                  <Link href={product.id === 'test-boldfit-yoga-mat-001' ? '/test-product' : `/products/${product.slug}`}>
                     <div className="aspect-square relative overflow-hidden rounded-t-lg bg-muted">
                       {product.thumbnail ? (
                         <Image
@@ -462,8 +642,7 @@ export default function CorelDoveHomepage() {
                       <p className="text-muted-foreground line-clamp-2 mb-4">{product.description}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-2xl font-bold text-red-500">
-                          {product.pricing?.priceRange?.start?.gross?.currency === 'INR' ? '₹' : '$'}
-                          {product.pricing?.priceRange?.start?.gross?.amount || 'TBD'}
+                          {product.pricing?.priceRange?.start?.gross?.currency === 'INR' ? '₹' : '$'}{product.pricing?.priceRange?.start?.gross?.amount || 'TBD'}
                         </span>
                         <Button size="sm" className="bg-red-500 hover:bg-red-600" disabled={!product.inStock}>
                           <ShoppingCart className="h-4 w-4 mr-2" />
@@ -588,7 +767,7 @@ export default function CorelDoveHomepage() {
           </div>
           
           <div className="border-t border-gray-800 pt-12 mt-12 pb-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 {config.branding.companyName}. All rights reserved.</p>
+            <p>&copy; 2024 CoreLDove. All rights reserved.</p>
           </div>
         </div>
       </footer>

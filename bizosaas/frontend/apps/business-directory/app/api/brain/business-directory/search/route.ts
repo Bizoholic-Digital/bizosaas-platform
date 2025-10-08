@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { transformBusinessList } from '@/lib/business-hours-transformer';
 
 // Backend API configuration - connects through Central Hub
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
@@ -97,8 +98,10 @@ export async function GET(request: NextRequest) {
         console.log(`[BUSINESS-DIRECTORY] Backend response successful: ${backendData.businesses?.length || 0} businesses`);
         
         // Transform backend data to match frontend expectations
+        const businesses = transformBusinessList(backendData.businesses || backendData.data || []);
+        
         const response = {
-          businesses: backendData.businesses || backendData.data || [],
+          businesses,
           total: backendData.total || 0,
           page,
           limit,

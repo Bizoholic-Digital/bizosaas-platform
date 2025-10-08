@@ -110,6 +110,12 @@ from review_management_service import (
     ReputationScoreResponse
 )
 
+# Import Tenant API endpoints
+from tenant_api_endpoints import router as tenant_router
+
+# Import Admin Aggregation endpoints
+from admin_aggregation_endpoints import router as admin_router
+
 # Import Personal AI Assistant
 from personal_ai_assistant import (
     PersonalAIAssistant,
@@ -2438,6 +2444,12 @@ create_review_routes(app)
 
 # Add CrewAI Orchestration routes
 app.include_router(create_crewai_orchestration_routes(), prefix="/api/brain")
+
+# Add Tenant API endpoints
+app.include_router(tenant_router)
+
+# Add Admin Aggregation endpoints
+app.include_router(admin_router)
 
 @app.get("/api/unified-tenants/resolve-test")
 async def test_unified_tenant_resolution(
