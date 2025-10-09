@@ -1,69 +1,31 @@
-# Multi-stage build for BizOSaaS Client Portal
-# Production-optimized Next.js 14 container
+# Development Dockerfile for Client Portal
+FROM node:20-alpine
 
-# ===========================================
-# Build Stage
-# ===========================================
-FROM node:20-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps && npm cache clean --force
+# Install dependencies
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 
-# ===========================================
-# Builder Stage
-# ===========================================
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source code
 COPY . .
 
-# Environment variables for build
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
+# Create nextjs user with proper permissions
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs && \
+    chown -R nextjs:nodejs /app && \
+    mkdir -p /app/.next && \
+    chown -R nextjs:nodejs /app/.next
 
-# Build the application
-RUN npm run build
-
-# ===========================================
-# Production Stage
-# ===========================================
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=${PORT:-3000}
-
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy necessary files
-COPY --from=builder /app/public ./public
-
-# Set correct permissions for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Copy built application with correct ownership
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Switch to non-root user
 USER nextjs
 
-# Expose configurable port
-EXPOSE ${PORT:-3000}
+# Expose port
+EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-3000}/api/health || exit 1
+# Set environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3001
 
-# Start the application
-CMD ["node", "server.js"]
+# Start development server - override the port from package.json
+CMD ["npm", "run", "dev", "--", "--port", "3001"]
