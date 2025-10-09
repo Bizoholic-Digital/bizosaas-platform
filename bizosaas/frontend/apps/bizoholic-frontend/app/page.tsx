@@ -1,18 +1,22 @@
 /**
- * Bizoholic Homepage - Dynamic Content from Wagtail CMS
- * Content is managed through BizOSaaS dashboard and served via Brain API
+ * Dynamic Platform Homepage
+ * - Port 3000 (Bizoholic): Marketing website
+ * - Port 3002 (BizOSaaS): Redirects to dashboard
+ * - Port 3001 (Coreldove): E-commerce homepage
  */
 
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { usePlatform } from '@/lib/platform-config'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useTenantTheme } from '@/hooks/useTenantTheme'
-import { Logo } from '@/components/ui/logo'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
 import { 
   ArrowRight, 
   Bot, 
@@ -37,6 +41,7 @@ interface HomepageContent {
     icon: string
     title: string
     description: string
+    link?: string
   }>
   stats?: Array<{
     number: string
@@ -78,16 +83,22 @@ interface BlogPost {
   featured: boolean
 }
 
-export default function BizoholicHomepage() {
-  const { config } = useTenantTheme()
+export default function HomePage() {
+  const router = useRouter()
+  const { platform } = usePlatform()
   const [homepageContent, setHomepageContent] = useState<HomepageContent | null>(null)
   const [servicePages, setServicePages] = useState<ServicePage[]>([])
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Redirect BizOSaaS platform (port 3002) to dashboard
   useEffect(() => {
+    if (platform === 'bizosaas') {
+      router.push('/dashboard')
+      return
+    }
     fetchHomepageContent()
-  }, [])
+  }, [platform, router])
 
   const fetchHomepageContent = async () => {
     try {
@@ -126,77 +137,82 @@ export default function BizoholicHomepage() {
     }
   }
 
-  // Fallback content if CMS is unavailable - using tenant-specific branding
+  // Fallback content if CMS is unavailable
   const fallbackContent: HomepageContent = {
-    title: `${config.branding.companyName} - ${config.branding.tagline}`,
-    hero_title: config.branding.companyName === 'BizOSaaS' ? 'Transform Your Business Operations with AI' : 'Transform Your Business with AI Marketing',
-    hero_subtitle: config.branding.description || `${config.branding.companyName} empowers businesses with autonomous AI agents that handle marketing campaigns, content creation, SEO optimization, and lead generation - all running 24/7 on autopilot.`,
+    title: "Bizoholic - AI-Powered Marketing",
+    hero_title: "Transform Your Business with AI Marketing",
+    hero_subtitle: "Bizoholic Digital empowers businesses with autonomous AI agents that handle marketing campaigns, content creation, SEO optimization, and lead generation - all running 24/7 on autopilot.",
     hero_cta_text: "Start Free Trial",
-    hero_cta_url: "/auth/login",
-    features_title: config.branding.companyName === 'BizOSaaS' ? 'Everything You Need to Manage Your Business' : 'Everything You Need to Dominate Digital Marketing',
+    hero_cta_url: "/auth/register",
+    features_title: "Everything You Need to Dominate Digital Marketing",
     features: [
       {
         icon: "🤖",
         title: "AI Campaign Management",
-        description: "Autonomous agents create, optimize, and manage your advertising campaigns across Google Ads, Meta, LinkedIn, and 40+ other platforms."
+        description: "Autonomous agents create, optimize, and manage your advertising campaigns across Google Ads, Meta, LinkedIn, and 40+ other platforms.",
+        link: "/services/ai-campaign-management"
       },
       {
         icon: "🎯",
         title: "Content Generation", 
-        description: "AI-powered content creation for blogs, social media, email campaigns, and website copy that converts visitors into customers."
+        description: "AI-powered content creation for blogs, social media, email campaigns, and website copy that converts visitors into customers.",
+        link: "/services/content-generation"
       },
       {
         icon: "📊",
         title: "Performance Analytics",
-        description: "Real-time analytics and insights with automated reporting that helps you understand what's working and what needs optimization."
+        description: "Real-time analytics and insights with automated reporting that helps you understand what's working and what needs optimization.",
+        link: "/services/performance-analytics"
+      },
+      {
+        icon: "🚀",
+        title: "Marketing Automation",
+        description: "End-to-end marketing automation workflows that nurture leads and convert prospects into customers automatically.",
+        link: "/services/marketing-automation"
+      },
+      {
+        icon: "💡",
+        title: "Strategy Consulting",
+        description: "Expert marketing strategy consultation to align your business goals with data-driven marketing approaches.",
+        link: "/services/strategy-consulting"
+      },
+      {
+        icon: "🎨",
+        title: "Creative Design",
+        description: "Professional design services for all your marketing materials, from social media graphics to landing pages.",
+        link: "/services/creative-design"
+      },
+      {
+        icon: "🔍",
+        title: "SEO Optimization",
+        description: "Advanced SEO strategies and on-page optimization to boost your search engine rankings and organic traffic.",
+        link: "/services/seo-optimization"
+      },
+      {
+        icon: "📧",
+        title: "Email Marketing",
+        description: "Strategic email campaigns with personalized content, automation, and advanced segmentation for maximum engagement.",
+        link: "/services/email-marketing"
+      },
+      {
+        icon: "📱",
+        title: "Social Media Marketing",
+        description: "Comprehensive social media management across all platforms with content creation, community management, and paid advertising.",
+        link: "/services/social-media-marketing"
       }
     ],
     show_service_status: true,
-    tenant_id: "bizoholic"
+    tenant_id: "demo"
   }
 
   // Use CMS content if available, otherwise use fallback
   const content = homepageContent || fallbackContent
-
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header - Bizoholic branded */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container flex h-16 items-center">
-          <Logo 
-            href="/" 
-            priority={true}
-            showText={false}
-            width={120}
-            height={32}
-            className=""
-          />
-          
-          <nav className="ml-auto flex items-center space-x-6">
-            <Link href="/services" className="text-sm font-medium hover:text-primary">
-              Services
-            </Link>
-            <Link href="/case-studies" className="text-sm font-medium hover:text-primary">
-              Case Studies
-            </Link>
-            <Link href="/blog" className="text-sm font-medium hover:text-primary">
-              Blog
-            </Link>
-            <Link href="/about" className="text-sm font-medium hover:text-primary">
-              About
-            </Link>
-            <Link href="/contact" className="text-sm font-medium hover:text-primary">
-              Contact
-            </Link>
-            <Link href="/auth/login">
-              <Button size="sm">Get Started</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
-      {/* Hero Section - Dynamic content from Wagtail */}
-      <section className="py-20 lg:py-28 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Hero Section */}
+      <section className="py-20 lg:py-28">
         <div className="container">
           <div className="mx-auto max-w-4xl text-center">
             <Badge variant="outline" className="mb-6">
@@ -215,7 +231,7 @@ export default function BizoholicHomepage() {
             
             <div className="mt-10 flex items-center justify-center gap-6">
               <Link href={content.hero_cta_url}>
-                <Button size="lg" className="px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                <Button size="lg" className="px-8">
                   {content.hero_cta_text}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -224,148 +240,232 @@ export default function BizoholicHomepage() {
                 Watch Demo
               </Button>
             </div>
+
+            <div className="mt-10 flex items-center justify-center space-x-6 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span>No Credit Card Required</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span>14-Day Free Trial</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span>Cancel Anytime</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section - Dynamic content from Wagtail */}
-      <section className="py-20 bg-muted/30">
+      {/* Features Section */}
+      <section id="services" className="py-20 bg-muted/30">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               {content.features_title}
             </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Our AI agents work around the clock to optimize your marketing performance
+            </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {content.features.map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="text-4xl mb-4">{feature.icon}</div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {content.features.slice(0, 9).map((feature, index) => {
+              const CardComponent = feature.link ? Link : 'div'
+              return (
+                <CardComponent key={index} href={feature.link || '#'} className={feature.link ? 'block' : ''}>
+                  <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer group h-full flex flex-col">
+                    <CardHeader className="flex-none">
+                      <div className="text-4xl mb-2 group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
+                      <CardTitle className="group-hover:text-blue-600 transition-colors">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow flex flex-col justify-between">
+                      <p className="text-muted-foreground mb-4 flex-grow">
+                        {feature.description}
+                      </p>
+                      {feature.link && (
+                        <div className="flex items-center text-blue-600 font-medium group-hover:text-blue-700 transition-colors mt-auto">
+                          <span>Learn More</span>
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </CardComponent>
+              )
+            })}
           </div>
+
+          {/* Featured Blog Posts Section - Dynamic from CMS with Fallback */}
+          {(
+            <div className="mt-16">
+              <div className="mx-auto max-w-2xl text-center mb-12">
+                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  Latest Insights & Guides
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  Expert insights, industry trends, and actionable strategies for AI-powered marketing
+                </p>
+              </div>
+              
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {(blogPosts.length > 0 ? blogPosts : [
+                  {
+                    id: 1,
+                    title: "10 AI Marketing Strategies That Actually Work in 2024",
+                    slug: "ai-marketing-strategies-2024",
+                    excerpt: "Discover the latest AI marketing tactics that leading companies use to automate campaigns, personalize content, and boost ROI.",
+                    featured_image: "/blog/ai-marketing-2024.jpg",
+                    published_date: "2024-03-15",
+                    author: "Sarah Chen",
+                    category: "AI Marketing",
+                    tags: ["AI", "Marketing", "Strategy"],
+                    read_time: 8,
+                    featured: true
+                  },
+                  {
+                    id: 2,
+                    title: "Complete Guide to Marketing Automation for Small Businesses",
+                    slug: "marketing-automation-small-business",
+                    excerpt: "Step-by-step guide to implementing marketing automation workflows that nurture leads and convert prospects automatically.",
+                    featured_image: "/blog/automation-guide.jpg",
+                    published_date: "2024-03-10",
+                    author: "Michael Rodriguez",
+                    category: "Automation",
+                    tags: ["Automation", "Small Business", "Workflows"],
+                    read_time: 12,
+                    featured: true
+                  },
+                  {
+                    id: 3,
+                    title: "How to Measure ROI from AI-Powered Campaigns",
+                    slug: "measure-roi-ai-campaigns",
+                    excerpt: "Learn the key metrics and tools you need to track the performance and return on investment of your AI marketing campaigns.",
+                    featured_image: "/blog/roi-measurement.jpg",
+                    published_date: "2024-03-05",
+                    author: "Emily Davis",
+                    category: "Analytics",
+                    tags: ["ROI", "Analytics", "AI Campaigns"],
+                    read_time: 6,
+                    featured: true
+                  }
+                ]).map((post) => (
+                  <Link key={post.id} href={`/blog/${post.slug}`}>
+                    <Card className="hover:shadow-lg transition-shadow cursor-pointer group h-full flex flex-col">
+                      {post.featured_image && (
+                        <div className="aspect-video relative overflow-hidden rounded-t-lg">
+                          <Image
+                            src={post.featured_image}
+                            alt={post.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      )}
+                      <CardHeader>
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="outline" className="text-xs">
+                            {post.category}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {post.read_time} min read
+                          </span>
+                        </div>
+                        <CardTitle className="group-hover:text-primary transition-colors text-lg line-clamp-2">
+                          {post.title}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          By {post.author} • {new Date(post.published_date).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </p>
+                      </CardHeader>
+                      <CardContent className="flex-grow flex flex-col justify-between">
+                        <p className="text-muted-foreground mb-4 line-clamp-3 flex-grow">
+                          {post.excerpt}
+                        </p>
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="flex flex-wrap gap-1">
+                            {post.tags.slice(0, 2).map((tag, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+              
+              <div className="text-center mt-8">
+                <Link href="/blog">
+                  <Button variant="outline" size="lg">
+                    View All Articles
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Section - Dynamic from CMS */}
+          {content.stats && content.stats.length > 0 && (
+            <div className="mt-16">
+              <div className="mx-auto max-w-2xl text-center mb-12">
+                <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                  Proven Results
+                </h2>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  See what our AI-powered marketing automation can achieve
+                </p>
+              </div>
+              
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+                {content.stats.map((stat, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-4xl font-bold text-primary mb-2">{stat.number}</div>
+                    <div className="text-lg font-semibold text-foreground mb-1">{stat.label}</div>
+                    <div className="text-sm text-muted-foreground">{stat.description}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
-
-      {/* Services Section - Dynamic from Wagtail CMS */}
-      {servicePages.length > 0 && (
-        <section className="py-20">
-          <div className="container">
-            <div className="mx-auto max-w-2xl text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Our <span className="text-primary">Services</span>
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Comprehensive marketing solutions powered by AI technology
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {servicePages.map((service) => (
-                <Card key={service.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-3xl">{service.icon}</span>
-                      <Badge variant="secondary">{service.badge}</Badge>
-                    </div>
-                    <CardTitle className="text-xl">{service.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">{service.service_description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">
-                        From {service.price_data.starting_price}
-                      </span>
-                      <Link href={`/services/${service.slug}`}>
-                        <Button variant="outline" size="sm">
-                          Learn More
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Blog Section - Dynamic from Wagtail CMS */}
-      {blogPosts.length > 0 && (
-        <section className="py-20 bg-muted/30">
-          <div className="container">
-            <div className="mx-auto max-w-2xl text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Latest <span className="text-primary">Insights</span>
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Stay updated with the latest marketing trends and strategies
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8">
-              {blogPosts.map((post) => (
-                <Card key={post.id} className="hover:shadow-lg transition-shadow">
-                  {post.featured_image && (
-                    <div className="aspect-video relative overflow-hidden rounded-t-lg">
-                      <Image
-                        src={post.featured_image}
-                        alt={post.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <CardHeader>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                      <span>{post.category}</span>
-                      <span>•</span>
-                      <span>{post.read_time} min read</span>
-                    </div>
-                    <CardTitle className="text-lg line-clamp-2">{post.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground line-clamp-3 mb-4">{post.excerpt}</p>
-                    <Link href={`/blog/${post.slug}`}>
-                      <Button variant="outline" size="sm">
-                        Read More
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* CTA Section */}
       <section className="py-20">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to transform your marketing?
+            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Ready to Scale Your Business?
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Join thousands of businesses already using AI to drive growth
+            <p className="mt-4 text-lg text-muted-foreground">
+              Join thousands of businesses already using AI to transform their marketing results.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/contact">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                  Start Free Consultation
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <div className="flex items-center space-x-1">
+                {[1,2,3,4,5].map((star) => (
+                  <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                ))}
+                <span className="ml-2 text-sm text-muted-foreground">4.9/5 from 1,000+ reviews</span>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <Link href="/auth/login">
+                <Button size="lg" className="px-12">
+                  Start Your Free Trial Today
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button variant="outline" size="lg">
-                  Start Free Trial
                 </Button>
               </Link>
             </div>
@@ -373,54 +473,8 @@ export default function BizoholicHomepage() {
         </div>
       </section>
 
-      {/* Footer - Bizoholic branded */}
-      <footer className="border-t bg-background">
-        <div className="container py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-semibold mb-4">Services</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/services/seo">SEO Optimization</Link></li>
-                <li><Link href="/services/content-marketing">Content Marketing</Link></li>
-                <li><Link href="/services/social-media">Social Media</Link></li>
-                <li><Link href="/services/ppc">PPC Management</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/about">About Us</Link></li>
-                <li><Link href="/careers">Careers</Link></li>
-                <li><Link href="/case-studies">Case Studies</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/blog">Blog</Link></li>
-                <li><Link href="/resources">Resources</Link></li>
-                <li><Link href="/pricing">Pricing</Link></li>
-                <li><Link href="/support">Support</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/privacy">Privacy Policy</Link></li>
-                <li><Link href="/terms">Terms of Service</Link></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t pt-8 mt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 {config.branding.companyName}. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      
+      <Footer />
     </div>
   )
 }

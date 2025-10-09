@@ -1,79 +1,84 @@
-import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import PWAProvider from '@/components/PWAProvider';
+import type { Metadata } from 'next'
+import { Inter, JetBrains_Mono } from 'next/font/google'
+import { cn } from '@/lib/utils'
+import { Providers } from './providers'
+import { Toaster } from '@/components/ui/sonner'
+import { getPlatformMetadata, getPlatformClassName } from '@/lib/platform'
+import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] });
+const fontSans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+})
+
+const fontMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+})
 
 export const metadata: Metadata = {
-  title: 'Bizoholic - AI-Powered Marketing Agency',
-  description: 'Transform your marketing with AI automation, lead generation, and campaign optimization',
-  keywords: ['AI Marketing', 'Lead Generation', 'Campaign Management', 'Marketing Automation'],
-  authors: [{ name: 'Bizoholic Team' }],
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Bizoholic Marketing',
-    startupImage: [
-      {
-        url: '/icons/icon-512x512.svg',
-        media: '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)',
-      },
-    ],
+  metadataBase: new URL('http://localhost:3000'),
+  title: {
+    default: 'BizOSaaS - Multi-Tenant Business Platform',
+    template: '%s | BizOSaaS',
   },
-  formatDetection: {
-    telephone: false,
+  description: 'Comprehensive SaaS platform for managing multiple business operations with AI automation',
+  keywords: ['SaaS platform', 'multi-tenant', 'business automation', 'AI platform', 'enterprise'],
+  authors: [{ name: 'BizOSaaS Team' }],
+  creator: 'BizOSaaS',
+  icons: {
+    icon: '/favicons/bizosaas-favicon.ico',
+    shortcut: '/favicons/bizosaas-favicon.ico',
+    apple: '/favicons/bizosaas-favicon.png',
   },
   openGraph: {
     type: 'website',
-    siteName: 'Bizoholic Marketing',
-    title: 'AI-Powered Marketing Agency',
-    description: 'Transform your marketing with AI automation, lead generation, and campaign optimization',
-    images: ['/icons/icon-512x512.svg'],
+    locale: 'en_US',
+    url: 'https://app.bizoholic.com',
+    title: 'BizOSaaS - Multi-Tenant Business Platform',
+    description: 'Comprehensive SaaS platform for managing multiple business operations with AI automation',
+    siteName: 'BizOSaaS',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Bizoholic - AI-Powered Marketing Agency',
-    description: 'Transform your marketing with AI automation, lead generation, and campaign optimization',
-    images: ['/icons/icon-512x512.svg'],
+    title: 'BizOSaaS - Multi-Tenant Business Platform',
+    description: 'Comprehensive SaaS platform for managing multiple business operations with AI automation',
   },
-};
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+}
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#3b82f6' },
-    { media: '(prefers-color-scheme: dark)', color: '#1e40af' },
-  ],
-};
+interface RootLayoutProps {
+  children: React.ReactNode
+}
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* PWA Meta Tags */}
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
-        <link rel="icon" type="image/svg+xml" href="/icons/icon-192x192.svg" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Bizoholic Marketing" />
-        <meta name="msapplication-TileColor" content="#3b82f6" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
-      </head>
-      <body className={inter.className}>
-        <PWAProvider>
-          {children}
-        </PWAProvider>
+      <head />
+      <body
+        className={cn(
+          'min-h-screen bg-background font-sans antialiased',
+          fontSans.variable,
+          fontMono.variable
+        )}
+      >
+        <Providers>
+          <div className="relative flex min-h-screen flex-col">
+            <div className="flex-1">{children}</div>
+          </div>
+          <Toaster />
+        </Providers>
       </body>
     </html>
-  );
+  )
 }
