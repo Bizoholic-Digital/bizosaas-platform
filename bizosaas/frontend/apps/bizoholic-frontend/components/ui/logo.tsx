@@ -1,72 +1,47 @@
-'use client'
-
-import Image from 'next/image'
 import Link from 'next/link'
-import { useTenantTheme } from '@/hooks/useTenantTheme'
-import { cn } from '@/lib/utils'
+import { getPlatformConfig } from '@/lib/platform'
 
 interface LogoProps {
   href?: string
-  className?: string
-  width?: number
-  height?: number
   priority?: boolean
   showText?: boolean
+  width?: number
+  height?: number
+  className?: string
 }
 
 export function Logo({ 
-  href = "/", 
-  className = "", 
-  width = 120, 
-  height = 40,
-  priority = false,
-  showText = true
+  href = '/', 
+  showText = true, 
+  width = 180, 
+  height = 40, 
+  className = '' 
 }: LogoProps) {
-  const { config } = useTenantTheme()
+  const config = getPlatformConfig()
 
-  const logoContent = (
-    <div className={cn("flex items-center space-x-3", className)}>
-      <Image
-        src={config.branding.logo}
-        alt={`${config.branding.companyName} Logo`}
-        width={width}
-        height={height}
-        className="h-auto w-auto max-h-10"
-        priority={priority}
-        quality={100}
-        style={{ 
-          display: 'block',
-          objectFit: 'contain'
-        }}
-        onError={(e) => {
-          // Fallback to a placeholder if logo fails to load
-          e.currentTarget.src = '/logos/bizoholic-logo.png'
-        }}
-      />
+  const LogoContent = () => (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <div 
+        className="font-bold text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+        style={{ width: `${width}px`, height: `${height}px`, lineHeight: `${height}px` }}
+      >
+        {config.name}
+      </div>
       {showText && (
-        <div className="flex flex-col">
-          <span className="text-xl font-bold text-foreground">
-            {config.branding.companyName}
-          </span>
-          {config.branding.tagline && (
-            <span className="text-xs text-muted-foreground">
-              {config.branding.tagline}
-            </span>
-          )}
-        </div>
+        <span className="text-sm text-muted-foreground">
+          {config.description.split(' ').slice(0, 2).join(' ')}
+        </span>
       )}
     </div>
   )
 
   if (href) {
     return (
-      <Link href={href} className="hover:opacity-80 transition-opacity">
-        {logoContent}
+      <Link href={href}>
+        <LogoContent />
       </Link>
     )
   }
 
-  return logoContent
+  return <LogoContent />
 }
-
-export default Logo
