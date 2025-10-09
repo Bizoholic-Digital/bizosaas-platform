@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Unified BizOSaaS Color Palette */
+  --primary-color: #7c2d92;
+  --secondary-color: #a855f7;
+  --accent-color: #ec4899;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+
+  /* Neutral Colors */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+
+  /* Unified Gradients */
+  .portal-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  }
+
+  .client-gradient {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  }
+
+  .admin-gradient {
+    background: linear-gradient(135deg, var(--info-color), var(--primary-color));
+  }
+
+  .success-gradient {
+    background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+  }
+
+  /* Unified Sidebar Styles */
+  .unified-sidebar {
+    @apply w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300;
+  }
+
+  .unified-sidebar.collapsed {
+    @apply w-16;
+  }
+
+  .unified-nav-item {
+    @apply w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors;
+  }
+
+  .unified-nav-item.active {
+    @apply bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400;
+  }
+
+  .unified-nav-item:not(.active) {
+    @apply text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800;
+  }
+
+  /* Unified Header Styles */
+  .unified-header {
+    @apply bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4;
+  }
+
+  .unified-content {
+    @apply flex-1 overflow-auto bg-gray-50 dark:bg-gray-900;
+  }
+
+  /* Unified Card Styles */
+  .unified-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6;
+  }
+
+  .unified-card-header {
+    @apply border-b border-gray-200 dark:border-gray-700 pb-4 mb-4;
+  }
+
+  /* Unified Button Styles */
+  .btn-primary {
+    @apply bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+  }
+
+  /* Unified Form Styles */
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2;
+  }
+
+  /* Unified Status Badges */
+  .badge-success {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  .badge-error {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400;
+  }
+
+  .badge-info {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400;
+  }
+
+  /* Unified Loading States */
+  .loading-spinner {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600;
+  }
+
+  .loading-skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  }
+
+  /* Unified Responsive Utilities */
+  .responsive-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+  }
+
+  .responsive-container {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary-color: #8b5cf6;
+    --secondary-color: #a78bfa;
+    --accent-color: #f472b6;
+  }
+}
+
+/* Responsive breakpoints for consistent design */
+@screen sm {
+  .unified-sidebar {
+    @apply w-64;
+  }
+}
+
+@screen md {
+  .unified-content {
+    @apply p-6;
+  }
+}
+
+@screen lg {
+  .unified-card {
+    @apply p-8;
+  }
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}

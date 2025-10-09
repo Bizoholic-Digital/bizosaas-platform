@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizOSaaS - Autonomous AI Agents Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+            margin: 20px;
+        }
+        
+        .auth-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .auth-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .auth-header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .auth-form {
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .domain-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .domain-option {
+            padding: 0.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        
+        .domain-option:hover {
+            border-color: #667eea;
+        }
+        
+        .domain-option.active {
+            border-color: #667eea;
+            background: #f3f4f6;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .auth-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .toggle-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .toggle-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .tier-selector {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tier-option {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tier-option:hover {
+            border-color: #667eea;
+        }
+        
+        .tier-option.active {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+        
+        .tier-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .tier-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tier-features {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin: 1rem 0;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f4f6;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1>BizOSaaS</h1>
+            <p>World's First Autonomous AI Agents Platform</p>
+        </div>
+        
+        <div class="auth-form">
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                Connecting to AI Agents...
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm">
+                <h2 style="text-align: center; margin-bottom: 1.5rem; color: #374151;">Sign In</h2>
+                
+                <div class="domain-selector">
+                    <div class="domain-option active" data-domain="localhost:3000">
+                        <strong>Development</strong><br>
+                        <small>localhost:3000</small>
+                    </div>
+                    <div class="domain-option" data-domain="bizosaas.com">
+                        <strong>Production</strong><br>
+                        <small>bizosaas.com</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+                
+                <button type="submit" class="auth-btn" id="loginBtn">
+                    Sign In to AI Platform
+                </button>
+                
+                <div class="toggle-link">
+                    <a href="#" onclick="toggleToRegister()">Don't have an account? Sign up</a>
+                </div>
+            </form>
+            
+            <!-- Register Form -->
+            <form id="registerForm" style="display: none;">
+                <h2 style="text-align: center; margin-bottom: 1.5rem; color: #374151;">Create Account</h2>
+                
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" name="email" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" name="password" required placeholder="Create a password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="organizationName">Organization Name</label>
+                    <input type="text" id="organizationName" name="organizationName" required placeholder="Your company name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="subscriptionTier">Select Your Tier</label>
+                    <div class="tier-selector">
+                        <div class="tier-option active" data-tier="tier_1">
+                            <div class="tier-name">Marketing Starter</div>
+                            <div class="tier-price">$97/month</div>
+                            <div class="tier-features">Basic AI agents • CMS • CRM</div>
+                        </div>
+                        <div class="tier-option" data-tier="tier_2">
+                            <div class="tier-name">Growth Accelerator</div>
+                            <div class="tier-price">$297/month</div>
+                            <div class="tier-features">Advanced AI • Analytics • Automation</div>
+                        </div>
+                        <div class="tier-option" data-tier="tier_3">
+                            <div class="tier-name">Enterprise Scale</div>
+                            <div class="tier-price">$997/month</div>
+                            <div class="tier-features">Full platform • White label • Premium support</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-btn" id="registerBtn">
+                    Create AI-Powered Account
+                </button>
+                
+                <div class="toggle-link">
+                    <a href="#" onclick="toggleToLogin()">Already have an account? Sign in</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:8082';
+        let selectedDomain = 'localhost:3000';
+        let selectedTier = 'tier_1';
+        
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const loading = document.getElementById('loading');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        
+        // Domain Selection
+        document.querySelectorAll('.domain-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.domain-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                selectedDomain = this.dataset.domain;
+            });
+        });
+        
+        // Tier Selection
+        document.querySelectorAll('.tier-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.tier-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                selectedTier = this.dataset.tier;
+            });
+        });
+        
+        // Utility Functions
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+        
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+        
+        function showLoading() {
+            loading.style.display = 'block';
+            loginBtn.disabled = true;
+            registerBtn.disabled = true;
+        }
+        
+        function hideLoading() {
+            loading.style.display = 'none';
+            loginBtn.disabled = false;
+            registerBtn.disabled = false;
+        }
+        
+        function toggleToRegister() {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            hideMessages();
+        }
+        
+        function toggleToLogin() {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            hideMessages();
+        }
+        
+        // API Functions
+        async function testApiConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (!response.ok) throw new Error('API connection failed');
+                return await response.json();
+            } catch (error) {
+                console.error('API connection test failed:', error);
+                return null;
+            }
+        }
+        
+        async function login(email, password) {
+            try {
+                showLoading();
+                hideMessages();
+                
+                // First, get tenant context
+                const tenantResponse = await fetch(`${API_BASE_URL}/api/tenant-context?domain=${selectedDomain}`);
+                let tenantContext = null;
+                
+                if (tenantResponse.ok) {
+                    tenantContext = await tenantResponse.json();
+                } else {
+                    console.warn('Tenant context not available, using default');
+                }
+                
+                // Attempt login
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Domain': selectedDomain
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('domain', selectedDomain);
+                    
+                    showSuccess('Login successful! Redirecting to dashboard...');
+                    
+                    setTimeout(() => {
+                        window.location.href = `/dashboard?domain=${selectedDomain}`;
+                    }, 1500);
+                } else {
+                    throw new Error(data.detail || 'Login failed');
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showError(error.message || 'Failed to connect to AI platform. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function register(email, password, organizationName) {
+            try {
+                showLoading();
+                hideMessages();
+                
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Domain': selectedDomain
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        organization_name: organizationName,
+                        subscription_tier: selectedTier,
+                        domain: selectedDomain
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Account created successfully! Please sign in to continue.');
+                    setTimeout(() => {
+                        toggleToLogin();
+                    }, 2000);
+                } else {
+                    throw new Error(data.detail || 'Registration failed');
+                }
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                showError(error.message || 'Failed to create account. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Event Listeners
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showError('Please enter both email and password');
+                return;
+            }
+            
+            await login(email, password);
+        });
+        
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const organizationName = document.getElementById('organizationName').value;
+            
+            if (!email || !password || !organizationName) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+            
+            await register(email, password, organizationName);
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Test API connection on load
+            const apiHealth = await testApiConnection();
+            if (!apiHealth) {
+                showError('Unable to connect to AI platform. Please check if the system is running.');
+            } else {
+                console.log('API connection established:', apiHealth);
+            }
+            
+            // Check if user is already logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                showSuccess(`Welcome back, ${user.email}! Redirecting to dashboard...`);
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>

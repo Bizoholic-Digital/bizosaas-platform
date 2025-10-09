@@ -1,0 +1,122 @@
+# ==========================================
+# HIGH-PERFORMANCE BRAIN GATEWAY OPTIMIZATION
+# Target: 1.37GB → 400MB (70% reduction)
+# ZERO COMPROMISE: Security, Performance, AI Features, Scalability
+# ==========================================
+
+# ========== BUILD STAGE ==========
+FROM python:3.11-slim as builder
+
+# Performance environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /app
+
+# Minimal build dependencies for AI/ML packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install Python dependencies with optimization
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r requirements.txt \
+    # Performance: Pre-compile packages where possible
+    && python -c "import uvicorn, fastapi, pydantic; print('Core packages verified')"
+
+# ========== PRODUCTION STAGE ==========
+FROM python:3.11-slim as production
+
+# Performance and security environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    # Security settings
+    DEBIAN_FRONTEND=noninteractive \
+    # Performance settings for AI workloads
+    PYTHONHASHSEED=random \
+    # FastAPI optimization
+    FASTAPI_ENV=production
+
+WORKDIR /app
+
+# Minimal runtime dependencies for AI/ML
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    ca-certificates \
+    # Essential for AI/ML operations
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && apt-get purge -y --auto-remove
+
+# Security: Create specialized user for AI services
+RUN groupadd -r aiuser --gid 1001 \
+    && useradd -r -g aiuser --uid 1001 --home-dir /app --shell /bin/bash aiuser \
+    && mkdir -p /app/logs /app/temp /app/models \
+    && chown -R aiuser:aiuser /app
+
+# Copy optimized Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy application code with proper ownership
+COPY --chown=aiuser:aiuser . .
+
+# Performance: Pre-compile Python code for faster startup
+RUN python -m compileall -b . \
+    && find . -name "*.py" -delete \
+    && find . -name "__pycache__" -exec rm -rf {} + || true
+
+# Security: Set proper permissions
+RUN chmod -R 755 /app \
+    && chmod -R 750 /app/logs /app/temp /app/models
+
+# Switch to non-root user
+USER aiuser
+
+# Performance: Verify all imports work correctly
+RUN python -c "
+import sys
+try:
+    import fastapi, uvicorn, pydantic, httpx, redis, sqlalchemy
+    print('✅ All core dependencies verified')
+except ImportError as e:
+    print(f'❌ Import error: {e}')
+    sys.exit(1)
+"
+
+# Security: Use non-privileged port
+EXPOSE 8001
+
+# Performance: Optimized health check for AI services
+HEALTHCHECK --interval=30s --timeout=15s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+# High-performance Uvicorn configuration for AI workloads
+# - Single worker for AI consistency (avoid model duplication)
+# - Optimized for async AI operations
+# - Proper memory management for ML workloads
+CMD ["uvicorn", \
+     "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8001", \
+     "--workers", "1", \
+     "--worker-class", "uvicorn.workers.UvicornWorker", \
+     "--loop", "asyncio", \
+     "--http", "httptools", \
+     "--access-log", \
+     "--log-level", "info", \
+     "--timeout-keep-alive", "30", \
+     "--limit-concurrency", "1000", \
+     "--limit-max-requests", "10000"]
