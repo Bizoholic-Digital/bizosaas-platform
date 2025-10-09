@@ -1,0 +1,1 @@
+# CMS core functionality for BizOSaaS

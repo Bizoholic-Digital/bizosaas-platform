@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  saleor-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saleor-api-8003
+    ports:
+      - "8003:8000"
+    environment:
+      # Use shared infrastructure
+      - DATABASE_URL=postgresql://postgres:BizOSaaS2025!SecureDB@bizosaas-postgres-unified:5432/saleor_db
+      - REDIS_URL=redis://:SecureRedis2025!BizOSaaS@bizosaas-redis-unified:6379/3
+
+      # Saleor configuration
+      - SECRET_KEY=saleor-coreldove-secret-key-production-2025-very-secure
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,api.coreldove.com
+      - DEFAULT_FROM_EMAIL=noreply@coreldove.com
+      - ENABLE_DEBUG_TOOLBAR=False
+      - CORS_ALLOWED_ORIGINS=http://localhost:3002,https://coreldove.com
+      - CORS_ALLOW_ALL_ORIGINS=True
+
+      # E-commerce settings
+      - DEFAULT_CURRENCY=USD
+      - DEFAULT_COUNTRY=US
+      - ENABLE_SSL=False
+      - CREATE_IMAGES_ON_DEMAND=True
+
+      # Media and static
+      - MEDIA_URL=/media/
+      - STATIC_URL=/static/
+
+    volumes:
+      - saleor_media:/app/media
+      - saleor_static:/app/static
+
+    networks:
+      - bizosaas-platform-network
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/graphql/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  saleor_media:
+    name: coreldove-saleor-media
+  saleor_static:
+    name: coreldove-saleor-static
+
+networks:
+  bizosaas-platform-network:
+    external: true

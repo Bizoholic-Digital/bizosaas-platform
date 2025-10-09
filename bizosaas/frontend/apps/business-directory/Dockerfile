@@ -1,43 +1,31 @@
-# Business Directory Frontend - NextJS 15 Production Build
-# Port 3004 - Business Directory Management Application
+# Development Dockerfile for Business Directory
+FROM node:20-alpine
 
-FROM node:18-alpine AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
-RUN npm install --legacy-peer-deps --only=production
+# Install dependencies
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 
-FROM node:18-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source code
 COPY . .
 
-# Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
-
-# Build the application
-RUN npm run build
-
-FROM node:18-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV PORT 3004
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy built application
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Create nextjs user with proper permissions
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs && \
+    chown -R nextjs:nodejs /app && \
+    mkdir -p /app/.next && \
+    chown -R nextjs:nodejs /app/.next
 
 USER nextjs
 
+# Expose port
 EXPOSE 3004
 
-CMD ["node", "server.js"]
+# Set environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3004
+
+# Start development server
+CMD ["npm", "run", "dev"]

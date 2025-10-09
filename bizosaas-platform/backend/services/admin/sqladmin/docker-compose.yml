@@ -1,0 +1,190 @@
+version: '3.8'
+
+services:
+  sqladmin-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bizosaas-sqladmin-dashboard
+    ports:
+      - "5000:5000"
+    environment:
+      # Database Configuration
+      - DATABASE_URL=postgresql+asyncpg://bizosaas:bizosaas@host.docker.internal:5432/bizosaas
+      - DATABASE_SYNC_URL=postgresql://bizosaas:bizosaas@host.docker.internal:5432/bizosaas
+      
+      # Redis Configuration
+      - REDIS_URL=redis://host.docker.internal:6379/0
+      
+      # Authentication URLs
+      - UNIFIED_AUTH_URL=http://host.docker.internal:3002
+      - UNIFIED_AUTH_BROWSER_URL=http://localhost:3002
+      - TAILADMIN_URL=http://localhost:3001
+      
+      # Monitoring Configuration
+      - MONITORING_INTERVAL=60
+      - MONITORING_RETENTION_DAYS=30
+      - ENABLED_COLLECTORS=database,redis,containers,api_endpoints
+      
+      # Alert Thresholds
+      - CPU_WARNING_THRESHOLD=80.0
+      - CPU_CRITICAL_THRESHOLD=95.0
+      - MEMORY_WARNING_THRESHOLD=85.0
+      - MEMORY_CRITICAL_THRESHOLD=95.0
+      - RESPONSE_TIME_WARNING=2000
+      - RESPONSE_TIME_CRITICAL=5000
+      - ERROR_RATE_WARNING=5.0
+      - ERROR_RATE_CRITICAL=10.0
+      - CACHE_HIT_RATE_WARNING=80.0
+      
+      # Development
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    
+    volumes:
+      # Mount Docker socket for container monitoring
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount for development (comment out for production)
+      - .:/app
+    
+    networks:
+      - bizosaas-network
+    
+    depends_on:
+      - postgresql
+      - redis
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/system/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sqladmin.rule=Host(`sqladmin.localhost`)"
+      - "traefik.http.routers.sqladmin.entrypoints=web"
+      - "traefik.http.services.sqladmin.loadbalancer.server.port=5000"
+      - "traefik.http.routers.sqladmin-secure.rule=Host(`sqladmin.localhost`)"
+      - "traefik.http.routers.sqladmin-secure.entrypoints=websecure"
+      - "traefik.http.routers.sqladmin-secure.tls=true"
+
+  # Shared PostgreSQL database
+  postgresql:
+    image: postgres:15-alpine
+    container_name: bizosaas-postgresql
+    environment:
+      - POSTGRES_DB=bizosaas
+      - POSTGRES_USER=bizosaas
+      - POSTGRES_PASSWORD=bizosaas
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+      - ./init-monitoring-db.sql:/docker-entrypoint-initdb.d/02-init-monitoring-db.sql
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bizosaas -d bizosaas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Shared Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Monitoring Metrics Collector (separate service)
+  monitoring-collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring
+    container_name: bizosaas-monitoring-collector
+    environment:
+      # Database Configuration
+      - DATABASE_URL=postgresql+asyncpg://bizosaas:bizosaas@postgresql:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/0
+      
+      # Monitoring Configuration
+      - MONITORING_INTERVAL=30
+      - ENABLED_COLLECTORS=database,redis,containers,api_endpoints
+      
+      # Service URLs for monitoring
+      - SERVICES_TO_MONITOR=http://sqladmin-dashboard:5000,http://host.docker.internal:3001,http://host.docker.internal:3002
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    
+    networks:
+      - bizosaas-network
+    
+    depends_on:
+      - postgresql
+      - redis
+      - sqladmin-dashboard
+    
+    restart: unless-stopped
+
+  # Traefik reverse proxy for local development
+  traefik:
+    image: traefik:v3.0
+    container_name: bizosaas-traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=admin@bizosaas.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_data:/letsencrypt
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+
+networks:
+  bizosaas-network:
+    driver: bridge
+    name: bizosaas-network
+
+volumes:
+  postgresql_data:
+    driver: local
+    name: bizosaas-postgresql-data
+  
+  redis_data:
+    driver: local
+    name: bizosaas-redis-data
+  
+  traefik_data:
+    driver: local
+    name: bizosaas-traefik-data
