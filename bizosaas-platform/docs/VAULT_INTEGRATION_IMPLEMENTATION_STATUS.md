@@ -53,12 +53,12 @@ bizosaas/
 All platform credentials migrated from `/home/alagiri/projects/credentials.md` to Vault:
 
 ✅ **Platform Credentials:**
-- OpenRouter API Key: `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`
-- PostgreSQL: `postgres:Bizoholic2024Alagiri@bizosaas-postgres-unified:5432/bizosaas`
+- OpenRouter API Key: `[CONFIGURED_IN_VAULT]`
+- PostgreSQL: `[CONFIGURED_IN_VAULT]`
 - Redis: `bizosaas-redis:6379`
 - Temporal: `temporal:7233`
 - Django/Wagtail/Saleor secret keys
-- GitHub PAT: `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`
+- GitHub PAT: `[CONFIGURED_IN_VAULT]`
 
 ✅ **Telegram Bot Tokens (5 bots):**
 - jonnyaibot
