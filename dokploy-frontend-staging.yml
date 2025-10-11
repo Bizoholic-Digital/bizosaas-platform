@@ -1,0 +1,222 @@
+version: '3.8'
+
+# BizOSaaS Frontend Applications - STAGING Environment
+# Deploy to Dokploy with staging subdomains for testing
+
+services:
+  # ==========================================
+  # BIZOHOLIC MARKETING WEBSITE (STAGING)
+  # Domain: stg.bizoholic.com
+  # ==========================================
+  bizoholic-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git
+      dockerfile: frontend/apps/bizoholic-frontend/Dockerfile
+    container_name: bizoholic-frontend-3000
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-unified:8001
+      - NEXT_PUBLIC_SITE_URL=https://stg.bizoholic.com
+      - ENVIRONMENT=staging
+      - DEBUG_MODE=true
+      - ENABLE_ANALYTICS=false
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-staging-main.rule=Host(`stg.bizoholic.com`) && !PathPrefix(`/login`) && !PathPrefix(`/admin`)"
+      - "traefik.http.routers.bizoholic-staging-main.tls=true"
+      - "traefik.http.routers.bizoholic-staging-main.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.bizoholic-staging-main.priority=1"
+
+  # ==========================================
+  # CORELDOVE E-COMMERCE WEBSITE (STAGING)
+  # Domain: stg.coreldove.com
+  # ==========================================
+  coreldove-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git
+      dockerfile: frontend/apps/coreldove-frontend/Dockerfile
+    container_name: coreldove-frontend-3002
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-unified:8001
+      - NEXT_PUBLIC_SITE_URL=https://stg.coreldove.com
+      - NEXT_PUBLIC_SALEOR_API_URL=http://bizosaas-brain-unified:8001/api/brain/saleor
+      - ENVIRONMENT=staging
+      - DEBUG_MODE=true
+      - ENABLE_ANALYTICS=false
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-staging.rule=Host(`stg.coreldove.com`)"
+      - "traefik.http.routers.coreldove-staging.tls=true"
+      - "traefik.http.routers.coreldove-staging.tls.certresolver=letsencrypt"
+
+  # ==========================================
+  # THRILLRING GAMING WEBSITE (STAGING)
+  # Domain: stg.thrillring.com
+  # ==========================================
+  thrillring-gaming:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git
+      dockerfile: frontend/apps/thrillring-gaming/Dockerfile
+    container_name: thrillring-gaming-3005
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-unified:8001
+      - NEXT_PUBLIC_SITE_URL=https://stg.thrillring.com
+      - ENVIRONMENT=staging
+      - DEBUG_MODE=true
+      - ENABLE_ANALYTICS=false
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.thrillring-staging.rule=Host(`stg.thrillring.com`)"
+      - "traefik.http.routers.thrillring-staging.tls=true"
+      - "traefik.http.routers.thrillring-staging.tls.certresolver=letsencrypt"
+
+  # ==========================================
+  # CLIENT PORTAL (STAGING)
+  # Path: stg.bizoholic.com/login/
+  # ==========================================
+  client-portal:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git
+      dockerfile: frontend/apps/client-portal/Dockerfile
+    container_name: bizosaas-client-portal-3001
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-unified:8001
+      - NEXT_PUBLIC_SITE_URL=https://stg.bizoholic.com/login
+      - NEXT_PUBLIC_PORTAL_MODE=true
+      - ENVIRONMENT=staging
+      - DEBUG_MODE=true
+      - ENABLE_ANALYTICS=false
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portal-staging.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/login`)"
+      - "traefik.http.routers.portal-staging.middlewares=portal-staging-stripprefix"
+      - "traefik.http.middlewares.portal-staging-stripprefix.stripprefix.prefixes=/login"
+      - "traefik.http.routers.portal-staging.tls=true"
+      - "traefik.http.routers.portal-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.portal-staging.priority=10"
+
+  # ==========================================
+  # ADMIN DASHBOARD (STAGING)
+  # Path: stg.bizoholic.com/admin/
+  # ==========================================
+  admin-dashboard:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git
+      dockerfile: frontend/apps/bizosaas-admin/Dockerfile
+    container_name: bizosaas-admin-3009
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-unified:8001
+      - NEXT_PUBLIC_SITE_URL=https://stg.bizoholic.com/admin
+      - NEXT_PUBLIC_ADMIN_MODE=true
+      - ENVIRONMENT=staging
+      - DEBUG_MODE=true
+      - ENABLE_ANALYTICS=false
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-staging.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin-staging.middlewares=admin-staging-stripprefix"
+      - "traefik.http.middlewares.admin-staging-stripprefix.stripprefix.prefixes=/admin"
+      - "traefik.http.routers.admin-staging.tls=true"
+      - "traefik.http.routers.admin-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.admin-staging.priority=10"
+
+  # ==========================================
+  # BUSINESS DIRECTORY (STAGING)
+  # Internal testing only
+  # ==========================================
+  business-directory:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git
+      dockerfile: frontend/apps/business-directory/Dockerfile
+    container_name: business-directory-3004
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=staging
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-unified:8001
+      - ENVIRONMENT=staging
+      - DEBUG_MODE=true
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  bizosaas-network:
+    external: true
+
+# ==================================================
+# STAGING DOMAIN SUMMARY:
+# ==================================================
+# stg.bizoholic.com          → bizoholic-frontend (marketing)
+# stg.bizoholic.com/login/   → client-portal
+# stg.bizoholic.com/admin/   → admin-dashboard
+# stg.coreldove.com          → coreldove-frontend (e-commerce)
+# stg.thrillring.com         → thrillring-gaming (gaming)
+# ==================================================
+#
+# STAGING ENVIRONMENT FEATURES:
+# - DEBUG_MODE=true for detailed logging
+# - ENABLE_ANALYTICS=false to avoid test data
+# - NODE_ENV=staging for environment-specific behavior
+# - Separate Traefik router names to avoid conflicts
+# - Same SSL certificates for realistic testing
+# ==================================================
