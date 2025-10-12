@@ -1,16 +1,16 @@
-  # BizOSaaS Infrastructure Project - STAGING Environment
-  # 5 Infrastructure containers for staging deployment (simplified)
+# BizOSaaS Infrastructure Project - STAGING Environment
+# 5 Infrastructure containers for staging deployment (non-conflicting ports)
 
   services:
     # ==========================================
     # POSTGRESQL DATABASE
     # Multi-tenant database with pgvector
     # ==========================================
-    postgres:
-      image: pgvector/pgvector:pg16
-      container_name: bizosaas-postgres-staging
-      ports:
-        - "5432:5432"
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: bizosaas-postgres-staging
+    ports:
+      - "5433:5432"
       environment:
         - POSTGRES_DB=bizosaas_staging
         - POSTGRES_USER=admin
@@ -31,11 +31,11 @@
     # REDIS CACHE
     # High-performance caching and sessions
     # ==========================================
-    redis:
-      image: redis:7-alpine
-      container_name: bizosaas-redis-staging
-      ports:
-        - "6379:6379"
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-staging
+    ports:
+      - "6380:6379"
       command: redis-server --appendonly yes --replica-read-only no
       volumes:
         - redis_staging_data:/data
@@ -52,11 +52,11 @@
     # HASHICORP VAULT
     # Secrets management
     # ==========================================
-    vault:
-      image: hashicorp/vault:1.15
-      container_name: bizosaas-vault-staging
-      ports:
-        - "8200:8200"
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: bizosaas-vault-staging
+    ports:
+      - "8201:8200"
       environment:
         - VAULT_DEV_ROOT_TOKEN_ID=staging-root-token-bizosaas-2025
         - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
@@ -82,7 +82,7 @@
       image: temporalio/auto-setup:1.22.0
       container_name: bizosaas-temporal-server-staging
       ports:
-        - "7233:7233"
+        - "7234:7233"
       environment:
         - DB=postgresql
         - DB_PORT=5432
@@ -112,7 +112,7 @@
       image: temporalio/ui:2.21.0
       container_name: bizosaas-temporal-ui-staging
       ports:
-        - "8082:8080"
+        - "8083:8080"
       environment:
         - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
         - TEMPORAL_CORS_ORIGINS=http://localhost:3000,https://stg.bizoholic.com
