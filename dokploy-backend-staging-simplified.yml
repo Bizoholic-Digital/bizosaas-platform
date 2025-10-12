@@ -20,7 +20,7 @@ services:
       - DEFAULT_FROM_EMAIL=noreply@stg.coreldove.com
       - CELERY_BROKER_URL=redis://bizosaas-redis-staging:6379/0
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
@@ -29,7 +29,7 @@ services:
       retries: 3
 
 networks:
-  bizosaas-staging-network:
+  dokploy-network:
     external: true
 
 # ==================================================

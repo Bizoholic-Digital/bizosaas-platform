@@ -18,7 +18,7 @@ services:
     volumes:
       - postgres_staging_data:/var/lib/postgresql/data
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas_staging"]
@@ -39,7 +39,7 @@ services:
     volumes:
       - redis_staging_data:/data
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -65,7 +65,7 @@ services:
     volumes:
       - vault_staging_data:/vault/data
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "vault", "status"]
@@ -82,9 +82,8 @@ volumes:
     driver: local
 
 networks:
-  bizosaas-staging-network:
-    driver: bridge
-    external: false
+  dokploy-network:
+    external: true
 
 # ==================================================
 # INFRASTRUCTURE PROJECT SUMMARY:
