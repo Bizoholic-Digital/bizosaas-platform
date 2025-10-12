@@ -68,7 +68,7 @@ services:
     ports:
       - "8002:4000"
     environment:
-      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.staging
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
       - REDIS_URL=redis://bizosaas-redis-staging:6379/1
       - SECRET_KEY=${DJANGO_SECRET_KEY:-staging-wagtail-secret-key-bizosaas-2025}
@@ -98,7 +98,7 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - DJANGO_SETTINGS_MODULE=crm_project.settings.staging
+      - DJANGO_SETTINGS_MODULE=crm_project.settings.production
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
       - REDIS_URL=redis://bizosaas-redis-staging:6379/2
       - SECRET_KEY=${DJANGO_CRM_SECRET_KEY:-staging-django-crm-secret-key-bizosaas-2025}
