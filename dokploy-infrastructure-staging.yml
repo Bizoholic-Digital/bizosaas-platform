@@ -113,7 +113,51 @@ services:
     depends_on:
       - temporal-server
 
+  # ==========================================
+  # APACHE SUPERSET
+  # Analytics and Business Intelligence
+  # ==========================================
+  superset:
+    image: ghcr.io/bizoholic-digital/apache-superset:staging
+    container_name: bizosaas-superset-staging
+    ports:
+      - "8088:8088"
+    environment:
+      # Core Configuration
+      - SUPERSET_CONFIG_PATH=/app/pythonpath/superset_config.py
+      - SUPERSET_SECRET_KEY=staging-secret-key-superset-bizosaas-2025
+      - SUPERSET_ADMIN_PASSWORD=Bizoholic2024Admin
+      # Database Configuration
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
+      - POSTGRES_HOST=bizosaas-postgres-staging
+      - POSTGRES_PORT=5432
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      # Redis Configuration
+      - REDIS_HOST=bizosaas-redis-staging
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/2
+      # BizOSaaS Integration
+      - BIZOSAAS_BRAIN_API_URL=http://bizosaas-brain-staging:8001
+      - DEFAULT_TENANT_ID=bizosaas
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    volumes:
+      - superset_home:/app/superset_home
+
 volumes:
+  superset_home:
+    driver: local
   postgres_staging_data:
     driver: local
   redis_staging_data:
@@ -128,9 +172,9 @@ networks:
 # ==================================================
 # INFRASTRUCTURE PROJECT SUMMARY:
 # ==================================================
-# Container Count: 5 (complete infrastructure)
+# Container Count: 6 (complete infrastructure + analytics)
 # Purpose: Complete infrastructure for staging environment
-# External Access: PostgreSQL (5433), Redis (6380), Vault (8201), Temporal (7234), Temporal UI (8083)
+# External Access: PostgreSQL (5433), Redis (6380), Vault (8201), Temporal (7234), Temporal UI (8083), Superset (8088)
 # Dependencies: None (foundation layer)
 # Services:
 #   - PostgreSQL with pgvector
@@ -138,4 +182,5 @@ networks:
 #   - Vault secrets management
 #   - Temporal Server (workflow orchestration)
 #   - Temporal UI (workflow management interface)
+#   - Apache Superset (analytics and BI dashboards)
 # ==================================================
