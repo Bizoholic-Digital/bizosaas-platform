@@ -19,7 +19,7 @@ services:
     environment:
       - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/0
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
       - VAULT_URL=http://bizosaas-vault-staging:8200
       - VAULT_TOKEN=staging-root-token-bizosaas-2025
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-staging_placeholder}
@@ -50,7 +50,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/1
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
       - DEBUG=true
       - SECRET_KEY=${DJANGO_SECRET_KEY:-staging-secret-key-bizosaas}
       - ALLOWED_HOSTS=stg.bizoholic.com,bizosaas-wagtail-staging
@@ -77,7 +77,7 @@ services:
     environment:
       - DJANGO_SETTINGS_MODULE=django_crm.settings.staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/2
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/2
       - DEBUG=true
       - SECRET_KEY=${DJANGO_CRM_SECRET_KEY:-staging-crm-secret-key}
       - ALLOWED_HOSTS=stg.bizoholic.com,bizosaas-django-crm-staging
@@ -104,7 +104,7 @@ services:
     environment:
       - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/3
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/3
       - API_BASE_URL=http://bizosaas-brain-staging:8001
       - LOG_LEVEL=debug
     networks:
@@ -128,7 +128,7 @@ services:
     environment:
       - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/4
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_test_staging_placeholder}
       - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-sandbox_client_id}
       - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-sandbox_client_secret}
@@ -157,7 +157,7 @@ services:
     environment:
       - ENVIRONMENT=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/5
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
       - BRAIN_API_URL=http://bizosaas-brain-staging:8001
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-staging_placeholder}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-staging_placeholder}
@@ -186,7 +186,7 @@ services:
     environment:
       - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/6
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/6
       - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-staging_access_key}
       - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-staging_secret_key}
       - BRAIN_API_URL=http://bizosaas-brain-staging:8001
@@ -211,7 +211,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
-      - REDIS_URL=redis://:BizOSaaS2025!StagingRedis@bizosaas-redis-staging:6379/7
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/7
       - SECRET_KEY=${SALEOR_SECRET_KEY:-staging-saleor-secret-key}
       - ALLOWED_HOSTS=stg.coreldove.com,bizosaas-saleor-staging
       - DEBUG=true
