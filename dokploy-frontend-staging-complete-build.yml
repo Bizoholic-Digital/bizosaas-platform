@@ -1,0 +1,220 @@
+# BizOSaaS Frontend Applications - STAGING (Complete - Build from GitHub)
+# All 6 frontend services building directly from repository
+# No registry authentication required
+
+services:
+  # ==========================================
+  # 1. BIZOHOLIC FRONTEND
+  # Marketing agency website
+  # ==========================================
+  bizoholic-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/bizoholic-frontend
+      dockerfile: Dockerfile
+    container_name: bizosaas-bizoholic-frontend-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-staging.rule=Host(`stg.bizoholic.com`)"
+      - "traefik.http.routers.bizoholic-staging.tls=true"
+      - "traefik.http.routers.bizoholic-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-staging.loadbalancer.server.port=3000"
+
+  # ==========================================
+  # 2. CLIENT PORTAL
+  # Multi-tenant client dashboard
+  # ==========================================
+  client-portal:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/client-portal
+      dockerfile: Dockerfile
+    container_name: bizosaas-client-portal-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal-staging.rule=Host(`stg.portal.bizoholic.com`)"
+      - "traefik.http.routers.client-portal-staging.tls=true"
+      - "traefik.http.routers.client-portal-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal-staging.loadbalancer.server.port=3000"
+
+  # ==========================================
+  # 3. CORELDOVE FRONTEND
+  # E-commerce storefront
+  # ==========================================
+  coreldove-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/coreldove-frontend
+      dockerfile: Dockerfile
+    container_name: bizosaas-coreldove-frontend-staging
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
+      - NEXT_PUBLIC_CORELDOVE_BACKEND_URL=http://bizosaas-coreldove-backend-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-staging.rule=Host(`stg.coreldove.com`)"
+      - "traefik.http.routers.coreldove-staging.tls=true"
+      - "traefik.http.routers.coreldove-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.coreldove-staging.loadbalancer.server.port=3000"
+
+  # ==========================================
+  # 4. BUSINESS DIRECTORY FRONTEND
+  # Business listings directory
+  # ==========================================
+  business-directory-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/business-directory
+      dockerfile: Dockerfile
+    container_name: bizosaas-business-directory-frontend-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_DIRECTORY_API_URL=http://bizosaas-business-directory-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.directory-staging.rule=Host(`stg.directory.bizoholic.com`)"
+      - "traefik.http.routers.directory-staging.tls=true"
+      - "traefik.http.routers.directory-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.directory-staging.loadbalancer.server.port=3000"
+
+  # ==========================================
+  # 5. THRILLRING GAMING
+  # Gaming platform frontend
+  # ==========================================
+  thrillring-gaming:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas/frontend/apps/thrillring-gaming
+      dockerfile: Dockerfile
+    container_name: bizosaas-thrillring-gaming-staging
+    ports:
+      - "3005:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.thrillring-staging.rule=Host(`stg.thrillring.com`)"
+      - "traefik.http.routers.thrillring-staging.tls=true"
+      - "traefik.http.routers.thrillring-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.thrillring-staging.loadbalancer.server.port=3000"
+
+  # ==========================================
+  # 6. BIZOSAAS ADMIN DASHBOARD
+  # Platform administration interface
+  # ==========================================
+  admin-dashboard:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/bizosaas-admin
+      dockerfile: Dockerfile
+    container_name: bizosaas-admin-dashboard-staging
+    ports:
+      - "3009:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_SUPERSET_URL=http://bizosaas-superset-staging:8088
+      - NEXT_PUBLIC_TEMPORAL_UI_URL=http://bizosaas-temporal-ui-staging:8080
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-staging.rule=Host(`stg.admin.bizoholic.com`)"
+      - "traefik.http.routers.admin-staging.tls=true"
+      - "traefik.http.routers.admin-staging.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin-staging.loadbalancer.server.port=3000"
+
+# ==========================================
+# SHARED CONFIGURATION
+# ==========================================
+networks:
+  dokploy-network:
+    external: true
+
+# ==================================================
+# FRONTEND PROJECT SUMMARY (Build from GitHub):
+# ==================================================
+# Container Count: 6 (complete frontend stack)
+# Build Strategy: All build directly from GitHub repository
+# No Registry Required: No authentication needed
+# External Ports: 3000-3003, 3005, 3009
+# Dependencies: Backend services (Brain API, CRM, CMS, Saleor)
+# Services:
+#   1. Bizoholic Frontend (3000) - Marketing website
+#   2. Client Portal (3001) - Multi-tenant dashboard
+#   3. CorelDove Frontend (3002) - E-commerce storefront
+#   4. Business Directory (3003) - Directory listings
+#   5. ThrillRing Gaming (3005) - Gaming platform
+#   6. Admin Dashboard (3009) - Platform administration
+# Traefik Integration: All services have domain routing configured
+# SSL: Let's Encrypt certificates via Traefik
+# ==================================================
