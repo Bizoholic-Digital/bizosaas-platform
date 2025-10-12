@@ -8,8 +8,8 @@ services:
   # ==========================================
   brain-api:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: bizosaas-platform/ai/services/bizosaas-brain/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/ai/services/bizosaas-brain
+      dockerfile: Dockerfile
     container_name: bizosaas-brain-staging
     ports:
       - "8001:8001"
@@ -32,8 +32,8 @@ services:
   # ==========================================
   wagtail-cms:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: bizosaas-platform/backend/services/cms/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/cms
+      dockerfile: Dockerfile
     container_name: bizosaas-wagtail-staging
     ports:
       - "8002:8002"
@@ -53,8 +53,8 @@ services:
   # ==========================================
   django-crm:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: bizosaas-platform/backend/services/crm/django-crm/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/django-crm
+      dockerfile: Dockerfile
     container_name: bizosaas-django-crm-staging
     ports:
       - "8003:8003"
@@ -74,8 +74,8 @@ services:
   # ==========================================
   directory-api:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: bizosaas-platform/backend/services/crm/business-directory/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/business-directory
+      dockerfile: Dockerfile
     container_name: bizosaas-directory-api-staging
     ports:
       - "8004:8004"
