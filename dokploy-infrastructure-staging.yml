@@ -73,6 +73,46 @@ services:
       timeout: 10s
       retries: 3
 
+  # ==========================================
+  # TEMPORAL SERVER
+  # Workflow orchestration engine
+  # ==========================================
+  temporal-server:
+    image: temporalio/auto-setup:1.22.0
+    container_name: bizosaas-temporal-server-staging
+    ports:
+      - "7234:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PWD=BizOSaaS2025!StagingDB
+      - POSTGRES_SEEDS=bizosaas-postgres-staging
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  # ==========================================
+  # TEMPORAL UI
+  # Workflow management interface
+  # ==========================================
+  temporal-ui:
+    image: temporalio/ui:2.21.0
+    container_name: bizosaas-temporal-ui-staging
+    ports:
+      - "8083:8080"
+    environment:
+      - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8083
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - temporal-server
+
 volumes:
   postgres_staging_data:
     driver: local
@@ -88,9 +128,14 @@ networks:
 # ==================================================
 # INFRASTRUCTURE PROJECT SUMMARY:
 # ==================================================
-# Container Count: 3 (core infrastructure only)
-# Purpose: Core infrastructure for staging environment
-# External Access: PostgreSQL (5433), Redis (6380), Vault (8201)
+# Container Count: 5 (complete infrastructure)
+# Purpose: Complete infrastructure for staging environment
+# External Access: PostgreSQL (5433), Redis (6380), Vault (8201), Temporal (7234), Temporal UI (8083)
 # Dependencies: None (foundation layer)
-# Note: Temporal services removed temporarily due to health check issues
+# Services:
+#   - PostgreSQL with pgvector
+#   - Redis cache
+#   - Vault secrets management
+#   - Temporal Server (workflow orchestration)
+#   - Temporal UI (workflow management interface)
 # ==================================================
