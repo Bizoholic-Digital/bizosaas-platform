@@ -9,7 +9,7 @@ services:
   bizoholic-frontend:
     build:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: frontend/apps/bizoholic-frontend/Dockerfile
+      dockerfile: bizosaas/frontend/apps/bizoholic-frontend/Dockerfile
     container_name: bizoholic-frontend-staging
     ports:
       - "3000:3000"
@@ -36,7 +36,7 @@ services:
   coreldove-frontend:
     build:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: frontend/apps/coreldove-frontend/Dockerfile
+      dockerfile: bizosaas/frontend/apps/coreldove-frontend/Dockerfile
     container_name: coreldove-frontend-staging
     ports:
       - "3002:3002"
@@ -64,7 +64,7 @@ services:
   thrillring-gaming:
     build:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: frontend/apps/thrillring-gaming/Dockerfile
+      dockerfile: bizosaas/frontend/apps/thrillring-gaming/Dockerfile
     container_name: thrillring-gaming-staging
     ports:
       - "3003:3003"
@@ -96,4 +96,5 @@ networks:
 # External Access: Via Traefik reverse proxy with SSL
 # Domains: stg.bizoholic.com, stg.coreldove.com, stg.thrillring.com
 # Dependencies: Saleor API (backend)
+# Dockerfile Paths: bizosaas/frontend/apps/*/Dockerfile
 # ==================================================
