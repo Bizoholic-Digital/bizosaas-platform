@@ -88,12 +88,14 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PWD=BizOSaaS2025!StagingDB
       - POSTGRES_SEEDS=bizosaas-postgres-staging
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      # Remove invalid config file path - use default config
+      # - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     networks:
       - dokploy-network
     restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   # ==========================================
   # TEMPORAL UI
