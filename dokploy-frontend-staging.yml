@@ -4,30 +4,33 @@
 
 services:
   # ==========================================
-  # 1. CLIENT PORTAL (Port 3000)
+  # 1. CLIENT PORTAL (Port 3000) - TEMPORARILY DISABLED
   # ==========================================
-  client-portal:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/client-portal
-      dockerfile: Dockerfile
-    container_name: bizosaas-client-portal-staging
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
-      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
-      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
-      - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
-      - NEXT_TELEMETRY_DISABLED=1
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # REASON: Missing source code modules in GitHub repository
+  # ERRORS: Module not found: Can't resolve '@/lib/utils', '../../lib/hooks/useLeadsData', etc.
+  # TODO: Fix missing imports in client-portal source code
+  # client-portal:
+  #   build:
+  #     context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/client-portal
+  #     dockerfile: Dockerfile
+  #   container_name: bizosaas-client-portal-staging
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+  #     - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+  #     - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+  #     - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
+  #     - NEXT_TELEMETRY_DISABLED=1
+  #   networks:
+  #     - dokploy-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # ==========================================
   # 2. BIZOHOLIC FRONTEND (Port 3001)
@@ -104,27 +107,30 @@ services:
       retries: 3
 
   # ==========================================
-  # 5. THRILLRING GAMING (Port 3004)
+  # 5. THRILLRING GAMING (Port 3004) - TEMPORARILY DISABLED
   # ==========================================
-  thrillring-gaming:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/thrillring-gaming
-      dockerfile: Dockerfile
-    container_name: bizosaas-thrillring-gaming-staging
-    ports:
-      - "3004:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
-      - NEXT_TELEMETRY_DISABLED=1
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # REASON: Directory doesn't exist in GitHub repository
+  # ERROR: "bizosaas-platform/frontend/apps/thrillring-gaming: no such file or directory"
+  # TODO: Create thrillring-gaming app directory in repository
+  # thrillring-gaming:
+  #   build:
+  #     context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/thrillring-gaming
+  #     dockerfile: Dockerfile
+  #   container_name: bizosaas-thrillring-gaming-staging
+  #   ports:
+  #     - "3004:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+  #     - NEXT_TELEMETRY_DISABLED=1
+  #   networks:
+  #     - dokploy-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # ==========================================
   # 6. BIZOSAAS ADMIN DASHBOARD (Port 3005)
