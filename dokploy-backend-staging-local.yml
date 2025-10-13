@@ -4,7 +4,32 @@
 
 services:
   # ==========================================
-  # 1. BRAIN API - AI Gateway (Port 8001)
+  # 1. SALEOR E-COMMERCE API (Port 8000)
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
+      - REDIS_URL=redis://194.238.16.237:6380/1
+      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - DEBUG=False
+      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. BRAIN API - AI Gateway (Port 8001)
   # ==========================================
   brain-api:
     image: bizosaas-brain-gateway:latest
@@ -133,6 +158,32 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+
+  # ==========================================
+  # 8. AUTH SERVICE (Port 8006)
+  # ==========================================
+  auth-service:
+    image: bizosaas/auth-service-v2:latest
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
+      - ENVIRONMENT=staging
+      - PORT=8006
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   dokploy-network:
