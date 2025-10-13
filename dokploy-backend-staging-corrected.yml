@@ -1,34 +1,59 @@
-version: '3.8'
-
-# BizOSaaS Backend Services - STAGING Environment
-# 8 Backend service containers for staging deployment
-# Dependencies: Infrastructure services must be running first
+# BizOSaaS Backend Services - STAGING (NETWORK CORRECTED)
+# All 10 backend services building directly from GitHub repository
+# Deploy via Dokploy at dk.bizoholic.com
+#
+# CRITICAL FIX: Changed network from "bizosaas-staging-network" to "dokploy-network"
+# This matches the infrastructure services network configuration
+#
+# Infrastructure Services (deployed separately in dokploy-network):
+#   - bizosaas-postgres-staging (internal port 5432, external 5433)
+#   - bizosaas-redis-staging (internal port 6379, external 6380)
+#   - bizosaas-temporal-server-staging (internal port 7233, external 7234)
 
 services:
   # ==========================================
-  # AI CENTRAL HUB (BRAIN API)
-  # Main API coordinator for all services
+  # 1. SALEOR E-COMMERCE API (Port 8000)
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
+      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - DEBUG=False
+      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. BRAIN API - AI Gateway (Port 8001)
   # ==========================================
   brain-api:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: ai/services/bizosaas-brain/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/ai/services/bizosaas-brain
+      dockerfile: Dockerfile
     container_name: bizosaas-brain-staging
     ports:
       - "8001:8001"
     environment:
-      - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
       - REDIS_URL=redis://bizosaas-redis-staging:6379/0
-      - VAULT_URL=http://bizosaas-vault-staging:8200
-      - VAULT_TOKEN=staging-root-token-bizosaas-2025
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-staging_placeholder}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-staging_placeholder}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-staging_placeholder}
-      - DEBUG=true
-      - LOG_LEVEL=debug
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
@@ -37,206 +62,246 @@ services:
       retries: 3
 
   # ==========================================
-  # WAGTAIL CMS
-  # Headless content management system
+  # 3. WAGTAIL CMS (Port 8002)
   # ==========================================
   wagtail-cms:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: backend/services/cms/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/cms
+      dockerfile: Dockerfile
     container_name: bizosaas-wagtail-staging
     ports:
-      - "8002:8002"
+      - "8002:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.staging
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
-      - DEBUG=true
-      - SECRET_KEY=${DJANGO_SECRET_KEY:-staging-secret-key-bizosaas}
-      - ALLOWED_HOSTS=stg.bizoholic.com,bizosaas-wagtail-staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/3
+      - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
+      - DEBUG=False
+      - PYTHONPATH=/app
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # ==========================================
-  # DJANGO CRM
-  # Customer relationship management
+  # 4. DJANGO CRM (Port 8003)
   # ==========================================
   django-crm:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: backend/services/crm/django-crm/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/django-crm
+      dockerfile: Dockerfile
     container_name: bizosaas-django-crm-staging
     ports:
-      - "8003:8003"
+      - "8003:8000"
     environment:
-      - DJANGO_SETTINGS_MODULE=django_crm.settings.staging
+      - DJANGO_SETTINGS_MODULE=crm_project.settings.production
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/2
-      - DEBUG=true
-      - SECRET_KEY=${DJANGO_CRM_SECRET_KEY:-staging-crm-secret-key}
-      - ALLOWED_HOSTS=stg.bizoholic.com,bizosaas-django-crm-staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
+      - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
+      - DEBUG=False
+      - PYTHONPATH=/app
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # ==========================================
-  # BUSINESS DIRECTORY API
-  # Directory service backend
+  # 5. BUSINESS DIRECTORY BACKEND (Port 8004)
   # ==========================================
-  directory-api:
+  business-directory-backend:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: backend/services/crm/business-directory/Dockerfile
-    container_name: bizosaas-directory-api-staging
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/business-directory
+      dockerfile: Dockerfile
+    container_name: bizosaas-business-directory-staging
     ports:
-      - "8004:8004"
+      - "8004:8000"
     environment:
-      - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/3
-      - API_BASE_URL=http://bizosaas-brain-staging:8001
-      - LOG_LEVEL=debug
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
+      - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # ==========================================
-  # CORELDOVE E-COMMERCE BACKEND
-  # E-commerce API service
+  # 6. CORELDOVE BACKEND (Port 8005)
   # ==========================================
   coreldove-backend:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: bizosaas/ecommerce/services/coreldove-backend/Dockerfile
-    container_name: coreldove-backend-staging
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas/ecommerce/services/coreldove-backend
+      dockerfile: Dockerfile
+    container_name: bizosaas-coreldove-backend-staging
     ports:
-      - "8005:8005"
+      - "8005:8000"
     environment:
-      - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_test_staging_placeholder}
-      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID:-sandbox_client_id}
-      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET:-sandbox_client_secret}
-      - ALLOWED_ORIGINS=https://stg.coreldove.com
-      - LOG_LEVEL=debug
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/6
+      - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
+      - SECRET_KEY=staging-secret-key-coreldove-bizosaas-2025
+      - ENVIRONMENT=staging
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # ==========================================
-  # AI AGENTS SERVICE
-  # Multi-model AI coordination
+  # 7. AUTHENTICATION SERVICE (Port 8006)
+  # ==========================================
+  auth-service:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/auth
+      dockerfile: Dockerfile
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
+      - ENVIRONMENT=staging
+      - PORT=8006
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 8. TEMPORAL INTEGRATION (Port 8007)
+  # ==========================================
+  temporal-integration:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/temporal
+      dockerfile: Dockerfile
+    container_name: bizosaas-temporal-integration-staging
+    ports:
+      - "8007:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/7
+      - TEMPORAL_HOST=bizosaas-temporal-server-staging
+      - TEMPORAL_PORT=7233
+      - ENVIRONMENT=staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 9. AI AGENTS (Port 8008)
   # ==========================================
   ai-agents:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: backend/services/ai-agents/Dockerfile
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/ai-agents
+      dockerfile: Dockerfile
     container_name: bizosaas-ai-agents-staging
     ports:
-      - "8010:8010"
+      - "8008:8000"
     environment:
-      - ENVIRONMENT=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/8
       - BRAIN_API_URL=http://bizosaas-brain-staging:8001
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-staging_placeholder}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-staging_placeholder}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-staging_placeholder}
-      - LOG_LEVEL=debug
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ENVIRONMENT=staging
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
   # ==========================================
-  # AMAZON SOURCING API
-  # Product sourcing integration
+  # 10. AMAZON SOURCING (Port 8009)
   # ==========================================
   amazon-sourcing:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: backend/services/amazon-sourcing/Dockerfile
-    container_name: amazon-sourcing-staging
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/amazon-sourcing
+      dockerfile: Dockerfile
+    container_name: bizosaas-amazon-sourcing-staging
     ports:
-      - "8085:8085"
+      - "8009:8000"
     environment:
-      - NODE_ENV=staging
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/6
-      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-staging_access_key}
-      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-staging_secret_key}
-      - BRAIN_API_URL=http://bizosaas-brain-staging:8001
-      - LOG_LEVEL=debug
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/9
+      - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
+      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-}
+      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-}
+      - ENVIRONMENT=staging
     networks:
-      - bizosaas-staging-network
+      - dokploy-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # SALEOR E-COMMERCE ENGINE
-  # Advanced e-commerce platform
-  # ==========================================
-  saleor-api:
-    image: ghcr.io/saleor/saleor:3.20
-    container_name: bizosaas-saleor-staging
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/7
-      - SECRET_KEY=${SALEOR_SECRET_KEY:-staging-saleor-secret-key}
-      - ALLOWED_HOSTS=stg.coreldove.com,bizosaas-saleor-staging
-      - DEBUG=true
-    networks:
-      - bizosaas-staging-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
 networks:
-  bizosaas-staging-network:
+  dokploy-network:
     external: true
 
 # ==================================================
-# BACKEND SERVICES PROJECT SUMMARY:
+# DEPLOYMENT FIX SUMMARY:
 # ==================================================
-# Container Count: 8
-# Purpose: Backend APIs and services for staging
-# External Access: None (accessed via AI Central Hub)
-# Dependencies: Infrastructure services must be running first
-# Network: Uses external bizosaas-staging-network
-# Environment: Staging with debug logging enabled
+#
+# ISSUE IDENTIFIED: Network mismatch
+# - Old config: "bizosaas-staging-network"
+# - Infrastructure: "dokploy-network"
+# - Fix: Changed all services to use "dokploy-network"
+#
+# VERIFICATION:
+# Backend services will now be able to resolve and connect to:
+# - bizosaas-postgres-staging:5432 (internal)
+# - bizosaas-redis-staging:6379 (internal)
+# - bizosaas-temporal-server-staging:7233 (internal)
+#
+# DEPLOYMENT INSTRUCTIONS:
+# 1. In Dokploy, update the backend project compose file
+# 2. Paste this entire configuration
+# 3. Click "Deploy" to rebuild with correct network
+# 4. All services should now connect successfully
+#
+# TROUBLESHOOTING:
+# If services still can't connect after this fix:
+# 1. Verify infrastructure is in dokploy-network:
+#    docker network inspect dokploy-network
+# 2. Check container names match exactly:
+#    docker ps | grep postgres
+#    docker ps | grep redis
+# 3. Test connectivity from one backend service:
+#    docker exec bizosaas-brain-staging ping bizosaas-postgres-staging
+#
 # ==================================================
