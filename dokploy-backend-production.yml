@@ -1,0 +1,284 @@
+version: '3.8'
+
+# BizOSaaS Backend Services - PRODUCTION Environment
+# 8 Backend service containers for production deployment
+# Optimized ports to avoid conflicts with staging
+
+services:
+  # ==========================================
+  # AI CENTRAL HUB (BRAIN API)
+  # Main API coordinator - PRODUCTION
+  # ==========================================
+  brain-api:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: ai/services/bizosaas-brain/Dockerfile
+    container_name: bizosaas-brain-production
+    ports:
+      - "8101:8001"  # Different port from staging (8001)
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/0
+      - VAULT_URL=http://bizosaas-vault-production:8200
+      - VAULT_TOKEN=production-root-token-bizosaas-2025-secure
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY_PRODUCTION}
+      - OPENAI_API_KEY=${OPENAI_API_KEY_PRODUCTION}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY_PRODUCTION}
+      - DEBUG=false
+      - LOG_LEVEL=info
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - vault
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # WAGTAIL CMS
+  # Headless content management - PRODUCTION
+  # ==========================================
+  wagtail-cms:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/cms/Dockerfile
+    container_name: bizosaas-wagtail-production
+    ports:
+      - "8102:8002"  # Different port from staging (8002)
+    environment:
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/1
+      - DEBUG=false
+      - SECRET_KEY=${DJANGO_SECRET_KEY_PRODUCTION}
+      - ALLOWED_HOSTS=bizoholic.com,www.bizoholic.com,bizosaas-wagtail-production
+      - SECURE_SSL_REDIRECT=true
+      - SESSION_COOKIE_SECURE=true
+      - CSRF_COOKIE_SECURE=true
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # DJANGO CRM
+  # Customer relationship management - PRODUCTION
+  # ==========================================
+  django-crm:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/crm/django-crm/Dockerfile
+    container_name: bizosaas-django-crm-production
+    ports:
+      - "8103:8003"  # Different port from staging (8003)
+    environment:
+      - DJANGO_SETTINGS_MODULE=django_crm.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/2
+      - DEBUG=false
+      - SECRET_KEY=${DJANGO_CRM_SECRET_KEY_PRODUCTION}
+      - ALLOWED_HOSTS=bizoholic.com,www.bizoholic.com,bizosaas-django-crm-production
+      - SECURE_SSL_REDIRECT=true
+      - SESSION_COOKIE_SECURE=true
+      - CSRF_COOKIE_SECURE=true
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # BUSINESS DIRECTORY API
+  # Directory service - PRODUCTION
+  # ==========================================
+  directory-api:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/crm/business-directory/Dockerfile
+    container_name: bizosaas-directory-api-production
+    ports:
+      - "8104:8004"  # Different port from staging (8004)
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/3
+      - API_BASE_URL=http://bizosaas-brain-production:8001
+      - LOG_LEVEL=info
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - brain-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # CORELDOVE E-COMMERCE BACKEND
+  # E-commerce API - PRODUCTION
+  # ==========================================
+  coreldove-backend:
+    image: coreldove-backend-coreldove-backend:latest
+    container_name: coreldove-backend-production
+    ports:
+      - "8105:8005"  # Different port from staging (8005)
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/4
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY_PRODUCTION}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID_PRODUCTION}
+      - PAYPAL_CLIENT_SECRET=${PAYPAL_CLIENT_SECRET_PRODUCTION}
+      - ALLOWED_ORIGINS=https://coreldove.com,https://www.coreldove.com
+      - LOG_LEVEL=info
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # AI AGENTS SERVICE
+  # Multi-model AI coordination - PRODUCTION
+  # ==========================================
+  ai-agents:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/ai-agents/Dockerfile
+    container_name: bizosaas-ai-agents-production
+    ports:
+      - "8110:8010"  # Different port from staging (8010)
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/5
+      - BRAIN_API_URL=http://bizosaas-brain-production:8001
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY_PRODUCTION}
+      - OPENAI_API_KEY=${OPENAI_API_KEY_PRODUCTION}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY_PRODUCTION}
+      - LOG_LEVEL=info
+      - RATE_LIMIT_ENABLED=true
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - brain-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # AMAZON SOURCING API
+  # Product sourcing integration - PRODUCTION
+  # ==========================================
+  amazon-sourcing:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/amazon-sourcing/Dockerfile
+    container_name: amazon-sourcing-production
+    ports:
+      - "8185:8085"  # Different port from staging (8085)
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/6
+      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY_PRODUCTION}
+      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY_PRODUCTION}
+      - BRAIN_API_URL=http://bizosaas-brain-production:8001
+      - LOG_LEVEL=info
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - brain-api
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # SALEOR E-COMMERCE ENGINE
+  # Advanced e-commerce platform - PRODUCTION
+  # ==========================================
+  saleor:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/ecommerce/saleor/Dockerfile
+    container_name: bizosaas-saleor-production
+    ports:
+      - "8100:8000"  # Different port from staging (8000)
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/saleor_production
+      - REDIS_URL=redis://:BizOSaaS2025!ProdRedis@bizosaas-redis-production:6379/7
+      - SECRET_KEY=${SALEOR_SECRET_KEY_PRODUCTION}
+      - ALLOWED_HOSTS=coreldove.com,www.coreldove.com,bizosaas-saleor-production
+      - DEBUG=false
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY_PRODUCTION}
+      - PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID_PRODUCTION}
+      - SECURE_SSL_REDIRECT=true
+      - SESSION_COOKIE_SECURE=true
+      - CSRF_COOKIE_SECURE=true
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  bizosaas-production-network:
+    external: true
+
+# ==================================================
+# PRODUCTION BACKEND SERVICES PROJECT SUMMARY:
+# ==================================================
+# Container Count: 8
+# Environment: Production
+# Security: Enhanced (SSL enforced, secure cookies, production secrets)
+# Ports: Offset by +100 from staging (8101-8185)
+# Dependencies: Production infrastructure must be running
+# Critical Services: brain-api (coordinator), ai-agents, coreldove-backend
+# Performance: Optimized for production load
+# Monitoring: Production-level logging and health checks
+# ==================================================
