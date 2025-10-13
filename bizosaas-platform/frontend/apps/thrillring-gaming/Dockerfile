@@ -37,14 +37,14 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Install curl for health check (before switching to nextjs user)
+RUN apk add --no-cache curl
+
 USER nextjs
 
 EXPOSE 3000
 
 ENV PORT 3000
-
-# Install curl for health check
-RUN apk add --no-cache curl
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
