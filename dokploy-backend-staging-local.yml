@@ -17,8 +17,10 @@ services:
       - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
       - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
-      - DEBUG=False
+      - DEBUG=True
       - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+      - RSA_PRIVATE_KEY=""
+      - JWT_MANAGER_PATH=saleor.core.jwt_manager.JWTManager
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -168,7 +170,7 @@ services:
     ports:
       - "8006:8006"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - DATABASE_URL=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
       - REDIS_URL=redis://194.238.16.237:6380/10
       - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
       - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
