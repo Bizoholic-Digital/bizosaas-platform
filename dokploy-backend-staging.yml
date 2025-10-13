@@ -1,14 +1,16 @@
-# BizOSaaS Backend Services - STAGING (NETWORK CORRECTED)
+# BizOSaaS Backend Services - STAGING (DATABASE CONNECTION CORRECTED)
 # All 10 backend services building directly from GitHub repository
 # Deploy via Dokploy at dk.bizoholic.com
 #
-# CRITICAL FIX: Changed network from "bizosaas-staging-network" to "dokploy-network"
-# This matches the infrastructure services network configuration
+# CRITICAL FIX: PostgreSQL and Redis are NOT in Docker containers
+# They are running directly on the VPS host at 194.238.16.237
+# - PostgreSQL: 194.238.16.237:5433 (not bizosaas-postgres-staging:5432)
+# - Redis: 194.238.16.237:6380 (not bizosaas-redis-staging:6379)
 #
-# Infrastructure Services (deployed separately in dokploy-network):
-#   - bizosaas-postgres-staging (internal port 5432, external 5433)
-#   - bizosaas-redis-staging (internal port 6379, external 6380)
-#   - bizosaas-temporal-server-staging (internal port 7233, external 7234)
+# Infrastructure Services (running on VPS host):
+#   - PostgreSQL at 194.238.16.237:5433
+#   - Redis at 194.238.16.237:6380
+#   - Temporal Server at bizosaas-temporal-server-staging:7233 (Docker container)
 
 services:
   # ==========================================
@@ -20,8 +22,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
+      - REDIS_URL=redis://194.238.16.237:6380/1
       - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
       - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
@@ -47,8 +49,8 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/0
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ENVIRONMENT=staging
       - LOG_LEVEL=INFO
@@ -73,8 +75,8 @@ services:
       - "8002:8000"
     environment:
       - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/3
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/3
       - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
       - DEBUG=False
@@ -100,8 +102,8 @@ services:
       - "8003:8000"
     environment:
       - DJANGO_SETTINGS_MODULE=crm_project.settings.production
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/4
       - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
       - DEBUG=False
@@ -126,8 +128,8 @@ services:
     ports:
       - "8004:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/5
       - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
       - ENVIRONMENT=staging
       - LOG_LEVEL=INFO
@@ -151,8 +153,8 @@ services:
     ports:
       - "8005:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/6
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/6
       - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
       - SECRET_KEY=staging-secret-key-coreldove-bizosaas-2025
       - ENVIRONMENT=staging
@@ -176,8 +178,8 @@ services:
     ports:
       - "8006:8006"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/10
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/10
       - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
       - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
       - ENVIRONMENT=staging
@@ -204,8 +206,8 @@ services:
     ports:
       - "8007:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/7
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/7
       - TEMPORAL_HOST=bizosaas-temporal-server-staging
       - TEMPORAL_PORT=7233
       - ENVIRONMENT=staging
@@ -229,8 +231,8 @@ services:
     ports:
       - "8008:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/8
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/8
       - BRAIN_API_URL=http://bizosaas-brain-staging:8001
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ENVIRONMENT=staging
@@ -254,8 +256,8 @@ services:
     ports:
       - "8009:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/9
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/9
       - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
       - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-}
       - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-}
@@ -277,31 +279,37 @@ networks:
 # DEPLOYMENT FIX SUMMARY:
 # ==================================================
 #
-# ISSUE IDENTIFIED: Network mismatch
-# - Old config: "bizosaas-staging-network"
-# - Infrastructure: "dokploy-network"
-# - Fix: Changed all services to use "dokploy-network"
+# ISSUE IDENTIFIED: PostgreSQL and Redis connection strings incorrect
+# - Old config: Used Docker DNS names (bizosaas-postgres-staging:5432)
+# - Reality: Services run directly on VPS host (194.238.16.237:5433)
+# - Fix: Updated all DATABASE_URL and REDIS_URL to use VPS IP and external ports
 #
-# VERIFICATION:
-# Backend services will now be able to resolve and connect to:
-# - bizosaas-postgres-staging:5432 (internal)
-# - bizosaas-redis-staging:6379 (internal)
-# - bizosaas-temporal-server-staging:7233 (internal)
+# CONNECTION STRINGS UPDATED:
+# - PostgreSQL: 194.238.16.237:5433 (was bizosaas-postgres-staging:5432)
+# - Redis: 194.238.16.237:6380 (was bizosaas-redis-staging:6379)
+# - Temporal: Still uses Docker DNS (bizosaas-temporal-server-staging:7233)
+#
+# SERVICES UPDATED (All 10):
+# 1. Saleor API (Port 8000)
+# 2. Brain API (Port 8001)
+# 3. Wagtail CMS (Port 8002)
+# 4. Django CRM (Port 8003)
+# 5. Business Directory (Port 8004)
+# 6. CorelDove Backend (Port 8005)
+# 7. Auth Service (Port 8006)
+# 8. Temporal Integration (Port 8007)
+# 9. AI Agents (Port 8008)
+# 10. Amazon Sourcing (Port 8009)
 #
 # DEPLOYMENT INSTRUCTIONS:
 # 1. In Dokploy, update the backend project compose file
 # 2. Paste this entire configuration
-# 3. Click "Deploy" to rebuild with correct network
-# 4. All services should now connect successfully
+# 3. Click "Deploy" to rebuild with correct connection strings
+# 4. All services should now connect to VPS databases successfully
 #
-# TROUBLESHOOTING:
-# If services still can't connect after this fix:
-# 1. Verify infrastructure is in dokploy-network:
-#    docker network inspect dokploy-network
-# 2. Check container names match exactly:
-#    docker ps | grep postgres
-#    docker ps | grep redis
-# 3. Test connectivity from one backend service:
-#    docker exec bizosaas-brain-staging ping bizosaas-postgres-staging
+# VERIFICATION COMMANDS (run on VPS):
+# - Test PostgreSQL: psql -h 194.238.16.237 -p 5433 -U admin -d bizosaas_staging
+# - Test Redis: redis-cli -h 194.238.16.237 -p 6380 ping
+# - Check container logs: docker logs bizosaas-brain-staging
 #
 # ==================================================
