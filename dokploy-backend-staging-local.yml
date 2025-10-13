@@ -163,7 +163,7 @@ services:
   # 8. AUTH SERVICE (Port 8006)
   # ==========================================
   auth-service:
-    image: bizosaas/auth-service-v2:latest
+    image: bizoholic-auth-service:latest
     container_name: bizosaas-auth-service-staging
     ports:
       - "8006:8006"
