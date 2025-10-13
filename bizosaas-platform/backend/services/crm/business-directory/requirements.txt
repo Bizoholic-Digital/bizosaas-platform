@@ -12,6 +12,6 @@ sqlalchemy==2.0.23
 alembic==1.13.1
 crewai>=0.177.0
 langchain>=0.1.0
-openai>=1.13.3
+openai>=1.68.2
 langchain-openai>=0.0.2
 langchain-community>=0.0.10
