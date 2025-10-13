@@ -1,0 +1,96 @@
+# BizOSaaS Frontend Services - STAGING (Using Pre-built Images)
+# Deploy using existing Docker images instead of building from GitHub
+
+services:
+  # ==========================================
+  # 1. CLIENT PORTAL (Port 3000)
+  # ==========================================
+  client-portal:
+    image: bizosaas-client-portal:latest
+    container_name: bizosaas-client-portal-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    command: node server.js
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 2. BIZOHOLIC FRONTEND (Port 3001)
+  # ==========================================
+  bizoholic-frontend:
+    image: bizosaas/bizoholic-frontend:latest
+    container_name: bizosaas-bizoholic-frontend-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    command: sh -c "npm run dev -- --hostname 0.0.0.0 --port 3000"
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 3. CORELDOVE FRONTEND (Port 3002)
+  # ==========================================
+  coreldove-frontend:
+    image: bizosaas-coreldove-frontend:latest
+    container_name: bizosaas-coreldove-frontend-staging
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    command: sh -c "npm run dev -- --hostname 0.0.0.0 --port 3000"
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 4. BUSINESS DIRECTORY FRONTEND (Port 3003)
+  # ==========================================
+  business-directory-frontend:
+    image: bizosaas-business-directory:latest
+    container_name: bizosaas-business-directory-frontend-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_DIRECTORY_API_URL=http://bizosaas-business-directory-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    command: sh -c "npm run dev -- --hostname 0.0.0.0 --port 3000"
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 5. ADMIN DASHBOARD (Port 3005)
+  # ==========================================
+  admin-dashboard:
+    image: bizosaas-bizosaas-admin:latest
+    container_name: bizosaas-admin-dashboard-staging
+    ports:
+      - "3005:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    command: sh -c "npm run dev -- --hostname 0.0.0.0 --port 3000"
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true

@@ -1,0 +1,109 @@
+# BizOSaaS Backend Services - STAGING (Using Pre-built Images)
+# Deploy using existing Docker images instead of building from GitHub
+
+services:
+  # ==========================================
+  # 1. BRAIN API (Port 8001)
+  # ==========================================
+  brain-api:
+    image: bizosaas-brain-gateway:latest
+    container_name: bizosaas-brain-staging
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+    command: python -m uvicorn simple_api:app --host 0.0.0.0 --port 8001
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. WAGTAIL CMS (Port 8002)
+  # ==========================================
+  wagtail-cms:
+    image: bizosaas-wagtail-cms:latest
+    container_name: bizosaas-wagtail-staging
+    ports:
+      - "8002:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/3
+      - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com,0.0.0.0
+      - DEBUG=False
+      - PYTHONPATH=/app
+    command: gunicorn wagtail_cms.wsgi:application --bind 0.0.0.0:8000 --workers 4
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 3. BUSINESS DIRECTORY BACKEND (Port 8004)
+  # ==========================================
+  business-directory-backend:
+    image: bizosaas-business-directory-backend:latest
+    container_name: bizosaas-business-directory-staging
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/5
+      - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 4. TEMPORAL INTEGRATION (Port 8007)
+  # ==========================================
+  temporal-integration:
+    image: bizosaas-platform-temporal-integration:latest
+    container_name: bizosaas-temporal-integration-staging
+    ports:
+      - "8007:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/7
+      - TEMPORAL_HOST=bizosaas-temporal-server-staging
+      - TEMPORAL_PORT=7233
+      - ENVIRONMENT=staging
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  # ==========================================
+  # 5. AMAZON SOURCING (Port 8009)
+  # ==========================================
+  amazon-sourcing:
+    image: bizosaas/amazon-sourcing:latest
+    container_name: bizosaas-amazon-sourcing-staging
+    ports:
+      - "8009:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/9
+      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-}
+      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-}
+      - ENVIRONMENT=staging
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true
