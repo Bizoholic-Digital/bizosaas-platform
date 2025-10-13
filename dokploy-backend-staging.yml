@@ -120,29 +120,32 @@ services:
       retries: 3
 
   # ==========================================
-  # 5. BUSINESS DIRECTORY BACKEND (Port 8004)
+  # 5. BUSINESS DIRECTORY BACKEND (Port 8004) - TEMPORARILY DISABLED
   # ==========================================
-  business-directory-backend:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/business-directory
-      dockerfile: Dockerfile
-    container_name: bizosaas-business-directory-staging
-    ports:
-      - "8004:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/5
-      - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
-      - ENVIRONMENT=staging
-      - LOG_LEVEL=INFO
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # REASON: pydantic-settings version conflict with crewai
+  # ERROR: "ResolutionImpossible: crewai 0.201.0 depends on pydantic-settings>=2.10.1"
+  # TODO: Fix requirements.txt dependencies in GitHub repository
+  # business-directory-backend:
+  #   build:
+  #     context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/business-directory
+  #     dockerfile: Dockerfile
+  #   container_name: bizosaas-business-directory-staging
+  #   ports:
+  #     - "8004:8000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+  #     - REDIS_URL=redis://194.238.16.237:6380/5
+  #     - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
+  #     - ENVIRONMENT=staging
+  #     - LOG_LEVEL=INFO
+  #   networks:
+  #     - dokploy-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # ==========================================
   # 6. CORELDOVE BACKEND (Port 8005)
@@ -198,29 +201,32 @@ services:
       retries: 3
 
   # ==========================================
-  # 8. TEMPORAL INTEGRATION (Port 8007)
+  # 8. TEMPORAL INTEGRATION (Port 8007) - TEMPORARILY DISABLED
   # ==========================================
-  temporal-integration:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/temporal
-      dockerfile: Dockerfile
-    container_name: bizosaas-temporal-integration-staging
-    ports:
-      - "8007:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/7
-      - TEMPORAL_HOST=bizosaas-temporal-server-staging
-      - TEMPORAL_PORT=7233
-      - ENVIRONMENT=staging
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # REASON: python-decimal==0.1.1 package doesn't exist in PyPI
+  # ERROR: "No matching distribution found for python-decimal==0.1.1"
+  # TODO: Fix requirements.txt in GitHub repository
+  # temporal-integration:
+  #   build:
+  #     context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/temporal
+  #     dockerfile: Dockerfile
+  #   container_name: bizosaas-temporal-integration-staging
+  #   ports:
+  #     - "8007:8000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+  #     - REDIS_URL=redis://194.238.16.237:6380/7
+  #     - TEMPORAL_HOST=bizosaas-temporal-server-staging
+  #     - TEMPORAL_PORT=7233
+  #     - ENVIRONMENT=staging
+  #   networks:
+  #     - dokploy-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # ==========================================
   # 9. AI AGENTS (Port 8008)
