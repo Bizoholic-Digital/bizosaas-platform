@@ -14,29 +14,31 @@
 
 services:
   # ==========================================
-  # 1. SALEOR E-COMMERCE API (Port 8000)
+  # 1. SALEOR E-COMMERCE API (Port 8000) - TEMPORARILY DISABLED
   # ==========================================
-  saleor-api:
-    image: ghcr.io/saleor/saleor:3.20
-    container_name: bizosaas-saleor-staging
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
-      - REDIS_URL=redis://194.238.16.237:6380/1
-      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
-      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
-      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
-      - DEBUG=False
-      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # REASON: ghcr.io/saleor/saleor:3.20 requires GitHub Container Registry authentication
+  # TODO: Add GitHub registry credentials to Dokploy or use public image
+  # saleor-api:
+  #   image: ghcr.io/saleor/saleor:3.20
+  #   container_name: bizosaas-saleor-staging
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
+  #     - REDIS_URL=redis://194.238.16.237:6380/1
+  #     - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+  #     - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+  #     - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+  #     - DEBUG=False
+  #     - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+  #   networks:
+  #     - dokploy-network
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
 
   # ==========================================
   # 2. BRAIN API - AI Gateway (Port 8001)
