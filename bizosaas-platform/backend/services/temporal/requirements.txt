@@ -89,7 +89,7 @@ Pillow==10.1.0
 python-magic==0.4.27
 
 # Cryptography and security
-cryptography==41.0.8
+cryptography>=42.0.0
 pyotp==2.9.0
 
 # Webhook and API utilities
