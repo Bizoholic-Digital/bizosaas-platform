@@ -160,33 +160,31 @@ services:
     restart: unless-stopped
 
   # ==========================================
-  # 8. AUTH SERVICE (Port 8006) - DISABLED
+  # 8. AUTH SERVICE (Port 8006) - EXPERIMENTAL
   # ==========================================
-  # ISSUE: Image has FastAPI/Pydantic version incompatibility
-  # AttributeError: 'FieldInfo' object has no attribute 'in_'
-  # Needs image rebuild with compatible dependency versions
-  # auth-service:
-  #   image: bizoholic-auth-service:latest
-  #   container_name: bizosaas-auth-service-staging
-  #   ports:
-  #     - "8006:8006"
-  #   environment:
-  #     - DATABASE_URL=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-  #     - REDIS_URL=redis://194.238.16.237:6380/10
-  #     - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
-  #     - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
-  #     - ENVIRONMENT=staging
-  #     - PORT=8006
-  #     - ALLOWED_ORIGINS=*
-  #     - LOG_LEVEL=INFO
-  #   networks:
-  #     - dokploy-network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
+  # Using backend-services-azbmbl-auth-service:latest (Dokploy built)
+  auth-service:
+    image: backend-services-azbmbl-auth-service:latest
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
+      - ENVIRONMENT=staging
+      - PORT=8006
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   dokploy-network:
