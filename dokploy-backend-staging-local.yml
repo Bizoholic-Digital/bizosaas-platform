@@ -66,6 +66,9 @@ services:
       - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
       - DEBUG=False
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=bizosaas-dev-root-token
+      - VAULT_MOUNT_PATH=bizosaas
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -85,6 +88,9 @@ services:
       - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
       - DEBUG=False
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=bizosaas-dev-root-token
+      - VAULT_MOUNT_PATH=bizosaas
     networks:
       - dokploy-network
     restart: unless-stopped
