@@ -1,13 +1,11 @@
 {
-  "name": "bizosaas-frontend",
+  "name": "thrillring-gaming",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "dev:coreldove": "next dev --port 3001",
+    "dev": "next dev --port 3005",
     "build": "next build",
-    "start": "next start",
-    "start:coreldove": "next start --port 3001",
+    "start": "next start --port 3005",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
