@@ -192,6 +192,24 @@ services:
       timeout: 10s
       retries: 3
 
+  # ==========================================
+  # 9. QUANTTRADE BACKEND (Port 8012)
+  # ==========================================
+  quanttrade-backend:
+    image: bizosaas/quanttrade-backend:staging
+    container_name: bizosaas-quanttrade-backend-staging
+    ports:
+      - "8012:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/12
+      - SECRET_KEY=staging-secret-key-quanttrade-bizosaas-2025
+      - ENVIRONMENT=staging
+      - BRAIN_API_URL=http://bizosaas-brain-staging:8001
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
 networks:
   dokploy-network:
     external: true
