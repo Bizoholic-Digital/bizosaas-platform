@@ -1,13 +1,38 @@
-# BizOSaaS Backend Services - STAGING (Using GHCR Images)
-# Proper workflow: Local → GHCR → GitHub → Dokploy
-# Images pulled from GitHub Container Registry
+# BizOSaaS Backend Services - STAGING (Using Local Pre-Built Images)
+# Working local images transferred directly to VPS
+# Deploy via Dokploy at dk.bizoholic.com
 
 services:
   # ==========================================
-  # 1. BRAIN API - AI Gateway (Port 8001)
+  # 1. SALEOR E-COMMERCE API (Port 8000)
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
+      - REDIS_URL=redis://194.238.16.237:6380/1
+      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - DEBUG=True
+      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. BRAIN API - AI Gateway (Port 8001)
   # ==========================================
   brain-api:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-api:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
     container_name: bizosaas-brain-staging
     ports:
       - "8001:8001"
@@ -30,7 +55,7 @@ services:
   # 2. WAGTAIL CMS (Port 8002)
   # ==========================================
   wagtail-cms:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/wagtail-cms:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-wagtail-cms:staging
     container_name: bizosaas-wagtail-staging
     ports:
       - "8002:8000"
@@ -41,6 +66,9 @@ services:
       - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
       - DEBUG=False
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=bizosaas-dev-root-token
+      - VAULT_MOUNT_PATH=bizosaas
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -49,7 +77,7 @@ services:
   # 3. DJANGO CRM (Port 8003)
   # ==========================================
   django-crm:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/django-crm:staging
+    image: bizoholic-django-crm:staging
     container_name: bizosaas-django-crm-staging
     ports:
       - "8003:8000"
@@ -60,6 +88,9 @@ services:
       - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
       - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
       - DEBUG=False
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=bizosaas-dev-root-token
+      - VAULT_MOUNT_PATH=bizosaas
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -68,7 +99,7 @@ services:
   # 4. BUSINESS DIRECTORY BACKEND (Port 8004)
   # ==========================================
   business-directory-backend:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/business-directory-backend:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-business-directory-backend:staging
     container_name: bizosaas-business-directory-staging
     ports:
       - "8004:8000"
@@ -85,7 +116,7 @@ services:
   # 5. CORELDOVE BACKEND (Port 8005)
   # ==========================================
   coreldove-backend:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/coreldove-backend:staging
+    image: bizoholic-coreldove-backend:staging
     container_name: bizosaas-coreldove-backend-staging
     ports:
       - "8005:8000"
@@ -102,7 +133,7 @@ services:
   # 6. AI AGENTS (Port 8008)
   # ==========================================
   ai-agents:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
+    image: bizoholic-ai-agents:staging
     container_name: bizosaas-ai-agents-staging
     ports:
       - "8008:8000"
@@ -120,7 +151,7 @@ services:
   # 7. AMAZON SOURCING (Port 8009)
   # ==========================================
   amazon-sourcing:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/amazon-sourcing:staging
+    image: bizosaas/amazon-sourcing:staging
     container_name: bizosaas-amazon-sourcing-staging
     ports:
       - "8009:8000"
@@ -134,21 +165,59 @@ services:
       - dokploy-network
     restart: unless-stopped
 
+  # ==========================================
+  # 8. AUTH SERVICE (Port 8006) - EXPERIMENTAL
+  # ==========================================
+  # Using backend-services-azbmbl-auth-service:staging (Dokploy built)
+  auth-service:
+    image: backend-services-azbmbl-auth-service:staging
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8006:8007"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
+      - ENVIRONMENT=staging
+      - PORT=8007
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 9. QUANTTRADE BACKEND (Port 8012)
+  # ==========================================
+  quanttrade-backend:
+    image: bizosaas/quanttrade-backend:staging
+    container_name: bizosaas-quanttrade-backend-staging
+    ports:
+      - "8012:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/12
+      - SECRET_KEY=staging-secret-key-quanttrade-bizosaas-2025
+      - ENVIRONMENT=staging
+      - BRAIN_API_URL=http://bizosaas-brain-staging:8001
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
 networks:
   dokploy-network:
     external: true
 
 # ==================================================
-# PROPER WORKFLOW: Local → GHCR → GitHub → Dokploy
+# DEPLOYMENT STRATEGY: Local Pre-Built Images
 # ==================================================
-# 1. Build images locally (test)
-# 2. Push to GHCR (./setup-proper-workflow.sh)
-# 3. Push this file to GitHub
-# 4. Dokploy pulls from GHCR and deploys
-#
-# Benefits:
-# - Fast deployment (pull image, not build)
-# - Version controlled (GitHub)
-# - Reliable (tested images)
-# - Proper DevOps workflow
+# These images are already built and tested locally
+# They have been transferred to VPS via docker save/load
+# No GitHub build required - images ready to deploy
 # ==================================================
