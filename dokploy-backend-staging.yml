@@ -39,12 +39,15 @@ services:
       retries: 3
 
   # ==========================================
-  # 2. BRAIN API - AI Gateway (Port 8001)
+  # 2. BRAIN API - AI Gateway with HITL (Port 8001)
   # ==========================================
+  # v2.1.0-hitl: Enhanced with Human-in-the-Loop control system
+  # - Progressive autonomy levels (supervised → autonomous)
+  # - Super admin workflow toggle endpoints
+  # - Confidence-based decision routing
+  # - Redis-backed decision approval queue
   brain-api:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/ai/services/bizosaas-brain
-      dockerfile: Dockerfile
+    image: bizosaas/brain-gateway:v2.1.0-hitl
     container_name: bizosaas-brain-staging
     ports:
       - "8001:8001"

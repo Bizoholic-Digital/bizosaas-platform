@@ -1,0 +1,133 @@
+# BizOSaaS Frontend Applications - STAGING (Using Local Pre-Built Images)
+# Uses working local images - NO building from GitHub
+# Deploy via Dokploy at dk.bizoholic.com
+
+services:
+  # ==========================================
+  # 1. CLIENT PORTAL (Port 3000)
+  # ==========================================
+  client-portal:
+    image: bizosaas-client-portal:latest
+    container_name: bizosaas-client-portal-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. BIZOHOLIC FRONTEND (Port 3001)
+  # ==========================================
+  bizoholic-frontend:
+    image: bizosaas-bizoholic-frontend:latest
+    container_name: bizosaas-bizoholic-frontend-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 3. CORELDOVE FRONTEND (Port 3002)
+  # ==========================================
+  coreldove-frontend:
+    image: bizosaas-coreldove-frontend:latest
+    container_name: bizosaas-coreldove-frontend-staging
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-coreldove-backend-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 4. BUSINESS DIRECTORY FRONTEND (Port 3003)
+  # ==========================================
+  business-directory-frontend:
+    image: bizosaas-business-directory:latest
+    container_name: bizosaas-business-directory-frontend-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_DIRECTORY_API_URL=http://bizosaas-business-directory-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 5. ADMIN DASHBOARD (Port 3005)
+  # ==========================================
+  admin-dashboard:
+    image: bizosaas-bizosaas-admin:latest
+    container_name: bizosaas-admin-dashboard-staging
+    ports:
+      - "3005:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  dokploy-network:
+    external: true
+
+# ==================================================
+# FRONTEND SERVICES - LOCAL IMAGES STRATEGY
+# ==================================================
+# Total Services: 5 (ThrillRing Gaming not included - needs build)
+# Strategy: Use pre-built local images (no GitHub builds)
+# Deployment: Images loaded via deploy-to-vps-staging.sh
+# Benefits:
+#   - Zero build errors (tested locally)
+#   - Fast deployment (2-3 minutes)
+#   - Consistent behavior (same images)
+# ==================================================

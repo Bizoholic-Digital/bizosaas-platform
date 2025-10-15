@@ -1,0 +1,39 @@
+# BizOSaaS Backend Services - STAGING
+# PHASE 1: Pre-built Image Only (Saleor)
+# Lowest risk deployment - no build required
+
+services:
+  # ==========================================
+  # 1. SALEOR E-COMMERCE API (Port 8000)
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
+      - REDIS_URL=redis://194.238.16.237:6380/1
+      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - DEBUG=False
+      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  dokploy-network:
+    external: true
+
+# DEPLOYMENT INSTRUCTIONS:
+# 1. Deploy this to Dokploy
+# 2. Wait for container to start
+# 3. Test: curl http://194.238.16.237:8000/health/
+# 4. If successful, proceed to Phase 2

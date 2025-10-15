@@ -2,30 +2,56 @@
 const nextConfig = {
   // Enable standalone output for Docker optimization
   output: 'standalone',
-  
+
   // Optimize for production
   reactStrictMode: true,
-  swcMinify: true,
   compress: true,
   poweredByHeader: false,
-  
+
   // PWA Configuration
   env: {
     NEXT_PUBLIC_PWA_ENABLED: 'true',
     NEXT_PUBLIC_SW_URL: '/sw.js',
     NEXT_PUBLIC_MANIFEST_URL: '/manifest.json',
   },
-  
+
+  // External packages for server components (moved from experimental in Next.js 15)
+  serverExternalPackages: ['axios'],
+
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons'],
-    serverComponentsExternalPackages: ['axios'],
   },
-  
+
   images: {
-    domains: ['localhost', 'bizoholic.com', 'www.bizoholic.com', 'bizosaas-wagtail-cms', 'bizosaas-brain'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bizoholic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.bizoholic.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'bizosaas-wagtail-cms',
+      },
+      {
+        protocol: 'http',
+        hostname: 'bizosaas-brain',
+      },
+      {
+        protocol: 'http',
+        hostname: 'bizosaas-brain-staging',
+      },
+    ],
     unoptimized: process.env.NODE_ENV === 'development',
   },
-  
+
   async rewrites() {
     return [
       // Preserve Bizoholic-specific routing
@@ -44,7 +70,7 @@ const nextConfig = {
       // API routes to Brain API
       {
         source: '/api/brain/:path*',
-        destination: `${process.env.NEXT_PUBLIC_BRAIN_API_URL || 'http://bizosaas-brain:8001'}/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_BRAIN_API_URL || 'http://bizosaas-brain-staging:8001'}/:path*`,
       },
       {
         source: '/api/wagtail/:path*',
@@ -56,7 +82,7 @@ const nextConfig = {
       },
     ];
   },
-  
+
   async headers() {
     return [
       {
@@ -119,7 +145,7 @@ const nextConfig = {
       },
     ];
   },
-  
+
   // Webpack configuration
   webpack: (config, { isServer }) => {
     if (!isServer) {
