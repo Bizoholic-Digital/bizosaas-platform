@@ -48,7 +48,7 @@ ccxt==4.1.72
 
 # Risk management and portfolio optimization
 cvxpy==1.4.1
-pypfopt==1.5.4
+PyPortfolioOpt==1.5.5
 quantlib==1.32
 
 # Monitoring and logging
