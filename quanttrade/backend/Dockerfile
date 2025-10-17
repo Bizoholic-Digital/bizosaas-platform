@@ -38,11 +38,13 @@ RUN pip install --upgrade pip && \
 
 # Copy application code
 COPY app/ ./app/
-COPY scripts/ ./scripts/
-COPY config/ ./config/
 
-# Create directories for data and logs
-RUN mkdir -p /app/data /app/logs
+# Copy main application files
+COPY main.py .
+COPY config.py .
+
+# Create directories for scripts, config, data and logs
+RUN mkdir -p /app/scripts /app/config /app/data /app/logs
 
 # Create non-root user for security
 RUN groupadd -r quanttrade && useradd -r -g quanttrade quanttrade
