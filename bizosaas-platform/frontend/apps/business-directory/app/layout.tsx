@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/header'
 import { cn } from '@/lib/utils'
 
-const inter = Inter({ subsets: ['latin'] })
+// Using system fonts to avoid network calls during Docker build
+const inter = { variable: '--font-sans' }
 
 export const metadata: Metadata = {
   title: 'BizDirectory - Find Local Businesses',

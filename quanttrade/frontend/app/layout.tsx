@@ -1,8 +1,8 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 
-const inter = Inter({ subsets: ['latin'] })
+// Using system fonts to avoid network calls during Docker build
+const inter = { variable: '--font-sans' }
 
 export const metadata: Metadata = {
   title: 'QuantTrade - AI-Powered Trading Platform',

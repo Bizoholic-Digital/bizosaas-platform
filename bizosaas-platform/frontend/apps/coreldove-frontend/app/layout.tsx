@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] })
+// Using system fonts to avoid network calls during Docker build
+const inter = { variable: '--font-sans' }
 
 export const metadata: Metadata = {
   title: 'CorelDove - Smart E-commerce Solutions',

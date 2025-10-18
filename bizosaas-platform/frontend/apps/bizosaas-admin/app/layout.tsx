@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { AdminNavigation } from '@/components/AdminNavigation';
 import AuthProvider from '../shared/components/AuthProvider';
 
-const inter = Inter({ subsets: ['latin'] });
+// Using system fonts to avoid network calls during Docker build
+const inter = { variable: '--font-sans' };
 
 export const metadata: Metadata = {
   title: 'BizOSaaS Admin - Platform Management',

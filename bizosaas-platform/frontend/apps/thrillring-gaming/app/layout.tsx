@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
 import { Toaster } from '@/components/ui/sonner'
 import { getPlatformMetadata, getPlatformClassName } from '@/lib/platform'
 import './globals.css'
 
+// Using system fonts to avoid network calls during Docker build
 const fontSans = Inter({
   subsets: ['latin'],
   variable: '--font-sans',

@@ -1,20 +1,18 @@
 import type { Metadata } from 'next'
-import { Inter, JetBrains_Mono } from 'next/font/google'
 import { cn } from '@/lib/utils'
 import { Providers } from './providers'
 import { Toaster } from '@/components/ui/sonner'
 import { getPlatformMetadata, getPlatformClassName } from '@/lib/platform'
 import './globals.css'
 
-const fontSans = Inter({
-  subsets: ['latin'],
+// Using system fonts to avoid network calls during Docker build
+const fontSans = {
   variable: '--font-sans',
-})
+}
 
-const fontMono = JetBrains_Mono({
-  subsets: ['latin'],
+const fontMono = {
   variable: '--font-mono',
-})
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL('http://localhost:3000'),
