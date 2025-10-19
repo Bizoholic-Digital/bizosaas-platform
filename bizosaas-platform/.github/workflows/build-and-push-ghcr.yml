@@ -8,6 +8,7 @@ on:
     paths:
       - 'frontend/**'
       - 'backend/**'
+      - 'ai/**'
       - 'infrastructure/**'
       - 'quanttrade/**'
       - '.github/workflows/**'
@@ -42,6 +43,7 @@ jobs:
               - 'frontend/**'
             backend:
               - 'backend/**'
+              - 'ai/**'
             infrastructure:
               - 'infrastructure/**'
             quanttrade:
@@ -121,21 +123,21 @@ jobs:
       matrix:
         service:
           - name: brain-gateway
-            path: backend/services/brain-gateway
+            path: ai/services/bizosaas-brain
           - name: ai-agents
             path: backend/services/ai-agents
           - name: auth-service
             path: backend/services/auth
           - name: wagtail-cms
-            path: backend/services/cms/wagtail
+            path: backend/services/cms
           - name: django-crm
             path: backend/services/crm/django-crm
           - name: coreldove-backend
-            path: backend/services/ecommerce/coreldove-backend
+            path: backend/services/ecommerce
           - name: amazon-sourcing
-            path: backend/services/sourcing/amazon-sourcing
-          - name: business-directory-backend
-            path: backend/services/directory/business-directory-backend
+            path: backend/services/amazon-sourcing
+          - name: business-directory
+            path: backend/services/crm/business-directory
 
     permissions:
       contents: read
