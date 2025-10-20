@@ -28,17 +28,15 @@ RUN mkdir -p /app/static /app/media /var/log/wagtail
 
 # Create non-root user for security
 RUN useradd -m -u 1001 wagtail && \
-    chown -R wagtail:wagtail /app && \
-    chown -R wagtail:wagtail /var/log/wagtail
+    chown -R wagtail:wagtail /app
 USER wagtail
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
 ENV PYTHONUNBUFFERED=1
-ENV VAULT_ADDR=http://bizosaas-vault:8200
-ENV VAULT_TOKEN=bizosaas-dev-root-token
-ENV VAULT_MOUNT_PATH=bizosaas
+ENV VAULT_ADDR=http://vault:8200
+ENV VAULT_TOKEN=bizosaas-wagtail-cms-token-2025
 ENV BRAIN_API_URL=http://brain-api:8001
 
 # Collect static files (skip for now to avoid database dependency)
