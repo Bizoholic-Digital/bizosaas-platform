@@ -4,25 +4,8 @@ from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Import Vault configuration helper
-try:
-    from wagtail_cms.vault_config_helper import (
-        get_vault_secret,
-        get_database_config,
-        get_redis_config,
-        get_django_secret_key,
-        VaultConfig
-    )
-    VAULT_ENABLED = True
-except ImportError:
-    VAULT_ENABLED = False
-    print("⚠️  Vault configuration helper not available, using environment variables")
-
 # SECURITY WARNING: keep the secret key used in production secret!
-if VAULT_ENABLED:
-    SECRET_KEY = get_django_secret_key('wagtail')
-else:
-    SECRET_KEY = config('SECRET_KEY', default='django-insecure-key-for-development-only')
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-key-for-development-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -102,46 +85,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wagtail_cms.wsgi.application'
 
 # Database
-if VAULT_ENABLED:
-    db_config = get_database_config()
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('POSTGRES_DB', default='bizosaas'),
-            'USER': db_config['username'],
-            'PASSWORD': db_config['password'],
-            'HOST': db_config['host'],
-            'PORT': db_config['port'],
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('POSTGRES_DB', default='bizosaas'),
+        'USER': config('POSTGRES_USER', default='admin'),
+        'PASSWORD': config('POSTGRES_PASSWORD', default='securepassword'),
+        'HOST': config('POSTGRES_HOST', default='localhost'),
+        'PORT': config('POSTGRES_PORT', default='5432'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('POSTGRES_DB', default='bizosaas'),
-            'USER': config('POSTGRES_USER', default='admin'),
-            'PASSWORD': config('POSTGRES_PASSWORD', default='securepassword'),
-            'HOST': config('POSTGRES_HOST', default='localhost'),
-            'PORT': config('POSTGRES_PORT', default='5432'),
-        }
-    }
+}
 
 # Redis Cache
-if VAULT_ENABLED:
-    redis_config = get_redis_config()
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': f"redis://{redis_config['host']}:{redis_config['port']}/1",
-        }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': f"redis://{config('REDIS_HOST', default='localhost')}:{config('REDIS_PORT', default='6379')}/1",
     }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-            'LOCATION': f"redis://{config('REDIS_HOST', default='localhost')}:{config('REDIS_PORT', default='6379')}/1",
-        }
-    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
