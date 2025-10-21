@@ -29,6 +29,9 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
+# Install curl for health check (before switching user)
+RUN apk add --no-cache curl
+
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
@@ -42,9 +45,6 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT 3000
-
-# Install curl for health check
-RUN apk add --no-cache curl
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
