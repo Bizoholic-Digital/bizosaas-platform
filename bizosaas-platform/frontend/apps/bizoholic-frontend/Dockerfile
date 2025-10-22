@@ -69,9 +69,6 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Install curl for healthchecks (before switching user)
-RUN apk add --no-cache curl
-
 # Create .next directory with correct permissions
 RUN mkdir .next && chown nextjs:nodejs .next
 
@@ -85,10 +82,6 @@ USER nextjs
 
 # Expose port
 EXPOSE 3000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start application
 CMD ["node", "server.js"]
