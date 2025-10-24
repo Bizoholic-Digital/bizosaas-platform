@@ -28,7 +28,7 @@ export default function LoginPage() {
     setError('')
 
     try {
-      await login({ email, password })
+      await login(email, password)
       // Redirect to TailAdmin v2 Dashboard
       router.push('/dashboard')
     } catch (error) {
