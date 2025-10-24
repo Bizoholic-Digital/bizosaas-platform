@@ -133,7 +133,7 @@ export default function AdminChatPage() {
         content: apiResponse.message || 'I apologize, but I encountered an issue processing your request. Please try again.',
         timestamp: new Date(),
         suggestions: apiResponse.suggestions,
-        quickActions: apiResponse.quickActions?.map(action => ({
+        quickActions: apiResponse.quickActions?.map((action: any) => ({
           ...action,
           icon: getIconForAdminAction(action.label)
         }))
