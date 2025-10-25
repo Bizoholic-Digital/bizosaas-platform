@@ -9,8 +9,8 @@ set -e
 # ========================================
 # CONFIGURATION
 # ========================================
-VPS_IP="194.238.16.237"
-DOKPLOY_URL="https://dk.bizoholic.com"
+VPS_IP="72.60.219.244"
+DOKPLOY_URL="https://dk4.bizoholic.com"
 DOKPLOY_API_KEY="VumUVyBHPJQUlXiGnwVxeyKYBeGOLOttGjkgkGiwpSHLiEYegUBkCSTPFmQqMbtC"
 GITHUB_REPO="https://github.com/Bizoholic-Digital/bizosaas-platform.git"
 GITHUB_BRANCH="main"
