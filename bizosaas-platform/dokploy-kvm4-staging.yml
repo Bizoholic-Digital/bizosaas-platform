@@ -1,6 +1,6 @@
-# BizOSaaS Complete Platform - STAGING Environment
-# Pull from GHCR (GitHub Container Registry)
-# Deployment: Local WSL2 → GitHub + GHCR → Dokploy Staging → Dokploy Production
+# BizOSaaS Platform - KVM4 Staging Deployment (22 Services)
+# Excludes: CorelDove WordPress (stays on KVM2)
+# Infrastructure: 6 | Backend: 10 | Frontend: 6 = 22 Total
 
 version: '3.8'
 
@@ -282,23 +282,8 @@ services:
       - postgres
       - redis
 
-  quanttrade-backend:
-    image: ghcr.io/bizoholic-digital/bizosaas-quanttrade-backend:staging
-    container_name: bizosaas-quanttrade-backend-staging
-    ports:
-      - "8012:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/12
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    depends_on:
-      - postgres
-      - redis
-
   # ==========================================
-  # FRONTEND LAYER (7 services)
+  # FRONTEND LAYER (6 services)
   # ==========================================
 
   bizoholic-frontend:
@@ -386,7 +371,8 @@ services:
       - "traefik.http.routers.client-portal.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/login`)"
       - "traefik.http.routers.client-portal.entrypoints=websecure"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.client-portal.priority=100"
+      - "traefik.http.routers.client-portal.middlewares=client-portal-stripprefix"
+      - "traefik.http.middlewares.client-portal-stripprefix.stripprefix.prefixes=/login"
       - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
 
   admin-dashboard:
@@ -413,7 +399,8 @@ services:
       - "traefik.http.routers.admin-dashboard.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/admin`)"
       - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
       - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.admin-dashboard.priority=100"
+      - "traefik.http.routers.admin-dashboard.middlewares=admin-dashboard-stripprefix"
+      - "traefik.http.middlewares.admin-dashboard-stripprefix.stripprefix.prefixes=/admin"
       - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
 
   business-directory-frontend:
@@ -437,24 +424,9 @@ services:
       - "traefik.http.routers.business-directory.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/directory`)"
       - "traefik.http.routers.business-directory.entrypoints=websecure"
       - "traefik.http.routers.business-directory.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.business-directory.priority=100"
+      - "traefik.http.routers.business-directory.middlewares=business-directory-stripprefix"
+      - "traefik.http.middlewares.business-directory-stripprefix.stripprefix.prefixes=/directory"
       - "traefik.http.services.business-directory.loadbalancer.server.port=3000"
-
-  quanttrade-frontend:
-    image: ghcr.io/bizoholic-digital/bizosaas-quanttrade-frontend:staging
-    container_name: bizosaas-quanttrade-frontend-staging
-    ports:
-      - "3012:3000"
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
-      - NEXT_TELEMETRY_DISABLED=1
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    depends_on:
-      - brain-gateway
-      - quanttrade-backend
 
 volumes:
   postgres_staging_data:
@@ -467,23 +439,21 @@ networks:
     external: true
 
 # ==================================================
-# COMPLETE BIZOSAAS PLATFORM - KVM4 STAGING
+# BIZOSAAS PLATFORM - KVM4 STAGING (22 Services)
 # ==================================================
-# Total Services: 23
-# - Infrastructure: 6 (PostgreSQL, Redis, Vault, Temporal Server, Temporal UI, Superset)
-# - Backend: 10 (Brain Gateway, AI Agents, Auth, Wagtail, Saleor, Django CRM, CorelDove, Amazon, Directory, QuantTrade)
-# - Frontend: 7 (Bizoholic, ThrillRing, CorelDove, Client Portal, Admin, Directory, QuantTrade)
+# Infrastructure: 6 (PostgreSQL, Redis, Vault, Temporal Server, Temporal UI, Superset)
+# Backend: 10 (Brain Gateway, AI Agents, Auth, Wagtail, Saleor, Django CRM, CorelDove, Amazon, Directory)
+# Frontend: 6 (Bizoholic, ThrillRing, CorelDove, Client Portal, Admin, Directory)
 #
-# EXCLUDED: CorelDove WordPress (running on KVM2 - 194.238.16.237)
+# EXCLUDED: CorelDove WordPress (running on KVM2)
 #
-# Routing Strategy (Unified Domain):
-# - stg.bizoholic.com → Bizoholic Frontend (main site)
+# Routing Strategy:
+# - stg.bizoholic.com → Bizoholic Frontend (main)
 # - stg.bizoholic.com/login/ → Client Portal
 # - stg.bizoholic.com/admin/ → Admin Dashboard
 # - stg.bizoholic.com/directory/ → Business Directory
-# - stg.coreldove.com → CorelDove Storefront (Next.js)
+# - stg.coreldove.com → CorelDove Storefront
 # - stg.thrillring.com → ThrillRing Gaming
 #
-# Deployment Strategy: Local WSL2 → GitHub + GHCR → Dokploy (dk4.bizoholic.com) → KVM4
-# All backend requests route through Brain Gateway (Port 8001)
+# All backends route through Brain Gateway (8001)
 # ==================================================
