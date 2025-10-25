@@ -1,0 +1,182 @@
+name: Build and Push to GHCR
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/bizoholic-digital
+
+jobs:
+  # ==========================================
+  # BUILD BACKEND SERVICES
+  # ==========================================
+  build-backend:
+    name: Build Backend Services
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - name: bizosaas-brain-gateway
+            context: ./bizosaas-platform/ai/services/bizosaas-brain
+            dockerfile: Dockerfile
+          - name: bizosaas-wagtail-cms
+            context: ./bizosaas-platform/backend/services/wagtail-cms
+            dockerfile: Dockerfile
+          - name: bizosaas-django-crm
+            context: ./bizosaas-platform/backend/services/django-crm
+            dockerfile: Dockerfile
+          - name: bizosaas-business-directory-backend
+            context: ./bizosaas-platform/backend/services/business-directory
+            dockerfile: Dockerfile
+          - name: bizosaas-coreldove-backend
+            context: ./bizosaas-platform/backend/services/coreldove-backend
+            dockerfile: Dockerfile
+          - name: bizosaas-auth-service
+            context: ./bizosaas-platform/backend/services/auth-service
+            dockerfile: Dockerfile
+          - name: bizosaas-ai-agents
+            context: ./bizosaas-platform/ai/services/ai-agents
+            dockerfile: Dockerfile
+          - name: bizosaas-amazon-sourcing
+            context: ./bizosaas-platform/ai/services/amazon-sourcing
+            dockerfile: Dockerfile
+          - name: bizosaas-quanttrade-backend
+            context: ./bizosaas-platform/backend/services/quanttrade-backend
+            dockerfile: Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.context }}/${{ matrix.service.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}:buildcache,mode=max
+
+  # ==========================================
+  # BUILD FRONTEND SERVICES
+  # ==========================================
+  build-frontend:
+    name: Build Frontend Services
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service:
+          - name: bizosaas-bizoholic-frontend
+            context: ./bizosaas-platform/frontend/apps/bizoholic-frontend
+            dockerfile: Dockerfile
+          - name: bizosaas-client-portal
+            context: ./bizosaas-platform/frontend/apps/client-portal
+            dockerfile: Dockerfile
+          - name: bizosaas-coreldove-frontend
+            context: ./bizosaas-platform/frontend/apps/coreldove-frontend
+            dockerfile: Dockerfile
+          - name: bizosaas-business-directory-frontend
+            context: ./bizosaas-platform/frontend/apps/business-directory-frontend
+            dockerfile: Dockerfile
+          - name: bizosaas-thrillring-gaming
+            context: ./bizosaas-platform/frontend/apps/thrillring-gaming
+            dockerfile: Dockerfile
+          - name: bizosaas-admin-dashboard
+            context: ./bizosaas-platform/frontend/apps/bizosaas-admin
+            dockerfile: Dockerfile
+          - name: bizosaas-quanttrade-frontend
+            context: ./bizosaas-platform/frontend/apps/quanttrade-frontend
+            dockerfile: Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.context }}/${{ matrix.service.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_PREFIX }}/${{ matrix.service.name }}:buildcache,mode=max
+
+  # ==========================================
+  # NOTIFY DEPLOYMENT
+  # ==========================================
+  notify-deployment:
+    name: Notify Deployment Ready
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deployment notification
+        run: |
+          echo "✅ All images built and pushed to GHCR successfully!"
+          echo "📦 Images are ready at: ghcr.io/bizoholic-digital/*"
+          echo "🚀 Deploy to Dokploy: https://dk4.bizoholic.com"
+          echo ""
+          echo "Manual deployment command:"
+          echo "docker-compose -f dokploy-staging-complete.yml pull"
+          echo "docker-compose -f dokploy-staging-complete.yml up -d"
