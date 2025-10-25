@@ -20,7 +20,15 @@ import {
 } from 'lucide-react'
 
 export default function NotFound() {
-  const { branding } = useTenantTheme()
+  const { config, loading } = useTenantTheme()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -29,8 +37,8 @@ export default function NotFound() {
           {/* Logo */}
           <div className="mb-8">
             <Image
-              src={branding.logo}
-              alt="CorelDove"
+              src={config.branding.logo || '/images/Coreldove-Simple-transparent.png'}
+              alt={config.branding.companyName}
               width={120}
               height={60}
               className="mx-auto"
