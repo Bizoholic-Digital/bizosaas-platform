@@ -2,12 +2,13 @@ import React from 'react';
 
 async function getHomepageData() {
   try {
-    const res = await fetch('https://brain.bizoholic.com/api/cms/pages/home', {
+    const res = await fetch('https://stg.bizoholic.com/api/brain/wagtail/homepage', {
       cache: 'no-store'
     });
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
+    console.error('Failed to fetch homepage data:', error);
     return null;
   }
 }
