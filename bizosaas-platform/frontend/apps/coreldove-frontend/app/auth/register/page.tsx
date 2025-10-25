@@ -13,8 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Input } from '../../../components/ui/input'
 import { Badge } from '../../../components/ui/badge'
 import { useTenantTheme } from '../../../hooks/useTenantTheme'
-import { 
-  ArrowRight, 
+import {
+  ArrowRight,
   ArrowLeft,
   Mail,
   Lock,
@@ -22,7 +22,7 @@ import {
   EyeOff,
   User,
   Phone,
-  Google,
+  Chrome, // Using Chrome instead of Google
   Facebook,
   Github,
   Shield,
@@ -451,7 +451,7 @@ export default function RegisterPage() {
                 onClick={() => handleSocialLogin('google')}
                 className="w-full"
               >
-                <Google className="h-4 w-4" />
+                <Chrome className="h-4 w-4" />
               </Button>
               <Button
                 type="button"
