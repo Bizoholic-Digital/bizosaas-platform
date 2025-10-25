@@ -12,7 +12,7 @@ import { Input } from '../../ui/input';
 import { Label } from '../../ui/label';
 import { Textarea } from '../../ui/textarea';
 import { Badge } from '../../ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select-new';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../ui/select-new';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 
 import { StoreSetupData } from '../types';
