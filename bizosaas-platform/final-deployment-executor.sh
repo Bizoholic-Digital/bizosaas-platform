@@ -5,8 +5,8 @@
 
 set -e
 
-VPS_IP="194.238.16.237"
-DOKPLOY_URL="https://dk.bizoholic.com"
+VPS_IP="72.60.219.244"
+DOKPLOY_URL="https://dk4.bizoholic.com"
 PROJECT_DIR="/home/alagiri/projects/bizoholic/bizosaas-platform"
 
 # Colors
@@ -78,7 +78,7 @@ Since automated API deployment requires configuration, please complete deploymen
 STEP 1: DEPLOY BACKEND SERVICES (40 minutes)
 ═══════════════════════════════════════════════════════════════════
 
-1. Open browser: https://dk.bizoholic.com
+1. Open browser: https://dk4.bizoholic.com
 
 2. Login to Dokploy
 
