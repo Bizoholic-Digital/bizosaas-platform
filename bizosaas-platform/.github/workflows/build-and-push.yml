@@ -29,31 +29,25 @@ jobs:
       matrix:
         service:
           - name: bizosaas-brain-gateway
-            context: ./bizosaas-platform/ai/services/bizosaas-brain
+            context: ./ai/services/bizosaas-brain
             dockerfile: Dockerfile
           - name: bizosaas-wagtail-cms
-            context: ./bizosaas-platform/backend/services/wagtail-cms
+            context: ./backend/services/cms
             dockerfile: Dockerfile
           - name: bizosaas-django-crm
-            context: ./bizosaas-platform/backend/services/django-crm
+            context: ./backend/services/crm
             dockerfile: Dockerfile
           - name: bizosaas-business-directory-backend
-            context: ./bizosaas-platform/backend/services/business-directory
-            dockerfile: Dockerfile
-          - name: bizosaas-coreldove-backend
-            context: ./bizosaas-platform/backend/services/coreldove-backend
-            dockerfile: Dockerfile
+            context: ./frontend/apps/business-directory
+            dockerfile: Dockerfile.backend
           - name: bizosaas-auth-service
-            context: ./bizosaas-platform/backend/services/auth-service
+            context: ./backend/services/auth
             dockerfile: Dockerfile
           - name: bizosaas-ai-agents
-            context: ./bizosaas-platform/ai/services/ai-agents
+            context: ./backend/services/ai-agents
             dockerfile: Dockerfile
           - name: bizosaas-amazon-sourcing
-            context: ./bizosaas-platform/ai/services/amazon-sourcing
-            dockerfile: Dockerfile
-          - name: bizosaas-quanttrade-backend
-            context: ./bizosaas-platform/backend/services/quanttrade-backend
+            context: ./backend/services/amazon-sourcing
             dockerfile: Dockerfile
 
     steps:
@@ -105,25 +99,22 @@ jobs:
       matrix:
         service:
           - name: bizosaas-bizoholic-frontend
-            context: ./bizosaas-platform/frontend/apps/bizoholic-frontend
+            context: ./frontend/apps/bizoholic-frontend
             dockerfile: Dockerfile
           - name: bizosaas-client-portal
-            context: ./bizosaas-platform/frontend/apps/client-portal
+            context: ./frontend/apps/client-portal
             dockerfile: Dockerfile
           - name: bizosaas-coreldove-frontend
-            context: ./bizosaas-platform/frontend/apps/coreldove-frontend
+            context: ./frontend/apps/coreldove-frontend
             dockerfile: Dockerfile
           - name: bizosaas-business-directory-frontend
-            context: ./bizosaas-platform/frontend/apps/business-directory-frontend
+            context: ./frontend/apps/business-directory
             dockerfile: Dockerfile
           - name: bizosaas-thrillring-gaming
-            context: ./bizosaas-platform/frontend/apps/thrillring-gaming
+            context: ./frontend/apps/thrillring-gaming
             dockerfile: Dockerfile
           - name: bizosaas-admin-dashboard
-            context: ./bizosaas-platform/frontend/apps/bizosaas-admin
-            dockerfile: Dockerfile
-          - name: bizosaas-quanttrade-frontend
-            context: ./bizosaas-platform/frontend/apps/quanttrade-frontend
+            context: ./frontend/apps/bizosaas-admin
             dockerfile: Dockerfile
 
     steps:
