@@ -10,8 +10,6 @@
 # 3. Kafka UI - Web UI for Kafka management
 # ========================================
 
-version: "3.8"
-
 networks:
   dokploy-network:
     external: true
@@ -31,16 +29,10 @@ services:
   # ==========================================
   rabbitmq:
     image: rabbitmq:4.1-management
-    container_name: bizosaas-rabbitmq
     hostname: rabbitmq
 
     networks:
       - dokploy-network
-
-    ports:
-      - "5672:5672"     # AMQP protocol
-      - "15672:15672"   # Management UI
-      - "15692:15692"   # Prometheus metrics
 
     environment:
       # Authentication
@@ -58,8 +50,6 @@ services:
 
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
-
-    restart: unless-stopped
 
     labels:
       # Dokploy labels
@@ -98,16 +88,10 @@ services:
   # ==========================================
   kafka:
     image: apache/kafka:4.0.1
-    container_name: bizosaas-kafka
     hostname: kafka
 
     networks:
       - dokploy-network
-
-    ports:
-      - "9092:9092"     # Kafka broker (internal)
-      - "9093:9093"     # Kafka broker (external)
-      - "9094:9094"     # Kafka controller
 
     environment:
       # Cluster ID (generate with: kafka-storage random-uuid)
@@ -150,8 +134,6 @@ services:
       - kafka-data:/var/lib/kafka/data
       - kafka-logs:/var/lib/kafka/logs
 
-    restart: unless-stopped
-
     labels:
       # Dokploy labels
       - "com.dokploy.project=infrastructure-services"
@@ -186,14 +168,10 @@ services:
   # ==========================================
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
-    container_name: bizosaas-kafka-ui
     hostname: kafka-ui
 
     networks:
       - dokploy-network
-
-    ports:
-      - "8080:8080"
 
     environment:
       # Kafka cluster connection
@@ -210,8 +188,6 @@ services:
 
     depends_on:
       - kafka
-
-    restart: unless-stopped
 
     labels:
       # Dokploy labels
