@@ -4,6 +4,13 @@
   "description": "Shared authentication package for BizOSaaS platform (Brain Gateway integration)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"

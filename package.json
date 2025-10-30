@@ -1,0 +1,19 @@
+{
+  "name": "bizosaas-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BizOSaaS Platform - Multi-tenant SaaS with 7 frontends and Brain Gateway backend",
+  "workspaces": [
+    "packages/*",
+    "bizosaas/misc/services/bizoholic-frontend"
+  ],
+  "scripts": {
+    "build:packages": "npm run build -w packages/ui-components -w packages/auth -w packages/api-client -w packages/hooks -w packages/utils -w packages/animated-components",
+    "build:bizoholic": "npm run build -w bizosaas/misc/services/bizoholic-frontend",
+    "dev:bizoholic": "npm run dev -w bizosaas/misc/services/bizoholic-frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
