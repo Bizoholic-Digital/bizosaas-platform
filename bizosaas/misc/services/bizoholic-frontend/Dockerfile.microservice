@@ -16,8 +16,8 @@ ENV GITHUB_TOKEN=$GITHUB_TOKEN
 # Install libc6-compat for compatibility
 RUN apk add --no-cache libc6-compat
 
-# Configure npm to use GitHub Packages for @bizosaas scope
-RUN echo "@bizosaas:registry=https://npm.pkg.github.com" > .npmrc && \
+# Configure npm to use GitHub Packages for @bizoholic-digital scope
+RUN echo "@bizoholic-digital:registry=https://npm.pkg.github.com" > .npmrc && \
     echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
 
 # Copy package files
@@ -40,7 +40,7 @@ ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=$GITHUB_TOKEN
 
 # Configure npm for GitHub Packages
-RUN echo "@bizosaas:registry=https://npm.pkg.github.com" > .npmrc && \
+RUN echo "@bizoholic-digital:registry=https://npm.pkg.github.com" > .npmrc && \
     echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
 
 # Copy package files
