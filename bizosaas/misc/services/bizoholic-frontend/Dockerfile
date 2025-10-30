@@ -45,9 +45,6 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy logo file
-COPY --from=builder /app/public/Bizoholic_Digital_-_Color-transparent.png ./public/
-
 USER nextjs
 
 EXPOSE 3001
