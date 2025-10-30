@@ -22,6 +22,15 @@
   ],
   "author": "BizOSaaS Team",
   "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "@bizosaas:registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bizoholic-digital/bizosaas-platform.git",
+    "directory": "packages/utils"
+  },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.0.0",
