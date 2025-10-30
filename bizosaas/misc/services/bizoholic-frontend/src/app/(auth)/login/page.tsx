@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@bizosaas/auth'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
