@@ -28,12 +28,12 @@
     "axios": "^1.6.0",
     "@headlessui/react": "^1.7.0",
     "framer-motion": "^10.16.0",
-    "@bizoholic-digital/ui-components": "file:../../../../../packages/ui-components",
-    "@bizoholic-digital/auth": "file:../../../../../packages/auth",
-    "@bizoholic-digital/api-client": "file:../../../../../packages/api-client",
-    "@bizoholic-digital/hooks": "file:../../../../../packages/hooks",
-    "@bizoholic-digital/utils": "file:../../../../../packages/utils",
-    "@bizoholic-digital/animated-components": "file:../../../../../packages/animated-components"
+    "@bizoholic-digital/ui-components": "^1.0.0",
+    "@bizoholic-digital/auth": "^1.0.0",
+    "@bizoholic-digital/api-client": "^1.0.0",
+    "@bizoholic-digital/hooks": "^1.0.0",
+    "@bizoholic-digital/utils": "^1.0.0",
+    "@bizoholic-digital/animated-components": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
