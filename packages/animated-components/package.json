@@ -1,5 +1,5 @@
 {
-  "name": "@bizosaas/animated-components",
+  "name": "@bizoholic-digital/animated-components",
   "version": "1.0.0",
   "description": "Animated UI components for BizOSaaS platform (Aceternity UI + Magic UI)",
   "main": "dist/index.js",
@@ -25,7 +25,7 @@
   "license": "MIT",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
-    "@bizosaas:registry": "https://npm.pkg.github.com"
+    "@bizoholic-digital:registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
