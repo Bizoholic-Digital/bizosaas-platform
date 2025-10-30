@@ -54,7 +54,7 @@ FAILED_PACKAGES=()
 # Function to create .npmrc
 create_npmrc() {
   local package_dir=$1
-  echo "@bizosaas:registry=https://npm.pkg.github.com" > "$package_dir/.npmrc"
+  echo "@bizoholic-digital:registry=https://npm.pkg.github.com" > "$package_dir/.npmrc"
   echo "//npm.pkg.github.com/:_authToken=\${GITHUB_TOKEN}" >> "$package_dir/.npmrc"
 }
 
@@ -64,7 +64,7 @@ publish_package() {
   local package_dir="$BASE_DIR/packages/$package_name"
 
   echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${BLUE}📦 Processing: @bizosaas/$package_name${NC}"
+  echo -e "${BLUE}📦 Processing: @bizoholic-digital/$package_name${NC}"
   echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
   # Check if package directory exists
@@ -104,7 +104,7 @@ publish_package() {
   # Publish package
   echo -e "${BLUE}  → Publishing to GitHub Packages...${NC}"
   if npm publish 2>&1 | tee /tmp/npm-publish-output.txt; then
-    echo -e "${GREEN}  ✅ Successfully published @bizosaas/$package_name${NC}"
+    echo -e "${GREEN}  ✅ Successfully published @bizoholic-digital/$package_name${NC}"
     ((SUCCESS_COUNT++))
   else
     # Check if it's a version conflict (already published)
