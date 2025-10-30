@@ -1,7 +1,33 @@
+const path = require('path')
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+
+  // Transpile local packages from monorepo
+  transpilePackages: [
+    '@bizosaas/ui-components',
+    '@bizosaas/auth',
+    '@bizosaas/api-client',
+    '@bizosaas/hooks',
+    '@bizosaas/utils',
+    '@bizosaas/animated-components',
+  ],
+
+  // Webpack configuration to resolve local packages
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@bizosaas/ui-components': path.resolve(__dirname, '../../../../../packages/ui-components/src'),
+      '@bizosaas/auth': path.resolve(__dirname, '../../../../../packages/auth/src'),
+      '@bizosaas/api-client': path.resolve(__dirname, '../../../../../packages/api-client/src'),
+      '@bizosaas/hooks': path.resolve(__dirname, '../../../../../packages/hooks/src'),
+      '@bizosaas/utils': path.resolve(__dirname, '../../../../../packages/utils/src'),
+      '@bizosaas/animated-components': path.resolve(__dirname, '../../../../../packages/animated-components/src'),
+    }
+    return config
+  },
 
   // Configure for FastAPI Brain integration (centralized business logic)
   env: {
