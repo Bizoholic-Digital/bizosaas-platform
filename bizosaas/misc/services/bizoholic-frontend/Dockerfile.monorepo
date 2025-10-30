@@ -1,0 +1,71 @@
+# Bizoholic Next.js Frontend - Monorepo with Shared Packages
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /monorepo
+
+# Copy workspace configuration
+COPY package.json package-lock.json* ./
+COPY packages ./packages
+
+# Copy Bizoholic frontend
+COPY bizosaas/misc/services/bizoholic-frontend/package.json ./bizosaas/misc/services/bizoholic-frontend/
+
+# Install all workspace dependencies
+RUN npm ci --frozen-lockfile --workspaces
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /monorepo
+
+# Copy node_modules and packages
+COPY --from=deps /monorepo/node_modules ./node_modules
+COPY --from=deps /monorepo/packages ./packages
+COPY --from=deps /monorepo/bizosaas/misc/services/bizoholic-frontend/node_modules ./bizosaas/misc/services/bizoholic-frontend/node_modules
+
+# Copy source code
+COPY package.json ./
+COPY bizosaas/misc/services/bizoholic-frontend ./bizosaas/misc/services/bizoholic-frontend
+
+WORKDIR /monorepo/bizosaas/misc/services/bizoholic-frontend
+
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV WAGTAIL_API_BASE_URL http://wagtail-headless:4000/api
+
+# Build the application
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Create nextjs user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built application
+COPY --from=builder /monorepo/bizosaas/misc/services/bizoholic-frontend/public ./public
+
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /monorepo/bizosaas/misc/services/bizoholic-frontend/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /monorepo/bizosaas/misc/services/bizoholic-frontend/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3001
+
+ENV PORT 3001
+ENV HOSTNAME "0.0.0.0"
+
+# Run the application
+CMD ["node", "server.js"]
