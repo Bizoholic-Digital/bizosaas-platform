@@ -23,7 +23,13 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@bizosaas/ui-components": ["../../../../../packages/ui-components/src"],
+      "@bizosaas/auth": ["../../../../../packages/auth/src"],
+      "@bizosaas/api-client": ["../../../../../packages/api-client/src"],
+      "@bizosaas/hooks": ["../../../../../packages/hooks/src"],
+      "@bizosaas/utils": ["../../../../../packages/utils/src"],
+      "@bizosaas/animated-components": ["../../../../../packages/animated-components/src"]
     }
   },
   "include": [
