@@ -1,5 +1,5 @@
 {
-  "name": "@bizosaas/hooks",
+  "name": "@bizoholic-digital/hooks",
   "version": "1.0.0",
   "description": "Shared React hooks for BizOSaaS platform",
   "main": "dist/index.js",
@@ -24,7 +24,7 @@
   "license": "MIT",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
-    "@bizosaas:registry": "https://npm.pkg.github.com"
+    "@bizoholic-digital:registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",

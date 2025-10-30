@@ -1,5 +1,5 @@
 {
-  "name": "@bizosaas/auth",
+  "name": "@bizoholic-digital/auth",
   "version": "1.0.0",
   "description": "Shared authentication package for BizOSaaS platform (Brain Gateway integration)",
   "main": "dist/index.js",
@@ -32,7 +32,7 @@
   "license": "MIT",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
-    "@bizosaas:registry": "https://npm.pkg.github.com"
+    "@bizoholic-digital:registry": "https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
