@@ -4,7 +4,56 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Bizoholic is a comprehensive AI Marketing Agency SaaS platform built with a microservices architecture. The platform combines WordPress frontend, n8n workflow automation, CrewAI agents, and shared infrastructure to provide end-to-end marketing automation services.
+BizOSaaS Platform is a comprehensive multi-tenant SaaS ecosystem built with **Domain-Driven Design (DDD)** principles and modern microservices architecture. The platform includes 7 independent frontend applications (marketing sites, client portals, admin dashboards), FastAPI backend services, Wagtail CMS, n8n workflow automation, and **93+ CrewAI AI agents** that autonomously manage the entire platform.
+
+**🏗️ Architecture Principles:**
+- **DDD (Domain-Driven Design)**: Each frontend is a separate bounded context in its own container
+- **Modular & Isolated**: Independent deployment, scaling, and maintenance
+- **Autonomous AI**: 93+ CrewAI agents handle 80%+ of operations
+- **Event-Driven**: Services communicate via Brain Gateway orchestration
+
+**📚 CRITICAL REFERENCE DOCUMENT:**
+See [BIZOSAAS_UNIFIED_FRONTEND_ARCHITECTURE.md](/home/alagiri/projects/BIZOSAAS_UNIFIED_FRONTEND_ARCHITECTURE.md) for complete frontend development standards, tech stack, authentication patterns, DDD architecture, CrewAI agent details, and deployment workflows.
+
+## Core Tech Stack (2025)
+
+### Frontend Standard Stack
+- **Framework**: Next.js 15.5.3 + React 18.0.0 (NOT React 19 - ecosystem not ready)
+- **Styling**: Tailwind CSS 3.4.0 + PostCSS
+- **Component Libraries**:
+  - shadcn/ui (Radix UI + Tailwind) - Base components
+  - Aceternity UI - Animated marketing components
+  - Magic UI - Interactive 3D effects
+- **State Management**: Zustand 4.4.7
+- **Server State**: @tanstack/react-query 5.15.0
+- **Forms**: react-hook-form 7.48.2 + Zod 3.22.4
+- **Icons**: Lucide React 0.400.0
+- **Charts**: Recharts 2.8.0
+
+### Backend Standard Stack
+- **Framework**: FastAPI (Python 3.11+)
+- **Database**: PostgreSQL with pgvector
+- **Cache**: Redis
+- **CMS**: Wagtail (Headless)
+- **Workflows**: n8n
+- **Container Orchestration**: Docker Swarm
+- **Deployment**: Dokploy (Self-hosted PaaS)
+- **Reverse Proxy**: Traefik with Let's Encrypt SSL
+
+### Authentication Architecture
+**CRITICAL: We use FastAPI Brain Gateway for ALL authentication (NOT NextAuth.js)**
+
+- **Brain Gateway** (Port 8001): Multi-tenant auth + API gateway
+- **Auth Pattern**: JWT with httpOnly cookies
+- **Frontend**: React Context API (AuthContext + useAuth hook)
+- **Multi-tenancy**: Tenant-scoped data with tenant switching
+- **Security**: Rate limiting, CORS, CSRF protection
+
+**Why NOT NextAuth.js?**
+- Multi-tenancy already implemented in FastAPI
+- Single source of truth across all clients (web, mobile, API)
+- Better performance (fewer hops)
+- Simpler Next.js (presentation layer only)
 
 ## Development Commands
 
@@ -54,6 +103,79 @@ npm run deploy
 
 ## Architecture
 
+### Frontend Applications (Next.js) - DDD Bounded Contexts
+
+Each frontend is a **separate domain** in its **own container**:
+
+| Domain | Container | Path | Port | Purpose |
+|--------|-----------|------|------|---------|
+| **Bizoholic** (Marketing) | Independent | `bizosaas/misc/services/bizoholic-frontend` | 3001 | Marketing agency services |
+| **CoreLDove** (Ecommerce) | Independent | `bizosaas/ecommerce/services/coreldove-frontend` | 3002 | E-commerce storefront |
+| **ThrillRing** (Gaming) | Independent | `bizosaas/frontend/apps/thrillring-gaming` | 3003 | Gaming platform |
+| **Client Portal** (SaaS) | Independent | `bizosaas/frontend/apps/client-portal` | 3000 | Multi-tenant dashboard |
+| **Business Directory** (Listings) | Independent | `bizosaas/frontend/apps/business-directory` | 3004 | Business profiles |
+| **BizOSaaS Admin** (Platform) | Independent | `bizosaas/frontend/apps/bizosaas-admin` | 3009 | Super admin |
+| **Analytics** (Insights) | Independent | `bizosaas/frontend/apps/analytics-dashboard` | 3005 | Data visualization |
+
+**DDD Principles Applied:**
+- ✅ Each domain has its own container (isolated)
+- ✅ Independent deployment and scaling
+- ✅ Separate codebases (modular)
+- ✅ Domain-specific logic encapsulated
+- ✅ Communicate via Brain Gateway (loose coupling)
+
+**All frontends use:**
+- Next.js 15.5.3 + React 18.0.0
+- FastAPI Brain Gateway authentication
+- AuthContext pattern (NOT NextAuth.js)
+- shadcn/ui + Aceternity UI + Magic UI
+- Docker deployment via GHCR
+- **93+ CrewAI agents** via Brain Gateway
+
+### Backend Services (FastAPI/Python)
+
+| Service | Container | Port | Purpose |
+|---------|-----------|------|---------|
+| **Brain Gateway** | Independent | 8001 | Multi-tenant auth + API gateway + Agent orchestration |
+| **FastAPI Core** | Independent | 8000 | Main backend services |
+| **Wagtail CMS** | Independent | 8002 | Headless CMS for content |
+| **CrewAI Agents** | Independent | 8003 | 93+ AI agents (autonomous operations) |
+| **n8n Workflows** | Independent | 5678 | Workflow automation engine |
+
+### 93+ CrewAI AI Agents (Autonomous Platform)
+
+The platform is **autonomously managed** by 93+ specialized CrewAI agents organized into domains:
+
+- 🤖 **Marketing Ecosystem** (15 agents) - Campaign strategy, competitor analysis, budget optimization
+- 🤖 **Content Generation** (12 agents) - Blog posts, social captions, email campaigns, ad copy
+- 🤖 **SEO Optimization** (10 agents) - Keyword research, technical audits, backlink analysis
+- 🤖 **Social Media Management** (8 agents) - Content scheduling, engagement, influencer discovery
+- 🤖 **Campaign Optimization** (9 agents) - Google/Facebook/LinkedIn ads optimization
+- 🤖 **Analytics & Reporting** (11 agents) - GA4 analysis, predictive analytics, forecasting
+- 🤖 **Customer Service** (7 agents) - Chatbot, ticket routing, satisfaction analysis
+- 🤖 **Lead Generation** (6 agents) - Lead scoring, nurture sequences, qualification
+- 🤖 **Email Marketing** (5 agents) - Subject line optimization, send time, segmentation
+- 🤖 **Reputation Management** (4 agents) - Review responses, sentiment monitoring
+- 🤖 **Additional Domains** (21 agents) - Web analytics, CRO, influencer marketing, etc.
+
+**How It Works:**
+```
+Frontend → Brain Gateway → CrewAI Orchestrator → Agents (parallel execution)
+                                                    ↓
+                                            Results aggregated
+                                                    ↓
+                                        Frontend receives response
+```
+
+**Key Benefits:**
+- ✨ 80%+ of operations automated
+- ✨ 24/7 autonomous operation
+- ✨ Consistent quality (no human error)
+- ✨ Scales infinitely
+- ✨ Data-driven decisions
+
+See [BIZOSAAS_UNIFIED_FRONTEND_ARCHITECTURE.md](/home/alagiri/projects/BIZOSAAS_UNIFIED_FRONTEND_ARCHITECTURE.md) Section 1.1 for complete agent documentation.
+
 ### Shared Infrastructure Mode (Current)
 The platform now uses shared development infrastructure with project-specific services:
 
@@ -75,12 +197,11 @@ The platform now uses shared development infrastructure with project-specific se
 - **Agents**: Marketing ecosystem, report generation, reputation, social media, website audit
 - **Key Dependencies**: `crewai==0.24.0`, `fastapi==0.104.1`, `langchain==0.1.0`
 
-### 2. WordPress Frontend (Port 3000)
+### 2. WordPress Frontend (Legacy - Being Replaced)
 - **Image**: `wordpress:6.4-php8.1-apache`
-- **Purpose**: Bizoholic-specific client dashboards, lead forms, reporting interfaces
+- **Purpose**: Bizoholic-specific client dashboards (being migrated to Next.js Client Portal)
 - **Custom Content**: Located in `n8n/wordpress/` directory
-- **Database**: Uses shared PostgreSQL with dedicated WordPress database
-- **Connection**: Uses `host.docker.internal` to connect to shared infrastructure
+- **Status**: Phasing out in favor of Next.js Client Portal
 
 ### Legacy Architecture (Self-Contained)
 For reference, the original architecture included all services locally:
@@ -146,6 +267,55 @@ bizoholic/
 ```
 
 ## Development Workflow
+
+### Frontend Development Workflow (CRITICAL)
+
+**GitHub + GHCR as Single Source of Truth**
+
+```
+Development Cycle:
+1. Pull latest code from GitHub
+2. Pull latest images from GHCR
+3. Work locally (WSL2 containers)
+4. Test locally
+5. Commit changes to GitHub
+6. Build Docker image
+7. Push to GHCR with multiple tags:
+   - :staging
+   - :latest
+   - :working-YYYY-MM-DD
+8. Deploy to staging from GHCR
+9. Test on staging
+10. Tag as :production
+11. Deploy to production from GHCR
+
+❌ NEVER build Docker images on production
+❌ NEVER skip GitHub/GHCR sync
+✅ ALWAYS deploy from GHCR (never local builds)
+✅ ALWAYS maintain at least 3 tags per image
+✅ ALWAYS test on staging before production
+```
+
+### All Frontend Applications Must Include
+
+Every frontend MUST have these authentication files:
+```
+src/
+├── lib/
+│   ├── types/auth.ts           # TypeScript types for auth
+│   └── auth-client.ts          # API client for Brain Gateway
+├── contexts/
+│   └── AuthContext.tsx         # React Context + useAuth hook
+├── middleware.ts               # Route protection
+└── app/
+    ├── layout.tsx              # Wrapped with <AuthProvider>
+    └── (auth)/
+        ├── login/page.tsx
+        ├── signup/page.tsx
+        └── forgot-password/page.tsx
+```
+
+See [BIZOSAAS_UNIFIED_FRONTEND_ARCHITECTURE.md](/home/alagiri/projects/BIZOSAAS_UNIFIED_FRONTEND_ARCHITECTURE.md) for complete implementation patterns.
 
 ### With Shared Infrastructure (Recommended)
 1. **Shared Infrastructure**: Ensure shared infrastructure is running first
