@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  
+  output: 'standalone',
+
   // Configure for FastAPI Brain integration (centralized business logic)
   env: {
     BRAIN_API_BASE_URL: process.env.BRAIN_API_BASE_URL || 'http://localhost:8001/api',
