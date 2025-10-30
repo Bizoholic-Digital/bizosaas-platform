@@ -27,7 +27,13 @@
     "lucide-react": "^0.400.0",
     "axios": "^1.6.0",
     "@headlessui/react": "^1.7.0",
-    "framer-motion": "^10.16.0"
+    "framer-motion": "^10.16.0",
+    "@bizosaas/ui-components": "file:../../../../../packages/ui-components",
+    "@bizosaas/auth": "file:../../../../../packages/auth",
+    "@bizosaas/api-client": "file:../../../../../packages/api-client",
+    "@bizosaas/hooks": "file:../../../../../packages/hooks",
+    "@bizosaas/utils": "file:../../../../../packages/utils",
+    "@bizosaas/animated-components": "file:../../../../../packages/animated-components"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
