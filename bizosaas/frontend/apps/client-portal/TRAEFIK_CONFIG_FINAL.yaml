@@ -1,0 +1,37 @@
+# Complete Traefik Configuration for Client Portal
+# Copy this ENTIRE configuration to replace your current Traefik config in Dokploy
+
+http:
+  middlewares:
+    # ADD THIS MIDDLEWARE SECTION (This is NEW!)
+    portal-stripprefix:
+      stripPrefix:
+        prefixes:
+          - /portal
+
+  routers:
+    frontend-client-portal-router-3:
+      rule: Host(`stg.bizoholic.com`) && PathPrefix(`/portal`)
+      service: frontend-client-portal-service-3
+      middlewares:
+        - redirect-to-https
+        - portal-stripprefix  # ADD THIS LINE
+      entryPoints:
+        - web
+
+    frontend-client-portal-router-websecure-3:
+      rule: Host(`stg.bizoholic.com`) && PathPrefix(`/portal`)
+      service: frontend-client-portal-service-3
+      middlewares:
+        - portal-stripprefix  # CHANGE FROM [] to this!
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    frontend-client-portal-service-3:
+      loadBalancer:
+        servers:
+          - url: http://frontend-client-portal:3001
+        passHostHeader: true
