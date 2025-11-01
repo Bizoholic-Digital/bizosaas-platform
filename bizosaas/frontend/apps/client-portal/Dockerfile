@@ -1,31 +1,56 @@
-# Development Dockerfile for Client Portal
-FROM node:20-alpine
+# Bizoholic Next.js Frontend - Headless Wagtail Consumer
+FROM node:18-alpine AS base
 
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
 
-# Copy source code
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Create nextjs user with proper permissions
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs && \
-    chown -R nextjs:nodejs /app && \
-    mkdir -p /app/.next && \
-    chown -R nextjs:nodejs /app/.next
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV WAGTAIL_API_BASE_URL http://wagtail-headless:4000/api
+
+# Build the application
+RUN npm run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Create nextjs user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy built application
+COPY --from=builder /app/public ./public
+
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-# Expose port
 EXPOSE 3001
 
-# Set environment
-ENV NODE_ENV=development
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3001
+ENV PORT 3001
+ENV HOSTNAME "0.0.0.0"
 
-# Start development server - override the port from package.json
-CMD ["npm", "run", "dev", "--", "--port", "3001"]
+# Run the application
+CMD ["node", "server.js"]
