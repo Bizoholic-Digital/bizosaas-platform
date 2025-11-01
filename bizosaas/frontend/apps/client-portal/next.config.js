@@ -3,6 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
 
+  // Base path for reverse proxy routing (e.g., /portal/)
+  basePath: process.env.BASE_PATH || '',
+
   // Transpile local packages from monorepo
   transpilePackages: [
     '@bizoholic-digital/ui-components',
