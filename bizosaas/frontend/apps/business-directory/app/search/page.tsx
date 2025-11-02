@@ -5,8 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Grid, List, MapPin, Filter } from 'lucide-react';
 import { SearchBar } from '@/components/search/search-bar';
 import { BusinessCard } from '@/components/business/business-card';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button, Card, CardContent } from '@bizoholic-digital/ui-components';
 import { businessAPI } from '@/lib/api';
 import { Business, SearchFilters, SearchResult } from '@/types/business';
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Building2, Menu, Search, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@bizoholic-digital/ui-components';
 
 export function Header() {
   return (

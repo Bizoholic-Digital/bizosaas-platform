@@ -6,7 +6,7 @@ import { ArrowRight, Sparkles } from 'lucide-react'
 
 export default function CTA() {
   return (
-    <section className="section bg-gradient-to-r from-primary-600 via-blue-600 to-indigo-700">
+    <section className="section bg-primary-600">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -21,9 +21,9 @@ export default function CTA() {
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6"
+            className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-6 shadow-lg"
           >
-            <Sparkles className="h-8 w-8 text-white" />
+            <Sparkles className="h-8 w-8 text-primary-600" />
           </motion.div>
 
           {/* Headline */}

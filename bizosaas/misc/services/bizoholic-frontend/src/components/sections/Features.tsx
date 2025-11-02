@@ -61,7 +61,7 @@ export default function Features({ data }: FeaturesProps) {
               viewport={{ once: true }}
               className="text-center group"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-blue-600 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-2xl mb-6 group-hover:scale-110 transition-transform duration-300">
                 <span className="text-2xl">{feature.icon}</span>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">{feature.title}</h3>
@@ -76,7 +76,7 @@ export default function Features({ data }: FeaturesProps) {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           viewport={{ once: true }}
-          className="mt-16 bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-8"
+          className="mt-16 bg-primary-50 rounded-2xl p-8"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="flex items-center">
