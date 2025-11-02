@@ -1,17 +1,25 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { AuthProvider } from '@bizosaas/auth'
+import { AuthProvider } from '@bizoholic-digital/auth'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Bizoholic - AI-Powered Marketing Automation',
+  title: {
+    default: 'Bizoholic Digital - AI-Powered Marketing Automation',
+    template: '%s | Bizoholic Digital',
+  },
   description: 'Transform your marketing with AI automation. Get 75% cost savings, ROI within 7 days, and setup in 15 minutes. The smartest marketing platform for small businesses.',
   keywords: 'AI marketing automation, digital marketing SaaS, marketing campaigns, lead generation, SEO optimization',
   authors: [{ name: 'Bizoholic Team' }],
   creator: 'Bizoholic',
   publisher: 'Bizoholic',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   robots: {
     index: true,
     follow: true,

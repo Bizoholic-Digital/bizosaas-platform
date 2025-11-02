@@ -43,6 +43,9 @@
       ],
       "@bizosaas/animated-components": [
         "../../../../../packages/animated-components/src"
+      ],
+      "@bizoholic-digital/auth": [
+        "./src/lib/auth"
       ]
     },
     "target": "ES2017"

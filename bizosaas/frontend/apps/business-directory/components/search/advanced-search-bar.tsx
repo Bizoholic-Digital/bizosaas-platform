@@ -3,11 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Filter, X, Clock, Star, DollarSign } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button, Input, Card, CardContent, Badge, Popover, PopoverContent, PopoverTrigger } from '@bizoholic-digital/ui-components';
 import { SearchFilters, SearchSuggestion } from '@/types/business';
 import { businessAPI } from '@/lib/api';
 import { cn } from '@/lib/utils';
