@@ -19,23 +19,21 @@ RUN npm ci --legacy-peer-deps
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
+# Copy node_modules and workspace packages from deps
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages ./packages
-COPY --from=deps /app/package.json ./package.json
 
-# Copy only the business directory app source code
+# Copy the business directory app
 COPY bizosaas/frontend/apps/business-directory ./bizosaas/frontend/apps/business-directory
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
-# Add node_modules/.bin to PATH so next command is found
-ENV PATH /app/node_modules/.bin:$PATH
 
 # Build with basePath for /directory/
-# Run build from the app subdirectory
-WORKDIR /app/bizosaas/frontend/apps/business-directory
-RUN npm run build
+# Run from the subdirectory where package.json is located
+RUN cd bizosaas/frontend/apps/business-directory && npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
