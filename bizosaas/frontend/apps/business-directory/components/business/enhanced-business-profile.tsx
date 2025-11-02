@@ -26,7 +26,7 @@ import {
   Instagram,
   MoreHorizontal
 } from 'lucide-react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@bizoholic-digital/ui-components';
+import { Button, Card, CardContent, CardHeader, CardTitle, Badge, Tabs, TabsContent, TabsList, TabsTrigger } from '@/lib/ui';
 import { InteractiveMap } from '@/components/map/interactive-map';
 import { Business, Review, BusinessEvent, BusinessProduct, BusinessCoupon } from '@/types/business';
 import { businessAPI } from '@/lib/api';
