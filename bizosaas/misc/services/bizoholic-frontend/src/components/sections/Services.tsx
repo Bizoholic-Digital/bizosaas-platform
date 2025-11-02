@@ -17,6 +17,21 @@ interface ServicesProps {
 }
 
 export default function Services({ data }: ServicesProps) {
+  // Service title to URL slug mapping to prevent 404 errors
+  const getServiceSlug = (title: string): string => {
+    const slugMap: Record<string, string> = {
+      'SEO Optimization & Local SEO': 'seo-optimization',
+      'Paid Advertising (PPC) Management': 'ppc-management',
+      'Social Media Management': 'social-media',
+      'Content Marketing': 'content-creation',
+      'Email Marketing': 'email-marketing',
+      'Web Development': 'web-development',
+      'Conversion Optimization': 'conversion-optimization',
+      'Analytics & Reporting': 'analytics'
+    }
+    return slugMap[title] || title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  }
+
   const services = data?.items || [
     {
       title: 'SEO Optimization & Local SEO',
@@ -63,7 +78,7 @@ export default function Services({ data }: ServicesProps) {
               {/* Badge */}
               {service.badge && (
                 <div className="absolute -top-4 left-6">
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                  <div className="bg-yellow-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
                     {service.badge}
                   </div>
                 </div>
@@ -101,8 +116,8 @@ export default function Services({ data }: ServicesProps) {
                 </div>
 
                 {/* CTA */}
-                <Link 
-                  href={`/services/${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                <Link
+                  href={`/services/${getServiceSlug(service.title)}`}
                   className="inline-flex items-center text-primary-600 font-medium hover:text-primary-700 transition-colors group/link"
                 >
                   Learn more

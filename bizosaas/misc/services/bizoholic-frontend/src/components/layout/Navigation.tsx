@@ -11,12 +11,14 @@ export default function Navigation() {
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Services', href: '/services' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Resources', href: '/resources' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ]
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200 z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
       <nav className="container">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@bizoholic-digital/ui-components';
 import { toast } from 'sonner';
 import { Download, RefreshCw, X } from 'lucide-react';
 

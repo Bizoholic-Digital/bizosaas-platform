@@ -4,8 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, MapPin, Phone, Clock, ExternalLink } from 'lucide-react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, Button } from '@bizoholic-digital/ui-components';
 import { Business } from '@/types/business';
 import { cn, formatRating, formatPhoneNumber, isBusinessOpen } from '@/lib/utils';
 
