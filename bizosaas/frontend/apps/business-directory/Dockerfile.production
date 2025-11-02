@@ -1,53 +1,99 @@
-FROM node:18-alpine AS base
+# BizOSaaS - Business Directory Microservice Dockerfile
+# Architecture: Independent containerized microservice following DDD principles
+# Uses shared packages from GitHub Packages npm registry
+# Date: November 2, 2025
 
-# Install dependencies only when needed
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# ============================================================================
+# Stage 1: Dependencies
+# ============================================================================
+FROM node:18-alpine AS deps
 WORKDIR /app
 
+# Accept GitHub token as build arg for accessing private packages
+ARG GITHUB_TOKEN
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
+
+# Install libc6-compat for compatibility
+RUN apk add --no-cache libc6-compat
+
+# Configure npm to use GitHub Packages for @bizoholic-digital scope
+RUN echo "@bizoholic-digital:registry=https://npm.pkg.github.com" > .npmrc && \
+    echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
+
+# Copy package files
 COPY package.json package-lock.json* ./
+
+# Install dependencies (including @bizoholic-digital packages from GitHub Packages)
 RUN npm ci --legacy-peer-deps
 
-# Rebuild the source code only when needed
-FROM base AS builder
+# Remove .npmrc to avoid leaking token
+RUN rm -f .npmrc
+
+# ============================================================================
+# Stage 2: Builder
+# ============================================================================
+FROM node:18-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
+# Accept GitHub token for building
+ARG GITHUB_TOKEN
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
+
+# Configure npm for GitHub Packages
+RUN echo "@bizoholic-digital:registry=https://npm.pkg.github.com" > .npmrc && \
+    echo "//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}" >> .npmrc
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci --legacy-peer-deps
+
+# Remove .npmrc
+RUN rm -f .npmrc
+
+# Copy source code
 COPY . .
 
-# Build with basePath for /directory/
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV production
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
+# Build with basePath for /directory/
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
+# ============================================================================
+# Stage 3: Runner
+# ============================================================================
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
+# Copy necessary files from builder
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+# Set correct permissions
+RUN chown -R nextjs:nodejs /app
 
-# Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
+# Switch to non-root user
 USER nextjs
 
+# Expose port
 EXPOSE 3004
 
-ENV PORT 3004
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3004
+ENV HOSTNAME="0.0.0.0"
 
-# NO HEALTHCHECK - Docker Swarm will handle this at service level
-# This prevents the container exit loop issue we experienced with Client Portal
+# NO HEALTHCHECK - Docker Swarm handles at service level
+# Prevents container exit loop issue experienced with Client Portal
 
+# Start the application
 CMD ["node", "server.js"]
