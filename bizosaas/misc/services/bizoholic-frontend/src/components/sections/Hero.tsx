@@ -22,7 +22,7 @@ export default function Hero({ data }: HeroProps) {
   }
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 pt-20 pb-16 lg:pt-24 lg:pb-20">
+    <section className="relative overflow-hidden bg-gray-50 pt-20 pb-16 lg:pt-24 lg:pb-20">
       {/* Background decorations */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -125,11 +125,11 @@ export default function Hero({ data }: HeroProps) {
                   <div className="h-4 bg-purple-200 rounded w-2/3"></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-4 rounded-lg">
+                  <div className="bg-blue-100 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-blue-800">75%</div>
                     <div className="text-sm text-blue-600">Cost Savings</div>
                   </div>
-                  <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-lg">
+                  <div className="bg-green-100 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-green-800">7 Days</div>
                     <div className="text-sm text-green-600">ROI Timeline</div>
                   </div>
