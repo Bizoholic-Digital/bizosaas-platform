@@ -11,29 +11,34 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files from both root and workspace packages
-COPY package.json package-lock.json* ./
+# Copy workspace packages first
 COPY packages ./packages
-RUN npm ci --legacy-peer-deps
+
+# Copy business directory package files
+COPY bizosaas/frontend/apps/business-directory/package.json bizosaas/frontend/apps/business-directory/package-lock.json* ./bizosaas/frontend/apps/business-directory/
+
+# Install dependencies in the business directory
+WORKDIR /app/bizosaas/frontend/apps/business-directory
+RUN npm install --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 
-# Copy node_modules and workspace packages from deps
-COPY --from=deps /app/node_modules ./node_modules
+# Copy packages (for workspace package resolution)
 COPY --from=deps /app/packages ./packages
 
-# Copy the business directory app
+# Copy the business directory app with its node_modules
 COPY bizosaas/frontend/apps/business-directory ./bizosaas/frontend/apps/business-directory
+COPY --from=deps /app/bizosaas/frontend/apps/business-directory/node_modules ./bizosaas/frontend/apps/business-directory/node_modules
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
 # Build with basePath for /directory/
-# Use absolute path to next binary since node_modules is at /app
-RUN cd bizosaas/frontend/apps/business-directory && /app/node_modules/.bin/next build
+WORKDIR /app/bizosaas/frontend/apps/business-directory
+RUN npm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
