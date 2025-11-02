@@ -17,7 +17,7 @@ import {
   Camera,
   MessageCircle
 } from 'lucide-react';
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@bizoholic-digital/ui-components';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@/lib/ui';
 import { businessAPI } from '@/lib/api';
 import { Business, Review } from '@/types/business';
 import { cn, formatRating, formatPhoneNumber, isBusinessOpen, generateStars } from '@/lib/utils';

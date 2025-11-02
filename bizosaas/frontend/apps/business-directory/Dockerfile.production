@@ -1,8 +1,8 @@
-# BizOSaaS - Business Directory Microservice Dockerfile
-# Architecture: Independent containerized microservice following DDD principles
-# Uses shared workspace packages from monorepo
+# Business Directory - Modular Microservice Dockerfile
+# Architecture: Standalone containerized microservice following DDD principles
+# No workspace dependencies - fully self-contained
 # Date: November 2, 2025
-# Build from repository root: docker build -f bizosaas/frontend/apps/business-directory/Dockerfile.production .
+# Build from service directory: docker build -f Dockerfile.production -t ghcr.io/bizoholic-digital/bizosaas-business-directory:latest .
 
 FROM node:18-alpine AS base
 
@@ -11,58 +11,39 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy workspace packages first
-COPY packages ./packages
-
-# Copy business directory package files
-COPY bizosaas/frontend/apps/business-directory/package.json bizosaas/frontend/apps/business-directory/package-lock.json* ./bizosaas/frontend/apps/business-directory/
-
-# Install dependencies in the business directory
-WORKDIR /app/bizosaas/frontend/apps/business-directory
+# Copy package files
+COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
 
-# Rebuild the source code only when needed
+# Build the application
 FROM base AS builder
 WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 
-# Copy packages (for workspace package resolution)
-COPY --from=deps /app/packages ./packages
-
-# Copy the business directory app with its node_modules
-COPY bizosaas/frontend/apps/business-directory ./bizosaas/frontend/apps/business-directory
-COPY --from=deps /app/bizosaas/frontend/apps/business-directory/node_modules ./bizosaas/frontend/apps/business-directory/node_modules
-
-# Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
 # Build with basePath for /directory/
-WORKDIR /app/bizosaas/frontend/apps/business-directory
 RUN npm run build
 
-# Production image, copy all the files and run next
+# Production image
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application from the builder stage
-# Note: Paths are relative to /app/bizosaas/frontend/apps/business-directory in builder stage
-COPY --from=builder /app/bizosaas/frontend/apps/business-directory/public ./public
-
-# Set the correct permission for prerender cache
-RUN mkdir .next && \
-    chown nextjs:nodejs .next
+COPY --from=builder /app/public ./public
+RUN mkdir .next && chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
 # Next.js standalone output creates a minimal server.js and required files
-COPY --from=builder --chown=nextjs:nodejs /app/bizosaas/frontend/apps/business-directory/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/bizosaas/frontend/apps/business-directory/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
