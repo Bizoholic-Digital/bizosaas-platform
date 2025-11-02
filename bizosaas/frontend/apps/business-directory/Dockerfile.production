@@ -2,6 +2,7 @@
 # Architecture: Independent containerized microservice following DDD principles
 # Uses shared workspace packages from monorepo
 # Date: November 2, 2025
+# Build from repository root: docker build -f bizosaas/frontend/apps/business-directory/Dockerfile.production .
 
 FROM node:18-alpine AS base
 
@@ -10,15 +11,22 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
+# Copy package files from both root and workspace packages
 COPY package.json package-lock.json* ./
+COPY packages ./packages
 RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY --from=deps /app/packages ./packages
+
+# Copy only the business directory app source code
+COPY bizosaas/frontend/apps/business-directory ./bizosaas/frontend/apps/business-directory
+
+# Set working directory to the app
+WORKDIR /app/bizosaas/frontend/apps/business-directory
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED 1
@@ -38,16 +46,18 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application
-COPY --from=builder /app/public ./public
+# Copy built application from the builder stage
+# Note: Paths are relative to /app/bizosaas/frontend/apps/business-directory in builder stage
+COPY --from=builder /app/bizosaas/frontend/apps/business-directory/public ./public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next && \
     chown nextjs:nodejs .next
 
 # Automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Next.js standalone output creates a minimal server.js and required files
+COPY --from=builder --chown=nextjs:nodejs /app/bizosaas/frontend/apps/business-directory/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/bizosaas/frontend/apps/business-directory/.next/static ./.next/static
 
 USER nextjs
 
