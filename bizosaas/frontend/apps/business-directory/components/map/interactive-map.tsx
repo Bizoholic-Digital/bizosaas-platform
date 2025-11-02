@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Navigation, ZoomIn, ZoomOut, RotateCcw, Filter } from 'lucide-react';
-import { Button, Card, CardContent, Badge } from '@bizoholic-digital/ui-components';
+import { Button, Card, CardContent, Badge } from '@/lib/ui';
 import { Business, MapBounds, SearchFilters } from '@/types/business';
 import { businessAPI } from '@/lib/api';
 import { cn } from '@/lib/utils';

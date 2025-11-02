@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Search, MapPin, Filter } from 'lucide-react';
-import { Button, Input, Card } from '@bizoholic-digital/ui-components';
+import { Button, Input, Card } from '@/lib/ui';
 import { SearchFilters } from '@/types/business';
 
 interface SearchBarProps {
