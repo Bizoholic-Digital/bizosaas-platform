@@ -32,8 +32,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
 # Build with basePath for /directory/
-# Run from the subdirectory where package.json is located
-RUN cd bizosaas/frontend/apps/business-directory && npm run build
+# Use absolute path to next binary since node_modules is at /app
+RUN cd bizosaas/frontend/apps/business-directory && /app/node_modules/.bin/next build
 
 # Production image, copy all the files and run next
 FROM base AS runner
