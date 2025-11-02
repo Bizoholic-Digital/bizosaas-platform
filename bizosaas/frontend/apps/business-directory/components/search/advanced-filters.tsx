@@ -15,7 +15,7 @@ import {
   Coffee,
   ShoppingBag
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Accordion, AccordionContent, AccordionItem, AccordionTrigger, Slider } from '@bizoholic-digital/ui-components';
+import { Card, CardContent, CardHeader, CardTitle, Button, Badge, Separator, Accordion, AccordionContent, AccordionItem, AccordionTrigger, Slider } from '@/lib/ui';
 import { SearchFilters, Category } from '@/types/business';
 import { businessAPI } from '@/lib/api';
 import { cn } from '@/lib/utils';

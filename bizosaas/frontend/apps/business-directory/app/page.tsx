@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Star, Users, Building2, TrendingUp } from 'lucide-react';
 import { AdvancedSearchBar } from '@/components/search/advanced-search-bar';
 import { BusinessCard } from '@/components/business/business-card';
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@bizoholic-digital/ui-components';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@/lib/ui';
 import { businessAPI } from '@/lib/api';
 import { Business, Category, SearchFilters } from '@/types/business';
 import { useRouter } from 'next/navigation';
