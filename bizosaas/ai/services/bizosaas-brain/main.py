@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 
 # Import enhanced tenant management
 from enhanced_tenant_management import (
-    EnhancedTenant, 
-    TenantRegistry, 
+    EnhancedTenant,
+    TenantRegistry,
     tenant_registry,
     resolve_tenant_from_domain as resolve_enhanced_tenant,
     tenant_management_app,
@@ -44,6 +44,9 @@ from enhanced_tenant_management import (
     TenantStatus,
     UserRole
 )
+
+# Import WordPress Integration API
+from wordpress_integration_api import wordpress_router
 
 # Import Vault client for secrets management
 from vault_client import (
@@ -2450,6 +2453,17 @@ app.include_router(tenant_router)
 
 # Add Admin Aggregation endpoints
 app.include_router(admin_router)
+
+# Add Saleor Webhook endpoints
+from app.api.saleor_webhooks import router as saleor_webhooks_router
+app.include_router(saleor_webhooks_router, prefix="/api")
+
+# Add Saleor GraphQL Proxy endpoints
+from app.api.saleor_proxy import router as saleor_proxy_router
+app.include_router(saleor_proxy_router, prefix="/api")
+
+# Add WordPress Integration API
+app.include_router(wordpress_router, prefix="")  # Already has /api/v1/wordpress prefix
 
 @app.get("/api/unified-tenants/resolve-test")
 async def test_unified_tenant_resolution(
