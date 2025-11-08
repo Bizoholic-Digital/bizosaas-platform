@@ -101,6 +101,30 @@ if analytics_router:
 else:
     print("⚠️ Analytics router not available - running in basic mode")
 
+# Include Saleor webhook router
+try:
+    from app.api.saleor_webhooks import router as saleor_webhooks_router
+    app.include_router(saleor_webhooks_router, prefix="/api")
+    print("✅ Saleor webhook router included")
+except ImportError as e:
+    print(f"⚠️ Saleor webhook router not available: {e}")
+
+# Include WordPress Integration API
+try:
+    from wordpress_integration_api import wordpress_router
+    app.include_router(wordpress_router, prefix="")  # Already has /api/v1/wordpress prefix
+    print("✅ WordPress Integration API router included")
+except ImportError as e:
+    print(f"⚠️ WordPress Integration API not available: {e}")
+
+# Include Saleor GraphQL proxy router
+try:
+    from app.api.saleor_proxy import router as saleor_proxy_router
+    app.include_router(saleor_proxy_router, prefix="/api")
+    print("✅ Saleor GraphQL proxy router included")
+except ImportError as e:
+    print(f"⚠️ Saleor proxy router not available: {e}")
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint with analytics status"""
