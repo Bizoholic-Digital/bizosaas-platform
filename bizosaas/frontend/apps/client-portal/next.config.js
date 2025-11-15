@@ -50,23 +50,52 @@ const nextConfig = {
     ]
   },
 
-  // Security headers
+  // Comprehensive security headers (Gold Standard 2025)
   async headers() {
     return [
       {
         source: '/:path*',
         headers: [
+          // Content Security Policy (XSS Protection)
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://static.cloudflareinsights.com", // TODO: Remove unsafe-inline in production
+              "style-src 'self' 'unsafe-inline'", // Required for Tailwind
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://api.bizoholic.com https://cloudflareinsights.com",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self' https://accounts.google.com https://login.microsoftonline.com https://github.com https://slack.com https://www.linkedin.com",
+              "upgrade-insecure-requests",
+            ].join('; ')
+          },
+          // Clickjacking Protection
           {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
+          // MIME Type Sniffing Protection
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
+          // Referrer Policy
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
+          },
+          // Permissions Policy (formerly Feature-Policy)
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
+          // Strict Transport Security (HTTPS only)
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains; preload',
           },
         ],
       },

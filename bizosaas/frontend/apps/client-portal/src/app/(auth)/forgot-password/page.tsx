@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { authClient } from '@bizoholic-digital/auth'
+import { authClient } from '@/lib/auth'
 import { ArrowLeft, Mail } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
