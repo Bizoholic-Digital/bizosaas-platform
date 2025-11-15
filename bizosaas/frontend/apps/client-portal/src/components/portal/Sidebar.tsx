@@ -9,7 +9,6 @@ import {
   BarChart3, Bot, Star, Trophy, CheckSquare, Settings, Menu, X,
   Megaphone, Plug
 } from 'lucide-react'
-import { useTenantFeature } from '@/contexts/TenantContext'
 import { cn } from '@/lib/utils'
 
 interface NavItem {
@@ -17,7 +16,7 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ className?: string }>
   badge?: string
-  feature?: keyof ReturnType<typeof useTenantFeature>
+  feature?: string
   requiredRole?: 'client' | 'partner' | 'moderator' | 'admin'
 }
 
@@ -123,24 +122,9 @@ export default function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
-  // Filter navigation items based on features and roles
-  const visibleItems = navigationItems.filter((item) => {
-    // Check feature flag if specified
-    if (item.feature) {
-      // For now, we'll show all items. In production, this would check:
-      // const hasFeature = useTenantFeature(item.feature)
-      // return hasFeature
-    }
-
-    // Check role requirement if specified
-    if (item.requiredRole) {
-      // For now, we'll show all items. In production, this would check:
-      // const hasRole = useTenantRole(item.requiredRole)
-      // return hasRole
-    }
-
-    return true
-  })
+  // Show all navigation items for now
+  // TODO: Filter based on tenant features and user roles when backend is ready
+  const visibleItems = navigationItems
 
   return (
     <>

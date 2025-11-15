@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useAuth } from '@bizoholic-digital/auth'
+import { useAuth } from '@/lib/auth'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
