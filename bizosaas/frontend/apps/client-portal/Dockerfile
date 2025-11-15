@@ -16,9 +16,23 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Accept build arguments
+ARG NODE_ENV=production
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
+ARG NEXT_PUBLIC_AUTH_API_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG BASE_PATH
+
 # Set environment variables for build
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV WAGTAIL_API_BASE_URL http://wagtail-headless:4000/api
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV WAGTAIL_API_BASE_URL=http://wagtail-headless:4000/api
+ENV NODE_ENV=$NODE_ENV
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_BRAIN_GATEWAY_URL=$NEXT_PUBLIC_BRAIN_GATEWAY_URL
+ENV NEXT_PUBLIC_AUTH_API_URL=$NEXT_PUBLIC_AUTH_API_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV BASE_PATH=$BASE_PATH
 
 # Build the application
 RUN npm run build
@@ -51,6 +65,15 @@ EXPOSE 3001
 
 ENV PORT 3001
 ENV HOSTNAME "0.0.0.0"
+
+# Runtime environment variables (can be overridden by Dokploy)
+# These are defaults - Dokploy should override with actual values
+ENV NEXT_PUBLIC_API_URL=https://api.bizoholic.com/api
+ENV NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.com/api
+ENV NEXT_PUBLIC_AUTH_API_URL=https://api.bizoholic.com/api/auth
+ENV NEXT_PUBLIC_APP_URL=https://stg.bizoholic.com/portal
+ENV BASE_PATH=/portal
+ENV BRAIN_API_BASE_URL=https://api.bizoholic.com/api
 
 # Run the application
 CMD ["node", "server.js"]

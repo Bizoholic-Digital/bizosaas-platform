@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@bizoholic-digital/auth'
+import { useAuth } from '@/lib/auth'
 
 export default function SettingsPage() {
   const { user } = useAuth()

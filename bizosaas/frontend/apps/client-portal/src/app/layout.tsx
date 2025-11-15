@@ -1,25 +1,35 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { AuthProvider } from '@bizoholic-digital/auth'
+import { AuthProvider } from '@/lib/auth'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'Bizoholic Digital - AI-Powered Marketing Automation',
-    template: '%s | Bizoholic Digital',
+    default: 'BizOSaaS Client Portal - Digital Marketing Platform',
+    template: '%s | BizOSaaS',
   },
-  description: 'Transform your marketing with AI automation. Get 75% cost savings, ROI within 7 days, and setup in 15 minutes. The smartest marketing platform for small businesses.',
-  keywords: 'AI marketing automation, digital marketing SaaS, marketing campaigns, lead generation, SEO optimization',
-  authors: [{ name: 'Bizoholic Team' }],
-  creator: 'Bizoholic',
-  publisher: 'Bizoholic',
+  description: 'Multi-tenant digital marketing platform for businesses. Manage campaigns, analytics, CRM, and more in one place.',
+  keywords: 'digital marketing, SaaS, CRM, analytics, campaign management, business automation',
+  authors: [{ name: 'BizOSaaS Team' }],
+  creator: 'BizOSaaS',
+  publisher: 'BizOSaaS',
+  applicationName: 'BizOSaaS Client Portal',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'BizOSaaS',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/favicon.png',
+    icon: '/portal/favicon.png',
+    shortcut: '/portal/favicon.png',
+    apple: '/portal/favicon.png',
   },
+  manifest: '/portal/manifest.json',
   robots: {
     index: true,
     follow: true,
@@ -34,17 +44,21 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://bizoholic.com',
-    title: 'Bizoholic - AI-Powered Marketing Automation',
-    description: 'Transform your marketing with AI automation. Get 75% cost savings and ROI within 7 days.',
-    siteName: 'Bizoholic',
+    url: 'https://portal.bizoholic.com',
+    title: 'BizOSaaS Client Portal',
+    description: 'Multi-tenant digital marketing platform for businesses',
+    siteName: 'BizOSaaS',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Bizoholic - AI-Powered Marketing Automation',
-    description: 'Transform your marketing with AI automation. Get 75% cost savings and ROI within 7 days.',
+    title: 'BizOSaaS Client Portal',
+    description: 'Multi-tenant digital marketing platform for businesses',
     creator: '@bizoholic',
   },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#1e293b' },
+  ],
   viewport: {
     width: 'device-width',
     initialScale: 1,
