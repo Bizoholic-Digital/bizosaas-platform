@@ -1,9 +1,27 @@
 /**
  * Brain Gateway Authentication Client
  * Handles all authentication operations via Brain Gateway API
+ *
+ * SECURITY: Stores access tokens in memory only (XSS-proof)
+ * Refresh tokens are managed via HttpOnly cookies by the backend
  */
 
-const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'https://api.bizoholic.com'
+const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'https://api.bizoholic.com/api'
+
+// In-memory token storage (lost on page refresh - requires token refresh)
+let accessToken: string | null = null
+
+export function getAccessToken(): string | null {
+  return accessToken
+}
+
+export function setAccessToken(token: string): void {
+  accessToken = token
+}
+
+export function clearAccessToken(): void {
+  accessToken = null
+}
 
 export interface LoginCredentials {
   email: string
@@ -44,6 +62,7 @@ export interface PasswordResetConfirm {
 /**
  * Login user via Brain Gateway
  * Sets httpOnly cookie automatically via credentials: 'include'
+ * Stores access token in memory
  */
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/login`, {
@@ -60,7 +79,16 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
     throw new Error(error.message || 'Login failed')
   }
 
-  return response.json()
+  const result: any = await response.json()
+
+  // Extract and store access token (handle multiple response formats)
+  const token = result.token || result.access_token || result.data?.access_token
+  if (token) {
+    setAccessToken(token)
+  }
+
+  // Return response (with user data)
+  return result
 }
 
 /**
@@ -86,31 +114,49 @@ export async function signup(data: SignupData): Promise<AuthResponse> {
 
 /**
  * Logout user via Brain Gateway
- * Clears httpOnly cookie
+ * Clears httpOnly cookie and access token from memory
  */
 export async function logout(): Promise<void> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  })
+  try {
+    const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/logout`, {
+      method: 'POST',
+      headers: accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {},
+      credentials: 'include',
+    })
 
-  if (!response.ok) {
-    throw new Error('Logout failed')
+    if (!response.ok) {
+      console.error('Logout endpoint failed, but clearing local state')
+    }
+  } catch (error) {
+    console.error('Logout request failed:', error)
+  } finally {
+    // Always clear access token from memory
+    clearAccessToken()
   }
 }
 
 /**
  * Get current authenticated user
- * Uses httpOnly cookie automatically
+ * Uses in-memory access token and httpOnly cookie
  */
 export async function getCurrentUser(): Promise<AuthResponse | null> {
   try {
+    const headers: HeadersInit = {}
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`
+    }
+
     const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/me`, {
       method: 'GET',
+      headers,
       credentials: 'include',
     })
 
     if (!response.ok) {
+      // Token invalid or expired - clear it
+      if (response.status === 401) {
+        clearAccessToken()
+      }
       return null
     }
 
@@ -231,4 +277,7 @@ export const authClient = {
   verifyEmail,
   getTenants,
   switchTenant,
+  getAccessToken,
+  setAccessToken,
+  clearAccessToken,
 }
