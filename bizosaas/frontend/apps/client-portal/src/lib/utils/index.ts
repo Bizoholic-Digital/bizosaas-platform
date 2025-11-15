@@ -43,3 +43,6 @@ export {
   shuffle,
   sortBy,
 } from './array/operations'
+
+// Class name utility
+export { cn } from './cn'
