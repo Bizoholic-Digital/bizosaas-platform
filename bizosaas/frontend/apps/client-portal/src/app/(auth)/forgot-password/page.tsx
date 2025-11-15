@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setLoading(true)
 
     try {
-      await authClient.requestPasswordReset(email)
+      await authClient.requestPasswordReset({ email })
       setSuccess(true)
     } catch (err: any) {
       setError(err.message || 'Failed to send reset email. Please try again.')

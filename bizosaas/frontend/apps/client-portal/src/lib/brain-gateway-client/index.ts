@@ -6,6 +6,13 @@ export { ProjectsClient, projectsClient } from './clients/projects'
 export { ContentClient, contentClient, type ContentListParams } from './clients/content'
 export { AnalyticsClient, analyticsClient } from './clients/analytics'
 
+// Combined brain gateway client
+export const brainGateway = {
+  projects: projectsClient,
+  content: contentClient,
+  analytics: analyticsClient,
+}
+
 // Export all types
 export type {
   PaginationParams,
