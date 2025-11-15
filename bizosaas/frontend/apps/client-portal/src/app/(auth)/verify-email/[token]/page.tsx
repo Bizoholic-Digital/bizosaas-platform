@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useParams } from 'next/navigation'
-import { authClient } from '@bizoholic-digital/auth'
+import { authClient } from '@/lib/auth'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
 export default function VerifyEmailPage() {
