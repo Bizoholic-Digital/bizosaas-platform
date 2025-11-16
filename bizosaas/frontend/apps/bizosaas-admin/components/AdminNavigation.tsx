@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '../shared/components/AuthProvider';
 import {
   LayoutDashboard,
   Settings,
@@ -173,7 +174,18 @@ interface AdminNavigationProps {
 
 export function AdminNavigation({ children }: AdminNavigationProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const isActiveLink = (href: string) => {
     if (href === '/') return pathname === '/';
@@ -279,10 +291,18 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
               <Users className="w-4 h-4 text-gray-600" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900">Super Admin</div>
-              <div className="text-xs text-gray-500">Platform Owner</div>
+              <div className="text-sm font-medium text-gray-900">
+                {user?.name || 'Admin'}
+              </div>
+              <div className="text-xs text-gray-500 capitalize">
+                {user?.role?.replace('_', ' ') || 'Platform Owner'}
+              </div>
             </div>
-            <button className="p-1 rounded-md hover:bg-gray-100">
+            <button
+              onClick={handleLogout}
+              className="p-1 rounded-md hover:bg-gray-100"
+              title="Logout"
+            >
               <LogOut className="w-4 h-4 text-gray-500" />
             </button>
           </div>

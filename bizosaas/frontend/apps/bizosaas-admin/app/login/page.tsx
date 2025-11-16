@@ -28,11 +28,12 @@ export default function LoginPage() {
     setError('')
 
     try {
+      // Login via centralized auth service
       await login({ email, password })
-      // Redirect to TailAdmin v2 Dashboard
-      router.push('/dashboard')
+      // login() automatically redirects to /dashboard
     } catch (error) {
-      setError('Login failed. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -129,9 +130,14 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center text-sm text-gray-600">
-            <div className="space-y-1">
-              <p>🎯 <strong>Port 3000</strong>: BizOSaaS Admin Dashboard</p>
-              <p>📈 <strong>Port 3001</strong>: Bizoholic Marketing</p>
+            <div className="space-y-2 p-4 bg-blue-50 rounded-md">
+              <p className="font-semibold text-blue-900">Demo Credentials</p>
+              <p className="text-xs">Super Admin: <strong>admin@bizosaas.com</strong> / <strong>AdminDemo2024!</strong></p>
+              <p className="text-xs">Tenant Admin: <strong>admin@bizoholic.com</strong> / <strong>AdminDemo2024!</strong></p>
+            </div>
+            <div className="space-y-1 mt-4">
+              <p>🎯 <strong>Port 3009</strong>: BizOSaaS Admin Dashboard</p>
+              <p>📈 <strong>Port 3000</strong>: Bizoholic Marketing</p>
               <p>🛒 <strong>Port 3002</strong>: CoreLDove E-commerce</p>
             </div>
           </div>
