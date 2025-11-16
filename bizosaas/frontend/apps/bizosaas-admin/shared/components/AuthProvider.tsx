@@ -1,16 +1,13 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+/**
+ * AuthProvider for BizOSaaS Admin Dashboard
+ * Wraps the centralized auth system with admin-specific configuration
+ */
 
-interface AuthContextType {
-  user: any | null
-  loading: boolean
-  login: (credentials: any) => Promise<void>
-  logout: () => void
-  platform: string
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AuthProvider as CentralizedAuthProvider } from '@/lib/auth'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState } from 'react'
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -18,69 +15,25 @@ interface AuthProviderProps {
 }
 
 export default function AuthProvider({ children, platform }: AuthProviderProps) {
-  const [user, setUser] = useState<any | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Initialize auth state
-    checkAuthStatus()
-  }, [])
-
-  const checkAuthStatus = async () => {
-    try {
-      // Check for existing auth token
-      const token = localStorage.getItem('auth_token')
-      if (token) {
-        // Validate token and get user info
-        // For now, mock user
-        setUser({ id: 1, name: 'Admin User', email: 'admin@bizosaas.com' })
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const login = async (credentials: any) => {
-    try {
-      setLoading(true)
-      // Implement actual login logic here
-      const mockUser = { id: 1, name: 'Admin User', email: 'admin@bizosaas.com' }
-      setUser(mockUser)
-      localStorage.setItem('auth_token', 'mock_token')
-    } catch (error) {
-      console.error('Login failed:', error)
-      throw error
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('auth_token')
-  }
-
-  const value: AuthContextType = {
-    user,
-    loading,
-    login,
-    logout,
-    platform
-  }
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000, // 1 minute
+          },
+        },
+      })
+  )
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <CentralizedAuthProvider>
+        {children}
+      </CentralizedAuthProvider>
+    </QueryClientProvider>
   )
 }
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+// Re-export useAuth from centralized auth
+export { useAuth } from '@/lib/auth'
