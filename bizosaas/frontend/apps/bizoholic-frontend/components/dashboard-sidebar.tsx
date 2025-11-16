@@ -34,7 +34,7 @@ import {
   Globe,
   Briefcase,
 } from "lucide-react";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuth } from "@/hooks/use-auth";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 // Hierarchical navigation structure with proper grouping
@@ -296,7 +296,7 @@ const backendNavigation = [
 
 function SidebarContent() {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
   const { config } = useTenantTheme();
 
   return (

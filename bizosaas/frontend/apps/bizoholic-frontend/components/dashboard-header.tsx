@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { Search, Settings, User, LogOut, HelpCircle } from 'lucide-react'
-import { useAuthStore } from '@/lib/auth-store'
+import { useAuth } from '@/hooks/use-auth'
 import { RealTimeNotifications } from './real-time-notifications'
 import { WebSocketStatus } from './websocket-status'
 import { ThemeSwitcher } from './theme-switcher'
@@ -33,7 +33,7 @@ const pageNames: Record<string, string> = {
 
 export function DashboardHeader() {
   const pathname = usePathname()
-  const { user, logout } = useAuthStore()
+  const { user, logout } = useAuth()
   
   const currentPageName = pageNames[pathname || ''] || 'Dashboard'
 

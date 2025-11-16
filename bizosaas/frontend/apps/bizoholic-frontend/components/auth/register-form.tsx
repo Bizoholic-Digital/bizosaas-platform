@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/hooks/use-auth'
 
 export function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -28,6 +29,7 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const { signup } = useAuth()
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -61,26 +63,31 @@ export function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
-    
+
     setIsLoading(true)
 
     try {
-      // TODO: Implement actual registration
-      await new Promise(resolve => setTimeout(resolve, 2000)) // Simulate API call
-      
+      // Register via centralized auth service
+      await signup({
+        email: formData.email,
+        password: formData.password,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+      })
+
       toast({
         title: 'Account created successfully!',
-        description: 'Welcome to BizoSaaS. Redirecting to onboarding...',
+        description: 'Welcome to Bizoholic. Redirecting to dashboard...',
       })
-      
-      // Redirect to onboarding
-      router.push('/onboarding')
+
+      // signup() automatically redirects to /dashboard
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed'
       toast({
         title: 'Registration failed',
-        description: 'Please try again or contact support if the problem persists.',
+        description: errorMessage,
         variant: 'destructive',
       })
     } finally {
