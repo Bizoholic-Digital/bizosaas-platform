@@ -1,9 +1,27 @@
 /**
- * Brain Gateway Authentication Client
- * Handles all authentication operations via Brain Gateway API
+ * BizOSaaS Authentication Client for Business Directory
+ * Handles all authentication operations via centralized Auth Service
+ *
+ * SECURITY: Stores access tokens in memory only (XSS-proof)
+ * Refresh tokens are managed via HttpOnly cookies by the backend
  */
 
-const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'https://api.bizoholic.com'
+const AUTH_API_URL = process.env.NEXT_PUBLIC_AUTH_API_URL || 'https://api.bizoholic.com/auth'
+
+// In-memory token storage (lost on page refresh - requires token refresh)
+let accessToken: string | null = null
+
+export function getAccessToken(): string | null {
+  return accessToken
+}
+
+export function setAccessToken(token: string): void {
+  accessToken = token
+}
+
+export function clearAccessToken(): void {
+  accessToken = null
+}
 
 export interface LoginCredentials {
   email: string
@@ -13,22 +31,25 @@ export interface LoginCredentials {
 export interface SignupData {
   email: string
   password: string
-  name: string
-  company?: string
+  first_name: string
+  last_name: string
+  tenant_id?: string
 }
 
 export interface AuthResponse {
   user: {
     id: string
     email: string
-    name: string
-    role: 'client' | 'partner' | 'moderator' | 'admin' | 'superadmin'
+    first_name?: string
+    last_name?: string
+    role: 'super_admin' | 'tenant_admin' | 'user' | 'readonly' | 'agent'
     tenant_id?: string
-    tenant_name?: string
+    allowed_services?: string[]
     avatar?: string
     created_at?: string
     updated_at?: string
   }
+  access_token?: string
   message?: string
 }
 
@@ -42,80 +63,138 @@ export interface PasswordResetConfirm {
 }
 
 /**
- * Login user via Brain Gateway
+ * Login user via Auth Service
  * Sets httpOnly cookie automatically via credentials: 'include'
+ * Stores access token in memory
  */
 export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/login`, {
+  const response = await fetch(`${AUTH_API_URL}/jwt/login`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     credentials: 'include', // Important: sends and receives cookies
-    body: JSON.stringify(credentials),
+    body: new URLSearchParams({
+      username: credentials.email,
+      password: credentials.password,
+    }),
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Login failed' }))
-    throw new Error(error.message || 'Login failed')
+    const error = await response.json().catch(() => ({ detail: 'Login failed' }))
+    throw new Error(error.detail || error.message || 'Login failed')
   }
 
-  return response.json()
+  const result: any = await response.json()
+
+  // Extract and store access token
+  const token = result.access_token || result.token
+  if (token) {
+    setAccessToken(token)
+  }
+
+  // Get user data
+  const userData = await getCurrentUser()
+
+  return {
+    user: userData!.user,
+    access_token: token,
+  }
 }
 
 /**
- * Signup new user via Brain Gateway
+ * Signup new user via Auth Service
  */
 export async function signup(data: SignupData): Promise<AuthResponse> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/signup`, {
+  const response = await fetch(`${AUTH_API_URL}/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     credentials: 'include',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      email: data.email,
+      password: data.password,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      tenant_id: data.tenant_id || null,
+    }),
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Signup failed' }))
-    throw new Error(error.message || 'Signup failed')
+    const error = await response.json().catch(() => ({ detail: 'Signup failed' }))
+    throw new Error(error.detail || error.message || 'Signup failed')
   }
 
-  return response.json()
+  const result = await response.json()
+
+  // Auto-login after signup
+  return await login({ email: data.email, password: data.password })
 }
 
 /**
- * Logout user via Brain Gateway
- * Clears httpOnly cookie
+ * Logout user via Auth Service
+ * Clears httpOnly cookie and access token from memory
  */
 export async function logout(): Promise<void> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  })
+  try {
+    const response = await fetch(`${AUTH_API_URL}/jwt/logout`, {
+      method: 'POST',
+      headers: accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {},
+      credentials: 'include',
+    })
 
-  if (!response.ok) {
-    throw new Error('Logout failed')
+    if (!response.ok) {
+      console.error('Logout endpoint failed, but clearing local state')
+    }
+  } catch (error) {
+    console.error('Logout request failed:', error)
+  } finally {
+    // Always clear access token from memory
+    clearAccessToken()
   }
 }
 
 /**
  * Get current authenticated user
- * Uses httpOnly cookie automatically
+ * Uses in-memory access token and httpOnly cookie
  */
 export async function getCurrentUser(): Promise<AuthResponse | null> {
   try {
-    const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/me`, {
+    const headers: HeadersInit = {}
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`
+    }
+
+    const response = await fetch(`${AUTH_API_URL}/users/me`, {
       method: 'GET',
+      headers,
       credentials: 'include',
     })
 
     if (!response.ok) {
+      // Token invalid or expired - clear it
+      if (response.status === 401) {
+        clearAccessToken()
+      }
       return null
     }
 
-    return response.json()
+    const userData = await response.json()
+
+    // Compute full name
+    const name = userData.first_name && userData.last_name
+      ? `${userData.first_name} ${userData.last_name}`
+      : userData.email.split('@')[0]
+
+    return {
+      user: {
+        ...userData,
+        name,
+      }
+    }
   } catch (error) {
+    console.error('Failed to get current user:', error)
     return null
   }
 }
@@ -124,7 +203,7 @@ export async function getCurrentUser(): Promise<AuthResponse | null> {
  * Request password reset email
  */
 export async function requestPasswordReset(data: PasswordResetRequest): Promise<{ message: string }> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/password-reset/request`, {
+  const response = await fetch(`${AUTH_API_URL}/forgot-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -133,8 +212,8 @@ export async function requestPasswordReset(data: PasswordResetRequest): Promise<
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }))
-    throw new Error(error.message || 'Password reset request failed')
+    const error = await response.json().catch(() => ({ detail: 'Request failed' }))
+    throw new Error(error.detail || error.message || 'Password reset request failed')
   }
 
   return response.json()
@@ -144,7 +223,7 @@ export async function requestPasswordReset(data: PasswordResetRequest): Promise<
  * Confirm password reset with token
  */
 export async function confirmPasswordReset(data: PasswordResetConfirm): Promise<{ message: string }> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/password-reset/confirm`, {
+  const response = await fetch(`${AUTH_API_URL}/reset-password`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -153,8 +232,8 @@ export async function confirmPasswordReset(data: PasswordResetConfirm): Promise<
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Reset failed' }))
-    throw new Error(error.message || 'Password reset failed')
+    const error = await response.json().catch(() => ({ detail: 'Reset failed' }))
+    throw new Error(error.detail || error.message || 'Password reset failed')
   }
 
   return response.json()
@@ -164,14 +243,18 @@ export async function confirmPasswordReset(data: PasswordResetConfirm): Promise<
  * Verify email with token
  */
 export async function verifyEmail(token: string): Promise<{ message: string }> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/verify-email/${token}`, {
+  const response = await fetch(`${AUTH_API_URL}/verify`, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     credentials: 'include',
+    body: JSON.stringify({ token }),
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Verification failed' }))
-    throw new Error(error.message || 'Email verification failed')
+    const error = await response.json().catch(() => ({ detail: 'Verification failed' }))
+    throw new Error(error.detail || error.message || 'Email verification failed')
   }
 
   return response.json()
@@ -189,8 +272,14 @@ export interface Tenant {
  * Get all tenants for current user
  */
 export async function getTenants(): Promise<Tenant[]> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/tenants`, {
+  const headers: HeadersInit = {}
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`
+  }
+
+  const response = await fetch(`${AUTH_API_URL}/tenants`, {
     method: 'GET',
+    headers,
     credentials: 'include',
   })
 
@@ -205,21 +294,36 @@ export async function getTenants(): Promise<Tenant[]> {
  * Switch to a different tenant
  */
 export async function switchTenant(tenantId: string): Promise<AuthResponse> {
-  const response = await fetch(`${BRAIN_GATEWAY_URL}/auth/switch-tenant/${tenantId}`, {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  }
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`
+  }
+
+  const response = await fetch(`${AUTH_API_URL}/tenants/switch/${tenantId}`, {
     method: 'POST',
+    headers,
     credentials: 'include',
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Switch failed' }))
-    throw new Error(error.message || 'Failed to switch tenant')
+    const error = await response.json().catch(() => ({ detail: 'Switch failed' }))
+    throw new Error(error.detail || error.message || 'Failed to switch tenant')
   }
 
-  return response.json()
+  const result = await response.json()
+
+  // Update access token if provided
+  if (result.access_token) {
+    setAccessToken(result.access_token)
+  }
+
+  return result
 }
 
 /**
- * Brain Gateway Auth Client - consolidated API
+ * BizOSaaS Auth Client - consolidated API
  */
 export const authClient = {
   login,
@@ -231,4 +335,7 @@ export const authClient = {
   verifyEmail,
   getTenants,
   switchTenant,
+  getAccessToken,
+  setAccessToken,
+  clearAccessToken,
 }

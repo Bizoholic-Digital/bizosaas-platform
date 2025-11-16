@@ -1,7 +1,7 @@
 'use client'
 
 // Auth Context for managing authentication state across the application
-// Integrates with FastAPI Brain Gateway auth system
+// Integrates with BizOSaaS centralized auth system
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,8 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   isAuthenticated: boolean
+  hasRole: (role: string) => boolean
+  hasServiceAccess: (service: string) => boolean
   login: (credentials: LoginCredentials) => Promise<void>
   signup: (data: SignupData) => Promise<void>
   logout: () => Promise<void>
@@ -126,6 +128,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await authClient.switchTenant(tenantId)
       setUser(response.user)
+      await loadTenants()
       // Reload page to refresh tenant-specific data
       window.location.reload()
     } catch (error) {
@@ -134,12 +137,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  // Role-based access control helpers
+  const hasRole = (requiredRole: string): boolean => {
+    if (!user) return false
+
+    const roleHierarchy = {
+      'super_admin': 5,
+      'tenant_admin': 4,
+      'user': 3,
+      'readonly': 2,
+      'agent': 1,
+    }
+
+    const userRoleLevel = roleHierarchy[user.role as keyof typeof roleHierarchy] || 0
+    const requiredRoleLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0
+
+    return userRoleLevel >= requiredRoleLevel
+  }
+
+  const hasServiceAccess = (service: string): boolean => {
+    if (!user) return false
+    if (user.role === 'super_admin') return true
+    if (!user.allowed_services || user.allowed_services.length === 0) return true
+    return user.allowed_services.includes(service)
+  }
+
   const currentTenant = tenants.find(t => t.id === user?.tenant_id) || null
 
   const value: AuthContextType = {
     user,
     loading,
     isAuthenticated: !!user,
+    hasRole,
+    hasServiceAccess,
     login,
     signup,
     logout,
