@@ -8,18 +8,18 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { useAuthStore } from '@/lib/auth-store'
+import { useAuth } from '@/hooks/use-auth'
 
 export function LoginForm() {
-  const [email, setEmail] = useState('admin@bizosaas.com')
-  const [password, setPassword] = useState('admin123')
+  const [email, setEmail] = useState('admin@bizoholic.com')
+  const [password, setPassword] = useState('AdminDemo2024!')
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
-  const { login } = useAuthStore()
+  const { login } = useAuth()
   
   // Get redirect parameters
   const redirectParam = searchParams?.get('redirect')
@@ -27,7 +27,7 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email || !password) {
       toast({
         title: 'Fields required',
@@ -36,28 +36,24 @@ export function LoginForm() {
       })
       return
     }
-    
+
     setIsLoading(true)
 
     try {
-      // Use the auth store login method which connects to our API client
-      const success = await login(email, password)
-      
-      if (success) {
-        toast({
-          title: 'Welcome back!',
-          description: 'Successfully signed in to Bizoholic Digital platform.',
-        })
-        
-        // Redirect to dashboard (our root routing will handle the proper redirect)
-        router.push('/dashboard')
-      } else {
-        throw new Error('Invalid credentials')
-      }
+      // Login via centralized auth service
+      await login({ email, password })
+
+      toast({
+        title: 'Welcome back!',
+        description: 'Successfully signed in to Bizoholic platform.',
+      })
+
+      // login() automatically redirects to /dashboard
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Invalid credentials'
       toast({
         title: 'Sign in failed',
-        description: 'Invalid email or password. Please check your credentials and try again.',
+        description: errorMessage,
         variant: 'destructive',
       })
     } finally {
@@ -152,8 +148,8 @@ export function LoginForm() {
       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <p className="text-sm text-blue-700">
           <strong>Demo Credentials:</strong><br />
-          Email: admin@bizosaas.com<br />
-          Password: admin123
+          Email: admin@bizoholic.com<br />
+          Password: AdminDemo2024!
         </p>
       </div>
     </form>
