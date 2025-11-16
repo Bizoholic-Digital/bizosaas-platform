@@ -28,13 +28,11 @@
     "dokploy": {
       "command": "npx",
       "args": [
-        "@modelcontextprotocol/server-dokploy@latest"
+        "@ahdev/dokploy-mcp"
       ],
       "env": {
-        "DOKPLOY_URL": "https://dk.bizoholic.com/api",
-        "DOKPLOY_USERNAME": "bizoholic.digital@gmail.com",
-        "DOKPLOY_PASSWORD": "25IKC#1XiKABRo",
-        "DOKPLOY_API_KEY": "VumUVyBHPJQUlXiGnwVxeyKYBeGOLOttGjkgkGiwpSHLiEYegUBkCSTPFmQqMbtC"
+        "DOKPLOY_URL": "https://dk4.bizoholic.com",
+        "DOKPLOY_API_KEY": "dk4ixNgzxiGcZWrjlvocbOJqTLjlZsJUEgmTJjjXYvLVSwiUBUPARxklyNFyVQRDHBa"
       }
     },
     "n8n": {
