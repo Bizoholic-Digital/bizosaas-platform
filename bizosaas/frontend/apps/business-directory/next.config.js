@@ -38,6 +38,21 @@ const nextConfig = {
         source: '/api/brain/:path*',
         destination: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001/api/brain/:path*',
       },
+      {
+        source: '/api/auth/:path*',
+        destination: `${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://bizosaas-auth-v2:8007'}/:path*`,
+      },
+    ]
+  },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Tenant', value: process.env.NEXT_PUBLIC_TENANT_SLUG || 'bizosaas' },
+          { key: 'X-Platform-Type', value: 'business-directory' },
+        ],
+      },
     ]
   },
   env: {
