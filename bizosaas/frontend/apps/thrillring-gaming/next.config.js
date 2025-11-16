@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ThrillRing Gaming: Standalone domain (stg.thrillring.com)
+  // No basePath needed - serving at root of domain
+
   // Enable standalone output for Docker optimization
   output: 'standalone',
 
@@ -17,12 +20,16 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001',
     NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:8001',
-    PORT: process.env.PORT || '3005',
+    PORT: process.env.PORT || '3006',
   },
 
-  // API configuration - Central Hub Integration
+  // API configuration - Central Hub Integration + Auth
   async rewrites() {
     return [
+      {
+        source: '/api/auth/:path*',
+        destination: `${process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://bizosaas-auth-v2:8007'}/:path*`,
+      },
       {
         source: '/api/brain/:path*',
         destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/api/brain/:path*`,
@@ -38,9 +45,16 @@ const nextConfig = {
     ];
   },
 
-  // CORS headers for API routes
+  // Platform headers + CORS for API routes
   async headers() {
     return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Tenant', value: process.env.NEXT_PUBLIC_TENANT_SLUG || 'thrillring' },
+          { key: 'X-Platform-Type', value: 'gaming' },
+        ],
+      },
       {
         source: '/api/:path*',
         headers: [
@@ -55,13 +69,10 @@ const nextConfig = {
 
   // Image optimization for gaming assets
   images: {
-    domains: [
-      'localhost',
-      'bizosaas-brain',
-      'bizosaas-wagtail-cms',
-      'cdn.thrillring.com',
-      'images.unsplash.com',
-      'via.placeholder.com'
+    remotePatterns: [
+      {
+        hostname: "*",
+      },
     ],
     unoptimized: false,
   },
