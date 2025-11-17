@@ -4,9 +4,9 @@
   "private": true,
   "description": "BizOSaaS Analytics Dashboard - Business Intelligence Interface",
   "scripts": {
-    "dev": "next dev --port 3009",
+    "dev": "next dev --port 3007",
     "build": "next build",
-    "start": "next start --port 3009",
+    "start": "next start --port 3007",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write ."

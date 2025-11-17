@@ -4,9 +4,9 @@
   "description": "BizOSaaS Client Portal - Multi-tenant dashboard with AI agents, CRM, and marketing automation",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p 3003",
     "build": "next build",
-    "start": "next start -p 3001",
+    "start": "next start -p 3003",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },

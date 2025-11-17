@@ -4,9 +4,9 @@
   "private": true,
   "description": "ThrillRing Gaming Portal - E-sports Tournament Platform",
   "scripts": {
-    "dev": "next dev --port 3005",
+    "dev": "next dev --port 3006",
     "build": "next build",
-    "start": "next start --port 3005",
+    "start": "next start --port 3006",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write ."
