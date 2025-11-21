@@ -125,6 +125,15 @@ try:
 except ImportError as e:
     print(f"⚠️ Saleor proxy router not available: {e}")
 
+# Include GDPR Compliance router
+try:
+    from app.api.gdpr_routes import router as gdpr_router
+    app.include_router(gdpr_router)
+    print("✅ GDPR Compliance router included")
+except ImportError as e:
+    print(f"⚠️ GDPR Compliance router not available: {e}")
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint with analytics status"""
