@@ -130,6 +130,18 @@ class VaultClient:
             logger.error(f"Failed to delete secret at {path}: {e}")
             return False
     
+    def get_service_config(self, service_name: str) -> Dict[str, Any]:
+        """
+        Get configuration for a specific service
+        
+        Args:
+            service_name: Name of the service (e.g., 'crm', 'saleor', 'wagtail')
+            
+        Returns:
+            Configuration dictionary
+        """
+        return self.get_secret(f'bizosaas/{service_name}')
+
     def get_database_config(self) -> Dict[str, str]:
         """Get database configuration from Vault"""
         return self.get_secret('bizosaas/database')
@@ -142,6 +154,10 @@ class VaultClient:
         """Get Wagtail configuration from Vault"""
         return self.get_secret('bizosaas/wagtail')
     
+    def get_saleor_config(self) -> Dict[str, str]:
+        """Get Saleor configuration from Vault"""
+        return self.get_secret('bizosaas/saleor')
+
     def get_redis_config(self) -> Dict[str, str]:
         """Get Redis configuration from Vault"""
         return self.get_secret('bizosaas/redis')
@@ -272,6 +288,7 @@ def load_config_from_vault() -> Dict[str, Any]:
             'database': vault.get_database_config(),
             'django': vault.get_django_config(),
             'wagtail': vault.get_wagtail_config(),
+            'saleor': vault.get_saleor_config(),
             'redis': vault.get_redis_config(),
             'ai_agents': vault.get_ai_config(),
         }
@@ -282,7 +299,8 @@ def load_config_from_vault() -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Failed to load configuration from Vault: {e}")
         
-        # Fallback to environment variables
+        # Fallback to environment variables (Logged as warning)
+        logger.warning("Falling back to environment variables for configuration")
         return {
             'database': {
                 'host': os.getenv('POSTGRES_HOST', 'localhost'),
