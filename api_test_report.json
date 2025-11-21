@@ -1,0 +1,4369 @@
+{
+  "summary": {
+    "total_tests": 23,
+    "successful_tests": 5,
+    "failed_tests": 18,
+    "success_rate": 21.73913043478261,
+    "avg_response_time": 0.747337527897047
+  },
+  "status_code_distribution": {
+    "404": 5,
+    "200": 5,
+    "503": 1,
+    "0": 12
+  },
+  "critical_failures": 13,
+  "test_timestamp": "2025-09-27T10:51:30.868894",
+  "detailed_results": [
+    {
+      "endpoint": "http://localhost:8001/api/brain/health",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.12348246574401855,
+      "success": false,
+      "error_message": null,
+      "response_data": {
+        "detail": "Service health not found"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/status",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.002763509750366211,
+      "success": false,
+      "error_message": null,
+      "response_data": {
+        "detail": "Service status not found"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/saleor/products",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 3.8744728565216064,
+      "success": true,
+      "error_message": null,
+      "response_data": {
+        "products": [
+          {
+            "id": "fallback-1",
+            "name": "Premium Wireless Headphones",
+            "description": "High-quality wireless headphones with noise cancellation.",
+            "pricing": {
+              "priceRange": {
+                "start": {
+                  "gross": {
+                    "amount": 149.99,
+                    "currency": "USD"
+                  }
+                }
+              }
+            },
+            "thumbnail": {
+              "url": "/placeholder-product.jpg"
+            },
+            "category": {
+              "name": "Electronics"
+            },
+            "rating": 4.5
+          },
+          {
+            "id": "fallback-2",
+            "name": "Organic Cotton T-Shirt",
+            "description": "Comfortable and sustainable organic cotton t-shirt.",
+            "pricing": {
+              "priceRange": {
+                "start": {
+                  "gross": {
+                    "amount": 29.99,
+                    "currency": "USD"
+                  }
+                }
+              }
+            },
+            "thumbnail": {
+              "url": "/placeholder-product.jpg"
+            },
+            "category": {
+              "name": "Fashion"
+            },
+            "rating": 4.2
+          }
+        ],
+        "count": 2,
+        "totalCount": 2,
+        "hasNextPage": false,
+        "source": "fallback"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/saleor/categories",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 0.15862274169921875,
+      "success": true,
+      "error_message": null,
+      "response_data": {
+        "categories": [
+          {
+            "id": "fallback-1",
+            "name": "Electronics",
+            "slug": "electronics",
+            "productCount": 25
+          },
+          {
+            "id": "fallback-2",
+            "name": "Fashion",
+            "slug": "fashion",
+            "productCount": 18
+          },
+          {
+            "id": "fallback-3",
+            "name": "Home & Garden",
+            "slug": "home-garden",
+            "productCount": 12
+          }
+        ],
+        "source": "fallback"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/auth/me",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.0023679733276367188,
+      "success": false,
+      "error_message": null,
+      "response_data": {
+        "detail": "Service auth not found"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/analytics/dashboard",
+      "method": "GET",
+      "status_code": 503,
+      "response_time": 10.98578143119812,
+      "success": false,
+      "error_message": null,
+      "response_data": {
+        "detail": "Service analytics unavailable"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/ai/agents/status",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.0038700103759765625,
+      "success": false,
+      "error_message": null,
+      "response_data": {
+        "detail": "Service ai not found"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8001/api/brain/integrations/status",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.001840353012084961,
+      "success": false,
+      "error_message": null,
+      "response_data": {
+        "detail": "Service integrations not found"
+      }
+    },
+    {
+      "endpoint": "http://localhost:8000/graphql/",
+      "method": "POST",
+      "status_code": 200,
+      "response_time": 0.27233099937438965,
+      "success": true,
+      "error_message": null,
+      "response_data": {
+        "data": {
+          "__schema": {
+            "types": [
+              {
+                "name": "Query"
+              },
+              {
+                "name": "Webhook"
+              },
+              {
+                "name": "Node"
+              },
+              {
+                "name": "ID"
+              },
+              {
+                "name": "String"
+              },
+              {
+                "name": "WebhookEvent"
+              },
+              {
+                "name": "WebhookEventTypeEnum"
+              },
+              {
+                "name": "WebhookEventSync"
+              },
+              {
+                "name": "WebhookEventTypeSyncEnum"
+              },
+              {
+                "name": "WebhookEventAsync"
+              },
+              {
+                "name": "WebhookEventTypeAsyncEnum"
+              },
+              {
+                "name": "App"
+              },
+              {
+                "name": "ObjectWithMetadata"
+              },
+              {
+                "name": "MetadataItem"
+              },
+              {
+                "name": "Metadata"
+              },
+              {
+                "name": "Permission"
+              },
+              {
+                "name": "PermissionEnum"
+              },
+              {
+                "name": "DateTime"
+              },
+              {
+                "name": "Boolean"
+              },
+              {
+                "name": "AppTypeEnum"
+              },
+              {
+                "name": "AppToken"
+              },
+              {
+                "name": "AppExtension"
+              },
+              {
+                "name": "AppExtensionMountEnum"
+              },
+              {
+                "name": "AppExtensionTargetEnum"
+              },
+              {
+                "name": "AppBrand"
+              },
+              {
+                "name": "AppBrandLogo"
+              },
+              {
+                "name": "Int"
+              },
+              {
+                "name": "IconThumbnailFormatEnum"
+              },
+              {
+                "name": "EventDeliveryCountableConnection"
+              },
+              {
+                "name": "PageInfo"
+              },
+              {
+                "name": "EventDeliveryCountableEdge"
+              },
+              {
+                "name": "EventDelivery"
+              },
+              {
+                "name": "EventDeliveryStatusEnum"
+              },
+              {
+                "name": "EventDeliveryAttemptCountableConnection"
+              },
+              {
+                "name": "EventDeliveryAttemptCountableEdge"
+              },
+              {
+                "name": "EventDeliveryAttempt"
+              },
+              {
+                "name": "Float"
+              },
+              {
+                "name": "EventDeliveryAttemptSortingInput"
+              },
+              {
+                "name": "OrderDirection"
+              },
+              {
+                "name": "EventDeliveryAttemptSortField"
+              },
+              {
+                "name": "EventDeliverySortingInput"
+              },
+              {
+                "name": "EventDeliverySortField"
+              },
+              {
+                "name": "EventDeliveryFilterInput"
+              },
+              {
+                "name": "JSONString"
+              },
+              {
+                "name": "WebhookSampleEventTypeEnum"
+              },
+              {
+                "name": "Warehouse"
+              },
+              {
+                "name": "Address"
+              },
+              {
+                "name": "CountryDisplay"
+              },
+              {
+                "name": "VAT"
+              },
+              {
+                "name": "ReducedRate"
+              },
+              {
+                "name": "WarehouseClickAndCollectOptionEnum"
+              },
+              {
+                "name": "ShippingZoneCountableConnection"
+              },
+              {
+                "name": "ShippingZoneCountableEdge"
+              },
+              {
+                "name": "ShippingZone"
+              },
+              {
+                "name": "MoneyRange"
+              },
+              {
+                "name": "Money"
+              },
+              {
+                "name": "ShippingMethodType"
+              },
+              {
+                "name": "ShippingMethodTypeEnum"
+              },
+              {
+                "name": "ShippingMethodTranslation"
+              },
+              {
+                "name": "LanguageDisplay"
+              },
+              {
+                "name": "LanguageCodeEnum"
+              },
+              {
+                "name": "ShippingMethodTranslatableContent"
+              },
+              {
+                "name": "ShippingMethodChannelListing"
+              },
+              {
+                "name": "Channel"
+              },
+              {
+                "name": "ShippingMethodsPerCountry"
+              },
+              {
+                "name": "CountryCode"
+              },
+              {
+                "name": "ShippingMethod"
+              },
+              {
+                "name": "Weight"
+              },
+              {
+                "name": "WeightUnitsEnum"
+              },
+              {
+                "name": "StockSettings"
+              },
+              {
+                "name": "AllocationStrategyEnum"
+              },
+              {
+                "name": "OrderSettings"
+              },
+              {
+                "name": "Minute"
+              },
+              {
+                "name": "MarkAsPaidStrategyEnum"
+              },
+              {
+                "name": "Day"
+              },
+              {
+                "name": "CheckoutSettings"
+              },
+              {
+                "name": "PaymentSettings"
+              },
+              {
+                "name": "TransactionFlowStrategyEnum"
+              },
+              {
+                "name": "Hour"
+              },
+              {
+                "name": "TaxConfiguration"
+              },
+              {
+                "name": "TaxCalculationStrategy"
+              },
+              {
+                "name": "TaxConfigurationPerCountry"
+              },
+              {
+                "name": "ShippingMethodPostalCodeRule"
+              },
+              {
+                "name": "PostalCodeRuleInclusionTypeEnum"
+              },
+              {
+                "name": "ProductCountableConnection"
+              },
+              {
+                "name": "ProductCountableEdge"
+              },
+              {
+                "name": "Product"
+              },
+              {
+                "name": "ProductType"
+              },
+              {
+                "name": "ProductTypeKindEnum"
+              },
+              {
+                "name": "TaxType"
+              },
+              {
+                "name": "TaxClass"
+              },
+              {
+                "name": "TaxClassCountryRate"
+              },
+              {
+                "name": "Attribute"
+              },
+              {
+                "name": "AttributeInputTypeEnum"
+              },
+              {
+                "name": "AttributeEntityTypeEnum"
+              },
+              {
+                "name": "AttributeTypeEnum"
+              },
+              {
+                "name": "MeasurementUnitsEnum"
+              },
+              {
+                "name": "AttributeValueCountableConnection"
+              },
+              {
+                "name": "AttributeValueCountableEdge"
+              },
+              {
+                "name": "AttributeValue"
+              },
+              {
+                "name": "AttributeValueTranslation"
+              },
+              {
+                "name": "AttributeValueTranslatableContent"
+              },
+              {
+                "name": "AttributeTranslatableContent"
+              },
+              {
+                "name": "AttributeTranslation"
+              },
+              {
+                "name": "File"
+              },
+              {
+                "name": "Date"
+              },
+              {
+                "name": "AttributeChoicesSortingInput"
+              },
+              {
+                "name": "AttributeChoicesSortField"
+              },
+              {
+                "name": "AttributeValueFilterInput"
+              },
+              {
+                "name": "ProductTypeCountableConnection"
+              },
+              {
+                "name": "ProductTypeCountableEdge"
+              },
+              {
+                "name": "VariantAttributeScope"
+              },
+              {
+                "name": "AssignedVariantAttribute"
+              },
+              {
+                "name": "AttributeCountableConnection"
+              },
+              {
+                "name": "AttributeCountableEdge"
+              },
+              {
+                "name": "AttributeFilterInput"
+              },
+              {
+                "name": "MetadataFilter"
+              },
+              {
+                "name": "AttributeWhereInput"
+              },
+              {
+                "name": "StringFilterInput"
+              },
+              {
+                "name": "AttributeInputTypeEnumFilterInput"
+              },
+              {
+                "name": "AttributeEntityTypeEnumFilterInput"
+              },
+              {
+                "name": "AttributeTypeEnumFilterInput"
+              },
+              {
+                "name": "MeasurementUnitsEnumFilterInput"
+              },
+              {
+                "name": "Category"
+              },
+              {
+                "name": "CategoryCountableConnection"
+              },
+              {
+                "name": "CategoryCountableEdge"
+              },
+              {
+                "name": "ProductFilterInput"
+              },
+              {
+                "name": "AttributeInput"
+              },
+              {
+                "name": "IntRangeInput"
+              },
+              {
+                "name": "DateTimeRangeInput"
+              },
+              {
+                "name": "DateRangeInput"
+              },
+              {
+                "name": "StockAvailability"
+              },
+              {
+                "name": "ProductStockFilterInput"
+              },
+              {
+                "name": "PriceRangeInput"
+              },
+              {
+                "name": "ProductWhereInput"
+              },
+              {
+                "name": "GlobalIDFilterInput"
+              },
+              {
+                "name": "DecimalFilterInput"
+              },
+              {
+                "name": "Decimal"
+              },
+              {
+                "name": "DecimalRangeInput"
+              },
+              {
+                "name": "DateTimeFilterInput"
+              },
+              {
+                "name": "ProductOrder"
+              },
+              {
+                "name": "ProductOrderField"
+              },
+              {
+                "name": "Image"
+              },
+              {
+                "name": "ThumbnailFormatEnum"
+              },
+              {
+                "name": "CategoryTranslation"
+              },
+              {
+                "name": "CategoryTranslatableContent"
+              },
+              {
+                "name": "ProductVariant"
+              },
+              {
+                "name": "ProductVariantChannelListing"
+              },
+              {
+                "name": "PreorderThreshold"
+              },
+              {
+                "name": "VariantPricingInfo"
+              },
+              {
+                "name": "TaxedMoney"
+              },
+              {
+                "name": "AddressInput"
+              },
+              {
+                "name": "MetadataInput"
+              },
+              {
+                "name": "SelectedAttribute"
+              },
+              {
+                "name": "ReportingPeriod"
+              },
+              {
+                "name": "ProductImage"
+              },
+              {
+                "name": "ProductMedia"
+              },
+              {
+                "name": "ProductMediaType"
+              },
+              {
+                "name": "ProductVariantTranslation"
+              },
+              {
+                "name": "ProductVariantTranslatableContent"
+              },
+              {
+                "name": "DigitalContent"
+              },
+              {
+                "name": "DigitalContentUrl"
+              },
+              {
+                "name": "UUID"
+              },
+              {
+                "name": "Stock"
+              },
+              {
+                "name": "PreorderData"
+              },
+              {
+                "name": "ProductPricingInfo"
+              },
+              {
+                "name": "TaxedMoneyRange"
+              },
+              {
+                "name": "ProductChannelListing"
+              },
+              {
+                "name": "Margin"
+              },
+              {
+                "name": "MediaSortingInput"
+              },
+              {
+                "name": "MediaChoicesSortField"
+              },
+              {
+                "name": "Collection"
+              },
+              {
+                "name": "CollectionTranslation"
+              },
+              {
+                "name": "CollectionTranslatableContent"
+              },
+              {
+                "name": "CollectionChannelListing"
+              },
+              {
+                "name": "ProductTranslation"
+              },
+              {
+                "name": "ProductTranslatableContent"
+              },
+              {
+                "name": "StockCountableConnection"
+              },
+              {
+                "name": "StockCountableEdge"
+              },
+              {
+                "name": "WarehouseCountableConnection"
+              },
+              {
+                "name": "WarehouseCountableEdge"
+              },
+              {
+                "name": "WarehouseFilterInput"
+              },
+              {
+                "name": "WarehouseSortingInput"
+              },
+              {
+                "name": "WarehouseSortField"
+              },
+              {
+                "name": "TranslatableItemConnection"
+              },
+              {
+                "name": "TranslatableItemEdge"
+              },
+              {
+                "name": "TranslatableItem"
+              },
+              {
+                "name": "PageTranslatableContent"
+              },
+              {
+                "name": "PageTranslation"
+              },
+              {
+                "name": "Page"
+              },
+              {
+                "name": "PageType"
+              },
+              {
+                "name": "VoucherTranslatableContent"
+              },
+              {
+                "name": "VoucherTranslation"
+              },
+              {
+                "name": "Voucher"
+              },
+              {
+                "name": "VoucherCodeCountableConnection"
+              },
+              {
+                "name": "VoucherCodeCountableEdge"
+              },
+              {
+                "name": "VoucherCode"
+              },
+              {
+                "name": "CollectionCountableConnection"
+              },
+              {
+                "name": "CollectionCountableEdge"
+              },
+              {
+                "name": "ProductVariantCountableConnection"
+              },
+              {
+                "name": "ProductVariantCountableEdge"
+              },
+              {
+                "name": "DiscountValueTypeEnum"
+              },
+              {
+                "name": "VoucherTypeEnum"
+              },
+              {
+                "name": "VoucherChannelListing"
+              },
+              {
+                "name": "MenuItemTranslatableContent"
+              },
+              {
+                "name": "MenuItemTranslation"
+              },
+              {
+                "name": "MenuItem"
+              },
+              {
+                "name": "Menu"
+              },
+              {
+                "name": "PromotionTranslatableContent"
+              },
+              {
+                "name": "PromotionTranslation"
+              },
+              {
+                "name": "PromotionRuleTranslatableContent"
+              },
+              {
+                "name": "PromotionRuleTranslation"
+              },
+              {
+                "name": "SaleTranslatableContent"
+              },
+              {
+                "name": "SaleTranslation"
+              },
+              {
+                "name": "Sale"
+              },
+              {
+                "name": "SaleType"
+              },
+              {
+                "name": "SaleChannelListing"
+              },
+              {
+                "name": "TranslatableKinds"
+              },
+              {
+                "name": "TaxConfigurationCountableConnection"
+              },
+              {
+                "name": "TaxConfigurationCountableEdge"
+              },
+              {
+                "name": "TaxConfigurationFilterInput"
+              },
+              {
+                "name": "TaxClassCountableConnection"
+              },
+              {
+                "name": "TaxClassCountableEdge"
+              },
+              {
+                "name": "TaxClassSortingInput"
+              },
+              {
+                "name": "TaxClassSortField"
+              },
+              {
+                "name": "TaxClassFilterInput"
+              },
+              {
+                "name": "TaxCountryConfiguration"
+              },
+              {
+                "name": "StockFilterInput"
+              },
+              {
+                "name": "Shop"
+              },
+              {
+                "name": "PaymentGateway"
+              },
+              {
+                "name": "GatewayConfigLine"
+              },
+              {
+                "name": "ExternalAuthentication"
+              },
+              {
+                "name": "CountryFilterInput"
+              },
+              {
+                "name": "Domain"
+              },
+              {
+                "name": "ShopTranslation"
+              },
+              {
+                "name": "StaffNotificationRecipient"
+              },
+              {
+                "name": "User"
+              },
+              {
+                "name": "Checkout"
+              },
+              {
+                "name": "GiftCard"
+              },
+              {
+                "name": "GiftCardEvent"
+              },
+              {
+                "name": "GiftCardEventsEnum"
+              },
+              {
+                "name": "GiftCardEventBalance"
+              },
+              {
+                "name": "GiftCardEventFilterInput"
+              },
+              {
+                "name": "GiftCardTag"
+              },
+              {
+                "name": "CheckoutLine"
+              },
+              {
+                "name": "CheckoutLineProblem"
+              },
+              {
+                "name": "CheckoutLineProblemInsufficientStock"
+              },
+              {
+                "name": "CheckoutLineProblemVariantNotAvailable"
+              },
+              {
+                "name": "DeliveryMethod"
+              },
+              {
+                "name": "TransactionItem"
+              },
+              {
+                "name": "TransactionActionEnum"
+              },
+              {
+                "name": "Order"
+              },
+              {
+                "name": "OrderStatus"
+              },
+              {
+                "name": "Fulfillment"
+              },
+              {
+                "name": "FulfillmentStatus"
+              },
+              {
+                "name": "FulfillmentLine"
+              },
+              {
+                "name": "OrderLine"
+              },
+              {
+                "name": "PositiveDecimal"
+              },
+              {
+                "name": "Allocation"
+              },
+              {
+                "name": "OrderAction"
+              },
+              {
+                "name": "Invoice"
+              },
+              {
+                "name": "Job"
+              },
+              {
+                "name": "JobStatusEnum"
+              },
+              {
+                "name": "OrderOriginEnum"
+              },
+              {
+                "name": "PaymentChargeStatusEnum"
+              },
+              {
+                "name": "OrderAuthorizeStatusEnum"
+              },
+              {
+                "name": "OrderChargeStatusEnum"
+              },
+              {
+                "name": "Payment"
+              },
+              {
+                "name": "Transaction"
+              },
+              {
+                "name": "TransactionKind"
+              },
+              {
+                "name": "CreditCard"
+              },
+              {
+                "name": "OrderEvent"
+              },
+              {
+                "name": "OrderEventsEnum"
+              },
+              {
+                "name": "OrderEventsEmailsEnum"
+              },
+              {
+                "name": "OrderEventOrderLineObject"
+              },
+              {
+                "name": "OrderEventDiscountObject"
+              },
+              {
+                "name": "OrderDiscount"
+              },
+              {
+                "name": "OrderDiscountType"
+              },
+              {
+                "name": "OrderError"
+              },
+              {
+                "name": "OrderErrorCode"
+              },
+              {
+                "name": "AddressTypeEnum"
+              },
+              {
+                "name": "OrderGrantedRefund"
+              },
+              {
+                "name": "OrderGrantedRefundLine"
+              },
+              {
+                "name": "OrderGrantedRefundStatusEnum"
+              },
+              {
+                "name": "TransactionEvent"
+              },
+              {
+                "name": "TransactionEventTypeEnum"
+              },
+              {
+                "name": "UserOrApp"
+              },
+              {
+                "name": "CheckoutAuthorizeStatusEnum"
+              },
+              {
+                "name": "CheckoutChargeStatusEnum"
+              },
+              {
+                "name": "StoredPaymentMethod"
+              },
+              {
+                "name": "TokenizedPaymentFlowEnum"
+              },
+              {
+                "name": "JSON"
+              },
+              {
+                "name": "CheckoutProblem"
+              },
+              {
+                "name": "CheckoutCountableConnection"
+              },
+              {
+                "name": "CheckoutCountableEdge"
+              },
+              {
+                "name": "GiftCardCountableConnection"
+              },
+              {
+                "name": "GiftCardCountableEdge"
+              },
+              {
+                "name": "OrderCountableConnection"
+              },
+              {
+                "name": "OrderCountableEdge"
+              },
+              {
+                "name": "UserPermission"
+              },
+              {
+                "name": "Group"
+              },
+              {
+                "name": "CustomerEvent"
+              },
+              {
+                "name": "CustomerEventsEnum"
+              },
+              {
+                "name": "PaymentSource"
+              },
+              {
+                "name": "LimitInfo"
+              },
+              {
+                "name": "Limits"
+              },
+              {
+                "name": "GiftCardSettings"
+              },
+              {
+                "name": "GiftCardSettingsExpiryTypeEnum"
+              },
+              {
+                "name": "TimePeriod"
+              },
+              {
+                "name": "TimePeriodTypeEnum"
+              },
+              {
+                "name": "ShippingZoneFilterInput"
+              },
+              {
+                "name": "DigitalContentCountableConnection"
+              },
+              {
+                "name": "DigitalContentCountableEdge"
+              },
+              {
+                "name": "CategoryFilterInput"
+              },
+              {
+                "name": "CategoryWhereInput"
+              },
+              {
+                "name": "CategorySortingInput"
+              },
+              {
+                "name": "CategorySortField"
+              },
+              {
+                "name": "CollectionFilterInput"
+              },
+              {
+                "name": "CollectionPublished"
+              },
+              {
+                "name": "CollectionWhereInput"
+              },
+              {
+                "name": "CollectionSortingInput"
+              },
+              {
+                "name": "CollectionSortField"
+              },
+              {
+                "name": "ProductTypeFilterInput"
+              },
+              {
+                "name": "ProductTypeConfigurable"
+              },
+              {
+                "name": "ProductTypeEnum"
+              },
+              {
+                "name": "ProductTypeSortingInput"
+              },
+              {
+                "name": "ProductTypeSortField"
+              },
+              {
+                "name": "ProductVariantFilterInput"
+              },
+              {
+                "name": "ProductVariantWhereInput"
+              },
+              {
+                "name": "ProductVariantSortingInput"
+              },
+              {
+                "name": "ProductVariantSortField"
+              },
+              {
+                "name": "PaymentCountableConnection"
+              },
+              {
+                "name": "PaymentCountableEdge"
+              },
+              {
+                "name": "PaymentFilterInput"
+              },
+              {
+                "name": "PageCountableConnection"
+              },
+              {
+                "name": "PageCountableEdge"
+              },
+              {
+                "name": "PageSortingInput"
+              },
+              {
+                "name": "PageSortField"
+              },
+              {
+                "name": "PageFilterInput"
+              },
+              {
+                "name": "PageTypeCountableConnection"
+              },
+              {
+                "name": "PageTypeCountableEdge"
+              },
+              {
+                "name": "PageTypeSortingInput"
+              },
+              {
+                "name": "PageTypeSortField"
+              },
+              {
+                "name": "PageTypeFilterInput"
+              },
+              {
+                "name": "OrderEventCountableConnection"
+              },
+              {
+                "name": "OrderEventCountableEdge"
+              },
+              {
+                "name": "OrderSortingInput"
+              },
+              {
+                "name": "OrderSortField"
+              },
+              {
+                "name": "OrderFilterInput"
+              },
+              {
+                "name": "OrderStatusFilter"
+              },
+              {
+                "name": "OrderDraftFilterInput"
+              },
+              {
+                "name": "MenuCountableConnection"
+              },
+              {
+                "name": "MenuCountableEdge"
+              },
+              {
+                "name": "MenuSortingInput"
+              },
+              {
+                "name": "MenuSortField"
+              },
+              {
+                "name": "MenuFilterInput"
+              },
+              {
+                "name": "MenuItemCountableConnection"
+              },
+              {
+                "name": "MenuItemCountableEdge"
+              },
+              {
+                "name": "MenuItemSortingInput"
+              },
+              {
+                "name": "MenuItemsSortField"
+              },
+              {
+                "name": "MenuItemFilterInput"
+              },
+              {
+                "name": "GiftCardSortingInput"
+              },
+              {
+                "name": "GiftCardSortField"
+              },
+              {
+                "name": "GiftCardFilterInput"
+              },
+              {
+                "name": "GiftCardTagCountableConnection"
+              },
+              {
+                "name": "GiftCardTagCountableEdge"
+              },
+              {
+                "name": "GiftCardTagFilterInput"
+              },
+              {
+                "name": "Plugin"
+              },
+              {
+                "name": "PluginConfiguration"
+              },
+              {
+                "name": "ConfigurationItem"
+              },
+              {
+                "name": "ConfigurationTypeFieldEnum"
+              },
+              {
+                "name": "PluginCountableConnection"
+              },
+              {
+                "name": "PluginCountableEdge"
+              },
+              {
+                "name": "PluginFilterInput"
+              },
+              {
+                "name": "PluginStatusInChannelsInput"
+              },
+              {
+                "name": "PluginConfigurationType"
+              },
+              {
+                "name": "PluginSortingInput"
+              },
+              {
+                "name": "PluginSortField"
+              },
+              {
+                "name": "SaleCountableConnection"
+              },
+              {
+                "name": "SaleCountableEdge"
+              },
+              {
+                "name": "SaleFilterInput"
+              },
+              {
+                "name": "DiscountStatusEnum"
+              },
+              {
+                "name": "SaleSortingInput"
+              },
+              {
+                "name": "SaleSortField"
+              },
+              {
+                "name": "VoucherCountableConnection"
+              },
+              {
+                "name": "VoucherCountableEdge"
+              },
+              {
+                "name": "VoucherFilterInput"
+              },
+              {
+                "name": "VoucherDiscountType"
+              },
+              {
+                "name": "VoucherSortingInput"
+              },
+              {
+                "name": "VoucherSortField"
+              },
+              {
+                "name": "Promotion"
+              },
+              {
+                "name": "PromotionTypeEnum"
+              },
+              {
+                "name": "PromotionRule"
+              },
+              {
+                "name": "RewardValueTypeEnum"
+              },
+              {
+                "name": "RewardTypeEnum"
+              },
+              {
+                "name": "PromotionEvent"
+              },
+              {
+                "name": "PromotionCreatedEvent"
+              },
+              {
+                "name": "PromotionEventInterface"
+              },
+              {
+                "name": "PromotionEventsEnum"
+              },
+              {
+                "name": "PromotionUpdatedEvent"
+              },
+              {
+                "name": "PromotionStartedEvent"
+              },
+              {
+                "name": "PromotionEndedEvent"
+              },
+              {
+                "name": "PromotionRuleCreatedEvent"
+              },
+              {
+                "name": "PromotionRuleEventInterface"
+              },
+              {
+                "name": "PromotionRuleUpdatedEvent"
+              },
+              {
+                "name": "PromotionRuleDeletedEvent"
+              },
+              {
+                "name": "PromotionCountableConnection"
+              },
+              {
+                "name": "PromotionCountableEdge"
+              },
+              {
+                "name": "PromotionWhereInput"
+              },
+              {
+                "name": "PromotionTypeEnumFilterInput"
+              },
+              {
+                "name": "PromotionSortingInput"
+              },
+              {
+                "name": "PromotionSortField"
+              },
+              {
+                "name": "ExportFile"
+              },
+              {
+                "name": "ExportEvent"
+              },
+              {
+                "name": "ExportEventsEnum"
+              },
+              {
+                "name": "ExportFileCountableConnection"
+              },
+              {
+                "name": "ExportFileCountableEdge"
+              },
+              {
+                "name": "ExportFileFilterInput"
+              },
+              {
+                "name": "ExportFileSortingInput"
+              },
+              {
+                "name": "ExportFileSortField"
+              },
+              {
+                "name": "CheckoutSortingInput"
+              },
+              {
+                "name": "CheckoutSortField"
+              },
+              {
+                "name": "CheckoutFilterInput"
+              },
+              {
+                "name": "CheckoutLineCountableConnection"
+              },
+              {
+                "name": "CheckoutLineCountableEdge"
+              },
+              {
+                "name": "AttributeSortingInput"
+              },
+              {
+                "name": "AttributeSortField"
+              },
+              {
+                "name": "AppInstallation"
+              },
+              {
+                "name": "AppCountableConnection"
+              },
+              {
+                "name": "AppCountableEdge"
+              },
+              {
+                "name": "AppFilterInput"
+              },
+              {
+                "name": "AppSortingInput"
+              },
+              {
+                "name": "AppSortField"
+              },
+              {
+                "name": "AppExtensionCountableConnection"
+              },
+              {
+                "name": "AppExtensionCountableEdge"
+              },
+              {
+                "name": "AppExtensionFilterInput"
+              },
+              {
+                "name": "AddressValidationData"
+              },
+              {
+                "name": "ChoiceValue"
+              },
+              {
+                "name": "UserCountableConnection"
+              },
+              {
+                "name": "UserCountableEdge"
+              },
+              {
+                "name": "CustomerFilterInput"
+              },
+              {
+                "name": "UserSortingInput"
+              },
+              {
+                "name": "UserSortField"
+              },
+              {
+                "name": "GroupCountableConnection"
+              },
+              {
+                "name": "GroupCountableEdge"
+              },
+              {
+                "name": "PermissionGroupFilterInput"
+              },
+              {
+                "name": "PermissionGroupSortingInput"
+              },
+              {
+                "name": "PermissionGroupSortField"
+              },
+              {
+                "name": "StaffUserInput"
+              },
+              {
+                "name": "StaffMemberStatus"
+              },
+              {
+                "name": "Mutation"
+              },
+              {
+                "name": "WebhookCreate"
+              },
+              {
+                "name": "WebhookError"
+              },
+              {
+                "name": "WebhookErrorCode"
+              },
+              {
+                "name": "WebhookCreateInput"
+              },
+              {
+                "name": "WebhookDelete"
+              },
+              {
+                "name": "WebhookUpdate"
+              },
+              {
+                "name": "WebhookUpdateInput"
+              },
+              {
+                "name": "EventDeliveryRetry"
+              },
+              {
+                "name": "WebhookDryRun"
+              },
+              {
+                "name": "WebhookDryRunError"
+              },
+              {
+                "name": "WebhookDryRunErrorCode"
+              },
+              {
+                "name": "WebhookTrigger"
+              },
+              {
+                "name": "WebhookTriggerError"
+              },
+              {
+                "name": "WebhookTriggerErrorCode"
+              },
+              {
+                "name": "WarehouseCreate"
+              },
+              {
+                "name": "WarehouseError"
+              },
+              {
+                "name": "WarehouseErrorCode"
+              },
+              {
+                "name": "WarehouseCreateInput"
+              },
+              {
+                "name": "WarehouseUpdate"
+              },
+              {
+                "name": "WarehouseUpdateInput"
+              },
+              {
+                "name": "WarehouseDelete"
+              },
+              {
+                "name": "WarehouseShippingZoneAssign"
+              },
+              {
+                "name": "WarehouseShippingZoneUnassign"
+              },
+              {
+                "name": "TaxClassCreate"
+              },
+              {
+                "name": "TaxClassCreateError"
+              },
+              {
+                "name": "TaxClassCreateErrorCode"
+              },
+              {
+                "name": "TaxClassCreateInput"
+              },
+              {
+                "name": "CountryRateInput"
+              },
+              {
+                "name": "TaxClassDelete"
+              },
+              {
+                "name": "TaxClassDeleteError"
+              },
+              {
+                "name": "TaxClassDeleteErrorCode"
+              },
+              {
+                "name": "TaxClassUpdate"
+              },
+              {
+                "name": "TaxClassUpdateError"
+              },
+              {
+                "name": "TaxClassUpdateErrorCode"
+              },
+              {
+                "name": "TaxClassUpdateInput"
+              },
+              {
+                "name": "CountryRateUpdateInput"
+              },
+              {
+                "name": "TaxConfigurationUpdate"
+              },
+              {
+                "name": "TaxConfigurationUpdateError"
+              },
+              {
+                "name": "TaxConfigurationUpdateErrorCode"
+              },
+              {
+                "name": "TaxConfigurationUpdateInput"
+              },
+              {
+                "name": "TaxConfigurationPerCountryInput"
+              },
+              {
+                "name": "TaxCountryConfigurationUpdate"
+              },
+              {
+                "name": "TaxCountryConfigurationUpdateError"
+              },
+              {
+                "name": "TaxCountryConfigurationUpdateErrorCode"
+              },
+              {
+                "name": "TaxClassRateInput"
+              },
+              {
+                "name": "TaxCountryConfigurationDelete"
+              },
+              {
+                "name": "TaxCountryConfigurationDeleteError"
+              },
+              {
+                "name": "TaxCountryConfigurationDeleteErrorCode"
+              },
+              {
+                "name": "TaxExemptionManage"
+              },
+              {
+                "name": "TaxSourceObject"
+              },
+              {
+                "name": "TaxExemptionManageError"
+              },
+              {
+                "name": "TaxExemptionManageErrorCode"
+              },
+              {
+                "name": "StockBulkUpdate"
+              },
+              {
+                "name": "StockBulkResult"
+              },
+              {
+                "name": "StockBulkUpdateError"
+              },
+              {
+                "name": "StockBulkUpdateErrorCode"
+              },
+              {
+                "name": "ErrorPolicyEnum"
+              },
+              {
+                "name": "StockBulkUpdateInput"
+              },
+              {
+                "name": "StaffNotificationRecipientCreate"
+              },
+              {
+                "name": "ShopError"
+              },
+              {
+                "name": "ShopErrorCode"
+              },
+              {
+                "name": "StaffNotificationRecipientInput"
+              },
+              {
+                "name": "StaffNotificationRecipientUpdate"
+              },
+              {
+                "name": "StaffNotificationRecipientDelete"
+              },
+              {
+                "name": "ShopDomainUpdate"
+              },
+              {
+                "name": "SiteDomainInput"
+              },
+              {
+                "name": "ShopSettingsUpdate"
+              },
+              {
+                "name": "ShopSettingsInput"
+              },
+              {
+                "name": "ShopFetchTaxRates"
+              },
+              {
+                "name": "ShopSettingsTranslate"
+              },
+              {
+                "name": "TranslationError"
+              },
+              {
+                "name": "TranslationErrorCode"
+              },
+              {
+                "name": "ShopSettingsTranslationInput"
+              },
+              {
+                "name": "ShopAddressUpdate"
+              },
+              {
+                "name": "OrderSettingsUpdate"
+              },
+              {
+                "name": "OrderSettingsError"
+              },
+              {
+                "name": "OrderSettingsErrorCode"
+              },
+              {
+                "name": "OrderSettingsUpdateInput"
+              },
+              {
+                "name": "GiftCardSettingsUpdate"
+              },
+              {
+                "name": "GiftCardSettingsError"
+              },
+              {
+                "name": "GiftCardSettingsErrorCode"
+              },
+              {
+                "name": "GiftCardSettingsUpdateInput"
+              },
+              {
+                "name": "TimePeriodInputType"
+              },
+              {
+                "name": "ShippingMethodChannelListingUpdate"
+              },
+              {
+                "name": "ShippingError"
+              },
+              {
+                "name": "ShippingErrorCode"
+              },
+              {
+                "name": "ShippingMethodChannelListingInput"
+              },
+              {
+                "name": "ShippingMethodChannelListingAddInput"
+              },
+              {
+                "name": "ShippingPriceCreate"
+              },
+              {
+                "name": "ShippingPriceInput"
+              },
+              {
+                "name": "WeightScalar"
+              },
+              {
+                "name": "ShippingPostalCodeRulesCreateInputRange"
+              },
+              {
+                "name": "ShippingPriceDelete"
+              },
+              {
+                "name": "ShippingPriceBulkDelete"
+              },
+              {
+                "name": "ShippingPriceUpdate"
+              },
+              {
+                "name": "ShippingPriceTranslate"
+              },
+              {
+                "name": "ShippingPriceTranslationInput"
+              },
+              {
+                "name": "ShippingPriceExcludeProducts"
+              },
+              {
+                "name": "ShippingPriceExcludeProductsInput"
+              },
+              {
+                "name": "ShippingPriceRemoveProductFromExclude"
+              },
+              {
+                "name": "ShippingZoneCreate"
+              },
+              {
+                "name": "ShippingZoneCreateInput"
+              },
+              {
+                "name": "ShippingZoneDelete"
+              },
+              {
+                "name": "ShippingZoneBulkDelete"
+              },
+              {
+                "name": "ShippingZoneUpdate"
+              },
+              {
+                "name": "ShippingZoneUpdateInput"
+              },
+              {
+                "name": "ProductAttributeAssign"
+              },
+              {
+                "name": "ProductError"
+              },
+              {
+                "name": "ProductErrorCode"
+              },
+              {
+                "name": "ProductAttributeAssignInput"
+              },
+              {
+                "name": "ProductAttributeType"
+              },
+              {
+                "name": "ProductAttributeAssignmentUpdate"
+              },
+              {
+                "name": "ProductAttributeAssignmentUpdateInput"
+              },
+              {
+                "name": "ProductAttributeUnassign"
+              },
+              {
+                "name": "CategoryCreate"
+              },
+              {
+                "name": "CategoryInput"
+              },
+              {
+                "name": "SeoInput"
+              },
+              {
+                "name": "Upload"
+              },
+              {
+                "name": "CategoryDelete"
+              },
+              {
+                "name": "CategoryBulkDelete"
+              },
+              {
+                "name": "CategoryUpdate"
+              },
+              {
+                "name": "CategoryTranslate"
+              },
+              {
+                "name": "TranslationInput"
+              },
+              {
+                "name": "CollectionAddProducts"
+              },
+              {
+                "name": "CollectionError"
+              },
+              {
+                "name": "CollectionErrorCode"
+              },
+              {
+                "name": "CollectionCreate"
+              },
+              {
+                "name": "CollectionCreateInput"
+              },
+              {
+                "name": "CollectionDelete"
+              },
+              {
+                "name": "CollectionReorderProducts"
+              },
+              {
+                "name": "MoveProductInput"
+              },
+              {
+                "name": "CollectionBulkDelete"
+              },
+              {
+                "name": "CollectionRemoveProducts"
+              },
+              {
+                "name": "CollectionUpdate"
+              },
+              {
+                "name": "CollectionInput"
+              },
+              {
+                "name": "CollectionTranslate"
+              },
+              {
+                "name": "CollectionChannelListingUpdate"
+              },
+              {
+                "name": "CollectionChannelListingError"
+              },
+              {
+                "name": "CollectionChannelListingUpdateInput"
+              },
+              {
+                "name": "PublishableChannelListingInput"
+              },
+              {
+                "name": "ProductCreate"
+              },
+              {
+                "name": "ProductCreateInput"
+              },
+              {
+                "name": "AttributeValueInput"
+              },
+              {
+                "name": "AttributeValueSelectableTypeInput"
+              },
+              {
+                "name": "ProductDelete"
+              },
+              {
+                "name": "ProductBulkCreate"
+              },
+              {
+                "name": "ProductBulkResult"
+              },
+              {
+                "name": "ProductBulkCreateError"
+              },
+              {
+                "name": "ProductBulkCreateErrorCode"
+              },
+              {
+                "name": "ProductBulkCreateInput"
+              },
+              {
+                "name": "MediaInput"
+              },
+              {
+                "name": "ProductChannelListingCreateInput"
+              },
+              {
+                "name": "ProductVariantBulkCreateInput"
+              },
+              {
+                "name": "BulkAttributeValueInput"
+              },
+              {
+                "name": "PreorderSettingsInput"
+              },
+              {
+                "name": "StockInput"
+              },
+              {
+                "name": "ProductVariantChannelListingAddInput"
+              },
+              {
+                "name": "ProductBulkDelete"
+              },
+              {
+                "name": "ProductUpdate"
+              },
+              {
+                "name": "ProductInput"
+              },
+              {
+                "name": "ProductBulkTranslate"
+              },
+              {
+                "name": "ProductBulkTranslateResult"
+              },
+              {
+                "name": "ProductBulkTranslateError"
+              },
+              {
+                "name": "ProductTranslateErrorCode"
+              },
+              {
+                "name": "ProductBulkTranslateInput"
+              },
+              {
+                "name": "ProductTranslate"
+              },
+              {
+                "name": "ProductChannelListingUpdate"
+              },
+              {
+                "name": "ProductChannelListingError"
+              },
+              {
+                "name": "ProductChannelListingUpdateInput"
+              },
+              {
+                "name": "ProductChannelListingAddInput"
+              },
+              {
+                "name": "ProductMediaCreate"
+              },
+              {
+                "name": "ProductMediaCreateInput"
+              },
+              {
+                "name": "ProductVariantReorder"
+              },
+              {
+                "name": "ReorderInput"
+              },
+              {
+                "name": "ProductMediaDelete"
+              },
+              {
+                "name": "ProductMediaBulkDelete"
+              },
+              {
+                "name": "ProductMediaReorder"
+              },
+              {
+                "name": "ProductMediaUpdate"
+              },
+              {
+                "name": "ProductMediaUpdateInput"
+              },
+              {
+                "name": "ProductTypeCreate"
+              },
+              {
+                "name": "ProductTypeInput"
+              },
+              {
+                "name": "ProductTypeDelete"
+              },
+              {
+                "name": "ProductTypeBulkDelete"
+              },
+              {
+                "name": "ProductTypeUpdate"
+              },
+              {
+                "name": "ProductTypeReorderAttributes"
+              },
+              {
+                "name": "ProductReorderAttributeValues"
+              },
+              {
+                "name": "DigitalContentCreate"
+              },
+              {
+                "name": "DigitalContentUploadInput"
+              },
+              {
+                "name": "DigitalContentDelete"
+              },
+              {
+                "name": "DigitalContentUpdate"
+              },
+              {
+                "name": "DigitalContentInput"
+              },
+              {
+                "name": "DigitalContentUrlCreate"
+              },
+              {
+                "name": "DigitalContentUrlCreateInput"
+              },
+              {
+                "name": "ProductVariantCreate"
+              },
+              {
+                "name": "ProductVariantCreateInput"
+              },
+              {
+                "name": "ProductVariantDelete"
+              },
+              {
+                "name": "ProductVariantBulkCreate"
+              },
+              {
+                "name": "ProductVariantBulkResult"
+              },
+              {
+                "name": "ProductVariantBulkError"
+              },
+              {
+                "name": "ProductVariantBulkErrorCode"
+              },
+              {
+                "name": "BulkProductError"
+              },
+              {
+                "name": "ProductVariantBulkUpdate"
+              },
+              {
+                "name": "ProductVariantBulkUpdateInput"
+              },
+              {
+                "name": "ProductVariantStocksUpdateInput"
+              },
+              {
+                "name": "StockUpdateInput"
+              },
+              {
+                "name": "ProductVariantChannelListingUpdateInput"
+              },
+              {
+                "name": "ChannelListingUpdateInput"
+              },
+              {
+                "name": "ProductVariantBulkDelete"
+              },
+              {
+                "name": "ProductVariantStocksCreate"
+              },
+              {
+                "name": "BulkStockError"
+              },
+              {
+                "name": "ProductVariantStocksDelete"
+              },
+              {
+                "name": "StockError"
+              },
+              {
+                "name": "StockErrorCode"
+              },
+              {
+                "name": "ProductVariantStocksUpdate"
+              },
+              {
+                "name": "ProductVariantUpdate"
+              },
+              {
+                "name": "ProductVariantInput"
+              },
+              {
+                "name": "ProductVariantSetDefault"
+              },
+              {
+                "name": "ProductVariantTranslate"
+              },
+              {
+                "name": "NameTranslationInput"
+              },
+              {
+                "name": "ProductVariantBulkTranslate"
+              },
+              {
+                "name": "ProductVariantBulkTranslateResult"
+              },
+              {
+                "name": "ProductVariantBulkTranslateError"
+              },
+              {
+                "name": "ProductVariantTranslateErrorCode"
+              },
+              {
+                "name": "ProductVariantBulkTranslateInput"
+              },
+              {
+                "name": "ProductVariantChannelListingUpdate"
+              },
+              {
+                "name": "ProductVariantReorderAttributeValues"
+              },
+              {
+                "name": "ProductVariantPreorderDeactivate"
+              },
+              {
+                "name": "VariantMediaAssign"
+              },
+              {
+                "name": "VariantMediaUnassign"
+              },
+              {
+                "name": "PaymentCapture"
+              },
+              {
+                "name": "PaymentError"
+              },
+              {
+                "name": "PaymentErrorCode"
+              },
+              {
+                "name": "PaymentRefund"
+              },
+              {
+                "name": "PaymentVoid"
+              },
+              {
+                "name": "PaymentInitialize"
+              },
+              {
+                "name": "PaymentInitialized"
+              },
+              {
+                "name": "PaymentCheckBalance"
+              },
+              {
+                "name": "PaymentCheckBalanceInput"
+              },
+              {
+                "name": "CardInput"
+              },
+              {
+                "name": "MoneyInput"
+              },
+              {
+                "name": "TransactionCreate"
+              },
+              {
+                "name": "TransactionCreateError"
+              },
+              {
+                "name": "TransactionCreateErrorCode"
+              },
+              {
+                "name": "TransactionCreateInput"
+              },
+              {
+                "name": "TransactionEventInput"
+              },
+              {
+                "name": "TransactionUpdate"
+              },
+              {
+                "name": "TransactionUpdateError"
+              },
+              {
+                "name": "TransactionUpdateErrorCode"
+              },
+              {
+                "name": "TransactionUpdateInput"
+              },
+              {
+                "name": "TransactionRequestAction"
+              },
+              {
+                "name": "TransactionRequestActionError"
+              },
+              {
+                "name": "TransactionRequestActionErrorCode"
+              },
+              {
+                "name": "TransactionRequestRefundForGrantedRefund"
+              },
+              {
+                "name": "TransactionRequestRefundForGrantedRefundError"
+              },
+              {
+                "name": "TransactionRequestRefundForGrantedRefundErrorCode"
+              },
+              {
+                "name": "TransactionEventReport"
+              },
+              {
+                "name": "TransactionEventReportError"
+              },
+              {
+                "name": "TransactionEventReportErrorCode"
+              },
+              {
+                "name": "PaymentGatewayInitialize"
+              },
+              {
+                "name": "PaymentGatewayConfig"
+              },
+              {
+                "name": "PaymentGatewayConfigError"
+              },
+              {
+                "name": "PaymentGatewayConfigErrorCode"
+              },
+              {
+                "name": "PaymentGatewayInitializeError"
+              },
+              {
+                "name": "PaymentGatewayInitializeErrorCode"
+              },
+              {
+                "name": "PaymentGatewayToInitialize"
+              },
+              {
+                "name": "TransactionInitialize"
+              },
+              {
+                "name": "TransactionInitializeError"
+              },
+              {
+                "name": "TransactionInitializeErrorCode"
+              },
+              {
+                "name": "TransactionProcess"
+              },
+              {
+                "name": "TransactionProcessError"
+              },
+              {
+                "name": "TransactionProcessErrorCode"
+              },
+              {
+                "name": "StoredPaymentMethodRequestDelete"
+              },
+              {
+                "name": "StoredPaymentMethodRequestDeleteResult"
+              },
+              {
+                "name": "PaymentMethodRequestDeleteError"
+              },
+              {
+                "name": "StoredPaymentMethodRequestDeleteErrorCode"
+              },
+              {
+                "name": "PaymentGatewayInitializeTokenization"
+              },
+              {
+                "name": "PaymentGatewayInitializeTokenizationResult"
+              },
+              {
+                "name": "PaymentGatewayInitializeTokenizationError"
+              },
+              {
+                "name": "PaymentGatewayInitializeTokenizationErrorCode"
+              },
+              {
+                "name": "PaymentMethodInitializeTokenization"
+              },
+              {
+                "name": "PaymentMethodTokenizationResult"
+              },
+              {
+                "name": "PaymentMethodInitializeTokenizationError"
+              },
+              {
+                "name": "PaymentMethodInitializeTokenizationErrorCode"
+              },
+              {
+                "name": "PaymentMethodProcessTokenization"
+              },
+              {
+                "name": "PaymentMethodProcessTokenizationError"
+              },
+              {
+                "name": "PaymentMethodProcessTokenizationErrorCode"
+              },
+              {
+                "name": "PageCreate"
+              },
+              {
+                "name": "PageError"
+              },
+              {
+                "name": "PageErrorCode"
+              },
+              {
+                "name": "PageCreateInput"
+              },
+              {
+                "name": "PageDelete"
+              },
+              {
+                "name": "PageBulkDelete"
+              },
+              {
+                "name": "PageBulkPublish"
+              },
+              {
+                "name": "PageUpdate"
+              },
+              {
+                "name": "PageInput"
+              },
+              {
+                "name": "PageTranslate"
+              },
+              {
+                "name": "PageTranslationInput"
+              },
+              {
+                "name": "PageTypeCreate"
+              },
+              {
+                "name": "PageTypeCreateInput"
+              },
+              {
+                "name": "PageTypeUpdate"
+              },
+              {
+                "name": "PageTypeUpdateInput"
+              },
+              {
+                "name": "PageTypeDelete"
+              },
+              {
+                "name": "PageTypeBulkDelete"
+              },
+              {
+                "name": "PageAttributeAssign"
+              },
+              {
+                "name": "PageAttributeUnassign"
+              },
+              {
+                "name": "PageTypeReorderAttributes"
+              },
+              {
+                "name": "PageReorderAttributeValues"
+              },
+              {
+                "name": "DraftOrderComplete"
+              },
+              {
+                "name": "DraftOrderCreate"
+              },
+              {
+                "name": "DraftOrderCreateInput"
+              },
+              {
+                "name": "OrderLineCreateInput"
+              },
+              {
+                "name": "DraftOrderDelete"
+              },
+              {
+                "name": "DraftOrderBulkDelete"
+              },
+              {
+                "name": "DraftOrderLinesBulkDelete"
+              },
+              {
+                "name": "DraftOrderUpdate"
+              },
+              {
+                "name": "DraftOrderInput"
+              },
+              {
+                "name": "OrderAddNote"
+              },
+              {
+                "name": "OrderAddNoteInput"
+              },
+              {
+                "name": "OrderCancel"
+              },
+              {
+                "name": "OrderCapture"
+              },
+              {
+                "name": "OrderConfirm"
+              },
+              {
+                "name": "OrderFulfill"
+              },
+              {
+                "name": "OrderFulfillInput"
+              },
+              {
+                "name": "OrderFulfillLineInput"
+              },
+              {
+                "name": "OrderFulfillStockInput"
+              },
+              {
+                "name": "FulfillmentCancel"
+              },
+              {
+                "name": "FulfillmentCancelInput"
+              },
+              {
+                "name": "FulfillmentApprove"
+              },
+              {
+                "name": "FulfillmentUpdateTracking"
+              },
+              {
+                "name": "FulfillmentUpdateTrackingInput"
+              },
+              {
+                "name": "FulfillmentRefundProducts"
+              },
+              {
+                "name": "OrderRefundProductsInput"
+              },
+              {
+                "name": "OrderRefundLineInput"
+              },
+              {
+                "name": "OrderRefundFulfillmentLineInput"
+              },
+              {
+                "name": "FulfillmentReturnProducts"
+              },
+              {
+                "name": "OrderReturnProductsInput"
+              },
+              {
+                "name": "OrderReturnLineInput"
+              },
+              {
+                "name": "OrderReturnFulfillmentLineInput"
+              },
+              {
+                "name": "OrderGrantRefundCreate"
+              },
+              {
+                "name": "OrderGrantRefundCreateError"
+              },
+              {
+                "name": "OrderGrantRefundCreateErrorCode"
+              },
+              {
+                "name": "OrderGrantRefundCreateLineError"
+              },
+              {
+                "name": "OrderGrantRefundCreateLineErrorCode"
+              },
+              {
+                "name": "OrderGrantRefundCreateInput"
+              },
+              {
+                "name": "OrderGrantRefundCreateLineInput"
+              },
+              {
+                "name": "OrderGrantRefundUpdate"
+              },
+              {
+                "name": "OrderGrantRefundUpdateError"
+              },
+              {
+                "name": "OrderGrantRefundUpdateErrorCode"
+              },
+              {
+                "name": "OrderGrantRefundUpdateLineError"
+              },
+              {
+                "name": "OrderGrantRefundUpdateLineErrorCode"
+              },
+              {
+                "name": "OrderGrantRefundUpdateInput"
+              },
+              {
+                "name": "OrderGrantRefundUpdateLineAddInput"
+              },
+              {
+                "name": "OrderLinesCreate"
+              },
+              {
+                "name": "OrderLineDelete"
+              },
+              {
+                "name": "OrderLineUpdate"
+              },
+              {
+                "name": "OrderLineInput"
+              },
+              {
+                "name": "OrderDiscountAdd"
+              },
+              {
+                "name": "OrderDiscountCommonInput"
+              },
+              {
+                "name": "OrderDiscountUpdate"
+              },
+              {
+                "name": "OrderDiscountDelete"
+              },
+              {
+                "name": "OrderLineDiscountUpdate"
+              },
+              {
+                "name": "OrderLineDiscountRemove"
+              },
+              {
+                "name": "OrderNoteAdd"
+              },
+              {
+                "name": "OrderNoteAddError"
+              },
+              {
+                "name": "OrderNoteAddErrorCode"
+              },
+              {
+                "name": "OrderNoteInput"
+              },
+              {
+                "name": "OrderNoteUpdate"
+              },
+              {
+                "name": "OrderNoteUpdateError"
+              },
+              {
+                "name": "OrderNoteUpdateErrorCode"
+              },
+              {
+                "name": "OrderMarkAsPaid"
+              },
+              {
+                "name": "OrderRefund"
+              },
+              {
+                "name": "OrderUpdate"
+              },
+              {
+                "name": "OrderUpdateInput"
+              },
+              {
+                "name": "OrderUpdateShipping"
+              },
+              {
+                "name": "OrderUpdateShippingInput"
+              },
+              {
+                "name": "OrderVoid"
+              },
+              {
+                "name": "OrderBulkCancel"
+              },
+              {
+                "name": "OrderBulkCreate"
+              },
+              {
+                "name": "OrderBulkCreateResult"
+              },
+              {
+                "name": "OrderBulkCreateError"
+              },
+              {
+                "name": "OrderBulkCreateErrorCode"
+              },
+              {
+                "name": "OrderBulkCreateInput"
+              },
+              {
+                "name": "OrderBulkCreateUserInput"
+              },
+              {
+                "name": "OrderBulkCreateNoteInput"
+              },
+              {
+                "name": "OrderBulkCreateOrderLineInput"
+              },
+              {
+                "name": "TaxedMoneyInput"
+              },
+              {
+                "name": "OrderBulkCreateDeliveryMethodInput"
+              },
+              {
+                "name": "OrderBulkCreateFulfillmentInput"
+              },
+              {
+                "name": "OrderBulkCreateFulfillmentLineInput"
+              },
+              {
+                "name": "OrderBulkCreateInvoiceInput"
+              },
+              {
+                "name": "StockUpdatePolicyEnum"
+              },
+              {
+                "name": "DeleteMetadata"
+              },
+              {
+                "name": "MetadataError"
+              },
+              {
+                "name": "MetadataErrorCode"
+              },
+              {
+                "name": "DeletePrivateMetadata"
+              },
+              {
+                "name": "UpdateMetadata"
+              },
+              {
+                "name": "UpdatePrivateMetadata"
+              },
+              {
+                "name": "AssignNavigation"
+              },
+              {
+                "name": "MenuError"
+              },
+              {
+                "name": "MenuErrorCode"
+              },
+              {
+                "name": "NavigationType"
+              },
+              {
+                "name": "MenuCreate"
+              },
+              {
+                "name": "MenuCreateInput"
+              },
+              {
+                "name": "MenuItemInput"
+              },
+              {
+                "name": "MenuDelete"
+              },
+              {
+                "name": "MenuBulkDelete"
+              },
+              {
+                "name": "MenuUpdate"
+              },
+              {
+                "name": "MenuInput"
+              },
+              {
+                "name": "MenuItemCreate"
+              },
+              {
+                "name": "MenuItemCreateInput"
+              },
+              {
+                "name": "MenuItemDelete"
+              },
+              {
+                "name": "MenuItemBulkDelete"
+              },
+              {
+                "name": "MenuItemUpdate"
+              },
+              {
+                "name": "MenuItemTranslate"
+              },
+              {
+                "name": "MenuItemMove"
+              },
+              {
+                "name": "MenuItemMoveInput"
+              },
+              {
+                "name": "InvoiceRequest"
+              },
+              {
+                "name": "InvoiceError"
+              },
+              {
+                "name": "InvoiceErrorCode"
+              },
+              {
+                "name": "InvoiceRequestDelete"
+              },
+              {
+                "name": "InvoiceCreate"
+              },
+              {
+                "name": "InvoiceCreateInput"
+              },
+              {
+                "name": "InvoiceDelete"
+              },
+              {
+                "name": "InvoiceUpdate"
+              },
+              {
+                "name": "UpdateInvoiceInput"
+              },
+              {
+                "name": "InvoiceSendNotification"
+              },
+              {
+                "name": "GiftCardActivate"
+              },
+              {
+                "name": "GiftCardError"
+              },
+              {
+                "name": "GiftCardErrorCode"
+              },
+              {
+                "name": "GiftCardCreate"
+              },
+              {
+                "name": "GiftCardCreateInput"
+              },
+              {
+                "name": "PriceInput"
+              },
+              {
+                "name": "GiftCardDelete"
+              },
+              {
+                "name": "GiftCardDeactivate"
+              },
+              {
+                "name": "GiftCardUpdate"
+              },
+              {
+                "name": "GiftCardUpdateInput"
+              },
+              {
+                "name": "GiftCardResend"
+              },
+              {
+                "name": "GiftCardResendInput"
+              },
+              {
+                "name": "GiftCardAddNote"
+              },
+              {
+                "name": "GiftCardAddNoteInput"
+              },
+              {
+                "name": "GiftCardBulkCreate"
+              },
+              {
+                "name": "GiftCardBulkCreateInput"
+              },
+              {
+                "name": "GiftCardBulkDelete"
+              },
+              {
+                "name": "GiftCardBulkActivate"
+              },
+              {
+                "name": "GiftCardBulkDeactivate"
+              },
+              {
+                "name": "PluginUpdate"
+              },
+              {
+                "name": "PluginError"
+              },
+              {
+                "name": "PluginErrorCode"
+              },
+              {
+                "name": "PluginUpdateInput"
+              },
+              {
+                "name": "ConfigurationItemInput"
+              },
+              {
+                "name": "ExternalNotificationTrigger"
+              },
+              {
+                "name": "ExternalNotificationError"
+              },
+              {
+                "name": "ExternalNotificationErrorCodes"
+              },
+              {
+                "name": "ExternalNotificationTriggerInput"
+              },
+              {
+                "name": "PromotionCreate"
+              },
+              {
+                "name": "PromotionCreateError"
+              },
+              {
+                "name": "PromotionCreateErrorCode"
+              },
+              {
+                "name": "PromotionCreateInput"
+              },
+              {
+                "name": "PromotionRuleInput"
+              },
+              {
+                "name": "CataloguePredicateInput"
+              },
+              {
+                "name": "OrderPredicateInput"
+              },
+              {
+                "name": "DiscountedObjectWhereInput"
+              },
+              {
+                "name": "PromotionUpdate"
+              },
+              {
+                "name": "PromotionUpdateError"
+              },
+              {
+                "name": "PromotionUpdateErrorCode"
+              },
+              {
+                "name": "PromotionUpdateInput"
+              },
+              {
+                "name": "PromotionDelete"
+              },
+              {
+                "name": "PromotionDeleteError"
+              },
+              {
+                "name": "PromotionDeleteErrorCode"
+              },
+              {
+                "name": "PromotionRuleCreate"
+              },
+              {
+                "name": "PromotionRuleCreateError"
+              },
+              {
+                "name": "PromotionRuleCreateErrorCode"
+              },
+              {
+                "name": "PromotionRuleCreateInput"
+              },
+              {
+                "name": "PromotionRuleUpdate"
+              },
+              {
+                "name": "PromotionRuleUpdateError"
+              },
+              {
+                "name": "PromotionRuleUpdateErrorCode"
+              },
+              {
+                "name": "PromotionRuleUpdateInput"
+              },
+              {
+                "name": "PromotionRuleDelete"
+              },
+              {
+                "name": "PromotionRuleDeleteError"
+              },
+              {
+                "name": "PromotionRuleDeleteErrorCode"
+              },
+              {
+                "name": "PromotionTranslate"
+              },
+              {
+                "name": "PromotionTranslationInput"
+              },
+              {
+                "name": "PromotionRuleTranslate"
+              },
+              {
+                "name": "PromotionRuleTranslationInput"
+              },
+              {
+                "name": "PromotionBulkDelete"
+              },
+              {
+                "name": "DiscountError"
+              },
+              {
+                "name": "DiscountErrorCode"
+              },
+              {
+                "name": "SaleCreate"
+              },
+              {
+                "name": "SaleInput"
+              },
+              {
+                "name": "SaleDelete"
+              },
+              {
+                "name": "SaleBulkDelete"
+              },
+              {
+                "name": "SaleUpdate"
+              },
+              {
+                "name": "SaleAddCatalogues"
+              },
+              {
+                "name": "CatalogueInput"
+              },
+              {
+                "name": "SaleRemoveCatalogues"
+              },
+              {
+                "name": "SaleTranslate"
+              },
+              {
+                "name": "SaleChannelListingUpdate"
+              },
+              {
+                "name": "SaleChannelListingInput"
+              },
+              {
+                "name": "SaleChannelListingAddInput"
+              },
+              {
+                "name": "VoucherCreate"
+              },
+              {
+                "name": "VoucherInput"
+              },
+              {
+                "name": "VoucherDelete"
+              },
+              {
+                "name": "VoucherBulkDelete"
+              },
+              {
+                "name": "VoucherUpdate"
+              },
+              {
+                "name": "VoucherAddCatalogues"
+              },
+              {
+                "name": "VoucherRemoveCatalogues"
+              },
+              {
+                "name": "VoucherTranslate"
+              },
+              {
+                "name": "VoucherChannelListingUpdate"
+              },
+              {
+                "name": "VoucherChannelListingInput"
+              },
+              {
+                "name": "VoucherChannelListingAddInput"
+              },
+              {
+                "name": "VoucherCodeBulkDelete"
+              },
+              {
+                "name": "VoucherCodeBulkDeleteError"
+              },
+              {
+                "name": "VoucherCodeBulkDeleteErrorCode"
+              },
+              {
+                "name": "ExportProducts"
+              },
+              {
+                "name": "ExportError"
+              },
+              {
+                "name": "ExportErrorCode"
+              },
+              {
+                "name": "ExportProductsInput"
+              },
+              {
+                "name": "ExportScope"
+              },
+              {
+                "name": "ExportInfoInput"
+              },
+              {
+                "name": "ProductFieldEnum"
+              },
+              {
+                "name": "FileTypesEnum"
+              },
+              {
+                "name": "ExportGiftCards"
+              },
+              {
+                "name": "ExportGiftCardsInput"
+              },
+              {
+                "name": "ExportVoucherCodes"
+              },
+              {
+                "name": "ExportVoucherCodesInput"
+              },
+              {
+                "name": "FileUpload"
+              },
+              {
+                "name": "UploadError"
+              },
+              {
+                "name": "UploadErrorCode"
+              },
+              {
+                "name": "CheckoutAddPromoCode"
+              },
+              {
+                "name": "CheckoutError"
+              },
+              {
+                "name": "CheckoutErrorCode"
+              },
+              {
+                "name": "CheckoutBillingAddressUpdate"
+              },
+              {
+                "name": "CheckoutAddressValidationRules"
+              },
+              {
+                "name": "CheckoutComplete"
+              },
+              {
+                "name": "CheckoutCreate"
+              },
+              {
+                "name": "CheckoutCreateInput"
+              },
+              {
+                "name": "CheckoutLineInput"
+              },
+              {
+                "name": "CheckoutValidationRules"
+              },
+              {
+                "name": "CheckoutCreateFromOrder"
+              },
+              {
+                "name": "CheckoutCreateFromOrderUnavailableVariant"
+              },
+              {
+                "name": "CheckoutCreateFromOrderUnavailableVariantErrorCode"
+              },
+              {
+                "name": "CheckoutCreateFromOrderError"
+              },
+              {
+                "name": "CheckoutCreateFromOrderErrorCode"
+              },
+              {
+                "name": "CheckoutCustomerAttach"
+              },
+              {
+                "name": "CheckoutCustomerDetach"
+              },
+              {
+                "name": "CheckoutEmailUpdate"
+              },
+              {
+                "name": "CheckoutLineDelete"
+              },
+              {
+                "name": "CheckoutLinesDelete"
+              },
+              {
+                "name": "CheckoutLinesAdd"
+              },
+              {
+                "name": "CheckoutLinesUpdate"
+              },
+              {
+                "name": "CheckoutLineUpdateInput"
+              },
+              {
+                "name": "CheckoutRemovePromoCode"
+              },
+              {
+                "name": "CheckoutPaymentCreate"
+              },
+              {
+                "name": "PaymentInput"
+              },
+              {
+                "name": "StorePaymentMethodEnum"
+              },
+              {
+                "name": "CheckoutShippingAddressUpdate"
+              },
+              {
+                "name": "CheckoutShippingMethodUpdate"
+              },
+              {
+                "name": "CheckoutDeliveryMethodUpdate"
+              },
+              {
+                "name": "CheckoutLanguageCodeUpdate"
+              },
+              {
+                "name": "OrderCreateFromCheckout"
+              },
+              {
+                "name": "OrderCreateFromCheckoutError"
+              },
+              {
+                "name": "OrderCreateFromCheckoutErrorCode"
+              },
+              {
+                "name": "ChannelCreate"
+              },
+              {
+                "name": "ChannelError"
+              },
+              {
+                "name": "ChannelErrorCode"
+              },
+              {
+                "name": "ChannelCreateInput"
+              },
+              {
+                "name": "StockSettingsInput"
+              },
+              {
+                "name": "OrderSettingsInput"
+              },
+              {
+                "name": "CheckoutSettingsInput"
+              },
+              {
+                "name": "PaymentSettingsInput"
+              },
+              {
+                "name": "ChannelUpdate"
+              },
+              {
+                "name": "ChannelUpdateInput"
+              },
+              {
+                "name": "ChannelDelete"
+              },
+              {
+                "name": "ChannelDeleteInput"
+              },
+              {
+                "name": "ChannelActivate"
+              },
+              {
+                "name": "ChannelDeactivate"
+              },
+              {
+                "name": "ChannelReorderWarehouses"
+              },
+              {
+                "name": "AttributeCreate"
+              },
+              {
+                "name": "AttributeError"
+              },
+              {
+                "name": "AttributeErrorCode"
+              },
+              {
+                "name": "AttributeCreateInput"
+              },
+              {
+                "name": "AttributeValueCreateInput"
+              },
+              {
+                "name": "AttributeDelete"
+              },
+              {
+                "name": "AttributeUpdate"
+              },
+              {
+                "name": "AttributeUpdateInput"
+              },
+              {
+                "name": "AttributeValueUpdateInput"
+              },
+              {
+                "name": "AttributeBulkCreate"
+              },
+              {
+                "name": "AttributeBulkCreateResult"
+              },
+              {
+                "name": "AttributeBulkCreateError"
+              },
+              {
+                "name": "AttributeBulkCreateErrorCode"
+              },
+              {
+                "name": "AttributeBulkUpdate"
+              },
+              {
+                "name": "AttributeBulkUpdateResult"
+              },
+              {
+                "name": "AttributeBulkUpdateError"
+              },
+              {
+                "name": "AttributeBulkUpdateErrorCode"
+              },
+              {
+                "name": "AttributeBulkUpdateInput"
+              },
+              {
+                "name": "AttributeTranslate"
+              },
+              {
+                "name": "AttributeBulkTranslate"
+              },
+              {
+                "name": "AttributeBulkTranslateResult"
+              },
+              {
+                "name": "AttributeBulkTranslateError"
+              },
+              {
+                "name": "AttributeTranslateErrorCode"
+              },
+              {
+                "name": "AttributeBulkTranslateInput"
+              },
+              {
+                "name": "AttributeBulkDelete"
+              },
+              {
+                "name": "AttributeValueBulkDelete"
+              },
+              {
+                "name": "AttributeValueCreate"
+              },
+              {
+                "name": "AttributeValueDelete"
+              },
+              {
+                "name": "AttributeValueUpdate"
+              },
+              {
+                "name": "AttributeValueBulkTranslate"
+              },
+              {
+                "name": "AttributeValueBulkTranslateResult"
+              },
+              {
+                "name": "AttributeValueBulkTranslateError"
+              },
+              {
+                "name": "AttributeValueTranslateErrorCode"
+              },
+              {
+                "name": "AttributeValueBulkTranslateInput"
+              },
+              {
+                "name": "AttributeValueTranslationInput"
+              },
+              {
+                "name": "AttributeValueTranslate"
+              },
+              {
+                "name": "AttributeReorderValues"
+              },
+              {
+                "name": "AppCreate"
+              },
+              {
+                "name": "AppError"
+              },
+              {
+                "name": "AppErrorCode"
+              },
+              {
+                "name": "AppInput"
+              },
+              {
+                "name": "AppUpdate"
+              },
+              {
+                "name": "AppDelete"
+              },
+              {
+                "name": "AppTokenCreate"
+              },
+              {
+                "name": "AppTokenInput"
+              },
+              {
+                "name": "AppTokenDelete"
+              },
+              {
+                "name": "AppTokenVerify"
+              },
+              {
+                "name": "AppInstall"
+              },
+              {
+                "name": "AppInstallInput"
+              },
+              {
+                "name": "AppRetryInstall"
+              },
+              {
+                "name": "AppDeleteFailedInstallation"
+              },
+              {
+                "name": "AppFetchManifest"
+              },
+              {
+                "name": "Manifest"
+              },
+              {
+                "name": "AppManifestExtension"
+              },
+              {
+                "name": "AppManifestWebhook"
+              },
+              {
+                "name": "AppManifestRequiredSaleorVersion"
+              },
+              {
+                "name": "AppManifestBrand"
+              },
+              {
+                "name": "AppManifestBrandLogo"
+              },
+              {
+                "name": "AppActivate"
+              },
+              {
+                "name": "AppDeactivate"
+              },
+              {
+                "name": "CreateToken"
+              },
+              {
+                "name": "AccountError"
+              },
+              {
+                "name": "AccountErrorCode"
+              },
+              {
+                "name": "RefreshToken"
+              },
+              {
+                "name": "VerifyToken"
+              },
+              {
+                "name": "GenericScalar"
+              },
+              {
+                "name": "DeactivateAllUserTokens"
+              },
+              {
+                "name": "ExternalAuthenticationUrl"
+              },
+              {
+                "name": "ExternalObtainAccessTokens"
+              },
+              {
+                "name": "ExternalRefresh"
+              },
+              {
+                "name": "ExternalLogout"
+              },
+              {
+                "name": "ExternalVerify"
+              },
+              {
+                "name": "RequestPasswordReset"
+              },
+              {
+                "name": "SendConfirmationEmail"
+              },
+              {
+                "name": "SendConfirmationEmailError"
+              },
+              {
+                "name": "SendConfirmationEmailErrorCode"
+              },
+              {
+                "name": "ConfirmAccount"
+              },
+              {
+                "name": "SetPassword"
+              },
+              {
+                "name": "PasswordChange"
+              },
+              {
+                "name": "RequestEmailChange"
+              },
+              {
+                "name": "ConfirmEmailChange"
+              },
+              {
+                "name": "AccountAddressCreate"
+              },
+              {
+                "name": "AccountAddressUpdate"
+              },
+              {
+                "name": "AccountAddressDelete"
+              },
+              {
+                "name": "AccountSetDefaultAddress"
+              },
+              {
+                "name": "AccountRegister"
+              },
+              {
+                "name": "AccountRegisterInput"
+              },
+              {
+                "name": "AccountUpdate"
+              },
+              {
+                "name": "AccountInput"
+              },
+              {
+                "name": "AccountRequestDeletion"
+              },
+              {
+                "name": "AccountDelete"
+              },
+              {
+                "name": "AddressCreate"
+              },
+              {
+                "name": "AddressUpdate"
+              },
+              {
+                "name": "AddressDelete"
+              },
+              {
+                "name": "AddressSetDefault"
+              },
+              {
+                "name": "CustomerCreate"
+              },
+              {
+                "name": "UserCreateInput"
+              },
+              {
+                "name": "CustomerUpdate"
+              },
+              {
+                "name": "CustomerInput"
+              },
+              {
+                "name": "CustomerDelete"
+              },
+              {
+                "name": "CustomerBulkDelete"
+              },
+              {
+                "name": "CustomerBulkUpdate"
+              },
+              {
+                "name": "CustomerBulkResult"
+              },
+              {
+                "name": "CustomerBulkUpdateError"
+              },
+              {
+                "name": "CustomerBulkUpdateErrorCode"
+              },
+              {
+                "name": "CustomerBulkUpdateInput"
+              },
+              {
+                "name": "StaffCreate"
+              },
+              {
+                "name": "StaffError"
+              },
+              {
+                "name": "StaffCreateInput"
+              },
+              {
+                "name": "StaffUpdate"
+              },
+              {
+                "name": "StaffUpdateInput"
+              },
+              {
+                "name": "StaffDelete"
+              },
+              {
+                "name": "StaffBulkDelete"
+              },
+              {
+                "name": "UserAvatarUpdate"
+              },
+              {
+                "name": "UserAvatarDelete"
+              },
+              {
+                "name": "UserBulkSetActive"
+              },
+              {
+                "name": "PermissionGroupCreate"
+              },
+              {
+                "name": "PermissionGroupError"
+              },
+              {
+                "name": "PermissionGroupErrorCode"
+              },
+              {
+                "name": "PermissionGroupCreateInput"
+              },
+              {
+                "name": "PermissionGroupUpdate"
+              },
+              {
+                "name": "PermissionGroupUpdateInput"
+              },
+              {
+                "name": "PermissionGroupDelete"
+              },
+              {
+                "name": "Subscription"
+              },
+              {
+                "name": "Event"
+              },
+              {
+                "name": "IssuingPrincipal"
+              },
+              {
+                "name": "DraftOrderCreated"
+              },
+              {
+                "name": "DraftOrderUpdated"
+              },
+              {
+                "name": "DraftOrderDeleted"
+              },
+              {
+                "name": "OrderCreated"
+              },
+              {
+                "name": "OrderUpdated"
+              },
+              {
+                "name": "OrderConfirmed"
+              },
+              {
+                "name": "OrderPaid"
+              },
+              {
+                "name": "OrderFullyPaid"
+              },
+              {
+                "name": "OrderRefunded"
+              },
+              {
+                "name": "OrderFullyRefunded"
+              },
+              {
+                "name": "OrderFulfilled"
+              },
+              {
+                "name": "OrderCancelled"
+              },
+              {
+                "name": "OrderExpired"
+              },
+              {
+                "name": "OrderMetadataUpdated"
+              },
+              {
+                "name": "OrderBulkCreated"
+              },
+              {
+                "name": "__Schema"
+              },
+              {
+                "name": "__Type"
+              },
+              {
+                "name": "__TypeKind"
+              },
+              {
+                "name": "__Field"
+              },
+              {
+                "name": "__InputValue"
+              },
+              {
+                "name": "__EnumValue"
+              },
+              {
+                "name": "__Directive"
+              },
+              {
+                "name": "__DirectiveLocation"
+              },
+              {
+                "name": "DistanceUnitsEnum"
+              },
+              {
+                "name": "AreaUnitsEnum"
+              },
+              {
+                "name": "VolumeUnitsEnum"
+              },
+              {
+                "name": "AccountConfirmationRequested"
+              },
+              {
+                "name": "AccountChangeEmailRequested"
+              },
+              {
+                "name": "AccountEmailChanged"
+              },
+              {
+                "name": "AccountSetPasswordRequested"
+              },
+              {
+                "name": "AccountConfirmed"
+              },
+              {
+                "name": "AccountDeleteRequested"
+              },
+              {
+                "name": "AccountDeleted"
+              },
+              {
+                "name": "AddressCreated"
+              },
+              {
+                "name": "AddressUpdated"
+              },
+              {
+                "name": "AddressDeleted"
+              },
+              {
+                "name": "AppInstalled"
+              },
+              {
+                "name": "AppUpdated"
+              },
+              {
+                "name": "AppDeleted"
+              },
+              {
+                "name": "AppStatusChanged"
+              },
+              {
+                "name": "AttributeCreated"
+              },
+              {
+                "name": "AttributeUpdated"
+              },
+              {
+                "name": "AttributeDeleted"
+              },
+              {
+                "name": "AttributeValueCreated"
+              },
+              {
+                "name": "AttributeValueUpdated"
+              },
+              {
+                "name": "AttributeValueDeleted"
+              },
+              {
+                "name": "CategoryCreated"
+              },
+              {
+                "name": "CategoryUpdated"
+              },
+              {
+                "name": "CategoryDeleted"
+              },
+              {
+                "name": "ChannelCreated"
+              },
+              {
+                "name": "ChannelUpdated"
+              },
+              {
+                "name": "ChannelDeleted"
+              },
+              {
+                "name": "ChannelStatusChanged"
+              },
+              {
+                "name": "ChannelMetadataUpdated"
+              },
+              {
+                "name": "GiftCardCreated"
+              },
+              {
+                "name": "GiftCardUpdated"
+              },
+              {
+                "name": "GiftCardDeleted"
+              },
+              {
+                "name": "GiftCardSent"
+              },
+              {
+                "name": "GiftCardStatusChanged"
+              },
+              {
+                "name": "GiftCardMetadataUpdated"
+              },
+              {
+                "name": "GiftCardExportCompleted"
+              },
+              {
+                "name": "MenuCreated"
+              },
+              {
+                "name": "MenuUpdated"
+              },
+              {
+                "name": "MenuDeleted"
+              },
+              {
+                "name": "MenuItemCreated"
+              },
+              {
+                "name": "MenuItemUpdated"
+              },
+              {
+                "name": "MenuItemDeleted"
+              },
+              {
+                "name": "ProductCreated"
+              },
+              {
+                "name": "ProductUpdated"
+              },
+              {
+                "name": "ProductDeleted"
+              },
+              {
+                "name": "ProductMetadataUpdated"
+              },
+              {
+                "name": "ProductExportCompleted"
+              },
+              {
+                "name": "ProductMediaCreated"
+              },
+              {
+                "name": "ProductMediaUpdated"
+              },
+              {
+                "name": "ProductMediaDeleted"
+              },
+              {
+                "name": "ProductVariantCreated"
+              },
+              {
+                "name": "ProductVariantUpdated"
+              },
+              {
+                "name": "ProductVariantOutOfStock"
+              },
+              {
+                "name": "ProductVariantBackInStock"
+              },
+              {
+                "name": "ProductVariantStockUpdated"
+              },
+              {
+                "name": "ProductVariantDeleted"
+              },
+              {
+                "name": "ProductVariantMetadataUpdated"
+              },
+              {
+                "name": "SaleCreated"
+              },
+              {
+                "name": "SaleUpdated"
+              },
+              {
+                "name": "SaleDeleted"
+              },
+              {
+                "name": "SaleToggle"
+              },
+              {
+                "name": "PromotionCreated"
+              },
+              {
+                "name": "PromotionUpdated"
+              },
+              {
+                "name": "PromotionDeleted"
+              },
+              {
+                "name": "PromotionStarted"
+              },
+              {
+                "name": "PromotionEnded"
+              },
+              {
+                "name": "PromotionRuleCreated"
+              },
+              {
+                "name": "PromotionRuleUpdated"
+              },
+              {
+                "name": "PromotionRuleDeleted"
+              },
+              {
+                "name": "InvoiceRequested"
+              },
+              {
+                "name": "InvoiceDeleted"
+              },
+              {
+                "name": "InvoiceSent"
+              },
+              {
+                "name": "FulfillmentCreated"
+              },
+              {
+                "name": "FulfillmentTrackingNumberUpdated"
+              },
+              {
+                "name": "FulfillmentCanceled"
+              },
+              {
+                "name": "FulfillmentApproved"
+              },
+              {
+                "name": "FulfillmentMetadataUpdated"
+              },
+              {
+                "name": "CustomerCreated"
+              },
+              {
+                "name": "CustomerUpdated"
+              },
+              {
+                "name": "CustomerMetadataUpdated"
+              },
+              {
+                "name": "CollectionCreated"
+              },
+              {
+                "name": "CollectionUpdated"
+              },
+              {
+                "name": "CollectionDeleted"
+              },
+              {
+                "name": "CollectionMetadataUpdated"
+              },
+              {
+                "name": "CheckoutCreated"
+              },
+              {
+                "name": "CheckoutUpdated"
+              },
+              {
+                "name": "CheckoutFullyPaid"
+              },
+              {
+                "name": "CheckoutMetadataUpdated"
+              },
+              {
+                "name": "PageCreated"
+              },
+              {
+                "name": "PageUpdated"
+              },
+              {
+                "name": "PageDeleted"
+              },
+              {
+                "name": "PageTypeCreated"
+              },
+              {
+                "name": "PageTypeUpdated"
+              },
+              {
+                "name": "PageTypeDeleted"
+              },
+              {
+                "name": "PermissionGroupCreated"
+              },
+              {
+                "name": "PermissionGroupUpdated"
+              },
+              {
+                "name": "PermissionGroupDeleted"
+              },
+              {
+                "name": "ShippingPriceCreated"
+              },
+              {
+                "name": "ShippingPriceUpdated"
+              },
+              {
+                "name": "ShippingPriceDeleted"
+              },
+              {
+                "name": "ShippingZoneCreated"
+              },
+              {
+                "name": "ShippingZoneUpdated"
+              },
+              {
+                "name": "ShippingZoneDeleted"
+              },
+              {
+                "name": "ShippingZoneMetadataUpdated"
+              },
+              {
+                "name": "ShopMetadataUpdated"
+              },
+              {
+                "name": "StaffCreated"
+              },
+              {
+                "name": "StaffUpdated"
+              },
+              {
+                "name": "StaffDeleted"
+              },
+              {
+                "name": "StaffSetPasswordRequested"
+              },
+              {
+                "name": "TransactionItemMetadataUpdated"
+              },
+              {
+                "name": "TranslationCreated"
+              },
+              {
+                "name": "TranslationTypes"
+              },
+              {
+                "name": "TranslationUpdated"
+              },
+              {
+                "name": "VoucherCreated"
+              },
+              {
+                "name": "VoucherUpdated"
+              },
+              {
+                "name": "VoucherDeleted"
+              },
+              {
+                "name": "VoucherCodesCreated"
+              },
+              {
+                "name": "VoucherCodesDeleted"
+              },
+              {
+                "name": "VoucherMetadataUpdated"
+              },
+              {
+                "name": "VoucherCodeExportCompleted"
+              },
+              {
+                "name": "WarehouseCreated"
+              },
+              {
+                "name": "WarehouseUpdated"
+              },
+              {
+                "name": "WarehouseDeleted"
+              },
+              {
+                "name": "WarehouseMetadataUpdated"
+              },
+              {
+                "name": "ThumbnailCreated"
+              },
+              {
+                "name": "PaymentAuthorize"
+              },
+              {
+                "name": "PaymentCaptureEvent"
+              },
+              {
+                "name": "PaymentRefundEvent"
+              },
+              {
+                "name": "PaymentVoidEvent"
+              },
+              {
+                "name": "PaymentConfirmEvent"
+              },
+              {
+                "name": "PaymentProcessEvent"
+              },
+              {
+                "name": "PaymentListGateways"
+              },
+              {
+                "name": "TransactionCancelationRequested"
+              },
+              {
+                "name": "TransactionAction"
+              },
+              {
+                "name": "TransactionChargeRequested"
+              },
+              {
+                "name": "TransactionRefundRequested"
+              },
+              {
+                "name": "OrderFilterShippingMethods"
+              },
+              {
+                "name": "CheckoutFilterShippingMethods"
+              },
+              {
+                "name": "ShippingListMethodsForCheckout"
+              },
+              {
+                "name": "CalculateTaxes"
+              },
+              {
+                "name": "TaxableObject"
+              },
+              {
+                "name": "TaxableObjectDiscount"
+              },
+              {
+                "name": "TaxableObjectDiscountTypeEnum"
+              },
+              {
+                "name": "TaxableObjectLine"
+              },
+              {
+                "name": "TaxSourceLine"
+              },
+              {
+                "name": "PaymentGatewayInitializeSession"
+              },
+              {
+                "name": "OrderOrCheckout"
+              },
+              {
+                "name": "TransactionInitializeSession"
+              },
+              {
+                "name": "TransactionProcessAction"
+              },
+              {
+                "name": "TransactionProcessSession"
+              },
+              {
+                "name": "ListStoredPaymentMethods"
+              },
+              {
+                "name": "StoredPaymentMethodDeleteRequested"
+              },
+              {
+                "name": "PaymentGatewayInitializeTokenizationSession"
+              },
+              {
+                "name": "PaymentMethodInitializeTokenizationSession"
+              },
+              {
+                "name": "PaymentMethodProcessTokenizationSession"
+              },
+              {
+                "name": "_Any"
+              },
+              {
+                "name": "_Entity"
+              },
+              {
+                "name": "_Service"
+              }
+            ]
+          }
+        },
+        "extensions": {
+          "cost": {
+            "requestedQueryCost": 0,
+            "maximumAvailable": 50000
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "http://localhost:8000/graphql/",
+      "method": "POST",
+      "status_code": 200,
+      "response_time": 0.2007749080657959,
+      "success": true,
+      "error_message": null,
+      "response_data": {
+        "data": {
+          "products": {
+            "edges": []
+          }
+        },
+        "extensions": {
+          "cost": {
+            "requestedQueryCost": 5,
+            "maximumAvailable": 50000
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "http://localhost:3002/api/products/search",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 1.2460341453552246,
+      "success": false,
+      "error_message": "'coroutine' object is not subscriptable",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:3002/api/amazon/products",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.11217808723449707,
+      "success": false,
+      "error_message": "'coroutine' object is not subscriptable",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:3002/api/sourcing/status",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.0936899185180664,
+      "success": false,
+      "error_message": "'coroutine' object is not subscriptable",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:3002/api/health",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 0.05847597122192383,
+      "success": true,
+      "error_message": null,
+      "response_data": {
+        "status": "healthy",
+        "service": "coreldove-frontend",
+        "timestamp": "2025-09-27T05:21:23.167Z",
+        "platform": "coreldove-ecommerce",
+        "version": "1.0.0",
+        "environment": "development",
+        "port": "3002",
+        "uptime": 172.374290188,
+        "memory": {
+          "rss": 515399680,
+          "heapTotal": 364351488,
+          "heapUsed": 331022968,
+          "external": 309238009,
+          "arrayBuffers": 305724341
+        },
+        "tenant": "coreldove",
+        "features": {
+          "ecommerce": true,
+          "payments": false,
+          "inventory": false
+        }
+      }
+    },
+    {
+      "endpoint": "http://localhost:8007/auth/login",
+      "method": "POST",
+      "status_code": 0,
+      "response_time": 0.0033111572265625,
+      "success": false,
+      "error_message": "'coroutine' object is not subscriptable",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8007/auth/register",
+      "method": "POST",
+      "status_code": 0,
+      "response_time": 0.0013613700866699219,
+      "success": false,
+      "error_message": "'coroutine' object is not subscriptable",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8010/health",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.004235982894897461,
+      "success": false,
+      "error_message": "[Errno 104] Connection reset by peer",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8010/agents/status",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.0014421939849853516,
+      "success": false,
+      "error_message": "[Errno 104] Connection reset by peer",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8010/agents/digital-presence-audit",
+      "method": "POST",
+      "status_code": 0,
+      "response_time": 0.0013377666473388672,
+      "success": false,
+      "error_message": "[Errno 104] Connection reset by peer",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8010/agents/campaign-strategy",
+      "method": "POST",
+      "status_code": 0,
+      "response_time": 0.000997781753540039,
+      "success": false,
+      "error_message": "[Errno 32] Broken pipe",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8010/agents/optimize-campaign",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.0014090538024902344,
+      "success": false,
+      "error_message": "[Errno 104] Connection reset by peer",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8005/api/health",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.0031456947326660156,
+      "success": false,
+      "error_message": "Cannot connect to host localhost:8005 ssl:default [Connect call failed ('127.0.0.1', 8005)]",
+      "response_data": null
+    },
+    {
+      "endpoint": "http://localhost:8088/health",
+      "method": "GET",
+      "status_code": 0,
+      "response_time": 0.034836769104003906,
+      "success": false,
+      "error_message": "'coroutine' object is not subscriptable",
+      "response_data": null
+    }
+  ]
+}

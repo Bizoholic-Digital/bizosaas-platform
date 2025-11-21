@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  coreldove-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coreldove-backend-8005
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - NODE_ENV=development
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bizosaas-platform-network
+
+networks:
+  bizosaas-platform-network:
+    external: true

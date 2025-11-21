@@ -1,0 +1,79 @@
+# ThrillRing Gaming Portal - Production Dockerfile
+# E-sports Tournament Platform
+# Port: 3006
+# Standalone domain: stg.thrillring.com
+
+# Stage 1: Base image with Node.js
+FROM node:20-alpine AS base
+
+# Stage 2: Install dependencies
+FROM base AS deps
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm install --legacy-peer-deps
+
+# Stage 3: Build application
+FROM base AS builder
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy application source
+COPY . .
+
+# Set production environment
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Build arguments for API endpoints
+ARG NEXT_PUBLIC_API_BASE_URL=http://backend-brain-gateway:8001
+ARG NEXT_PUBLIC_GAMING_API_URL=http://backend-brain-gateway:8001/api/gaming
+
+# Set runtime URLs for the build
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV NEXT_PUBLIC_GAMING_API_URL=${NEXT_PUBLIC_GAMING_API_URL}
+
+# Build the application
+RUN npm run build
+
+# Stage 4: Production runner
+FROM base AS runner
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3006
+ENV HOSTNAME="0.0.0.0"
+
+# Create nextjs user and group
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy public assets
+COPY --from=builder /app/public ./public
+
+# Create .next directory
+RUN mkdir .next && chown nextjs:nodejs .next
+
+# Copy standalone build
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Switch to nextjs user
+USER nextjs
+
+# Expose port 3006
+EXPOSE 3006
+
+# Health check - Check root path on standalone domain
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3006/', (r) => {process.exit(r.statusCode === 200 || r.statusCode === 307 ? 0 : 1)})"
+
+# Start the application
+CMD ["node", "server.js"]

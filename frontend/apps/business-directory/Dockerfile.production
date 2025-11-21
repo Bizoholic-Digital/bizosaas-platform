@@ -1,0 +1,59 @@
+# Business Directory - Modular Microservice Dockerfile
+# Architecture: Standalone containerized microservice following DDD principles
+# No workspace dependencies - fully self-contained
+# Date: November 2, 2025
+# Build from service directory: docker build -f Dockerfile.production -t ghcr.io/bizoholic-digital/bizosaas-business-directory:latest .
+
+FROM node:18-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps
+
+# Build the application
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+
+# Build with basePath for /directory/
+RUN npm run build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+RUN mkdir .next && chown nextjs:nodejs .next
+
+# Automatically leverage output traces to reduce image size
+# Next.js standalone output creates a minimal server.js and required files
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3004
+
+ENV PORT 3004
+ENV HOSTNAME "0.0.0.0"
+
+# NO HEALTHCHECK - Docker Swarm handles at service level
+# Prevents container exit loop issue experienced with Client Portal
+
+# Start the application
+CMD ["node", "server.js"]

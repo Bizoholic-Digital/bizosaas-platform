@@ -1,0 +1,195 @@
+version: '3.8'
+
+services:
+  # Port 3000: Bizoholic Marketing Frontend
+  bizoholic-frontend:
+    build:
+      context: ./frontend/apps/bizoholic-frontend
+      dockerfile: Dockerfile
+    container_name: bizoholic-frontend-3000
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://host.docker.internal:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://host.docker.internal:8006
+      - NEXT_PUBLIC_PLATFORM=bizoholic-marketing
+      - PORT=3000
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend/apps/bizoholic-frontend/app:/app/app
+      - ./frontend/apps/bizoholic-frontend/components:/app/components
+      - ./frontend/apps/bizoholic-frontend/lib:/app/lib
+      - ./frontend/apps/bizoholic-frontend/public:/app/public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Port 3002: CorelDove E-commerce Frontend
+  coreldove-frontend:
+    build:
+      context: ./ecommerce/services/coreldove-frontend
+      dockerfile: Dockerfile
+    container_name: coreldove-frontend-3002
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://host.docker.internal:8007
+      - NEXT_PUBLIC_SALEOR_URL=http://host.docker.internal:8000
+      - NEXT_PUBLIC_PLATFORM=coreldove-ecommerce
+      - PORT=3002
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./ecommerce/services/coreldove-frontend/app:/app/app
+      - ./ecommerce/services/coreldove-frontend/components:/app/components
+      - ./ecommerce/services/coreldove-frontend/lib:/app/lib
+      - ./ecommerce/services/coreldove-frontend/public:/app/public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Port 3004: Business Directory
+  business-directory:
+    build:
+      context: ./frontend/apps/business-directory
+      dockerfile: Dockerfile
+    container_name: business-directory-3004
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://host.docker.internal:8007
+      - NEXT_PUBLIC_PLATFORM=business-directory
+      - PORT=3004
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend/apps/business-directory/app:/app/app
+      - ./frontend/apps/business-directory/components:/app/components
+      - ./frontend/apps/business-directory/lib:/app/lib
+      - ./frontend/apps/business-directory/public:/app/public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Port 3001: Client Portal (with integrated analytics)
+  client-portal:
+    build:
+      context: ./frontend/apps/client-portal
+      dockerfile: Dockerfile
+    container_name: client-portal-3001
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://host.docker.internal:8007
+      - NEXT_PUBLIC_PLATFORM=client-portal
+      - PORT=3001
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend/apps/client-portal/app:/app/app
+      - ./frontend/apps/client-portal/components:/app/components
+      - ./frontend/apps/client-portal/lib:/app/lib
+      - ./frontend/apps/client-portal/public:/app/public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Port 3009: BizOSaaS Admin Dashboard
+  bizosaas-admin:
+    build:
+      context: ./frontend/apps/bizosaas-admin
+      dockerfile: Dockerfile
+    container_name: bizosaas-admin-3009
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://host.docker.internal:8007
+      - NEXT_PUBLIC_PLATFORM=bizosaas-admin
+      - PORT=3009
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend/apps/bizosaas-admin/app:/app/app
+      - ./frontend/apps/bizosaas-admin/components:/app/components
+      - ./frontend/apps/bizosaas-admin/lib:/app/lib
+      - ./frontend/apps/bizosaas-admin/public:/app/public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3009/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Port 3001: Analytics Dashboard
+  analytics-dashboard:
+    build:
+      context: ./frontend/apps/analytics-dashboard
+      dockerfile: Dockerfile.dev
+    container_name: analytics-dashboard-3001
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_BRAIN_API_URL=http://host.docker.internal:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://host.docker.internal:8007
+      - NEXT_PUBLIC_PLATFORM=analytics-dashboard
+      - PORT=3001
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend/apps/analytics-dashboard/app:/app/app
+      - ./frontend/apps/analytics-dashboard/components:/app/components
+      - ./frontend/apps/analytics-dashboard/lib:/app/lib
+      - ./frontend/apps/analytics-dashboard/public:/app/public
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+networks:
+  default:
+    name: bizosaas-network
+    external: true

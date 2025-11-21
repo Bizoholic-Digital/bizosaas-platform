@@ -1,0 +1,438 @@
+{
+  "deployment_id": "organized-deploy-20250915-134415",
+  "total_services": 56,
+  "deployment_start": "2025-09-15T13:44:15.649325",
+  "category_results": {
+    "core": {
+      "category": "core",
+      "total_services": 13,
+      "deployed_count": 0,
+      "failed_count": 13,
+      "deployed_services": [],
+      "failed_services": [
+        "auth-service",
+        "auth-service-v2",
+        "user-management",
+        "api-gateway",
+        "ai-governance-layer",
+        "gdpr-compliance-service",
+        "wagtail-cms",
+        "vault-integration",
+        "logging-service",
+        "identity-service",
+        "event-bus",
+        "notification",
+        "byok-health-monitor"
+      ],
+      "deployment_details": {
+        "auth-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "auth-service-v2": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "user-management": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "api-gateway": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "ai-governance-layer": {
+          "success": false,
+          "service_running": true,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "gdpr-compliance-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "wagtail-cms": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "vault-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "logging-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "identity-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "event-bus": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "notification": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "byok-health-monitor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "ecommerce": {
+      "category": "ecommerce",
+      "total_services": 10,
+      "deployed_count": 0,
+      "failed_count": 10,
+      "deployed_services": [],
+      "failed_services": [
+        "saleor-backend",
+        "saleor-storefront",
+        "saleor-storage",
+        "coreldove-saleor",
+        "coreldove-bridge-saleor",
+        "coreldove-ai-sourcing",
+        "coreldove-frontend",
+        "coreldove-storefront",
+        "payment-service",
+        "amazon-integration-service"
+      ],
+      "deployment_details": {
+        "saleor-backend": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "saleor-storefront": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "saleor-storage": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "coreldove-saleor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "coreldove-bridge-saleor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "coreldove-ai-sourcing": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "coreldove-frontend": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "coreldove-storefront": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "payment-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "amazon-integration-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "ai": {
+      "category": "ai",
+      "total_services": 10,
+      "deployed_count": 0,
+      "failed_count": 10,
+      "deployed_services": [],
+      "failed_services": [
+        "bizosaas-brain",
+        "ai-agents",
+        "ai-integration-service",
+        "marketing-ai-service",
+        "analytics-ai-service",
+        "agent-orchestration-service",
+        "agent-monitor",
+        "claude-telegram-bot",
+        "telegram-integration",
+        "marketing-automation-service"
+      ],
+      "deployment_details": {
+        "bizosaas-brain": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "ai-agents": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "ai-integration-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "marketing-ai-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "analytics-ai-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "agent-orchestration-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "agent-monitor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "claude-telegram-bot": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "telegram-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "marketing-automation-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "crm": {
+      "category": "crm",
+      "total_services": 7,
+      "deployed_count": 0,
+      "failed_count": 7,
+      "deployed_services": [],
+      "failed_services": [
+        "django-crm",
+        "crm-service",
+        "crm-service-v2",
+        "campaign-management",
+        "campaign-service",
+        "business-directory",
+        "client-dashboard"
+      ],
+      "deployment_details": {
+        "django-crm": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "crm-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "crm-service-v2": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "campaign-management": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "campaign-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "business-directory": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "client-dashboard": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "frontend": {
+      "category": "frontend",
+      "total_services": 4,
+      "deployed_count": 0,
+      "failed_count": 4,
+      "deployed_services": [],
+      "failed_services": [
+        "bizoholic-frontend",
+        "bizosaas-admin",
+        "client-portal",
+        "coreldove-frontend-app"
+      ],
+      "deployment_details": {
+        "bizoholic-frontend": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "bizosaas-admin": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "client-portal": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "coreldove-frontend-app": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "integration": {
+      "category": "integration",
+      "total_services": 6,
+      "deployed_count": 0,
+      "failed_count": 6,
+      "deployed_services": [],
+      "failed_services": [
+        "integration",
+        "marketing-apis-service",
+        "temporal-integration",
+        "temporal-orchestration",
+        "image-integration",
+        "client-sites"
+      ],
+      "deployment_details": {
+        "integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "marketing-apis-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "temporal-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "temporal-orchestration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "image-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "client-sites": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "analytics": {
+      "category": "analytics",
+      "total_services": 2,
+      "deployed_count": 0,
+      "failed_count": 2,
+      "deployed_services": [],
+      "failed_services": [
+        "analytics",
+        "analytics-service"
+      ],
+      "deployment_details": {
+        "analytics": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "analytics-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    },
+    "misc": {
+      "category": "misc",
+      "total_services": 4,
+      "deployed_count": 0,
+      "failed_count": 4,
+      "deployed_services": [],
+      "failed_services": [
+        "frontend-nextjs",
+        "domain-repository",
+        "gamification-service",
+        "super-admin-dashboard"
+      ],
+      "deployment_details": {
+        "frontend-nextjs": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "domain-repository": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "gamification-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        },
+        "super-admin-dashboard": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: Internal Server Error"
+        }
+      }
+    }
+  },
+  "overall_success": false,
+  "human_oversight_active": true,
+  "continuous_monitoring": {
+    "active": false,
+    "error": "Internal Server Error"
+  },
+  "deployment_end": "2025-09-15T13:44:17.289265"
+}

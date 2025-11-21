@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  ai-chat-service:
+    build: .
+    container_name: bizosaas-ai-chat-service
+    ports:
+      - "3003:3003"
+    environment:
+      # Service configuration
+      - HOST=0.0.0.0
+      - PORT=3003
+      - LOG_LEVEL=info
+      - WORKERS=1
+      
+      # Authentication service integration
+      - AUTH_SERVICE_URL=http://auth-service-v2:3002
+      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret-key}
+      
+      # CrewAI integration
+      - CREW_AI_SERVICE_URL=http://localhost:8000
+      - CREW_AI_TIMEOUT=30
+      
+      # AI/LLM configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY:-}
+      
+      # Database (optional, for persistent chat history)
+      - DATABASE_URL=${DATABASE_URL:-}
+      
+      # Redis (optional, for distributed session management)
+      - REDIS_URL=${REDIS_URL:-}
+      
+      # Monitoring and logging
+      - ENABLE_METRICS=true
+      - METRICS_PORT=9090
+      - LOG_FORMAT=json
+      
+      # Security
+      - CORS_ORIGINS=["http://localhost:3001","http://localhost:5000","http://localhost:3002"]
+      - MAX_MESSAGE_LENGTH=4096
+      - RATE_LIMIT_PER_MINUTE=60
+      
+    volumes:
+      - ./logs:/app/logs
+      - ./static:/app/static
+      - ./templates:/app/templates
+    
+    networks:
+      - bizosaas-network
+    
+    depends_on:
+      - redis
+    
+    restart: unless-stopped
+    
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-chat.rule=Host(`chat.bizosaas.local`)"
+      - "traefik.http.routers.ai-chat.entrypoints=web"
+      - "traefik.http.services.ai-chat.loadbalancer.server.port=3003"
+      - "traefik.http.routers.ai-chat-secure.rule=Host(`chat.bizosaas.local`)"
+      - "traefik.http.routers.ai-chat-secure.entrypoints=websecure"
+      - "traefik.http.routers.ai-chat-secure.tls=true"
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-ai-chat-redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+
+networks:
+  bizosaas-network:
+    external: true

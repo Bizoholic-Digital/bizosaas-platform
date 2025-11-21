@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" x-init="$watch('darkMode', val => localStorage.setItem('darkMode', val))" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizOSaaS - TailAdmin v2 Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .sidebar-transition { transition: all 0.3s ease-in-out; }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#64748B',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        dark: '#1E293B',
+                        'dark-2': '#334155',
+                        'dark-3': '#475569'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 font-sans antialiased">
+    <div x-data="dashboard()" class="flex h-screen bg-gray-50 dark:bg-gray-900">
+        
+        <!-- Sidebar -->
+        <div class="flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sidebar-transition" 
+             :class="{ '-translate-x-full lg:translate-x-0': !sidebarOpen, 'translate-x-0': sidebarOpen }">
+            
+            <!-- Logo -->
+            <div class="flex items-center justify-center h-16 px-4 bg-primary">
+                <h1 class="text-xl font-bold text-white">BizOSaaS</h1>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                <!-- Dashboard -->
+                <a href="#" @click="activeSection = 'dashboard'" 
+                   :class="{ 'bg-primary text-white': activeSection === 'dashboard', 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700': activeSection !== 'dashboard' }"
+                   class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150">
+                    <i data-feather="home" class="w-5 h-5 mr-3"></i>
+                    Dashboard
+                </a>
+                
+                <!-- Analytics -->
+                <a href="#" @click="activeSection = 'analytics'" 
+                   :class="{ 'bg-primary text-white': activeSection === 'analytics', 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700': activeSection !== 'analytics' }"
+                   class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150">
+                    <i data-feather="bar-chart-2" class="w-5 h-5 mr-3"></i>
+                    Analytics
+                </a>
+                
+                <!-- AI Agents -->
+                <a href="#" @click="activeSection = 'ai-agents'" 
+                   :class="{ 'bg-primary text-white': activeSection === 'ai-agents', 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700': activeSection !== 'ai-agents' }"
+                   class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150">
+                    <i data-feather="cpu" class="w-5 h-5 mr-3"></i>
+                    AI Agents
+                </a>
+                
+                <!-- User Management -->
+                <a href="#" @click="activeSection = 'users'" 
+                   :class="{ 'bg-primary text-white': activeSection === 'users', 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700': activeSection !== 'users' }"
+                   class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150">
+                    <i data-feather="users" class="w-5 h-5 mr-3"></i>
+                    Users
+                </a>
+                
+                <!-- System Monitor -->
+                <a href="#" @click="activeSection = 'monitor'" 
+                   :class="{ 'bg-primary text-white': activeSection === 'monitor', 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700': activeSection !== 'monitor' }"
+                   class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150">
+                    <i data-feather="activity" class="w-5 h-5 mr-3"></i>
+                    System Monitor
+                </a>
+                
+                <!-- Platform Links -->
+                <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-600">
+                    <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Platforms</p>
+                    
+                    <a href="http://localhost:3002" target="_blank" 
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150">
+                        <i data-feather="megaphone" class="w-5 h-5 mr-3"></i>
+                        Bizoholic Marketing
+                    </a>
+                    
+                    <a href="http://localhost:3001" target="_blank" 
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150">
+                        <i data-feather="shopping-cart" class="w-5 h-5 mr-3"></i>
+                        CoreLDove E-commerce
+                    </a>
+                    
+                    <a href="http://localhost:8003" target="_blank" 
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150">
+                        <i data-feather="building" class="w-5 h-5 mr-3"></i>
+                        Business Directory
+                    </a>
+                    
+                    <a href="http://localhost:3003" target="_blank" 
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-150">
+                        <i data-feather="message-circle" class="w-5 h-5 mr-3"></i>
+                        AI Assistant
+                    </a>
+                </div>
+            </nav>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Header -->
+            <header class="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                
+                <!-- Mobile menu button -->
+                <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden text-gray-500 dark:text-gray-400">
+                    <i data-feather="menu" class="w-6 h-6"></i>
+                </button>
+                
+                <!-- Page title -->
+                <h1 class="text-2xl font-semibold text-gray-900 dark:text-white" x-text="sectionTitle"></h1>
+                
+                <!-- Header actions -->
+                <div class="flex items-center space-x-4">
+                    
+                    <!-- Dark mode toggle -->
+                    <button @click="darkMode = !darkMode" class="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                        <i :data-feather="darkMode ? 'sun' : 'moon'" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <!-- User menu -->
+                    <div class="relative" x-data="{ userMenuOpen: false }">
+                        <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                <span class="text-sm font-medium text-white">{{ user.email[0].upper() if user else 'U' }}</span>
+                            </div>
+                            <span class="text-sm font-medium">{{ user.email if user else 'User' }}</span>
+                            <i data-feather="chevron-down" class="w-4 h-4"></i>
+                        </button>
+                        
+                        <div x-show="userMenuOpen" x-cloak @click.away="userMenuOpen = false" 
+                             class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                            <div class="py-1">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Profile</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Settings</a>
+                                <hr class="my-1 border-gray-200 dark:border-gray-600">
+                                <a href="/api/auth/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main content area -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 p-6">
+                
+                <!-- Dashboard Section -->
+                <div x-show="activeSection === 'dashboard'" x-cloak>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Stats Cards -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900">
+                                    <i data-feather="users" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">1,234</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-green-100 dark:bg-green-900">
+                                    <i data-feather="trending-up" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Revenue</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">$12,345</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900">
+                                    <i data-feather="cpu" class="w-6 h-6 text-yellow-600 dark:text-yellow-400"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Agents</p>
+                                    <p class="text-2xl font-semibold text-gray-900 dark:text-white">28</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
+                                    <i data-feather="activity" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">System Health</p>
+                                    <p class="text-2xl font-semibold text-green-600 dark:text-green-400">98.5%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button class="flex items-center p-4 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
+                                <i data-feather="plus" class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3"></i>
+                                <span class="text-blue-600 dark:text-blue-400 font-medium">Add New User</span>
+                            </button>
+                            <button class="flex items-center p-4 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition-colors">
+                                <i data-feather="play" class="w-5 h-5 text-green-600 dark:text-green-400 mr-3"></i>
+                                <span class="text-green-600 dark:text-green-400 font-medium">Deploy AI Agent</span>
+                            </button>
+                            <button class="flex items-center p-4 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors">
+                                <i data-feather="settings" class="w-5 h-5 text-purple-600 dark:text-purple-400 mr-3"></i>
+                                <span class="text-purple-600 dark:text-purple-400 font-medium">System Settings</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">AI Agent completed marketing campaign analysis</span>
+                                <span class="ml-auto text-xs text-gray-500">2 min ago</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">New user registered: john@example.com</span>
+                                <span class="ml-auto text-xs text-gray-500">5 min ago</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">System backup completed successfully</span>
+                                <span class="ml-auto text-xs text-gray-500">1 hour ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Section -->
+                <div x-show="activeSection === 'analytics'" x-cloak>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Analytics Dashboard</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Comprehensive business intelligence and performance metrics.</p>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-2">User Growth</h4>
+                                <div class="h-32 bg-gradient-to-r from-blue-400 to-blue-600 rounded flex items-end justify-center">
+                                    <span class="text-white text-sm mb-4">Chart Placeholder</span>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                                <h4 class="font-medium text-gray-900 dark:text-white mb-2">Revenue Trends</h4>
+                                <div class="h-32 bg-gradient-to-r from-green-400 to-green-600 rounded flex items-end justify-center">
+                                    <span class="text-white text-sm mb-4">Chart Placeholder</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Agents Section -->
+                <div x-show="activeSection === 'ai-agents'" x-cloak>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">AI Agent Management</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">Monitor and manage your autonomous AI marketing agents.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-green-800 dark:text-green-200">Content Creator</h4>
+                                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                </div>
+                                <p class="text-sm text-green-700 dark:text-green-300">Active - Creating blog content</p>
+                            </div>
+                            
+                            <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-blue-800 dark:text-blue-200">SEO Optimizer</h4>
+                                    <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                </div>
+                                <p class="text-sm text-blue-700 dark:text-blue-300">Active - Analyzing keywords</p>
+                            </div>
+                            
+                            <div class="bg-purple-50 dark:bg-purple-900 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium text-purple-800 dark:text-purple-200">Social Media Manager</h4>
+                                    <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                </div>
+                                <p class="text-sm text-purple-700 dark:text-purple-300">Active - Scheduling posts</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Users Section -->
+                <div x-show="activeSection === 'users'" x-cloak>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">User Management</h3>
+                            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                                Add User
+                            </button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                                    <span class="text-sm font-medium text-white">A</span>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-white">admin@bizoholic.com</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">Super Admin</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Super Admin</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Monitor Section -->
+                <div x-show="activeSection === 'monitor'" x-cloak>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">System Health</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">CPU Usage</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">45%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Memory Usage</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">62%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: 62%"></div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Disk Usage</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">78%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-yellow-600 h-2 rounded-full" style="width: 78%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Active Services</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900 rounded-lg">
+                                    <span class="text-sm font-medium text-green-800 dark:text-green-200">PostgreSQL Database</span>
+                                    <span class="text-xs text-green-600 dark:text-green-400">Online</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900 rounded-lg">
+                                    <span class="text-sm font-medium text-green-800 dark:text-green-200">Redis Cache</span>
+                                    <span class="text-xs text-green-600 dark:text-green-400">Online</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900 rounded-lg">
+                                    <span class="text-sm font-medium text-green-800 dark:text-green-200">AI Agent Service</span>
+                                    <span class="text-xs text-green-600 dark:text-green-400">Online</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg">
+                                    <span class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Backup Service</span>
+                                    <span class="text-xs text-yellow-600 dark:text-yellow-400">Warning</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        function dashboard() {
+            return {
+                sidebarOpen: false,
+                activeSection: 'dashboard',
+                get sectionTitle() {
+                    const titles = {
+                        'dashboard': 'Dashboard Overview',
+                        'analytics': 'Analytics & Reports',
+                        'ai-agents': 'AI Agent Management',
+                        'users': 'User Management',
+                        'monitor': 'System Monitor'
+                    };
+                    return titles[this.activeSection] || 'Dashboard';
+                }
+            }
+        }
+        
+        // Initialize feather icons after Alpine.js loads
+        document.addEventListener('alpine:init', () => {
+            setTimeout(() => {
+                feather.replace();
+            }, 100);
+        });
+        
+        // Re-initialize icons when section changes
+        document.addEventListener('alpine:init', () => {
+            Alpine.effect(() => {
+                setTimeout(() => {
+                    feather.replace();
+                }, 50);
+            });
+        });
+    </script>
+</body>
+</html>

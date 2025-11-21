@@ -1,0 +1,269 @@
+{
+  "summary": {
+    "timestamp": "2025-09-26T22:57:45.816020",
+    "total_wizards_tested": 11,
+    "average_score": 2.727272727272727,
+    "grade_distribution": {
+      "A+": 0,
+      "A": 0,
+      "B": 0,
+      "C": 0,
+      "D": 0,
+      "F": 11
+    }
+  },
+  "category_performance": {
+    "navigation": 0.0,
+    "form_validation": 0.0,
+    "api_integration": 16.363636363636363,
+    "accessibility": 0.0,
+    "responsive_design": 0.0,
+    "performance": 0.0
+  },
+  "top_performers": [
+    {
+      "name": "onboarding",
+      "platform": "client_portal",
+      "score": 3.3333333333333335,
+      "grade": "F"
+    },
+    {
+      "name": "campaigns_new",
+      "platform": "client_portal",
+      "score": 3.3333333333333335,
+      "grade": "F"
+    },
+    {
+      "name": "analytics_setup",
+      "platform": "client_portal",
+      "score": 3.3333333333333335,
+      "grade": "F"
+    }
+  ],
+  "needs_improvement": [
+    {
+      "name": "users_roles_setup",
+      "platform": "bizosaas_admin",
+      "score": 3.3333333333333335,
+      "grade": "F",
+      "issues": 1
+    },
+    {
+      "name": "store-setup",
+      "platform": "coreldove_frontend",
+      "score": 0.0,
+      "grade": "F",
+      "issues": 1
+    },
+    {
+      "name": "sourcing_wizard",
+      "platform": "coreldove_frontend",
+      "score": 0.0,
+      "grade": "F",
+      "issues": 1
+    }
+  ],
+  "common_issues": [
+    [
+      "Wizard page returned 404",
+      9
+    ],
+    [
+      "Navigation test failed: HTTPConnectionPool(host='localhost', port=3002): Read timed out. (read timeout=10)",
+      1
+    ],
+    [
+      "Wizard page returned 500",
+      1
+    ]
+  ],
+  "detailed_results": [
+    {
+      "wizard_name": "onboarding",
+      "platform": "client_portal",
+      "url": "http://localhost:3000/onboarding",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 1.0876870155334473
+    },
+    {
+      "wizard_name": "campaigns_new",
+      "platform": "client_portal",
+      "url": "http://localhost:3000/campaigns/new",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 1.1917941570281982
+    },
+    {
+      "wizard_name": "analytics_setup",
+      "platform": "client_portal",
+      "url": "http://localhost:3000/analytics/setup",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.7804434299468994
+    },
+    {
+      "wizard_name": "billing_setup",
+      "platform": "client_portal",
+      "url": "http://localhost:3000/billing/setup",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.7193279266357422
+    },
+    {
+      "wizard_name": "store-setup",
+      "platform": "coreldove_frontend",
+      "url": "http://localhost:3002/store-setup",
+      "overall_score": 0.0,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 0.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 12.31362509727478
+    },
+    {
+      "wizard_name": "sourcing_wizard",
+      "platform": "coreldove_frontend",
+      "url": "http://localhost:3002/sourcing/wizard",
+      "overall_score": 0.0,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 0.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.1885523796081543
+    },
+    {
+      "wizard_name": "listing_create",
+      "platform": "business_directory",
+      "url": "http://localhost:3004/listing/create",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 1.7628531455993652
+    },
+    {
+      "wizard_name": "tenants_setup",
+      "platform": "bizosaas_admin",
+      "url": "http://localhost:3009/tenants/setup",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.08864140510559082
+    },
+    {
+      "wizard_name": "ai_setup",
+      "platform": "bizosaas_admin",
+      "url": "http://localhost:3009/ai/setup",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.05770444869995117
+    },
+    {
+      "wizard_name": "integrations_setup",
+      "platform": "bizosaas_admin",
+      "url": "http://localhost:3009/integrations/setup",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.058660030364990234
+    },
+    {
+      "wizard_name": "users_roles_setup",
+      "platform": "bizosaas_admin",
+      "url": "http://localhost:3009/users/roles/setup",
+      "overall_score": 3.3333333333333335,
+      "grade": "F",
+      "category_scores": {
+        "navigation": 0.0,
+        "form_validation": 0.0,
+        "api_integration": 20.0,
+        "accessibility": 0.0,
+        "responsive_design": 0.0,
+        "performance": 0.0
+      },
+      "issues_count": 1,
+      "test_duration": 0.07378149032592773
+    }
+  ]
+}

@@ -1,0 +1,413 @@
+version: '3.8'
+
+services:
+  # Identity & Billing Service
+  identity-service:
+    build:
+      context: ./services/identity-service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+      - REDIS_HOST=host.docker.internal
+      - JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random-for-development
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Orchestrator Service  
+  ai-orchestrator:
+    build:
+      context: ./shared/ai-orchestrator
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+      - REDIS_HOST=host.docker.internal
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_BASE_URL=https://openrouter.ai/api/v1
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+      - ai-models:/shared/models:ro  # Shared AI models volume
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Campaign Management Service
+  campaign-service:
+    build:
+      context: ./services/campaign-service
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_HOST=host.docker.internal
+      - REDIS_HOST=host.docker.internal
+      - AI_ORCHESTRATOR_URL=http://ai-orchestrator:8002
+    depends_on:
+      - postgres
+      - redis
+      - ai-orchestrator
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+
+  # CRM & Lead Management Service
+  crm-service:
+    build:
+      context: ./services/crm-service
+      dockerfile: Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_HOST=host.docker.internal
+      - REDIS_HOST=host.docker.internal
+      - AI_ORCHESTRATOR_URL=http://ai-orchestrator:8002
+    depends_on:
+      - postgres
+      - redis
+      - ai-orchestrator
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+
+  # Analytics & Reporting Service
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      - ENVIRONMENT=development
+      - POSTGRES_HOST=host.docker.internal
+      - REDIS_HOST=host.docker.internal
+      - AI_ORCHESTRATOR_URL=http://ai-orchestrator:8002
+    depends_on:
+      - postgres
+      - redis
+      - ai-orchestrator
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+
+  # NextJS Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_IDENTITY_SERVICE_URL=http://localhost:8001
+      - NEXT_PUBLIC_AI_SERVICE_URL=http://localhost:8002
+    depends_on:
+      - identity-service
+      - ai-orchestrator
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+  # API Gateway (Traefik)
+  api-gateway:
+    image: traefik:3.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - bizosaas-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`traefik.bizosaas.local`)"
+      - "traefik.http.routers.api.service=api@internal"
+
+  # Development Database (uses shared when available)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - bizosaas-network
+    profiles:
+      - local  # Only start with --profile local
+
+  # Development Redis (uses shared when available)  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bizosaas-network
+    profiles:
+      - local  # Only start with --profile local
+
+  # MinIO for object storage
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin123
+    volumes:
+      - minio_data:/data
+    networks:
+      - bizosaas-network
+    profiles:
+      - local
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - bizosaas-network
+    profiles:
+      - monitoring
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana:/etc/grafana/provisioning
+    networks:
+      - bizosaas-network
+    profiles:
+      - monitoring
+
+  # Marketing Automation Service (Consolidated DDD Implementation)
+  marketing-automation:
+    build:
+      context: ./services/marketing-automation-service
+      dockerfile: Dockerfile
+    ports:
+      - "8020:8020"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+      - REDIS_HOST=host.docker.internal
+      - JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random-for-development
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_BASE_URL=https://openrouter.ai/api/v1
+    depends_on:
+      - postgres
+      - redis
+      - ai-orchestrator
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8020/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # CoreLDove Product Sourcing Service
+  coreldove-sourcing:
+    build:
+      context: ./services/coreldove-sourcing
+      dockerfile: Dockerfile
+    ports:
+      - "8010:8010"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+      - REDIS_HOST=host.docker.internal
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_BASE_URL=https://openrouter.ai/api/v1
+      - GOOGLE_ADS_API_KEY=${GOOGLE_ADS_API_KEY}
+      - AMAZON_API_KEY=${AMAZON_API_KEY}
+      - EBAY_API_KEY=${EBAY_API_KEY}
+      - N8N_API_URL=http://shared-n8n-dev:5678/api/v1
+      - N8N_API_KEY=${N8N_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+      - ai-orchestrator
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+      - ./services/coreldove-sourcing:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # BYOK Health Monitor Service
+  byok-health-monitor:
+    build:
+      context: ./services/byok-health-monitor
+      dockerfile: Dockerfile
+    ports:
+      - "8021:8021"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+      - REDIS_HOST=host.docker.internal
+      - VAULT_URL=http://host.docker.internal:8200
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random-for-development
+    depends_on:
+      - postgres
+      - redis
+      - marketing-automation
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8021/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Wagtail CMS Service
+  wagtail-cms:
+    build:
+      context: ./services/wagtail-cms
+      dockerfile: Dockerfile
+    ports:
+      - "8006:8006"
+    environment:
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.development
+      - SECRET_KEY=wagtail-secret-key-for-development-only
+      - DEBUG=true
+      - POSTGRES_HOST=host.docker.internal
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=bizosaas
+      - REDIS_HOST=host.docker.internal
+      - BIZOSAAS_API_URL=http://host.docker.internal:8001
+      - JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random-for-development
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,wagtail-cms
+    depends_on:
+      - postgres
+      - redis
+      - identity-service
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./shared:/app/shared:ro
+      - ./services/wagtail-cms:/app
+      - wagtail_media:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # CoreLDove Frontend Service
+  coreldove-frontend:
+    build:
+      context: ./services/coreldove-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - SALEOR_API_URL=http://host.docker.internal:9020/graphql/
+      - CORELDOVE_API_URL=http://host.docker.internal:8010
+      - BIZOSAAS_API_URL=http://host.docker.internal:8001
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./services/coreldove-frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+  ai-models:  # Shared AI models volume
+  wagtail_media:  # Wagtail media files
+
+networks:
+  bizosaas-network:
+    driver: bridge

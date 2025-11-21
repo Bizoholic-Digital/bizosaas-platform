@@ -1,0 +1,438 @@
+{
+  "deployment_id": "organized-deploy-20250915-134027",
+  "total_services": 56,
+  "deployment_start": "2025-09-15T13:40:27.788372",
+  "category_results": {
+    "core": {
+      "category": "core",
+      "total_services": 13,
+      "deployed_count": 0,
+      "failed_count": 13,
+      "deployed_services": [],
+      "failed_services": [
+        "auth-service",
+        "auth-service-v2",
+        "user-management",
+        "api-gateway",
+        "ai-governance-layer",
+        "gdpr-compliance-service",
+        "wagtail-cms",
+        "vault-integration",
+        "logging-service",
+        "identity-service",
+        "event-bus",
+        "notification",
+        "byok-health-monitor"
+      ],
+      "deployment_details": {
+        "auth-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "auth-service-v2": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "user-management": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "api-gateway": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "ai-governance-layer": {
+          "success": false,
+          "service_running": true,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "gdpr-compliance-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "wagtail-cms": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "vault-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "logging-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "identity-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "event-bus": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "notification": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "byok-health-monitor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "ecommerce": {
+      "category": "ecommerce",
+      "total_services": 10,
+      "deployed_count": 0,
+      "failed_count": 10,
+      "deployed_services": [],
+      "failed_services": [
+        "saleor-backend",
+        "saleor-storefront",
+        "saleor-storage",
+        "coreldove-saleor",
+        "coreldove-bridge-saleor",
+        "coreldove-ai-sourcing",
+        "coreldove-frontend",
+        "coreldove-storefront",
+        "payment-service",
+        "amazon-integration-service"
+      ],
+      "deployment_details": {
+        "saleor-backend": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "saleor-storefront": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "saleor-storage": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "coreldove-saleor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "coreldove-bridge-saleor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "coreldove-ai-sourcing": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "coreldove-frontend": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "coreldove-storefront": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "payment-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "amazon-integration-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "ai": {
+      "category": "ai",
+      "total_services": 10,
+      "deployed_count": 0,
+      "failed_count": 10,
+      "deployed_services": [],
+      "failed_services": [
+        "bizosaas-brain",
+        "ai-agents",
+        "ai-integration-service",
+        "marketing-ai-service",
+        "analytics-ai-service",
+        "agent-orchestration-service",
+        "agent-monitor",
+        "claude-telegram-bot",
+        "telegram-integration",
+        "marketing-automation-service"
+      ],
+      "deployment_details": {
+        "bizosaas-brain": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "ai-agents": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "ai-integration-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "marketing-ai-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "analytics-ai-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "agent-orchestration-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "agent-monitor": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "claude-telegram-bot": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "telegram-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "marketing-automation-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "crm": {
+      "category": "crm",
+      "total_services": 7,
+      "deployed_count": 0,
+      "failed_count": 7,
+      "deployed_services": [],
+      "failed_services": [
+        "django-crm",
+        "crm-service",
+        "crm-service-v2",
+        "campaign-management",
+        "campaign-service",
+        "business-directory",
+        "client-dashboard"
+      ],
+      "deployment_details": {
+        "django-crm": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "crm-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "crm-service-v2": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "campaign-management": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "campaign-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "business-directory": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "client-dashboard": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "frontend": {
+      "category": "frontend",
+      "total_services": 4,
+      "deployed_count": 0,
+      "failed_count": 4,
+      "deployed_services": [],
+      "failed_services": [
+        "bizoholic-frontend",
+        "bizosaas-admin",
+        "client-portal",
+        "coreldove-frontend-app"
+      ],
+      "deployment_details": {
+        "bizoholic-frontend": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "bizosaas-admin": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "client-portal": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "coreldove-frontend-app": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "integration": {
+      "category": "integration",
+      "total_services": 6,
+      "deployed_count": 0,
+      "failed_count": 6,
+      "deployed_services": [],
+      "failed_services": [
+        "integration",
+        "marketing-apis-service",
+        "temporal-integration",
+        "temporal-orchestration",
+        "image-integration",
+        "client-sites"
+      ],
+      "deployment_details": {
+        "integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "marketing-apis-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "temporal-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "temporal-orchestration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "image-integration": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "client-sites": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "analytics": {
+      "category": "analytics",
+      "total_services": 2,
+      "deployed_count": 0,
+      "failed_count": 2,
+      "deployed_services": [],
+      "failed_services": [
+        "analytics",
+        "analytics-service"
+      ],
+      "deployment_details": {
+        "analytics": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "analytics-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    },
+    "misc": {
+      "category": "misc",
+      "total_services": 4,
+      "deployed_count": 0,
+      "failed_count": 4,
+      "deployed_services": [],
+      "failed_services": [
+        "frontend-nextjs",
+        "domain-repository",
+        "gamification-service",
+        "super-admin-dashboard"
+      ],
+      "deployment_details": {
+        "frontend-nextjs": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "domain-repository": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "gamification-service": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        },
+        "super-admin-dashboard": {
+          "success": false,
+          "service_running": false,
+          "error": "Registration failed: {\"detail\":\"Not Found\"}"
+        }
+      }
+    }
+  },
+  "overall_success": false,
+  "human_oversight_active": true,
+  "continuous_monitoring": {
+    "active": false,
+    "error": "{\"detail\":\"Not Found\"}"
+  },
+  "deployment_end": "2025-09-15T13:40:41.452544"
+}

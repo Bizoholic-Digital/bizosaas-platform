@@ -1,0 +1,100 @@
+# BizOSaaS Platform - Core Infrastructure Services
+# Start with essential infrastructure first
+
+services:
+  # ===========================================
+  # INFRASTRUCTURE SERVICES
+  # ===========================================
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: bizosaas-postgres-unified
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Bizoholic2024Alagiri
+      POSTGRES_DB: bizosaas
+      POSTGRES_MULTIPLE_DATABASES: wagtail,saleor
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./infrastructure/database/create-multiple-dbs.sh:/docker-entrypoint-initdb.d/02-create-multiple-dbs.sh
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bizosaas"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-unified
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # FastAPI Brain - Enhanced AI Agentic Hub (Port 8001)
+  bizosaas-brain:
+    build:
+      context: ./ai/services/bizosaas-brain
+      dockerfile: Dockerfile
+    container_name: bizosaas-brain-unified
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://postgres:Bizoholic2024Alagiri@postgres:5432/bizosaas
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-dummy-key}
+      JWT_SECRET: ${JWT_SECRET:-bizosaas-central-secret-key}
+      SECRET_KEY: bizosaas-brain-secret-key-production
+      ENVIRONMENT: production
+      ENABLE_METRICS: "1"
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      FROM_EMAIL: ${FROM_EMAIL:-noreply@bizosaas.com}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-platform-network
+    restart: unless-stopped
+    volumes:
+      - ./ai/services/bizosaas-brain:/app
+      - /app/__pycache__
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ===========================================
+# NETWORKS & VOLUMES
+# ===========================================
+networks:
+  bizosaas-platform-network:
+    driver: bridge
+    name: bizosaas-platform-network
+
+volumes:
+  postgres_data:
+    name: bizosaas-postgres-data
+  redis_data:
+    name: bizosaas-redis-data
