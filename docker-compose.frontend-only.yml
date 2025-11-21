@@ -1,0 +1,264 @@
+version: '3.8'
+
+# BizOSaaS Frontend Applications - Standalone Testing
+# Services: Client Portal, CoreLDove, Bizoholic, Admin Dashboard
+# Ports: 3006, 3007, 3008, 3009
+
+services:
+  # ===========================================
+  # CLIENT PORTAL - PORT 3006
+  # ===========================================
+  
+  bizosaas-client-portal:
+    build:
+      context: ./frontend/apps/client-portal
+      dockerfile: Dockerfile
+      target: runner
+    image: bizosaas/client-portal:latest
+    container_name: bizosaas-client-portal-3006
+    ports:
+      - "3006:3006"
+    environment:
+      # Application Configuration
+      - NODE_ENV=production
+      - PORT=3006
+      - NEXT_TELEMETRY_DISABLED=1
+      
+      # BizOSaaS Platform Integration (fallback URLs for testing)
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8000
+      - NEXT_PUBLIC_CRM_API_URL=http://localhost:8008
+      - NEXT_PUBLIC_SALEOR_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_SUPERSET_URL=http://localhost:8088
+      
+      # Platform Identification
+      - NEXT_PUBLIC_PLATFORM=client-portal
+      - NEXT_PUBLIC_TENANT=multi-tenant
+      - NEXT_PUBLIC_APP_NAME=BizOSaaS Client Portal
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+      
+      # Security and JWT
+      - JWT_SECRET=dev-secret-key-for-testing
+      - ENVIRONMENT=production
+      
+      # Feature Flags
+      - NEXT_PUBLIC_ENABLE_ANALYTICS=true
+      - NEXT_PUBLIC_ENABLE_CHAT=true
+      - NEXT_PUBLIC_ENABLE_NOTIFICATIONS=true
+    
+    restart: unless-stopped
+    volumes:
+      - client_portal_logs:/app/.next/cache
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3006/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  # ===========================================
+  # CORELDOVE E-COMMERCE FRONTEND - PORT 3012
+  # ===========================================
+  
+  bizosaas-coreldove-frontend:
+    build:
+      context: ./frontend/apps/coreldove-frontend
+      dockerfile: Dockerfile
+      target: runner
+    image: bizosaas/coreldove-frontend:latest
+    container_name: bizosaas-coreldove-frontend-3012
+    ports:
+      - "3012:3012"
+    environment:
+      # Application Configuration
+      - NODE_ENV=production
+      - PORT=3012
+      - NEXT_TELEMETRY_DISABLED=1
+      
+      # BizOSaaS Platform Integration (fallback URLs for testing)
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_SALEOR_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8000
+      
+      # E-commerce Specific
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_dummy
+      - NEXT_PUBLIC_ENABLE_PAYMENTS=true
+      - NEXT_PUBLIC_ENABLE_INVENTORY_TRACKING=true
+      
+      # Platform Identification
+      - NEXT_PUBLIC_PLATFORM=coreldove-ecommerce
+      - NEXT_PUBLIC_TENANT=coreldove
+      - NEXT_PUBLIC_APP_NAME=CoreLDove Storefront
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+      
+      # SEO and Marketing
+      - NEXT_PUBLIC_ENABLE_SEO_OPTIMIZATION=true
+      - NEXT_PUBLIC_ENABLE_ANALYTICS=true
+      
+      # Security and JWT
+      - JWT_SECRET=dev-secret-key-for-testing
+      - ENVIRONMENT=production
+    
+    restart: unless-stopped
+    volumes:
+      - coreldove_frontend_logs:/app/.next/cache
+      - coreldove_frontend_uploads:/app/public/uploads
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3012/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  # ===========================================
+  # BIZOHOLIC MARKETING FRONTEND - PORT 3008
+  # ===========================================
+  
+  bizosaas-bizoholic-frontend:
+    build:
+      context: ./frontend/apps/bizoholic-frontend
+      dockerfile: Dockerfile
+      target: runner
+    image: bizosaas/bizoholic-frontend:latest
+    container_name: bizosaas-bizoholic-frontend-3008
+    ports:
+      - "3008:3008"
+    environment:
+      # Application Configuration
+      - NODE_ENV=production
+      - PORT=3008
+      - NEXT_TELEMETRY_DISABLED=1
+      
+      # BizOSaaS Platform Integration (fallback URLs for testing)
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8000
+      - NEXT_PUBLIC_CRM_API_URL=http://localhost:8008
+      
+      # Marketing Specific
+      - NEXT_PUBLIC_ENABLE_LEAD_CAPTURE=true
+      - NEXT_PUBLIC_ENABLE_CONTACT_FORMS=true
+      - NEXT_PUBLIC_ENABLE_BLOG=true
+      - NEXT_PUBLIC_ENABLE_CASE_STUDIES=true
+      
+      # Platform Identification
+      - NEXT_PUBLIC_PLATFORM=bizoholic-marketing
+      - NEXT_PUBLIC_TENANT=bizoholic
+      - NEXT_PUBLIC_APP_NAME=Bizoholic Marketing
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+      
+      # SEO and Content
+      - NEXT_PUBLIC_ENABLE_SEO_OPTIMIZATION=true
+      - NEXT_PUBLIC_ENABLE_SITEMAP=true
+      - NEXT_PUBLIC_ENABLE_SCHEMA_ORG=true
+      
+      # Email and Notifications
+      - NEXT_PUBLIC_ENABLE_EMAIL_MARKETING=true
+      - NEXT_PUBLIC_SMTP_FROM_EMAIL=noreply@bizoholic.com
+      
+      # Security and JWT
+      - JWT_SECRET=dev-secret-key-for-testing
+      - ENVIRONMENT=production
+    
+    restart: unless-stopped
+    volumes:
+      - bizoholic_frontend_logs:/app/.next/cache
+      - bizoholic_frontend_content:/app/public/content
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3008/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+  # ===========================================
+  # BIZOSAAS ADMIN DASHBOARD - PORT 3009
+  # ===========================================
+  
+  bizosaas-admin-dashboard:
+    build:
+      context: ./frontend/apps/bizosaas-admin
+      dockerfile: Dockerfile
+      target: runner
+    image: bizosaas/admin-dashboard:latest
+    container_name: bizosaas-admin-dashboard-3009
+    ports:
+      - "3009:3009"
+    environment:
+      # Application Configuration
+      - NODE_ENV=production
+      - PORT=3009
+      - NEXT_TELEMETRY_DISABLED=1
+      
+      # BizOSaaS Platform Integration (fallback URLs for testing)
+      - NEXT_PUBLIC_BRAIN_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://localhost:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://localhost:8000
+      - NEXT_PUBLIC_CRM_API_URL=http://localhost:8008
+      - NEXT_PUBLIC_SALEOR_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_SUPERSET_URL=http://localhost:8088
+      - NEXT_PUBLIC_VAULT_URL=http://localhost:8200
+      
+      # Platform Identification
+      - NEXT_PUBLIC_PLATFORM=bizosaas-admin
+      - NEXT_PUBLIC_TENANT=bizosaas
+      - NEXT_PUBLIC_APP_NAME=BizOSaaS Admin
+      - NEXT_PUBLIC_APP_VERSION=1.0.0
+      
+      # Admin Features
+      - NEXT_PUBLIC_ENABLE_USER_MANAGEMENT=true
+      - NEXT_PUBLIC_ENABLE_TENANT_MANAGEMENT=true
+      - NEXT_PUBLIC_ENABLE_SYSTEM_MONITORING=true
+      - NEXT_PUBLIC_ENABLE_ADVANCED_ANALYTICS=true
+      - NEXT_PUBLIC_ENABLE_SECURITY_CONTROLS=true
+      
+      # Security and JWT
+      - JWT_SECRET=dev-secret-key-for-testing
+      - ENVIRONMENT=production
+      
+      # Resource Management
+      - NEXT_PUBLIC_ENABLE_RESOURCE_MONITORING=true
+      - NEXT_PUBLIC_ENABLE_DEPLOYMENT_CONTROLS=true
+    
+    restart: unless-stopped
+    volumes:
+      - bizosaas_admin_logs:/app/.next/cache
+      - bizosaas_admin_config:/app/config
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3009/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+# ===========================================
+# VOLUMES
+# ===========================================
+volumes:
+  # Client Portal
+  client_portal_logs:
+    name: bizosaas-client-portal-logs
+  
+  # CoreLDove Frontend
+  coreldove_frontend_logs:
+    name: bizosaas-coreldove-frontend-logs
+  coreldove_frontend_uploads:
+    name: bizosaas-coreldove-frontend-uploads
+  
+  # Bizoholic Frontend
+  bizoholic_frontend_logs:
+    name: bizosaas-bizoholic-frontend-logs
+  bizoholic_frontend_content:
+    name: bizosaas-bizoholic-frontend-content
+  
+  # BizOSaaS Admin
+  bizosaas_admin_logs:
+    name: bizosaas-admin-logs
+  bizosaas_admin_config:
+    name: bizosaas-admin-config

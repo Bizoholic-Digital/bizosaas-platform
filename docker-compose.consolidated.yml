@@ -1,0 +1,288 @@
+# BizOSaaS Platform - Consolidated Production Stack
+# Optimized for local development with minimal resource usage
+# All services in single compose for unified management
+
+services:
+  # ===========================================
+  # CORE INFRASTRUCTURE - CONSOLIDATED
+  # ===========================================
+
+  # Single PostgreSQL with multiple databases
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: bizosaas-postgres-unified
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=bizosaas
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_MULTIPLE_DATABASES=bizosaas,saleor,temporal,vault
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./core/database/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh:ro
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Single Redis with database separation
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-unified
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # CORE PLATFORM SERVICES
+  # ===========================================
+
+  # BizOSaaS AI Central Brain Hub
+  bizosaas-brain:
+    image: bizosaas/brain-gateway:latest
+    container_name: bizosaas-brain-unified
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Authentication Service v2
+  auth-service:
+    image: bizosaas/auth-service-v2:latest
+    container_name: bizosaas-auth-unified
+    ports:
+      - "8007:8007"
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret-key}
+      - ENVIRONMENT=development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Wagtail CMS
+  wagtail-cms:
+    image: bizosaas/wagtail-cms:latest
+    container_name: bizosaas-wagtail-unified
+    ports:
+      - "8006:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/2
+      - SECRET_KEY=${WAGTAIL_SECRET_KEY:-dev-wagtail-secret}
+      - DEBUG=True
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Saleor E-commerce (using shared databases)
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.19
+    container_name: bizosaas-saleor-unified
+    ports:
+      - "8003:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:securepassword@postgres:5432/saleor
+      - REDIS_URL=redis://redis:6379/3
+      - SECRET_KEY=${SALEOR_SECRET_KEY:-dev-saleor-secret}
+      - DEBUG=True
+      - ALLOWED_HOSTS=localhost,127.0.0.1,saleor-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # WORKFLOW & MONITORING SERVICES
+  # ===========================================
+
+  # Temporal Server
+  temporal:
+    image: temporalio/auto-setup:1.20.0
+    container_name: bizosaas-temporal-unified
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PWD=securepassword
+      - POSTGRES_SEEDS=postgres
+      - POSTGRES_DB=temporal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "localhost:7233", "namespace", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Temporal UI
+  temporal-ui:
+    image: temporalio/ui:2.10.0
+    container_name: bizosaas-temporal-ui-unified
+    ports:
+      - "8082:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000,http://localhost:8082,http://localhost:8001
+    depends_on:
+      - temporal
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch (Single node for development)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: bizosaas-elasticsearch-unified
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\\|yellow\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # ADMIN & ANALYTICS SERVICES
+  # ===========================================
+
+  # Apache Superset (Analytics)
+  superset:
+    image: apache/superset:latest
+    container_name: bizosaas-superset-unified
+    ports:
+      - "8088:8088"
+    environment:
+      - SUPERSET_CONFIG_PATH=/app/superset_config.py
+      - DATABASE_URL=postgresql://admin:securepassword@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/4
+    volumes:
+      - ./analytics/services/apache-superset/superset_config.py:/app/superset_config.py
+      - superset_data:/app/superset_home
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+
+  # ===========================================
+  # FRONTEND APPLICATIONS (Development Mode)
+  # ===========================================
+
+  # BizOSaaS Admin Dashboard
+  admin-dashboard:
+    image: bizosaas/tailadmin-v2-unified:latest
+    container_name: bizosaas-admin-unified
+    ports:
+      - "3000:8080"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8001
+      - NEXT_PUBLIC_AUTH_URL=http://localhost:8007
+    depends_on:
+      - bizosaas-brain
+      - auth-service
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+
+# ===========================================
+# NETWORKS & VOLUMES
+# ===========================================
+networks:
+  bizosaas-network:
+    driver: bridge
+    name: bizosaas-network-consolidated
+
+volumes:
+  postgres_data:
+    name: bizosaas-postgres-unified-data
+  redis_data:
+    name: bizosaas-redis-unified-data
+  elasticsearch_data:
+    name: bizosaas-elasticsearch-unified-data
+  superset_data:
+    name: bizosaas-superset-unified-data

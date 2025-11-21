@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: #0066cc;
+  --secondary-color: #4d79a4;
+  --accent-color: #ff6b35;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+  
+  .primary-gradient {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  }
+  
+  .accent-gradient {
+    background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  }
+}
+
+@layer components {
+  .admin-sidebar {
+    @apply fixed left-0 top-0 z-50 h-screen w-64 bg-white shadow-lg border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .admin-sidebar.collapsed {
+    @apply w-16;
+  }
+  
+  .admin-main {
+    @apply ml-64 min-h-screen bg-gray-50 dark:bg-gray-950;
+  }
+  
+  .admin-main.sidebar-collapsed {
+    @apply ml-16;
+  }
+  
+  .admin-header {
+    @apply sticky top-0 z-40 h-16 bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .admin-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 dark:bg-gray-900 dark:border-gray-800;
+  }
+  
+  .metric-card {
+    @apply admin-card hover:shadow-md transition-shadow duration-200;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge.active {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
+  }
+  
+  .status-badge.inactive {
+    @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300;
+  }
+  
+  .status-badge.suspended {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+  }
+  
+  .status-badge.warning {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

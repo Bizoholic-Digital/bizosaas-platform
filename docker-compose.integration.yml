@@ -1,0 +1,209 @@
+version: '3.8'
+
+# BizOSaaS Platform - Integration with Existing Services
+# Works with currently running containers and fixes port allocation
+
+services:
+  # ===========================================
+  # FRONTEND SERVICES - CORRECT PORT ALLOCATION
+  # ===========================================
+
+  # Port 3000: BizOSaaS Admin Dashboard (TailAdmin v2)
+  bizosaas-admin:
+    image: bizosaas/tailadmin-v2-unified:latest
+    container_name: bizosaas-admin-3000
+    ports:
+      - "3000:8080"  # Map to internal port 8080
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://bizosaas-auth-v2:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://wagtail-cms:8000
+      - NEXT_PUBLIC_SUPERSET_URL=http://apache-superset:8088
+      - NEXT_PUBLIC_WEBSOCKET_URL=ws://bizosaas-brain:8001/ws/realtime
+      - NEXT_PUBLIC_PLATFORM=bizosaas-admin
+      - PORT=8080
+    depends_on:
+      - bizosaas-brain
+      - bizosaas-auth-v2
+    network_mode: bridge
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizosaas-admin.rule=Host(`admin.bizosaas.local`) || Host(`localhost`)"
+      - "traefik.http.services.bizosaas-admin.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Port 3001: Bizoholic Marketing Frontend
+  bizoholic-marketing:
+    image: bizoholic-bizoholic-frontend:latest
+    container_name: bizoholic-marketing-3001
+    ports:
+      - "3001:3000"  # Map to internal port 3000
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://bizosaas-auth-v2:8007
+      - NEXT_PUBLIC_WAGTAIL_URL=http://wagtail-cms:8000
+      - NEXT_PUBLIC_PLATFORM=bizoholic-marketing
+      - WAGTAIL_API_BASE_URL=http://wagtail-cms:8000/api
+      - PORT=3000
+    depends_on:
+      - bizosaas-brain
+      - wagtail-cms
+    network_mode: bridge
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-marketing.rule=Host(`bizoholic.bizosaas.local`) || Host(`localhost:3001`)"
+      - "traefik.http.services.bizoholic-marketing.loadbalancer.server.port=3000"
+
+  # Port 3002: CoreLDove E-commerce Frontend (Keep existing)
+  coreldove-ecommerce:
+    image: bizoholic-coreldove-frontend:latest
+    container_name: coreldove-ecommerce-3002
+    ports:
+      - "3002:3000"  # Keep existing mapping
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_BRAIN_API_URL=http://bizosaas-brain:8001
+      - NEXT_PUBLIC_AUTH_API_URL=http://bizosaas-auth-v2:8007
+      - NEXT_PUBLIC_SALEOR_URL=http://saleor-backend:8000
+      - NEXT_PUBLIC_SALEOR_API_URL=http://saleor-backend:8000/graphql/
+      - NEXT_PUBLIC_PLATFORM=coreldove-ecommerce
+      - PORT=3000
+    depends_on:
+      - bizosaas-brain
+      - saleor-backend
+    network_mode: bridge
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-ecommerce.rule=Host(`coreldove.bizosaas.local`) || Host(`localhost:3002`)"
+      - "traefik.http.services.coreldove-ecommerce.loadbalancer.server.port=3000"
+
+  # ===========================================
+  # MISSING BACKEND SERVICES
+  # ===========================================
+
+  # FastAPI Brain Gateway (Port 8001) - MISSING
+  bizosaas-brain:
+    build:
+      context: ./ai/services/bizosaas-brain
+      dockerfile: Dockerfile
+    container_name: bizosaas-brain-8001
+    ports:
+      - "8001:8001"
+    environment:
+      # Use existing PostgreSQL
+      DATABASE_URL: postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      # Use existing Redis
+      REDIS_URL: redis://bizosaas-redis-main:6379/0
+      # API Keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-dummy-key}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      ENVIRONMENT: development
+      # Connect to existing services
+      WAGTAIL_URL: http://wagtail-cms:8000
+      VAULT_URL: http://bizosaas-vault-main:8200
+    depends_on:
+      - bizosaas-postgres
+      - bizosaas-redis-main
+      - wagtail-cms
+    network_mode: bridge
+    restart: unless-stopped
+    volumes:
+      - ./ai/services/bizosaas-brain:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizosaas-brain.rule=Host(`api.bizosaas.local`)"
+
+  # Auth Service v2 (Port 8007) - MISSING
+  bizosaas-auth-v2:
+    build:
+      context: ./core/services/auth-service-v2
+      dockerfile: Dockerfile
+    container_name: bizosaas-auth-v2-8007
+    ports:
+      - "8007:8007"
+    environment:
+      # Use existing PostgreSQL
+      DATABASE_URL: postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      # Use existing Redis for sessions
+      REDIS_URL: redis://bizosaas-redis-main:6379/1
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key}
+      SECRET_KEY: auth-service-secret-key-development
+    depends_on:
+      - bizosaas-postgres
+      - bizosaas-redis-main
+    network_mode: bridge
+    restart: unless-stopped
+
+  # Saleor Backend (Connect to existing Saleor DB)
+  saleor-backend:
+    image: ghcr.io/saleor/saleor:latest
+    container_name: saleor-backend-8010
+    ports:
+      - "8010:8000"
+    environment:
+      # Use existing Saleor PostgreSQL
+      DATABASE_URL: postgresql://saleor:saleor@bizosaas-saleor-db-1:5432/saleor
+      # Use existing Saleor Redis
+      REDIS_URL: redis://bizosaas-saleor-redis-1:6379/0
+      SECRET_KEY: saleor-secret-key-development
+      DEBUG: "true"
+      ALLOWED_HOSTS: localhost,127.0.0.1,saleor-backend,bizosaas.local
+      DEFAULT_FROM_EMAIL: noreply@bizosaas.local
+    depends_on:
+      - bizosaas-saleor-db-1
+      - bizosaas-saleor-redis-1
+    network_mode: bridge
+    restart: unless-stopped
+
+  # Apache Superset Analytics (Port 8088)
+  apache-superset:
+    build:
+      context: ./analytics/services/apache-superset
+      dockerfile: Dockerfile
+    container_name: bizosaas-superset-8088
+    ports:
+      - "8088:8088"
+    environment:
+      # Use existing PostgreSQL
+      DATABASE_URL: postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      # Use existing Redis
+      REDIS_URL: redis://bizosaas-redis-main:6379/2
+      SUPERSET_SECRET_KEY: superset-secret-key-development
+      SUPERSET_CONFIG_PATH: /app/superset_config.py
+    depends_on:
+      - bizosaas-postgres
+      - bizosaas-redis-main
+    network_mode: bridge
+    restart: unless-stopped
+    volumes:
+      - ./analytics/services/apache-superset/superset_config.py:/app/superset_config.py
+      - superset_data:/app/superset_home
+
+# ===========================================
+# USE EXISTING EXTERNAL SERVICES
+# ===========================================
+# These services are already running and will be referenced:
+# - bizosaas-postgres (5432)
+# - bizosaas-redis-main (6379) 
+# - bizosaas-saleor-db-1 (5433)
+# - bizosaas-saleor-redis-1 (6380)
+# - wagtail-cms (8006)
+# - bizosaas-traefik-main (80, 443, 8080)
+# - bizosaas-vault-main (8200)
+# - bizosaas-vault-service-main (8201)
+
+# ===========================================
+# VOLUMES  
+# ===========================================
+volumes:
+  superset_data:
+    name: bizosaas-superset-data

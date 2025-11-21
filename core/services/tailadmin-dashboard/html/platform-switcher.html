@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizOSaaS - Multi-Platform Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <div class="min-h-screen">
+        <header class="bg-white dark:bg-gray-800 shadow">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            {{ dashboard_title }}
+                        </h1>
+                    </div>
+                    <div class="flex items-center space-x-4" id="platform-tabs">
+                        <!-- Platform tabs will be inserted here -->
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-300">
+                            {{ user.email }} ({{ user.role }})
+                        </div>
+                        <a href="/api/auth/logout" class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div id="dashboard-content">
+                {{ content }}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables for platform management
+        window.platformData = {
+            user: {{ user | tojson }},
+            platforms: {{ platform_tabs | tojson }},
+            categories: {{ platform_categories | tojson }},
+            currentPlatform: '{{ current_platform }}'
+        };
+
+        // Platform tabs functionality
+        class PlatformTabs {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.showAdminDropdown = false;
+                this.showPlatformsDropdown = false;
+                this.render();
+                this.bindEvents();
+            }
+
+            render() {
+                const { platforms, categories, currentPlatform } = window.platformData;
+                
+                let html = '';
+                
+                // Admin platforms dropdown (excluding current)
+                const adminPlatforms = categories.admin.filter(p => !p.current);
+                if (adminPlatforms.length > 0) {
+                    html += this.renderAdminDropdown(adminPlatforms);
+                }
+                
+                // Business platforms dropdown
+                if (categories.platform.length > 0) {
+                    html += this.renderPlatformsDropdown(categories.platform);
+                }
+                
+                // AI tools direct link
+                if (categories.tools.length > 0) {
+                    html += this.renderAIButton(categories.tools[0]);
+                }
+                
+                this.container.innerHTML = html;
+            }
+
+            renderAdminDropdown(platforms) {
+                let options = '';
+                platforms.forEach(platform => {
+                    const statusColor = platform.status === 'active' ? 'bg-green-500' : 'bg-amber-500';
+                    options += `
+                        <a href="${platform.url}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full ${statusColor}"></span>
+                                <div>
+                                    <div class="font-medium">${platform.name}</div>
+                                    <div class="text-xs text-gray-500">${platform.description}</div>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+
+                return `
+                    <div class="relative inline-block text-left">
+                        <button id="admin-dropdown-btn" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 flex items-center space-x-1">
+                            <span>Admin</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="admin-dropdown" class="hidden absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">
+                                    Admin Dashboards
+                                </div>
+                                ${options}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderPlatformsDropdown(platforms) {
+                let options = '';
+                platforms.forEach(platform => {
+                    const statusColor = platform.status === 'active' ? 'bg-green-500' : 'bg-amber-500';
+                    const features = platform.features.slice(0, 2).join(', ');
+                    options += `
+                        <a href="${platform.url}" target="_blank" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full ${statusColor}"></span>
+                                <div class="flex-1">
+                                    <div class="font-medium">${platform.name}</div>
+                                    <div class="text-xs text-gray-500">${platform.description}</div>
+                                    <div class="text-xs text-blue-600 mt-1">${features}</div>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+
+                return `
+                    <div class="relative inline-block text-left">
+                        <button id="platforms-dropdown-btn" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 flex items-center space-x-1">
+                            <span>Platforms</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div id="platforms-dropdown" class="hidden absolute right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1">
+                                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 dark:border-gray-600">
+                                    Business Platforms
+                                </div>
+                                ${options}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderAIButton(platform) {
+                return `
+                    <a href="${platform.url}" target="_blank" class="bg-emerald-600 text-white px-3 py-1 rounded text-sm hover:bg-emerald-700 flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span>AI Assistant</span>
+                    </a>
+                `;
+            }
+
+            bindEvents() {
+                // Admin dropdown
+                const adminBtn = document.getElementById('admin-dropdown-btn');
+                const adminDropdown = document.getElementById('admin-dropdown');
+                
+                if (adminBtn) {
+                    adminBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const platformsDropdown = document.getElementById('platforms-dropdown');
+                        if (platformsDropdown) platformsDropdown.classList.add('hidden');
+                        adminDropdown.classList.toggle('hidden');
+                    });
+                }
+
+                // Platforms dropdown
+                const platformsBtn = document.getElementById('platforms-dropdown-btn');
+                const platformsDropdown = document.getElementById('platforms-dropdown');
+                
+                if (platformsBtn) {
+                    platformsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (adminDropdown) adminDropdown.classList.add('hidden');
+                        platformsDropdown.classList.toggle('hidden');
+                    });
+                }
+
+                // Close dropdowns when clicking outside
+                document.addEventListener('click', () => {
+                    if (adminDropdown) adminDropdown.classList.add('hidden');
+                    if (platformsDropdown) platformsDropdown.classList.add('hidden');
+                });
+            }
+
+            // Method to update platform status
+            updatePlatformStatus(platformId, status) {
+                const platform = window.platformData.platforms.find(p => p.id === platformId);
+                if (platform) {
+                    platform.status = status;
+                    this.render();
+                    this.bindEvents();
+                }
+            }
+        }
+
+        // Initialize platform tabs when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.platformData.platforms.length > 0) {
+                new PlatformTabs('platform-tabs');
+            }
+        });
+
+        // Platform health checking
+        class PlatformHealthMonitor {
+            constructor() {
+                this.checkInterval = 60000; // Check every minute
+                this.startMonitoring();
+            }
+
+            async checkPlatformHealth(platformId) {
+                try {
+                    const response = await fetch(`/api/platform/${platformId}/health`);
+                    return response.ok ? 'active' : 'inactive';
+                } catch {
+                    return 'inactive';
+                }
+            }
+
+            async startMonitoring() {
+                const platformTabs = document.querySelector('#platform-tabs');
+                if (!platformTabs) return;
+
+                setInterval(async () => {
+                    const platforms = window.platformData.platforms;
+                    for (const platform of platforms) {
+                        if (['bizoholic', 'coreldove', 'directory', 'ai-chat'].includes(platform.id)) {
+                            const status = await this.checkPlatformHealth(platform.id);
+                            if (platform.status !== status) {
+                                platform.status = status;
+                                // Update the visual indicator
+                                const indicator = document.querySelector(`[data-platform="${platform.id}"] .status-indicator`);
+                                if (indicator) {
+                                    indicator.className = `w-2 h-2 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-red-500'}`;
+                                }
+                            }
+                        }
+                    }
+                }, this.checkInterval);
+            }
+        }
+
+        // Initialize health monitoring
+        document.addEventListener('DOMContentLoaded', () => {
+            new PlatformHealthMonitor();
+        });
+
+    </script>
+</body>
+</html>
