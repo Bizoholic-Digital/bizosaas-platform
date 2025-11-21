@@ -38,8 +38,38 @@ def get_elasticsearch_manager() -> ElasticsearchRAGManager:
 # ==================== API KEYS ====================
 
 def get_provider_api_key(provider: str) -> str:
-    """Get API key for specific provider from environment"""
+    """Get API key for specific provider from Vault or environment"""
+    
+    # Try to get from Vault first
+    try:
+        from vault_client import get_vault_client
+        vault = get_vault_client()
+        ai_config = vault.get_ai_config()
+        
+        # Map provider names to Vault keys
+        vault_key_map = {
+            "deepseek": "deepseek_api_key",
+            "mistral": "mistral_api_key",
+            "cohere": "cohere_api_key",
+            "openrouter": "openrouter_api_key",
+            "anthropic": "anthropic_api_key",
+            "openai": "openai_api_key",
+            "gemini": "google_api_key",
+            "bedrock": "aws_access_key_id",
+            "azure-openai": "azure_openai_api_key",
+            "vertex-ai": "google_cloud_project",
+            "perplexity": "perplexity_api_key",
+            "huggingface": "huggingface_api_key"
+        }
+        
+        vault_key = vault_key_map.get(provider)
+        if vault_key and vault_key in ai_config:
+            logger.info(f"Retrieved API key for {provider} from Vault")
+            return ai_config[vault_key]
+    except Exception as e:
+        logger.debug(f"Could not retrieve {provider} API key from Vault: {e}, trying environment")
 
+    # Fallback to environment variables
     key_map = {
         "deepseek": "DEEPSEEK_API_KEY",
         "mistral": "MISTRAL_API_KEY",
