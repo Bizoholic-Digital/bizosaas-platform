@@ -6,7 +6,7 @@ Critical compliance fixes for BizOSaaS platform
 
 from fastapi import FastAPI, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import create_engine, Column, String, Text, DateTime, Boolean, JSON, ForeignKey
+from sqlalchemy import create_engine, Column, String, Text, DateTime, Boolean, JSON, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -19,12 +19,13 @@ import asyncio
 import httpx
 import json
 import logging
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 
 # Database setup
-DATABASE_URL = "postgresql://admin:admin@localhost:5432/bizosaas_compliance"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:admin@shared-postgres:5433/bizosaas_compliance")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
