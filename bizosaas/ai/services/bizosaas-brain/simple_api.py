@@ -133,6 +133,14 @@ try:
 except ImportError as e:
     print(f"⚠️ GDPR Compliance router not available: {e}")
 
+# Include Authentication proxy router
+try:
+    from app.api.auth_routes import router as auth_router
+    app.include_router(auth_router)
+    print("✅ Authentication proxy router included")
+except ImportError as e:
+    print(f"⚠️ Authentication proxy router not available: {e}")
+
 
 @app.get("/health")
 async def health_check():
