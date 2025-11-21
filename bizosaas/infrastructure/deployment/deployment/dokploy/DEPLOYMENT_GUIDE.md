@@ -111,7 +111,7 @@ SALEOR_SECRET_KEY=saleor-secret-key-change-in-production-very-long-and-random-ke
 ### **AI API Keys**
 ```bash
 # Primary AI Services
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=sk-or-v1-REDACTED
 OPENAI_API_KEY=your-openai-api-key
 ANTHROPIC_API_KEY=your-anthropic-api-key
 ```

@@ -26,11 +26,13 @@ COPY . .
 
 # Accept build arguments
 ARG NODE_ENV=production
+ARG BASE_PATH=/portal
 ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.com/api
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=$NODE_ENV
+ENV BASE_PATH=$BASE_PATH
 ENV NEXT_PUBLIC_BRAIN_GATEWAY_URL=$NEXT_PUBLIC_BRAIN_GATEWAY_URL
 
 # Next.js collects anonymous telemetry data about general usage
@@ -65,9 +67,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
-EXPOSE 3001
+EXPOSE 3003
 
-ENV PORT=3001
+ENV PORT=3003
 ENV HOSTNAME="0.0.0.0"
 
 # Runtime environment variables (defaults)

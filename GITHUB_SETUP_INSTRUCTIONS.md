@@ -108,7 +108,7 @@ DJANGO_SECRET_KEY: django-super-secret-key-bizosaas-2025
 
 #### **AI & External API Keys**
 ```
-OPENAI_API_KEY: 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
+OPENAI_API_KEY: sk-or-v1-REDACTED
 ANTHROPIC_API_KEY: your-anthropic-key-if-needed
 ```
 

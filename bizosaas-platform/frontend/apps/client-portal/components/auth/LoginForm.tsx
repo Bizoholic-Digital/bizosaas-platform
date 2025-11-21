@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
-import apiService from "../../lib/api";
+import { useAuth } from "./AuthProvider";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -11,6 +11,7 @@ interface LoginFormProps {
 
 export default function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -34,23 +35,16 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setError(null);
 
     try {
-      const response = await apiService.login({
-        email: formData.email.trim(),
-        password: formData.password
-      });
+      const success = await login(formData.email.trim(), formData.password);
 
-      if (response.success) {
-        if (response.data?.token) {
-          localStorage.setItem("auth_token", response.data.token);
-        }
-        
+      if (success) {
         if (onSuccess) {
           onSuccess();
         } else {
           router.push("/");
         }
       } else {
-        setError(response.error || "Login failed. Please try again.");
+        setError("Invalid email or password. Please try again.");
       }
     } catch (err: any) {
       setError(err.message || "Network error. Please check your connection and try again.");

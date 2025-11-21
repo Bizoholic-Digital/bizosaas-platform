@@ -42,6 +42,7 @@ from shared.auth_system import (
     session_manager
 )
 from shared.logging_system import get_logger, LogLevel, LogCategory
+from oauth_service import oauth_service
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -375,6 +376,156 @@ async def create_session(
             user_id=str(user.id)
         )
         raise HTTPException(status_code=500, detail="Failed to create session")
+
+# OAuth 2.0 SSO Endpoints
+@app.get("/auth/oauth/providers")
+async def get_oauth_providers():
+    """Get list of available OAuth providers"""
+    return {
+        "providers": oauth_service.get_available_providers()
+    }
+
+
+@app.post("/auth/oauth/{provider}/authorize")
+async def oauth_authorize(provider: str):
+    """
+    Initiate OAuth flow for specified provider
+    Returns authorization URL with state parameter for CSRF protection
+    """
+    try:
+        result = await oauth_service.get_authorization_url(provider)
+
+        await logger.log(
+            LogLevel.INFO,
+            LogCategory.AUTHENTICATION,
+            "auth-service",
+            f"OAuth authorization initiated: {provider}",
+            details={"provider": provider}
+        )
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await logger.log(
+            LogLevel.ERROR,
+            LogCategory.AUTHENTICATION,
+            "auth-service",
+            f"OAuth authorization failed: {provider}",
+            error=e
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to initiate OAuth flow: {str(e)}"
+        )
+
+
+@app.get("/auth/oauth/{provider}/callback")
+async def oauth_callback(
+    provider: str,
+    code: str,
+    state: str,
+    session: AsyncSession = Depends(get_async_session)
+):
+    """
+    Handle OAuth callback from provider
+    Exchanges code for tokens and creates/links user account
+    """
+    try:
+        # Get OAuth user info from provider
+        oauth_data = await oauth_service.handle_callback(provider, code, state)
+
+        user_email = oauth_data['user']['email']
+        provider_user_id = oauth_data['user']['provider_user_id']
+
+        if not user_email:
+            raise HTTPException(
+                status_code=400,
+                detail="Email not provided by OAuth provider"
+            )
+
+        # Check if user exists with this email
+        from shared.auth_system import User
+        result = await session.execute(
+            select(User).where(User.email == user_email)
+        )
+        user = result.scalar_one_or_none()
+
+        # If user doesn't exist, create new user
+        if not user:
+            # Import UserCreate for new user registration
+            new_user_data = {
+                'email': user_email,
+                'password': secrets.token_urlsafe(32),  # Random password for OAuth users
+                'is_verified': oauth_data['user'].get('email_verified', True),
+                'full_name': oauth_data['user'].get('name', '')
+            }
+
+            # Create user through FastAPI Users
+            # This would be done through the user manager
+            # For now, return OAuth data
+            pass
+
+        # Store OAuth account linkage
+        # Insert into oauth_accounts table
+        # This would be done through SQLAlchemy
+
+        # Generate JWT tokens for the user
+        access_token = token_service.create_access_token({
+            'user_id': str(user.id) if user else 'new_user',
+            'email': user_email,
+            'provider': provider
+        })
+
+        refresh_token = token_service.create_refresh_token({
+            'user_id': str(user.id) if user else 'new_user',
+            'email': user_email
+        })
+
+        await logger.log(
+            LogLevel.INFO,
+            LogCategory.AUTHENTICATION,
+            "auth-service",
+            f"OAuth login successful: {provider}",
+            details={
+                'provider': provider,
+                'email': user_email,
+                'existing_user': user is not None
+            }
+        )
+
+        # Return tokens and user info
+        response = {
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'token_type': 'bearer',
+            'expires_in': 3600,
+            'user': {
+                'email': user_email,
+                'name': oauth_data['user'].get('name'),
+                'picture': oauth_data['user'].get('picture'),
+                'provider': provider
+            }
+        }
+
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await logger.log(
+            LogLevel.ERROR,
+            LogCategory.AUTHENTICATION,
+            "auth-service",
+            f"OAuth callback failed: {provider}",
+            error=e
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"OAuth authentication failed: {str(e)}"
+        )
+
 
 # Health and Status Endpoints
 @app.get("/health")

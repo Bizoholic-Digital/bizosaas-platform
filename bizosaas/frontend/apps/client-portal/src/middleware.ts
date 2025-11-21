@@ -5,6 +5,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Get basePath from environment (e.g., '/portal')
+const basePath = process.env.BASE_PATH || ''
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -14,31 +17,34 @@ export function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get('refresh_token')
   const hasAuth = !!refreshToken
 
-  // Define protected routes
-  const isProtectedRoute = pathname.startsWith('/dashboard') ||
-                          pathname.startsWith('/settings') ||
-                          pathname.startsWith('/billing') ||
-                          pathname.startsWith('/services') ||
-                          pathname.startsWith('/support') ||
-                          pathname.startsWith('/campaigns') ||
-                          pathname.startsWith('/analytics')
+  // Remove basePath from pathname for route matching
+  const pathWithoutBase = basePath ? pathname.replace(basePath, '') : pathname
 
-  // Define auth routes (login, signup, etc.)
-  const isAuthRoute = pathname === '/login' ||
-                     pathname === '/signup' ||
-                     pathname === '/forgot-password' ||
-                     pathname === '/reset-password'
+  // Define protected routes (without basePath)
+  const isProtectedRoute = pathWithoutBase.startsWith('/dashboard') ||
+                          pathWithoutBase.startsWith('/settings') ||
+                          pathWithoutBase.startsWith('/billing') ||
+                          pathWithoutBase.startsWith('/services') ||
+                          pathWithoutBase.startsWith('/support') ||
+                          pathWithoutBase.startsWith('/campaigns') ||
+                          pathWithoutBase.startsWith('/analytics')
+
+  // Define auth routes (login, signup, etc.) - without basePath
+  const isAuthRoute = pathWithoutBase === '/login' ||
+                     pathWithoutBase === '/signup' ||
+                     pathWithoutBase === '/forgot-password' ||
+                     pathWithoutBase === '/reset-password'
 
   // Redirect unauthenticated users trying to access protected routes
   if (isProtectedRoute && !hasAuth) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('from', pathname)
+    const loginUrl = new URL(`${basePath}/login`, request.url)
+    loginUrl.searchParams.set('from', pathWithoutBase)
     return NextResponse.redirect(loginUrl)
   }
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && hasAuth) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL(`${basePath}/dashboard`, request.url))
   }
 
   // Add security headers to response

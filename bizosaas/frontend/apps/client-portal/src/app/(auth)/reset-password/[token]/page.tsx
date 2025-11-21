@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
 
     setLoading(true)
     try {
-      await authClient.confirmPasswordReset(token, password)
+      await authClient.confirmPasswordReset({ token, new_password: password })
       setSuccess(true)
       // Redirect to login after 3 seconds
       setTimeout(() => {

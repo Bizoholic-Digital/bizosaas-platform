@@ -11,7 +11,7 @@ import json
 import hashlib
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
-from fastapi import FastAPI, HTTPException, Depends, status, Request
+from fastapi import FastAPI, HTTPException, Depends, status, Request, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -27,7 +27,7 @@ from contextlib import asynccontextmanager
 # Configuration
 SECRET_KEY = os.getenv("JWT_SECRET", "auth-service-secret-key-development")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
+ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour (security best practice)
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 # Database Configuration
@@ -103,7 +103,22 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class StandardResponse(BaseModel):
+    """Standardized API response format"""
+    success: bool
+    data: Optional[Any] = None
+    error: Optional[str] = None
+    message: Optional[str] = None
+
+class TokenData(BaseModel):
+    """Token data returned in standardized response"""
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    user: Dict[str, Any]
+
 class TokenResponse(BaseModel):
+    """Legacy token response for backward compatibility"""
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
@@ -146,6 +161,7 @@ async def create_tables():
                 token_hash VARCHAR(255) NOT NULL,
                 expires_at TIMESTAMP NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_used_at TIMESTAMP,
                 is_revoked BOOLEAN DEFAULT false
             );
         """)
@@ -277,22 +293,22 @@ async def health_check():
             }
         )
 
-@app.post("/auth/register", response_model=TokenResponse)
-async def register(user_data: UserCreate):
-    """Register new user"""
+@app.post("/auth/register")
+async def register(user_data: UserCreate, response: Response):
+    """Register new user with HttpOnly cookie for refresh token"""
     # Check if user already exists
     existing_user = await get_user_by_email(user_data.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
+
     # Create user
     user = await create_user(user_data)
-    
+
     # Create tokens
     access_token = create_access_token(data={"sub": str(user["id"])})
     refresh_token = create_refresh_token()
     await store_refresh_token(str(user["id"]), refresh_token)
-    
+
     # Cache user session
     session_key = f"session:{user['id']}"
     redis_client.setex(session_key, 3600, json.dumps({
@@ -301,43 +317,58 @@ async def register(user_data: UserCreate):
         "role": user["role"],
         "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
     }))
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user={
-            "id": str(user["id"]),
-            "email": user["email"],
-            "full_name": user["full_name"],
-            "role": user["role"],
-            "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
-        }
+
+    # Set HttpOnly cookie for refresh token
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/api/auth"
     )
 
-@app.post("/auth/login", response_model=TokenResponse)
-async def login(login_data: UserLogin):
-    """User login"""
+    # Return standardized response
+    return StandardResponse(
+        success=True,
+        data=TokenData(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            user={
+                "id": str(user["id"]),
+                "email": user["email"],
+                "full_name": user["full_name"],
+                "role": user["role"],
+                "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
+            }
+        ).dict()
+    )
+
+@app.post("/auth/login")
+async def login(login_data: UserLogin, response: Response):
+    """User login with HttpOnly cookie for refresh token"""
     # Verify user credentials
     user = await get_user_by_email(login_data.email)
     if not user or not verify_password(login_data.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    
+
     if not user["is_active"]:
         raise HTTPException(status_code=401, detail="Account is deactivated")
-    
+
     # Update last login
     async with db_pool.acquire() as conn:
         await conn.execute(
-            "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1", 
+            "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
             user["id"]
         )
-    
+
     # Create tokens
     access_token = create_access_token(data={"sub": str(user["id"])})
     refresh_token = create_refresh_token()
     await store_refresh_token(str(user["id"]), refresh_token)
-    
+
     # Cache user session
     session_key = f"session:{user['id']}"
     redis_client.setex(session_key, 3600, json.dumps({
@@ -346,47 +377,112 @@ async def login(login_data: UserLogin):
         "role": user["role"],
         "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
     }))
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user={
-            "id": str(user["id"]),
-            "email": user["email"],
-            "full_name": user["full_name"],
-            "role": user["role"],
-            "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
-        }
+
+    # Set HttpOnly cookie for refresh token (SECURITY: XSS-proof)
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,  # Cannot be accessed by JavaScript
+        secure=True,  # HTTPS only in production
+        samesite="lax",  # CSRF protection
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,  # 30 days
+        path="/api/auth"  # Only sent to auth endpoints
     )
 
-@app.post("/auth/refresh", response_model=TokenResponse)
-async def refresh_token_endpoint(refresh_token: str):
-    """Refresh access token"""
-    user_id = await verify_refresh_token(refresh_token)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
-    
-    user = await get_user_by_id(user_id)
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    
+    # Return standardized response with access token (NOT refresh token)
+    return StandardResponse(
+        success=True,
+        data=TokenData(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            user={
+                "id": str(user["id"]),
+                "email": user["email"],
+                "full_name": user["full_name"],
+                "role": user["role"],
+                "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
+            }
+        ).dict()
+    )
+
+@app.post("/auth/refresh")
+async def refresh_token_endpoint(request: Request, response: Response):
+    """Refresh access token with token rotation (security best practice)"""
+    # Get refresh token from HttpOnly cookie
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="No refresh token provided")
+
+    # Validate refresh token and get token record
+    token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+
+    async with db_pool.acquire() as conn:
+        token_row = await conn.fetchrow("""
+            SELECT * FROM refresh_tokens
+            WHERE token_hash = $1 AND expires_at > CURRENT_TIMESTAMP AND is_revoked = false
+        """, token_hash)
+
+        if not token_row:
+            raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+        # Check for token reuse (security)
+        if token_row['last_used_at'] is not None:
+            time_since_last_use = datetime.utcnow() - token_row['last_used_at']
+            if time_since_last_use.total_seconds() < 5:
+                # Token reused within 5 seconds - possible attack
+                # Revoke all tokens for user
+                await conn.execute("""
+                    UPDATE refresh_tokens SET is_revoked = true WHERE user_id = $1
+                """, token_row['user_id'])
+                raise HTTPException(status_code=401, detail="Token reuse detected - all sessions revoked")
+
+        # Mark current token as used
+        await conn.execute("""
+            UPDATE refresh_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE id = $1
+        """, token_row['id'])
+
+        # Get user
+        user = await get_user_by_id(str(token_row['user_id']))
+        if not user or not user["is_active"]:
+            raise HTTPException(status_code=401, detail="User not found or inactive")
+
+        # Revoke old refresh token (rotation)
+        await conn.execute("""
+            UPDATE refresh_tokens SET is_revoked = true WHERE id = $1
+        """, token_row['id'])
+
     # Create new tokens
     access_token = create_access_token(data={"sub": str(user["id"])})
     new_refresh_token = create_refresh_token()
     await store_refresh_token(str(user["id"]), new_refresh_token)
-    
-    return TokenResponse(
-        access_token=access_token,
-        refresh_token=new_refresh_token,
-        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user={
-            "id": str(user["id"]),
-            "email": user["email"],
-            "full_name": user["full_name"],
-            "role": user["role"],
-            "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
-        }
+
+    # Set new refresh token cookie (rotation)
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+        path="/api/auth"
+    )
+
+    # Return standardized response with new access token
+    return StandardResponse(
+        success=True,
+        data=TokenData(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            user={
+                "id": str(user["id"]),
+                "email": user["email"],
+                "full_name": user["full_name"],
+                "role": user["role"],
+                "tenant_id": str(user["tenant_id"]) if user["tenant_id"] else None
+            }
+        ).dict()
     )
 
 @app.get("/auth/me", response_model=UserResponse)
@@ -404,20 +500,26 @@ async def get_current_user_info(current_user: Dict = Depends(get_current_user)):
     )
 
 @app.post("/auth/logout")
-async def logout(current_user: Dict = Depends(get_current_user)):
-    """User logout"""
+async def logout(response: Response, current_user: Dict = Depends(get_current_user)):
+    """User logout - revoke tokens and clear cookies"""
     # Revoke all refresh tokens for user
     async with db_pool.acquire() as conn:
         await conn.execute(
-            "UPDATE refresh_tokens SET is_revoked = true WHERE user_id = $1", 
+            "UPDATE refresh_tokens SET is_revoked = true WHERE user_id = $1",
             current_user["id"]
         )
-    
+
     # Remove session cache
     session_key = f"session:{current_user['id']}"
     redis_client.delete(session_key)
-    
-    return {"message": "Logged out successfully"}
+
+    # Clear refresh token cookie
+    response.delete_cookie(key="refresh_token", path="/api/auth")
+
+    return StandardResponse(
+        success=True,
+        message="Logged out successfully"
+    )
 
 @app.get("/auth/validate")
 async def validate_token(current_user: Dict = Depends(get_current_user)):

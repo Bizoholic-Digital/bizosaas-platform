@@ -151,7 +151,7 @@ Click **"Environment Variables"** or **"Add Environment Variable"**
 Add each of these (replace with your actual keys):
 
 ```
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxxxxxxx
+OPENROUTER_API_KEY=sk-or-v1-REDACTED
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxx
 ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxx
 STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxxx

@@ -308,7 +308,7 @@ sudo crontab -e
 # .env.production - Store securely in Dokploy
 POSTGRES_PASSWORD=super_secure_production_password_2025
 JWT_SECRET=ultra_secure_jwt_secret_for_production_2025
-OPENAI_API_KEY=sk-proj-your-openai-api-key-here
+OPENAI_API_KEY=sk-proj-REDACTED
 STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
 STRIPE_PUBLISHABLE_KEY=pk_live_your_stripe_publishable_key
 REDIS_PASSWORD=secure_redis_password_2025

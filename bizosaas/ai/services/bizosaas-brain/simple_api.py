@@ -109,6 +109,7 @@ try:
 except ImportError as e:
     print(f"⚠️ Saleor webhook router not available: {e}")
 
+
 # Include WordPress Integration API
 try:
     from wordpress_integration_api import wordpress_router
@@ -116,7 +117,6 @@ try:
     print("✅ WordPress Integration API router included")
 except ImportError as e:
     print(f"⚠️ WordPress Integration API not available: {e}")
-
 # Include Saleor GraphQL proxy router
 try:
     from app.api.saleor_proxy import router as saleor_proxy_router

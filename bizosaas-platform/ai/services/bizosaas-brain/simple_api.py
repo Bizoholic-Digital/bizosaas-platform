@@ -81,15 +81,19 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Enable CORS for local development
+# Enable CORS for local development and production
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3002", 
-        "http://localhost:3000", 
+        "http://localhost:3002",
+        "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:8088",  # Superset
-        "http://localhost:8123"   # ClickHouse
+        "http://localhost:8123",  # ClickHouse
+        "https://stg.bizoholic.com",  # Staging Client Portal
+        "https://api.bizoholic.com",  # Production API
+        "https://bizoholic.com",  # Production
+        "https://www.bizoholic.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -102,6 +106,14 @@ if analytics_router:
     print("✅ Analytics router included")
 else:
     print("⚠️ Analytics router not available - running in basic mode")
+
+# Setup authentication endpoints for Client Portal
+try:
+    from auth_endpoints import setup_auth_endpoints
+    setup_auth_endpoints(app)
+    logger.info("✅ Authentication endpoints registered")
+except Exception as e:
+    logger.warning(f"⚠️ Authentication endpoints not available: {str(e)}")
 
 @app.get("/health")
 async def health_check():

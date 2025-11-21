@@ -10,16 +10,23 @@ export async function GET(request: NextRequest) {
 
     console.log('[THRILLRING-GAMING] Fetching popular games:', { limit, platform })
 
-    // Try FastAPI Brain Gateway first
+    // Try FastAPI Brain Gateway first with 3 second timeout
     try {
       console.log('[THRILLRING-GAMING] Trying FastAPI Brain Gateway')
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+
       const response = await fetch(`${BRAIN_API_URL}/api/brain/gaming/popular-games?limit=${limit}&platform=${platform}`, {
         headers: {
           'Content-Type': 'application/json',
           'Host': 'localhost:3005',
         },
+        signal: controller.signal,
         next: { revalidate: 300 } // Cache for 5 minutes
       })
+
+      clearTimeout(timeoutId)
 
       if (response.ok) {
         const brainData = await response.json()
@@ -31,8 +38,12 @@ export async function GET(request: NextRequest) {
           meta: brainData.meta || {}
         })
       }
-    } catch (brainError) {
-      console.error('[THRILLRING-GAMING] Brain Gateway failed:', brainError)
+    } catch (brainError: any) {
+      if (brainError.name === 'AbortError') {
+        console.log('[THRILLRING-GAMING] Brain Gateway timeout - using fallback')
+      } else {
+        console.error('[THRILLRING-GAMING] Brain Gateway failed:', brainError)
+      }
     }
 
     // Enhanced fallback data

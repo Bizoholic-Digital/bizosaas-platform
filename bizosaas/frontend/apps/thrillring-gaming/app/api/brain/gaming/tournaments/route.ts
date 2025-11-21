@@ -6,20 +6,28 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '20')
-    const platform = searchParams.get('platform') || 'all'
+    const status = searchParams.get('status') || 'all'
+    const game = searchParams.get('game') || 'all'
 
-    console.log('[THRILLRING-GAMING] Fetching tournaments:', { limit, platform })
+    console.log('[THRILLRING-GAMING] Fetching tournaments:', { limit, status, game })
 
-    // Try FastAPI Brain Gateway first
+    // Try FastAPI Brain Gateway first with 3 second timeout
     try {
       console.log('[THRILLRING-GAMING] Trying FastAPI Brain Gateway')
-      const response = await fetch(`${BRAIN_API_URL}/api/brain/gaming/tournaments?limit=${limit}&platform=${platform}`, {
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+
+      const response = await fetch(`${BRAIN_API_URL}/api/brain/gaming/tournaments?limit=${limit}&status=${status}&game=${game}`, {
         headers: {
           'Content-Type': 'application/json',
           'Host': 'localhost:3005',
         },
+        signal: controller.signal,
         next: { revalidate: 300 } // Cache for 5 minutes
       })
+
+      clearTimeout(timeoutId)
 
       if (response.ok) {
         const brainData = await response.json()
@@ -27,139 +35,123 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
           success: true,
           source: 'brain_gateway',
-          data: brainData.games || brainData.data || [],
+          data: brainData.tournaments || brainData.data || [],
           meta: brainData.meta || {}
         })
       }
-    } catch (brainError) {
-      console.error('[THRILLRING-GAMING] Brain Gateway failed:', brainError)
+    } catch (brainError: any) {
+      if (brainError.name === 'AbortError') {
+        console.log('[THRILLRING-GAMING] Brain Gateway timeout - using fallback')
+      } else {
+        console.error('[THRILLRING-GAMING] Brain Gateway failed:', brainError)
+      }
     }
 
-    // Enhanced fallback data
+    // Enhanced fallback tournament data
     console.log('[THRILLRING-GAMING] Using enhanced fallback data')
-    const fallbackGames = [
+    const fallbackTournaments = [
       {
         id: 1,
-        name: "Apex Legends",
-        description: "A free-to-play battle royale game with unique character abilities and fast-paced combat.",
-        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400",
-        rating: 95,
-        platforms: ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
-        genre: ["Battle Royale", "FPS"],
-        release_date: "2019-02-04",
-        developer: "Respawn Entertainment",
-        publisher: "Electronic Arts",
-        price: 0,
+        title: "Apex Legends Championship Series",
+        description: "The ultimate battle royale tournament with $100,000 prize pool",
+        game: "Apex Legends",
+        prize_pool: 100000,
+        currency: "USD",
+        participants: 156,
+        max_participants: 200,
         status: "live",
-        tournament_prize_pool: 100000,
-        active_players: 2048000,
-        twitch_viewers: 85000
+        registration_status: "closed",
+        start_date: "2025-11-05T10:00:00Z",
+        end_date: "2025-11-07T20:00:00Z",
+        registration_deadline: "2025-11-03T23:59:59Z",
+        format: "Battle Royale - Squad (3 players)",
+        platform: ["PC", "PlayStation", "Xbox"],
+        region: "North America",
+        organizer: "ThrillRing Esports",
+        stream_url: "https://twitch.tv/thrillring",
+        rules_url: "https://thrillring.com/tournaments/apex-rules",
+        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800",
+        featured: true,
+        skill_level: "Professional",
+        entry_fee: 0,
+        min_team_size: 3,
+        max_team_size: 3
       },
       {
         id: 2,
-        name: "Valorant",
-        description: "A tactical 5v5 character-based shooter with unique agent abilities and strategic gameplay.",
-        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400",
-        rating: 92,
-        platforms: ["PC"],
-        genre: ["Tactical Shooter", "FPS"],
-        release_date: "2020-06-02",
-        developer: "Riot Games",
-        publisher: "Riot Games",
-        price: 0,
+        title: "Valorant Masters Tournament",
+        description: "Tactical FPS showdown with $75,000 on the line",
+        game: "Valorant",
+        prize_pool: 75000,
+        currency: "USD",
+        participants: 89,
+        max_participants: 128,
         status: "registration_open",
-        tournament_prize_pool: 75000,
-        active_players: 1024000,
-        twitch_viewers: 120000
+        registration_status: "open",
+        start_date: "2025-11-10T10:00:00Z",
+        end_date: "2025-11-12T20:00:00Z",
+        registration_deadline: "2025-11-08T23:59:59Z",
+        format: "5v5 - Team Tournament",
+        platform: ["PC"],
+        region: "Europe",
+        organizer: "ThrillRing Esports",
+        stream_url: "https://twitch.tv/thrillring",
+        rules_url: "https://thrillring.com/tournaments/valorant-rules",
+        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800",
+        featured: true,
+        skill_level: "Semi-Professional",
+        entry_fee: 0,
+        min_team_size: 5,
+        max_team_size: 7
       },
       {
         id: 3,
-        name: "League of Legends",
-        description: "The world's most popular MOBA game with intense strategic team-based gameplay.",
-        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400",
-        rating: 97,
-        platforms: ["PC", "Mobile"],
-        genre: ["MOBA", "Strategy"],
-        release_date: "2009-10-27",
-        developer: "Riot Games",
-        publisher: "Riot Games",
-        price: 0,
+        title: "League of Legends Regional Cup",
+        description: "The ultimate MOBA showdown with $150,000 prize pool",
+        game: "League of Legends",
+        prize_pool: 150000,
+        currency: "USD",
+        participants: 64,
+        max_participants: 64,
         status: "coming_soon",
-        tournament_prize_pool: 150000,
-        active_players: 4096000,
-        twitch_viewers: 200000
-      },
-      {
-        id: 4,
-        name: "Counter-Strike 2",
-        description: "The legendary tactical FPS returns with enhanced graphics and refined gameplay mechanics.",
-        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400",
-        rating: 94,
-        platforms: ["PC"],
-        genre: ["Tactical Shooter", "FPS"],
-        release_date: "2023-09-27",
-        developer: "Valve Corporation",
-        publisher: "Valve Corporation",
-        price: 0,
-        status: "live",
-        tournament_prize_pool: 200000,
-        active_players: 1500000,
-        twitch_viewers: 95000
-      },
-      {
-        id: 5,
-        name: "Dota 2",
-        description: "The ultimate MOBA experience with complex strategies and massive competitive scene.",
-        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400",
-        rating: 96,
-        platforms: ["PC"],
-        genre: ["MOBA", "Strategy"],
-        release_date: "2013-07-09",
-        developer: "Valve Corporation",
-        publisher: "Valve Corporation",
-        price: 0,
-        status: "live",
-        tournament_prize_pool: 500000,
-        active_players: 800000,
-        twitch_viewers: 180000
-      },
-      {
-        id: 6,
-        name: "Overwatch 2",
-        description: "Hero-based team shooter with dynamic gameplay and evolving meta strategies.",
-        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400",
-        rating: 89,
-        platforms: ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
-        genre: ["Hero Shooter", "FPS"],
-        release_date: "2022-10-04",
-        developer: "Blizzard Entertainment",
-        publisher: "Blizzard Entertainment",
-        price: 0,
-        status: "registration_open",
-        tournament_prize_pool: 120000,
-        active_players: 950000,
-        twitch_viewers: 75000
+        registration_status: "coming_soon",
+        start_date: "2025-11-20T10:00:00Z",
+        end_date: "2025-11-22T20:00:00Z",
+        registration_deadline: "2025-11-15T23:59:59Z",
+        format: "5v5 - Double Elimination",
+        platform: ["PC"],
+        region: "Asia-Pacific",
+        organizer: "ThrillRing Esports",
+        stream_url: "https://twitch.tv/thrillring",
+        rules_url: "https://thrillring.com/tournaments/lol-rules",
+        image_url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800",
+        featured: true,
+        skill_level: "Professional",
+        entry_fee: 50,
+        min_team_size: 5,
+        max_team_size: 7
       }
     ]
 
     return NextResponse.json({
       success: true,
       source: 'enhanced_fallback',
-      data: fallbackGames.slice(0, limit),
+      data: fallbackTournaments.slice(0, limit),
       meta: {
-        total: fallbackGames.length,
+        total: fallbackTournaments.length,
         limit,
-        platform,
-        note: 'Enhanced fallback data with gaming tournament details'
+        status,
+        game,
+        note: 'Enhanced fallback tournament data'
       }
     })
 
   } catch (error) {
-    console.error('[THRILLRING-GAMING] Popular games API error:', error)
+    console.error('[THRILLRING-GAMING] Tournaments API error:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch popular games',
+        error: 'Failed to fetch tournaments',
         source: 'error_fallback',
         data: []
       },

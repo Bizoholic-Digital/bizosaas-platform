@@ -125,7 +125,7 @@ applications:
 
 environment:
   POSTGRES_PASSWORD: "SharedInfra2024!SuperSecure"
-  OPENAI_API_KEY: "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"
+  OPENAI_API_KEY: "sk-or-v1-REDACTED"
   DJANGO_SECRET_KEY: "django-super-secret-2025"
   NODE_ENV: "production"
   NEXT_PUBLIC_API_BASE_URL: "https://api.bizoholic.com"
@@ -164,7 +164,7 @@ DOKPLOY_API_KEY: "VumUVyBHPJQUlXiGnwVxeyKYBeGOLOttGjkgkGiwpSHLiEYegUBkCSTPFmQqMb
 
 # Application Secrets
 POSTGRES_PASSWORD: "SharedInfra2024!SuperSecure"
-OPENAI_API_KEY: "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"
+OPENAI_API_KEY: "sk-or-v1-REDACTED"
 DJANGO_SECRET_KEY: "django-super-secret-2025"
 
 # Monitoring
