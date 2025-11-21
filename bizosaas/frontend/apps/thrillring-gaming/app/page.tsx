@@ -1,10 +1,13 @@
 'use client'
 
+// Force dynamic rendering to prevent Next.js from pre-rendering this page
+export const dynamic = 'force-dynamic'
+
 import React from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { Button } from '../components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/lib/ui/card'
+import { Button } from '@/lib/ui/button'
 import {
   Trophy,
   Users,
@@ -20,7 +23,7 @@ import {
   MapPin,
   DollarSign
 } from 'lucide-react'
-import { usePopularGames, useTournaments, useGamingStats } from '../hooks/useGamingData'
+import { usePopularGames, useTournaments, useGamingStats } from '@/lib/hooks/useGamingData'
 
 function formatNumber(num: number): string {
   if (num >= 1000000) {
@@ -46,7 +49,7 @@ export default function ThrillRingHomePage() {
   const { stats, loading: statsLoading } = useGamingStats()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
       <header className="relative z-50 border-b border-gray-800/50 bg-black/20 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4">
@@ -57,7 +60,7 @@ export default function ThrillRingHomePage() {
               transition={{ duration: 0.5 }}
               className="flex items-center space-x-2"
             >
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-2 rounded-lg">
+              <div className="bg-purple-600 p-2 rounded-lg">
                 <Trophy className="h-6 w-6 text-white" />
               </div>
               <span className="text-2xl font-bold text-white">ThrillRing</span>
@@ -85,7 +88,7 @@ export default function ThrillRingHomePage() {
               <Button variant="outline" className="border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white">
                 Sign In
               </Button>
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+              <Button className="bg-purple-600 hover:bg-purple-700">
                 Join Now
               </Button>
             </div>
@@ -95,7 +98,7 @@ export default function ThrillRingHomePage() {
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20" />
+        <div className="absolute inset-0 bg-purple-900/20" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <motion.h1
@@ -105,7 +108,7 @@ export default function ThrillRingHomePage() {
               className="text-5xl md:text-7xl font-bold text-white mb-6"
             >
               Welcome to the
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              <span className="text-purple-400">
                 {" "}Ultimate Gaming Arena
               </span>
             </motion.h1>
@@ -126,7 +129,7 @@ export default function ThrillRingHomePage() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-lg px-8 py-4">
+              <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-4">
                 <Play className="mr-2 h-5 w-5" />
                 Start Playing
               </Button>
@@ -240,7 +243,7 @@ export default function ThrillRingHomePage() {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                   >
                     <Card className="bg-black/40 border-gray-800 backdrop-blur-sm overflow-hidden hover:bg-black/60 transition-all hover:scale-105">
-                      <div className="aspect-video bg-gradient-to-br from-purple-600 to-pink-600 relative">
+                      <div className="aspect-video bg-purple-700 relative">
                         <div className="absolute inset-0 bg-black/30" />
                         <div className="absolute top-4 right-4">
                           <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${statusColors[tournament.status as keyof typeof statusColors] || 'bg-gray-500'}`}>
@@ -268,7 +271,7 @@ export default function ThrillRingHomePage() {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700">
                           View Tournament
                         </Button>
                       </CardContent>
@@ -341,7 +344,7 @@ export default function ThrillRingHomePage() {
             <p className="text-xl text-gray-300 mb-8">
               Join millions of players and start your journey to becoming a gaming legend.
             </p>
-            <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-lg px-12 py-4">
+            <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-lg px-12 py-4">
               Get Started Now
             </Button>
           </motion.div>

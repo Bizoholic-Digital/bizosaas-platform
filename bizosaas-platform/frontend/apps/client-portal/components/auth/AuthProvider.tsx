@@ -45,32 +45,24 @@ export default function AuthProvider({
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Call unified auth service directly
-      const response = await fetch('http://localhost:8008/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password })
-      });
+      // Use FastAPI authentication through Brain API Gateway
+      const response = await apiService.login({ email, password });
 
-      if (response.ok) {
-        const data = await response.json();
-
+      if (response.success && response.data?.token && response.data?.user) {
         // Transform API response to our User interface
         const userData: User = {
-          id: data.user.id,
-          email: data.user.email,
-          name: `${data.user.first_name} ${data.user.last_name}`,
-          role: data.user.role,
-          tenant: data.user.tenant_id || 'default'
+          id: response.data.user.id,
+          email: response.data.user.email,
+          name: response.data.user.name,
+          role: response.data.user.role,
+          tenant: response.data.user.tenant_id || 'default'
         };
 
         setUser(userData);
 
-        // Store tokens for persistence
+        // Store token and user data for persistence
         if (typeof window !== "undefined") {
-          localStorage.setItem("access_token", data.access_token);
-          localStorage.setItem("refresh_token", data.refresh_token);
+          localStorage.setItem("auth_token", response.data.token);
           localStorage.setItem("user_data", JSON.stringify(userData));
         }
         return true;
@@ -85,45 +77,33 @@ export default function AuthProvider({
   const logout = () => {
     setUser(null);
     if (typeof window !== "undefined") {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("user_data");
-      // Legacy cleanup
       localStorage.removeItem("auth_token");
-      sessionStorage.removeItem("auth_token");
+      localStorage.removeItem("user_data");
     }
-    // Redirect to unified auth instead of local login
-    window.location.href = "http://localhost:3010";
+    // Redirect to login page (basePath /portal is handled automatically)
+    if (typeof window !== "undefined") {
+      window.location.href = "/portal/login";
+    }
   };
 
   const checkAuth = async (): Promise<boolean> => {
     try {
       if (typeof window !== "undefined") {
-        // Check for unified auth tokens
-        const accessToken = localStorage.getItem("access_token");
+        // Check for auth token and user data
+        const authToken = localStorage.getItem("auth_token");
         const userData = localStorage.getItem("user_data");
 
-        if (accessToken && userData) {
+        if (authToken && userData) {
           try {
             const user = JSON.parse(userData);
             setUser(user);
             return true;
           } catch (e) {
             console.error("Error parsing user data:", e);
+            // Clear invalid data
+            localStorage.removeItem("auth_token");
+            localStorage.removeItem("user_data");
           }
-        }
-
-        // Fallback to legacy token system for backward compatibility
-        const legacyToken = localStorage.getItem("auth_token");
-        if (legacyToken === "demo_token") {
-          setUser({
-            id: "demo",
-            email: "demo@bizosaas.com",
-            name: "Demo User",
-            role: "user",
-            tenant: "demo"
-          });
-          return true;
         }
       }
       return false;
@@ -151,12 +131,16 @@ export default function AuthProvider({
     if (typeof window === "undefined") return;
 
     if (!isLoading) {
-      // Redirect unauthenticated users to unified auth portal
-      if (!user && pathname !== "/login" && pathname !== "/") {
-        window.location.href = "http://localhost:3010";
+      // Redirect unauthenticated users to login page
+      if (!user && pathname !== "/login" && !pathname.startsWith("/login")) {
+        router.push("/login");
+      }
+      // Redirect authenticated users away from login page
+      else if (user && pathname === "/login") {
+        router.push("/");
       }
     }
-  }, [user, isLoading, pathname]);
+  }, [user, isLoading, pathname, router]);
 
   const value: AuthContextType = {
     user,

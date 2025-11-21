@@ -31,7 +31,7 @@ environment:
   - POSTGRES_PASSWORD=SharedInfra2024!SuperSecure
   - REDIS_HOST=redis
   - REDIS_PASSWORD=SecureRedis2024Unified
-  - OPENROUTER_API_KEY=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
+  - OPENROUTER_API_KEY=sk-or-v1-REDACTED
 networks:
   - dokploy-network
 volumes:
@@ -286,7 +286,7 @@ REDIS_PASSWORD=SecureRedis2024Unified
 JWT_SECRET=super-secret-jwt-key-for-bizosaas-platform-2024
 
 # API Keys (Add to Dokploy Environment)  
-OPENROUTER_API_KEY=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
+OPENROUTER_API_KEY=sk-or-v1-REDACTED
 PEXELS_API_KEY=your-pexels-key
 UNSPLASH_ACCESS_KEY=your-unsplash-key
 PIXABAY_API_KEY=your-pixabay-key

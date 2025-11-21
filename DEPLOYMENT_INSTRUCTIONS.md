@@ -30,7 +30,7 @@
 # If you have a GitHub PAT with packages:write scope
 docker login ghcr.io
 # Username: your-github-username
-# Password: ghp_YourPersonalAccessToken
+# Password: ghp_REDACTED
 ```
 
 **Option B: Create New Token**

@@ -344,7 +344,7 @@ bizosaas/
 │   ├── wagtail-cms/                  # Wagtail CMS content management (Port 8082)
 │   ├── saleor-backend/               # Saleor E-commerce backend (Port 8010)
 │   ├── django-crm/                   # Django CRM system (Port 8000)
-│   └── frontend-nextjs/              # Next.js 14 + TypeScript (Port 3000)
+│   └── frontend-nextjs/              # Next.js 15 + TypeScript (Port 3000)
 ```
 
 ### AI Agents Ecosystem

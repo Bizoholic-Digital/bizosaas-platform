@@ -1,13 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Base path for deployment under /portal
+  basePath: '/portal',
+
   // Enable standalone output for Docker optimization
   output: 'standalone',
-  
+
   // Skip type checking during build (for faster container builds)
   typescript: {
     ignoreBuildErrors: true,
   },
-  
+
   // Optimize for production
   compress: true,
   poweredByHeader: false,

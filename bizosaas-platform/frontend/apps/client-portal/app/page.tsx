@@ -8,7 +8,7 @@ import {
   ChevronDown, ChevronRight, Moon, Sun, TrendingUp,
   DollarSign, User, Target, Calendar, Package,
   Mail, MessageSquare, Share2, Activity, Zap,
-  Lightbulb, Key, Shield, Terminal, Database, Grid, Code
+  Lightbulb, Key, Shield, Terminal, Database, Grid, Code, Search
 } from 'lucide-react';
 import { CRMContent } from '../components/CRMContent';
 
@@ -173,6 +173,12 @@ export default function ClientPortalDashboard() {
         { id: 'billing-history', label: 'Billing History', icon: Activity },
         { id: 'billing-tax', label: 'Tax Settings', icon: Settings }
       ]
+    },
+    {
+      id: 'sourcing',
+      icon: Search,
+      label: 'Product Sourcing',
+      children: []
     },
     {
       id: 'integrations',
