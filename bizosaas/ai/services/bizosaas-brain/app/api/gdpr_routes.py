@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/gdpr", tags=["GDPR Compliance"])
 
 # GDPR Service Configuration
-GDPR_SERVICE_URL = os.getenv("GDPR_SERVICE_URL", "http://backend-gdpr-compliance:8009")
+GDPR_SERVICE_URL = os.getenv("GDPR_SERVICE_URL", "http://backend-gdpr-compliance:8010")
 
 # ========================================================================================
 # PYDANTIC MODELS (matching GDPR service)
