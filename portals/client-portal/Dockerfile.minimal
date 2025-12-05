@@ -1,0 +1,17 @@
+# Minimal Dockerfile for Client Portal
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy everything
+COPY . .
+
+# Set environment
+ENV NODE_ENV=development
+ENV PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Start in dev mode
+CMD ["npm", "run", "dev"]

@@ -12,7 +12,7 @@ yarn-error.log*
 .env.production.local
 
 # Docker
-.dockerignore
+
 
 # Database
 data/postgres/
@@ -66,6 +66,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+!brands/bizoholic/frontend/lib/
+!portals/client-portal/lib/
 lib64/
 parts/
 sdist/
@@ -145,3 +147,4 @@ vault
 
 # Temporary - n8n directory until properly structured
 n8n/
+credentials.md
