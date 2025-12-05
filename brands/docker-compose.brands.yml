@@ -1,0 +1,101 @@
+services:
+  # Bizoholic Frontend
+  bizoholic-frontend:
+    build: ./bizoholic/frontend
+    container_name: bizoholic-frontend-3001
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NEXT_PUBLIC_API_URL=http://brain-gateway:8001
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+
+  # CoreLDove Frontend
+  coreldove-frontend:
+    build: ./coreldove/frontend
+    container_name: coreldove-frontend-3002
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - NEXT_PUBLIC_API_URL=http://brain-gateway:8001
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+
+  # CoreLDove Backend
+  coreldove-backend:
+    build: ./coreldove/backend
+    container_name: coreldove-backend-8005
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - SALEOR_URL=http://saleor:8010
+    networks:
+      - bizosaas-network
+
+  # ThrillRing Frontend
+  thrillring-frontend:
+    build: ./thrillring/frontend
+    container_name: thrillring-gaming-3005
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - NEXT_PUBLIC_API_URL=http://brain-gateway:8001
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+
+  # QuantTrade Frontend
+  quanttrade-frontend:
+    build: ./quanttrade/frontend
+    container_name: quanttrade-frontend-3006
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - NEXT_PUBLIC_API_URL=http://quanttrade-backend:8006
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+
+  # QuantTrade Backend
+  quanttrade-backend:
+    build: ./quanttrade/backend
+    container_name: quanttrade-backend-8006
+    ports:
+      - "8006:8006"
+    environment:
+      - PORT=8006
+      - POSTGRES_HOST=postgres
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+networks:
+  bizosaas-network:
+    external: true

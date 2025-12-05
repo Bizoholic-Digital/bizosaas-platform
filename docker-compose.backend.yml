@@ -1,0 +1,48 @@
+networks:
+  default:
+    name: bizosaas-platform-network
+    external: true
+
+services:
+  # Django CRM - Using official Django image
+  crm:
+    image: python:3.11-slim
+    container_name: bizosaas-crm
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://bizosaas:bizosaas_dev_password@bizosaas-postgres-unified:5432/bizosaas
+      - REDIS_URL=redis://bizosaas-redis-unified:6379/0
+      - DJANGO_SETTINGS_MODULE=mysite.settings
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - ALLOWED_HOSTS=*
+    ports:
+      - "8005:8000"
+    command: >
+      sh -c "pip install django psycopg2-binary redis gunicorn &&
+             django-admin startproject mysite . &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    restart: unless-stopped
+
+  # Wagtail CMS - Using official Wagtail approach
+  cms:
+    image: python:3.11-slim
+    container_name: bizosaas-cms
+    working_dir: /app
+    environment:
+      - DATABASE_URL=postgresql://bizosaas:bizosaas_dev_password@bizosaas-postgres-unified:5432/bizosaas
+      - REDIS_URL=redis://bizosaas-redis-unified:6379/1
+      - DJANGO_SETTINGS_MODULE=mysite.settings.dev
+      - DEBUG=True
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - ALLOWED_HOSTS=*
+    ports:
+      - "8006:8000"
+    command: >
+      sh -c "pip install wagtail psycopg2-binary redis gunicorn &&
+             wagtail start mysite . &&
+             python manage.py migrate &&
+             python manage.py createsuperuser --noinput --username admin --email admin@bizoholic.com || true &&
+             python manage.py runserver 0.0.0.0:8000"
+    restart: unless-stopped

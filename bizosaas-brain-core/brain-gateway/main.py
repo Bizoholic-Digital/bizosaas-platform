@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import connectors
+from app.api import connectors, agents
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(connectors.router)
+app.include_router(agents.router)
 
 # Configuration
 CMS_URL = os.getenv("CMS_URL", "http://cms:8002")

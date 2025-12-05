@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/components/auth/AuthProvider'
 
+import { ThemeToggle } from '@/components/theme-toggle'
+
 export function Header() {
     const { user, logout } = useAuth()
 
@@ -37,6 +39,8 @@ export function Header() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
+                <ThemeToggle />
+
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600" />

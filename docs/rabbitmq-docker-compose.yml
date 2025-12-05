@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: bizosaas-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 'BizOSaaS2025@RabbitMQ!Secure'
+      RABBITMQ_DEFAULT_VHOST: bizosaas
+      RABBITMQ_NODENAME: rabbit@rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - dokploy-network
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.rabbitmq.rule=Host(`admin.bizoholic.com`) && PathPrefix(`/rabbitmq`)"
+        - "traefik.http.routers.rabbitmq.entrypoints=websecure"
+        - "traefik.http.routers.rabbitmq.tls.certresolver=letsencrypt"
+        - "traefik.http.middlewares.rabbitmq-strip.stripprefix.prefixes=/rabbitmq"
+        - "traefik.http.routers.rabbitmq.middlewares=rabbitmq-strip@docker"
+        - "traefik.http.services.rabbitmq.loadbalancer.server.port=15672"
+
+volumes:
+  rabbitmq-data:
+    driver: local
+
+networks:
+  dokploy-network:
+    external: true

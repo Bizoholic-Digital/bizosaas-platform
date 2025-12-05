@@ -111,20 +111,37 @@ class WordPressConnector(BaseConnector):
         base_url = self._get_base_url()
         
         if action == "create_post":
-            endpoint = f"{base_url}/wp-json/wp/v2/posts"
-            method = "post"
+            endpoint = f"{base_url}/posts"
+            method = "POST"
         elif action == "update_post":
+            post_id = payload.get("id")
+            endpoint = f"{base_url}/posts/{post_id}"
+            method = "PUT"
+        elif action == "create_product":
+            endpoint = f"{base_url.replace('/wp/v2', '/wc/v3')}/products"
+            method = "POST"
+        else:
+            raise ValueError(f"Unsupported action: {action}")
             
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{self._get_base_url()}/posts/{post_id}",
-                    headers=self._get_auth_header(),
-                    json=payload,
-                    timeout=30.0
-                )
+                if method == "POST":
+                    response = await client.post(
+                        endpoint,
+                        headers=self._get_auth_header(),
+                        json=payload,
+                        timeout=30.0
+                    )
+                else:  # PUT
+                    response = await client.put(
+                        endpoint,
+                        headers=self._get_auth_header(),
+                        json=payload,
+                        timeout=30.0
+                    )
                 response.raise_for_status()
                 return response.json()
         except Exception as e:
-            self.logger.error(f"Update post failed: {e}")
+            self.logger.error(f"Action {action} failed: {e}")
             raise
+

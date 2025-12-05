@@ -1,42 +1,82 @@
 version: '3.8'
 
 services:
+  # ========================================
   # Infrastructure
+  # ========================================
   postgres:
     image: ankane/pgvector:v0.5.1
+    container_name: brain-postgres
     environment:
       POSTGRES_DB: bizosaas
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
+    container_name: brain-redis
     volumes:
       - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  vault:
-    image: vault:1.13.3
+  # ========================================
+  # Temporal (Workflow Engine - replaces n8n)
+  # ========================================
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: brain-temporal
     environment:
-      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
-      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
-    cap_add:
-      - IPC_LOCK
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
     ports:
-      - "8200:8200"
+      - "7233:7233"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 384M
+    depends_on:
+      postgres:
+        condition: service_healthy
 
+  # ========================================
   # Core Services
+  # ========================================
   brain-gateway:
     build: ./brain-gateway
     container_name: brain-gateway
@@ -45,52 +85,50 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/0
-      - VAULT_URL=http://vault:8200
-      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - TEMPORAL_HOST=temporal:7233
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-
-  ai-agents:
-    build: ./ai-agents
-    container_name: ai-agents
-    ports:
-      - "8002:8000"
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    depends_on:
       redis:
         condition: service_healthy
 
   auth-service:
     build: ./auth
-    container_name: auth-service
+    container_name: brain-auth
     ports:
-      - "8001:8000"
+      - "8009:8007"
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: 128M
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  client-portal:
-    build: ./client-portal
-    container_name: client-portal
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXT_PUBLIC_AUTH_URL=http://localhost:8001
-    depends_on:
-      - brain-gateway
-      - auth-service
+networks:
+  brain-network:
+    driver: bridge
 
 volumes:
   postgres-data:
   redis-data:
+
+

@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Saleor PostgreSQL
+  saleor-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: saleor-postgres-local
+    environment:
+      POSTGRES_USER: saleor
+      POSTGRES_PASSWORD: saleor
+      POSTGRES_DB: saleor
+    ports:
+      - "5433:5432"
+    volumes:
+      - saleor_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saleor"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Saleor Redis
+  saleor-redis:
+    image: redis:7-alpine
+    container_name: saleor-redis-local
+    ports:
+      - "6380:6379"
+    volumes:
+      - saleor_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Saleor API
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: saleor-api-local
+    environment:
+      DATABASE_URL: postgres://saleor:saleor@saleor-postgres:5432/saleor
+      REDIS_URL: redis://saleor-redis:6379/0
+      SECRET_KEY: local-dev-secret-key-change-in-production
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DEFAULT_CHANNEL_SLUG: default-channel
+      DEBUG: "True"
+      ALLOWED_GRAPHQL_ORIGINS: "*"
+    ports:
+      - "8000:8000"
+    depends_on:
+      saleor-postgres:
+        condition: service_healthy
+      saleor-redis:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn saleor.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+
+  # Saleor Dashboard (Optional)
+  saleor-dashboard:
+    image: ghcr.io/saleor/saleor-dashboard:latest
+    container_name: saleor-dashboard-local
+    ports:
+      - "9000:80"
+    environment:
+      API_URL: http://localhost:8000/graphql/
+
+volumes:
+  saleor_postgres_data:
+  saleor_redis_data:
