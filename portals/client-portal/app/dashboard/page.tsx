@@ -29,6 +29,7 @@ import { getUserDisplayInfoFromSession, filterMenuByPermissions } from '@/utils/
 import ConnectorsPage from './connectors/page';
 import ToolsPage from './tools/page';
 import GetWebsitePage from './get-website/page';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function ClientPortalDashboard() {
   const router = useRouter();
@@ -438,9 +439,10 @@ export default function ClientPortalDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col`}>
+      {/* Sidebar */}
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen sticky top-0`}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
           <div className="flex items-center justify-between">
             {isSidebarOpen && (
               <div className="flex items-center space-x-2">
@@ -463,12 +465,12 @@ export default function ClientPortalDashboard() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => renderSidebarItem(item))}
         </nav>
 
         {/* User Info */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
           {isSidebarOpen ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -507,12 +509,14 @@ export default function ClientPortalDashboard() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
-        <header className="bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 p-4">
+        <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
               {activeTab === 'dashboard' ? 'Dashboard' : activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </h1>
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
+
               <button
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
                 title="Notifications"
@@ -522,19 +526,6 @@ export default function ClientPortalDashboard() {
                   <span className="w-2 h-2 bg-white rounded-full"></span>
                 </span>
               </button>
-              {mounted && (
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-                >
-                  {theme === 'light' ? (
-                    <Moon className="w-5 h-5" />
-                  ) : (
-                    <Sun className="w-5 h-5" />
-                  )}
-                </button>
-              )}
             </div>
           </div>
         </header>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
     Search,
@@ -26,7 +26,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getAllAgents, getAgentsByCategory, getActiveAgents } from '@/lib/ai'
 import type { AgentCategory } from '@/lib/ai/types'
 
 export default function AIAgentsPage() {
@@ -35,11 +34,28 @@ export default function AIAgentsPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>('all')
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-    const allAgents = getAllAgents()
-    const activeAgents = getActiveAgents()
+    const [agents, setAgents] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchAgents = async () => {
+            try {
+                const { brainApi } = await import('@/lib/brain-api')
+                const data = await brainApi.agents.list()
+                setAgents(data)
+            } catch (error) {
+                console.error('Failed to fetch agents:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchAgents()
+    }, [])
+
+    const activeAgents = agents.filter(a => a.status === 'active')
 
     // Filter agents
-    const filteredAgents = allAgents.filter((agent) => {
+    const filteredAgents = agents.filter((agent) => {
         const matchesSearch =
             agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             agent.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -48,21 +64,25 @@ export default function AIAgentsPage() {
         return matchesSearch && matchesCategory
     })
 
+    if (loading) {
+        return <div className="p-8">Loading agents...</div>
+    }
+
     const categories = [
-        { value: 'all', label: 'All Categories', count: allAgents.length },
-        { value: 'general', label: 'General', count: getAgentsByCategory('general').length },
-        { value: 'marketing', label: 'Marketing', count: getAgentsByCategory('marketing').length },
-        { value: 'content', label: 'Content', count: getAgentsByCategory('content').length },
-        { value: 'seo', label: 'SEO', count: getAgentsByCategory('seo').length },
-        { value: 'social_media', label: 'Social Media', count: getAgentsByCategory('social_media').length },
-        { value: 'analytics', label: 'Analytics', count: getAgentsByCategory('analytics').length },
-        { value: 'email_marketing', label: 'Email Marketing', count: getAgentsByCategory('email_marketing').length },
-        { value: 'crm', label: 'CRM', count: getAgentsByCategory('crm').length },
-        { value: 'ecommerce', label: 'E-commerce', count: getAgentsByCategory('ecommerce').length },
-        { value: 'design', label: 'Design', count: getAgentsByCategory('design').length },
-        { value: 'automation', label: 'Automation', count: getAgentsByCategory('automation').length },
-        { value: 'research', label: 'Research', count: getAgentsByCategory('research').length },
-        { value: 'customer_support', label: 'Support', count: getAgentsByCategory('customer_support').length },
+        { value: 'all', label: 'All Categories', count: agents.length },
+        { value: 'general', label: 'General', count: agents.filter(a => a.category === 'general').length },
+        { value: 'marketing', label: 'Marketing', count: agents.filter(a => a.category === 'marketing').length },
+        { value: 'content', label: 'Content', count: agents.filter(a => a.category === 'content').length },
+        { value: 'seo', label: 'SEO', count: agents.filter(a => a.category === 'seo').length },
+        { value: 'social_media', label: 'Social Media', count: agents.filter(a => a.category === 'social_media').length },
+        { value: 'analytics', label: 'Analytics', count: agents.filter(a => a.category === 'analytics').length },
+        { value: 'email_marketing', label: 'Email Marketing', count: agents.filter(a => a.category === 'email_marketing').length },
+        { value: 'crm', label: 'CRM', count: agents.filter(a => a.category === 'crm').length },
+        { value: 'ecommerce', label: 'E-commerce', count: agents.filter(a => a.category === 'ecommerce').length },
+        { value: 'design', label: 'Design', count: agents.filter(a => a.category === 'design').length },
+        { value: 'automation', label: 'Automation', count: agents.filter(a => a.category === 'automation').length },
+        { value: 'research', label: 'Research', count: agents.filter(a => a.category === 'research').length },
+        { value: 'customer_support', label: 'Support', count: agents.filter(a => a.category === 'customer_support').length },
     ]
 
     return (
@@ -75,7 +95,7 @@ export default function AIAgentsPage() {
                         AI Agents
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Manage and configure your 93 specialized AI agents
+                        Manage and configure your specialized AI agents
                     </p>
                 </div>
                 <Button>
@@ -92,7 +112,7 @@ export default function AIAgentsPage() {
                         <Sparkles className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{allAgents.length}</div>
+                        <div className="text-2xl font-bold">{agents.length}</div>
                         <p className="text-xs text-muted-foreground">Across 13 categories</p>
                     </CardContent>
                 </Card>
@@ -104,7 +124,7 @@ export default function AIAgentsPage() {
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600">{activeAgents.length}</div>
                         <p className="text-xs text-muted-foreground">
-                            {Math.round((activeAgents.length / allAgents.length) * 100)}% enabled
+                            {agents.length > 0 ? Math.round((activeAgents.length / agents.length) * 100) : 0}% enabled
                         </p>
                     </CardContent>
                 </Card>

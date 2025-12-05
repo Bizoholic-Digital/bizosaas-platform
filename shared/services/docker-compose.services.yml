@@ -1,0 +1,176 @@
+services:
+  # Brain Gateway - 93 Agents + RAG/KAG + HITL
+  brain-gateway:
+    build: ./brain-gateway
+    container_name: bizosaas-brain-unified
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - VAULT_ADDR=http://vault:8200
+      - AGENTS_ENABLED=all
+      - RAG_ENABLED=true
+      - KAG_ENABLED=true
+      - HITL_ENABLED=true
+      - HITL_ENABLED=true
+      - CMS_URL=http://cms:8002
+      - CRM_URL=http://crm:8003
+      - AUTH_URL=http://auth:8007
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.8'
+
+  # Auth Service
+  auth:
+    build: ./auth
+    container_name: bizosaas-auth-unified
+    ports:
+      - "8007:8007"
+    environment:
+      - PORT=8007
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@bizosaas-postgres-unified:5432/bizosaas
+      - REDIS_URL=redis://bizosaas-redis-unified:6379/0
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS:-30}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3004}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8007/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+
+  # Wagtail CMS
+  cms:
+    build: ./cms
+    container_name: bizosaas-wagtail-unified
+    ports:
+      - "8002:8002"
+    command: gunicorn --bind 0.0.0.0:8002 --workers 3 --worker-class gthread wagtail_cms.wsgi:application
+    environment:
+      - PORT=8002
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=bizosaas
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,cms,bizosaas-wagtail-unified
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8002/health/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # Django CRM
+  crm:
+    build: ./crm
+    container_name: bizosaas-django-crm-8000
+    ports:
+      - "8005:8003"
+    environment:
+      - PORT=8003
+      - POSTGRES_HOST=postgres
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # Saleor E-commerce
+  saleor:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-unified
+    ports:
+      - "8010:8010"
+    environment:
+      - PORT=8010
+      - DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/saleor
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.4'
+
+  # AI Agents
+  ai-agents:
+    build: ./ai-agents
+    container_name: bizosaas-ai-agents-8008
+    ports:
+      - "8008:8008"
+    environment:
+      - PORT=8008
+      - BRAIN_GATEWAY_URL=http://brain-gateway:8001
+    depends_on:
+      - brain-gateway
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+  # Temporal Integration
+  temporal-integration:
+    build: ./temporal-integration
+    container_name: bizosaas-temporal-integration
+    ports:
+      - "8009:8009"
+    environment:
+      - PORT=8009
+      - TEMPORAL_HOST=temporal:7233
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+
+  # Business Directory Backend
+  business-directory:
+    build: ./business-directory
+    container_name: bizosaas-business-directory-backend-8003
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+      - POSTGRES_HOST=postgres
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.2'
+
+networks:
+  bizosaas-network:
+    external: true

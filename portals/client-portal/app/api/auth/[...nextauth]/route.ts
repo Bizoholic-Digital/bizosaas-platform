@@ -22,7 +22,7 @@ export const authOptions: NextAuthOptions = {
 
                 try {
                     // Call Auth Service DIRECTLY (bypassing Brain Gateway for now)
-                    const AUTH_SERVICE_URL = 'http://localhost:8008';
+                    const AUTH_SERVICE_URL = 'http://localhost:8009';
                     const response = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

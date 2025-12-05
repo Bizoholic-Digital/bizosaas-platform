@@ -2,38 +2,66 @@ version: '3.8'
 
 services:
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:2.9.0
+    container_name: brain-loki
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - brain-network
-
-  promtail:
-    image: grafana/promtail:latest
-    volumes:
-      - /var/log:/var/log
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.47.0
+    container_name: brain-prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
       - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:10.2.0
+    container_name: brain-grafana
     ports:
-      - "3001:3000"
+      - "3002:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
     networks:
       - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: brain-jaeger
+    ports:
+      - "16686:16686" # UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
 
 networks:
   brain-network:

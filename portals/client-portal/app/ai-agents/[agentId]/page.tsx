@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
     ArrowLeft,
@@ -14,6 +14,7 @@ import {
     Shield,
     Code,
     Zap,
+    MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -32,7 +33,7 @@ import {
 } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getAgentById } from '@/lib/ai'
+import { AgentChat } from '@/components/AgentChat'
 
 export default function AgentConfigPage({
     params,
@@ -41,12 +42,34 @@ export default function AgentConfigPage({
 }) {
     const { agentId } = use(params)
     const router = useRouter()
-    const agent = getAgentById(agentId)
 
-    const [isActive, setIsActive] = useState(agent?.status === 'active')
-    const [systemPrompt, setSystemPrompt] = useState(agent?.systemPrompt || '')
+    const [agent, setAgent] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+
+    const [isActive, setIsActive] = useState(false)
+    const [systemPrompt, setSystemPrompt] = useState('')
     const [temperature, setTemperature] = useState(0.7)
     const [maxTokens, setMaxTokens] = useState(2000)
+
+    useEffect(() => {
+        const fetchAgent = async () => {
+            try {
+                const { brainApi } = await import('@/lib/brain-api')
+                const data = await brainApi.agents.get(agentId)
+                setAgent(data)
+                setIsActive(data.status === 'active')
+            } catch (error) {
+                console.error('Failed to fetch agent:', error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchAgent()
+    }, [agentId])
+
+    if (loading) {
+        return <div className="p-8">Loading agent...</div>
+    }
 
     if (!agent) {
         return (
@@ -134,8 +157,12 @@ export default function AgentConfigPage({
             </div>
 
             {/* Configuration Tabs */}
-            <Tabs defaultValue="basic" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-7">
+            <Tabs defaultValue="chat" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-8">
+                    <TabsTrigger value="chat">
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Chat
+                    </TabsTrigger>
                     <TabsTrigger value="basic">
                         <Settings className="mr-2 h-4 w-4" />
                         Basic
@@ -165,6 +192,15 @@ export default function AgentConfigPage({
                         Permissions
                     </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="chat" className="space-y-4">
+                    <AgentChat
+                        agentId={agent.id}
+                        agentName={agent.name}
+                        agentIcon={agent.icon}
+                        agentColor={agent.color}
+                    />
+                </TabsContent>
 
                 {/* Basic Settings */}
                 <TabsContent value="basic" className="space-y-4">
@@ -221,11 +257,11 @@ export default function AgentConfigPage({
                             <div className="space-y-3">
                                 <Label>Capabilities</Label>
                                 <div className="space-y-2">
-                                    {agent.capabilities.map((cap) => (
-                                        <div key={cap.id} className="flex items-start space-x-2 p-3 border rounded-lg">
+                                    {agent.capabilities && agent.capabilities.map((cap: string | any, index: number) => (
+                                        <div key={index} className="flex items-start space-x-2 p-3 border rounded-lg">
                                             <div className="flex-1">
-                                                <p className="font-medium">{cap.name}</p>
-                                                <p className="text-sm text-muted-foreground">{cap.description}</p>
+                                                <p className="font-medium">{typeof cap === 'string' ? cap : cap.name}</p>
+                                                {typeof cap !== 'string' && <p className="text-sm text-muted-foreground">{cap.description}</p>}
                                             </div>
                                         </div>
                                     ))}
@@ -410,7 +446,7 @@ export default function AgentConfigPage({
                         <CardContent className="space-y-4">
                             <div className="space-y-3">
                                 <Label>Tools</Label>
-                                {agent.requiredTools.map((tool) => (
+                                {(agent.tools || agent.requiredTools || []).map((tool: string) => (
                                     <div key={tool} className="flex items-center space-x-2">
                                         <Checkbox id={`tool-${tool}`} defaultChecked />
                                         <label
@@ -425,7 +461,7 @@ export default function AgentConfigPage({
 
                             <div className="space-y-3">
                                 <Label>Services</Label>
-                                {agent.requiredServices.map((service) => (
+                                {(agent.requiredServices || []).map((service: string) => (
                                     <div key={service} className="flex items-center space-x-2">
                                         <Checkbox id={`service-${service}`} defaultChecked />
                                         <label
@@ -456,8 +492,8 @@ export default function AgentConfigPage({
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {agent.requiredAPIs.length > 0 ? (
-                                agent.requiredAPIs.map((api) => (
+                            {(agent.requiredAPIs || []).length > 0 ? (
+                                (agent.requiredAPIs || []).map((api: any) => (
                                     <div key={api.service} className="p-4 border rounded-lg space-y-2">
                                         <div className="flex items-center justify-between">
                                             <div>
@@ -538,7 +574,7 @@ export default function AgentConfigPage({
                             <div className="space-y-2">
                                 <Label>Required Permissions</Label>
                                 <div className="space-y-2">
-                                    {agent.permissions.map((permission) => (
+                                    {(agent.permissions || []).map((permission: string) => (
                                         <div key={permission} className="flex items-center space-x-2">
                                             <Checkbox id={`perm-${permission}`} defaultChecked />
                                             <label
