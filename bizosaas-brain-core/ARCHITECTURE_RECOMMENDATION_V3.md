@@ -143,7 +143,7 @@ BizOSaaS is an **AI Agent Orchestration Platform** that:
 │  │  │                    FastAPI Brain Gateway                                 │  │ │
 │  │  │                                                                          │  │ │
 │  │  │  ┌─────────────────────────────────────────────────────────────────┐    │  │ │
-│  │  │  │                    Experience APIs                               │    │  │ │
+│  │  │  │                    Experience APIs                              │    │  │ │
 │  │  │  │  (Optimized for Client Portal UI)                               │    │  │ │
 │  │  │  │                                                                  │    │  │ │
 │  │  │  │  /api/dashboard    - Aggregated data from multiple sources      │    │  │ │
@@ -257,24 +257,32 @@ BizOSaaS is an **AI Agent Orchestration Platform** that:
 │  │  │  └───────────────┘  └───────────────┘  └───────────────┘               │  │ │
 │  │  │                                                                          │  │ │
 │  │  │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐               │  │ │
-│  │  │  │Analytics Conns │  │Marketing Conns│  │Billing Conns  │               │  │ │
+│  │  │  │Project Conns   │  │Marketing Conns│  │Billing Conns  │               │  │ │
 │  │  │  │ ──────────────  │  │ ──────────────  │  │ ─────────────  │               │  │ │
-│  │  │  │ • GA4          │  │ • Mailchimp   │  │ • Stripe      │               │  │ │
-│  │  │  │ • Mixpanel     │  │ • SendGrid    │  │ • PayPal      │               │  │ │
-│  │  │  │ • Amplitude    │  │ • Klaviyo     │  │ • Square      │               │  │ │
-│  │  │  │ • Posthog      │  │ • Google Ads  │  │ • Razorpay    │               │  │ │
-│  │  │  │               │  │ • Meta Ads    │  │               │               │  │ │
+│  │  │  │ • Notion       │  │ • Mailchimp   │  │ • Stripe      │               │  │ │
+│  │  │  │ • Trello       │  │ • SendGrid    │  │ • PayPal      │               │  │ │
+│  │  │  │ • Asana        │  │ • Klaviyo     │  │ • Square      │               │  │ │
+│  │  │  │ • Jira         │  │ • Google Ads  │  │ • Razorpay    │               │  │ │
+│  │  │  │ • Monday.com   │  │ • Meta Ads    │  │               │               │  │ │
 │  │  │  └───────────────┘  └───────────────┘  └───────────────┘               │  │ │
 │  │  │                                                                          │  │ │
 │  │  │  ┌───────────────┐  ┌───────────────┐  ┌───────────────┐               │  │ │
-│  │  │  │Social Connectors│  │Comm Connectors│  │ LLM Connectors│               │  │ │
+│  │  │  │Analytics Conns │  │Social Connectors│  │Comm Connectors│               │  │ │
 │  │  │  │ ──────────────  │  │ ──────────────  │  │ ─────────────  │               │  │ │
-│  │  │  │ • Facebook    │  │ • Twilio      │  │ • OpenAI      │               │  │ │
-│  │  │  │ • Instagram   │  │ • WhatsApp    │  │ • Anthropic   │               │  │ │
-│  │  │  │ • LinkedIn    │  │ • Telegram    │  │ • Google AI   │               │  │ │
-│  │  │  │ • Pinterest   │  │ • Slack       │  │ • Azure AI    │               │  │ │
-│  │  │  │ • TikTok      │  │               │  │ • Groq        │               │  │ │
+│  │  │  │ • GA4          │  │ • Facebook    │  │ • Twilio      │               │  │ │
+│  │  │  │ • Mixpanel     │  │ • Instagram   │  │ • WhatsApp    │               │  │ │
+│  │  │  │ • Amplitude    │  │ • LinkedIn    │  │ • Telegram    │               │  │ │
+│  │  │  │ • Posthog      │  │ • TikTok      │  │ • Slack       │               │  │ │
 │  │  │  └───────────────┘  └───────────────┘  └───────────────┘               │  │ │
+│  │  │                                                                          │  │ │
+│  │  │  ┌───────────────┐                                                       │  │ │
+│  │  │  │ LLM Connectors│                                                       │  │ │
+│  │  │  │ ───────────── │                                                       │  │ │
+│  │  │  │ • OpenAI      │                                                       │  │ │
+│  │  │  │ • Anthropic   │                                                       │  │ │
+│  │  │  │ • Google AI   │                                                       │  │ │
+│  │  │  │ • Azure AI    │                                                       │  │ │
+│  │  │  └───────────────┘                                                       │  │ │
 │  │  │                                                                          │  │ │
 │  │  │  Each connector implements a standard interface (Port pattern)           │  │ │
 │  │  └─────────────────────────────────────────────────────────────────────────┘  │ │
@@ -462,9 +470,10 @@ are accessed via Connectors. BizOSaaS orchestrates but doesn't host data.
 | Social | Facebook, Instagram, LinkedIn, Pinterest, TikTok | 5+ |
 | Communication | Twilio, WhatsApp, Telegram, Slack | 4+ |
 | Billing | Stripe, PayPal, Square, Razorpay | 4+ |
+| Project Mgmt | Notion, Trello, Asana, Jira, Monday.com | 5+ |
 | LLM | OpenAI, Anthropic, Google AI, Azure, Groq | 5+ |
 
-**Total Connected Systems**: 40+ external services
+**Total Connected Systems**: 45+ external services
 
 ---
 
