@@ -44,3 +44,20 @@ The following Tabs are visible but need wiring to `brainApi`:
 *   **Logs:** We should use **Loki** (simpler than ELK) for log aggregation.
 *   **Metrics:** **Prometheus** for tracking "API Calls per Connector" (billing metric).
 *   **Dashboard:** **Grafana** to visualize "System Health" for Super Admins.
+*   **Missing:** **Audit Logging**. We need to track *Who* changed *What* (e.g., "User X updated Agent Config").
+
+## 7. Enterprise Security Implementation (High Priority)
+To meet Enterprise Requirements (RBAC, SSO, SOC2):
+*   [ ] **HashiCorp Vault Integration:**
+    *   Deploy Vault Container (Done).
+    *   Update `brain-gateway` to fetch API Keys (OpenAI, Stripe) from Vault using `hvac` library.
+    *   Do NOT store API keys in Postgres plaintext.
+*   [ ] **Advanded Auth & SSO:**
+    *   Refactor `auth-service` to use **`fastapi-sso`** library for robust Google/Microsoft/GitHub login.
+    *   Ensure JWT contains `permissions` list for Frontend RBAC.
+*   [ ] **Audit Logging System:**
+    *   Create `AuditLog` table in Postgres (event, user_id, tenant_id, timestamp, metadata).
+    *   Implement **Middleware** in `brain-gateway` to auto-log POST/PUT/DELETE actions.
+*   [ ] **Strict Multi-Tenancy:**
+    *   Implement `TenantContextMiddleware` to extract `tenant_id` from JWT.
+    *   Enforce `WHERE tenant_id = X` on ALL database queries via DAO layer.
