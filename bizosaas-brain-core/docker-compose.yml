@@ -108,8 +108,6 @@ services:
   brain-gateway:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: brain-gateway
-    ports:
-      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/0
@@ -118,11 +116,18 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     networks:
       - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,19 +137,24 @@ services:
   auth-service:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     container_name: brain-auth
-    ports:
-      - "8009:8007"
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/1
       - JWT_SECRET=${JWT_SECRET:-super-secret-key}
     networks:
       - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
           cpus: '0.15'
           memory: 128M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-auth.rule=Host(`auth-api.bizoholic.net`)"
+      - "traefik.http.routers.brain-auth.entrypoints=websecure"
+      - "traefik.http.routers.brain-auth.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-auth.loadbalancer.server.port=8007"
     depends_on:
       postgres:
         condition: service_healthy
@@ -154,11 +164,9 @@ services:
   client-portal:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
     container_name: client-portal
-    ports:
-      - "3003:3000"
     environment:
-      - NEXT_PUBLIC_GRAPHQL_URL=http://localhost:8000/graphql
-      - NEXTAUTH_URL=http://localhost:3003
+      - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
+      - NEXTAUTH_URL=https://app.bizoholic.net
       - NEXTAUTH_SECRET=super-secret-key
       - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
       - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
@@ -166,6 +174,13 @@ services:
       - AUTHENTIK_URL=${AUTHENTIK_URL:-http://localhost:9000}
     networks:
       - brain-network
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
     depends_on:
       - brain-gateway
 
@@ -186,6 +201,8 @@ networks:
   brain-network:
     driver: bridge
     name: brain-network
+  dokploy-network:
+    external: true
 
 volumes:
   postgres-data:
