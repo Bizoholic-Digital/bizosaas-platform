@@ -1,0 +1,339 @@
+version: '3.8'
+
+# BizOSaaS Platform - Portainer Stack
+# This stack can be deployed and managed through Portainer UI
+
+services:
+  # ========================================
+  # Infrastructure Layer
+  # ========================================
+
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: bizosaas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bizosaas}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "com.bizosaas.service=infrastructure"
+      - "com.bizosaas.description=PostgreSQL with pgvector for AI embeddings"
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "com.bizosaas.service=infrastructure"
+      - "com.bizosaas.description=Redis for caching and message broker"
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: bizosaas-vault
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    networks:
+      - brain-network
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    labels:
+      - "com.bizosaas.service=infrastructure"
+      - "com.bizosaas.description=HashiCorp Vault for secrets management"
+
+  # ========================================
+  # Workflow Engine
+  # ========================================
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: bizosaas-temporal
+    restart: unless-stopped
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+    ports:
+      - "7233:7233"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "com.bizosaas.service=workflow"
+      - "com.bizosaas.description=Temporal workflow engine"
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: bizosaas-temporal-ui
+    restart: unless-stopped
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3003
+    ports:
+      - "8081:8080"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    depends_on:
+      - temporal
+    labels:
+      - "com.bizosaas.service=workflow"
+      - "com.bizosaas.description=Temporal UI for workflow monitoring"
+
+  # ========================================
+  # Core Services
+  # ========================================
+
+  brain-gateway:
+    build:
+      context: ./bizosaas-brain-core/brain-gateway
+      dockerfile: Dockerfile
+    image: bizosaas/brain-gateway:latest
+    container_name: bizosaas-brain-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/0
+      - TEMPORAL_HOST=temporal:7233
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_started
+    labels:
+      - "com.bizosaas.service=core"
+      - "com.bizosaas.description=Brain Gateway API - Central orchestrator"
+
+  auth-service:
+    build:
+      context: ./bizosaas-brain-core/auth
+      dockerfile: Dockerfile
+    image: bizosaas/auth-service:latest
+    container_name: bizosaas-auth
+    restart: unless-stopped
+    ports:
+      - "8009:8007"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key-change-in-production}
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "com.bizosaas.service=core"
+      - "com.bizosaas.description=Authentication & Authorization service"
+
+  # ========================================
+  # Observability Stack
+  # ========================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bizosaas-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./bizosaas-brain-core/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+    labels:
+      - "com.bizosaas.service=observability"
+      - "com.bizosaas.description=Prometheus metrics collection"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bizosaas-grafana
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./bizosaas-brain-core/observability/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+    depends_on:
+      - prometheus
+    labels:
+      - "com.bizosaas.service=observability"
+      - "com.bizosaas.description=Grafana dashboards and visualization"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: bizosaas-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+    labels:
+      - "com.bizosaas.service=observability"
+      - "com.bizosaas.description=Loki log aggregation"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: bizosaas-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 512M
+    labels:
+      - "com.bizosaas.service=observability"
+      - "com.bizosaas.description=Jaeger distributed tracing"
+
+# ========================================
+# Networks
+# ========================================
+
+networks:
+  brain-network:
+    driver: bridge
+    labels:
+      - "com.bizosaas.network=main"
+
+# ========================================
+# Volumes
+# ========================================
+
+volumes:
+  postgres-data:
+    driver: local
+    labels:
+      - "com.bizosaas.volume=database"
+  redis-data:
+    driver: local
+    labels:
+      - "com.bizosaas.volume=cache"
+  prometheus-data:
+    driver: local
+    labels:
+      - "com.bizosaas.volume=metrics"
+  grafana-data:
+    driver: local
+    labels:
+      - "com.bizosaas.volume=dashboards"
+  loki-data:
+    driver: local
+    labels:
+      - "com.bizosaas.volume=logs"

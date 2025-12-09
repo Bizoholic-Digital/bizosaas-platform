@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Menu, X, Home, Users, ShoppingCart, BarChart3,
@@ -30,8 +30,9 @@ import ConnectorsPage from './connectors/page';
 import ToolsPage from './tools/page';
 import GetWebsitePage from './get-website/page';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
 
-export default function ClientPortalDashboard() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -42,13 +43,8 @@ export default function ClientPortalDashboard() {
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
   // Get user role and permissions
-  // Get user role and permissions from session
   const userInfo = getUserDisplayInfoFromSession(session?.user);
   const { role, permissions, tenantId, displayName } = userInfo;
-
-
-
-  // ... (keep existing imports)
 
   // Define menu items
   const allMenuItems = [
@@ -211,8 +207,6 @@ export default function ClientPortalDashboard() {
 
   const menuItems = filterMenuByPermissions(allMenuItems, permissions);
 
-  // ... (keep existing code)
-
   // Helper functions
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -338,6 +332,34 @@ export default function ClientPortalDashboard() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* GraphQL Powered Widget */}
+            <ProjectTasksWidget tenantId={tenantId} />
+
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Activity</h3>
+                <button className="text-sm text-blue-500 hover:underline">View All</button>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs">AI</div>
+                  <div>
+                    <p className="text-sm font-medium">Agent "SEO Expert" generated a report</p>
+                    <p className="text-xs text-gray-500">2 minutes ago</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs">CRM</div>
+                  <div>
+                    <p className="text-sm font-medium">New Lead via HubSpot</p>
+                    <p className="text-xs text-gray-500">1 hour ago</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Welcome to BizOSaaS</h3>
             <p className="text-gray-600 dark:text-gray-400">
@@ -435,10 +457,8 @@ export default function ClientPortalDashboard() {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
-      {/* Sidebar */}
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen sticky top-0`}>
         {/* Header */}
@@ -536,5 +556,13 @@ export default function ClientPortalDashboard() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ClientPortalDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading Dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

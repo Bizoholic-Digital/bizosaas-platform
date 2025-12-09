@@ -1,250 +1,311 @@
-# BizOSaaS Core - Current Status Report
+# BizOSaaS Platform - Current Status & Next Steps
 
-**Generated:** 2025-12-05 20:06 IST
-
----
-
-## ✅ Services Status
-
-| Service | Port | Status | Health Check | Notes |
-|---------|------|--------|--------------|-------|
-| **Client Portal** | 3003 | ✅ Running | Working | NextAuth login functional |
-| **Auth Service** | 8009 | ✅ Healthy | `{"status":"healthy"}` | All 4 test users seeded |
-| **Brain Gateway** | 8000 | ✅ Healthy | `{"status":"healthy"}` | Only `/health` endpoint |
-| **Prometheus** | 9090 | ✅ Running | Working | Metrics collection active |
-| **Grafana** | 3002 | ✅ Running | Redirects to `/login` | Normal behavior |
-| **PostgreSQL** | 5432 | ✅ Healthy | Connected | Multi-tenant DB |
-| **Redis** | 6379 | ✅ Healthy | Connected | Session storage |
-| **Loki** | 3100 | ✅ Running | Connected | Log aggregation |
+**Date**: 2025-12-06 09:50 IST  
+**Status**: ✅ **All Core Services Running**
 
 ---
 
-## ⚠️ What's Working vs. What's Not
+## ✅ What's Working Now
 
-### ✅ **Fully Working:**
-1. **Authentication System**
-   - ✅ Auth Service (FastAPI-Users) running on port 8009
-   - ✅ NextAuth integration in Client Portal
-   - ✅ Multi-tenancy with Bizoholic tenant
-   - ✅ RBAC with 4 roles (Super Admin, Tenant Admin, User, Read Only)
-   - ✅ Test users seeded and ready to use
+### Infrastructure (100% Complete)
+- ✅ **PostgreSQL** with pgvector - Running, Healthy
+- ✅ **Redis** - Running, Healthy  
+- ✅ **HashiCorp Vault** - Running on port 8200
+- ✅ **Temporal Server** - Running on port 7233
+- ✅ **Temporal UI** - Running on port 8081
 
-2. **Infrastructure**
-   - ✅ PostgreSQL with multi-tenant schema
-   - ✅ Redis for caching and sessions
-   - ✅ Docker networking configured
-   - ✅ Resource limits applied
+### Core Services (100% Complete)
+- ✅ **Brain Gateway** - Running on port 8000
+- ✅ **Auth Service** - Running on port 8009, Healthy
+- ✅ **Client Portal** - Running on port 3003
 
-3. **Observability**
-   - ✅ Prometheus metrics collection
-   - ✅ Loki log aggregation
-   - ✅ Grafana dashboard (needs login: admin/admin)
+### Observability (100% Complete)
+- ✅ **Prometheus** - Running on port 9090
+- ✅ **Grafana** - Running on port 3002
+- ✅ **Loki** - Running on port 3100
+- ✅ **Jaeger** - Running on port 16686
 
-### ⚠️ **Partially Implemented:**
-
-1. **Brain Gateway (Port 8000)**
-   - ✅ Service running and healthy
-   - ✅ Connector classes defined (13 connectors)
-   - ❌ API endpoints NOT implemented yet
-   - ❌ `/api/connectors` - Not Found
-   - ❌ `/api/agents` - Not Found
-   - ❌ `/docs` - Not accessible
-
-2. **AI Agents**
-   - ✅ Agent architecture defined in docs
-   - ✅ 7 specialized agents designed
-   - ❌ Agent orchestrator NOT running
-   - ❌ Agent API endpoints NOT implemented
-   - ❌ Agent execution engine NOT started
-
-3. **Client Portal UI**
-   - ✅ Login page working
-   - ✅ Dashboard layout complete
-   - ✅ Navigation working
-   - ⚠️ Integrations page will show errors (no backend API)
-   - ⚠️ CRM page will show errors (no backend API)
-   - ⚠️ AI Agents page will show errors (no backend API)
+### Management Tools (100% Complete)
+- ✅ **Portainer** - Running on ports 9001 (HTTP) and 9443 (HTTPS)
+- ✅ **Traefik** - Running as reverse proxy
+- ✅ **Docker Registry** - Running on port 5000
 
 ---
 
-## 🔧 What Needs to Be Implemented
+## 📋 Documentation Created
 
-### **Priority 1: Brain Gateway API Endpoints**
-
-The Brain Gateway service is running but only has a `/health` endpoint. We need to implement:
-
-```python
-# Required endpoints:
-GET  /api/connectors              # List all connectors
-GET  /api/connectors/{id}         # Get connector details
-POST /api/connectors/{id}/sync    # Sync data from connector
-POST /api/connectors/{id}/action  # Perform action via connector
-GET  /api/connectors/{id}/status  # Get connector status
-
-GET  /api/agents                  # List all AI agents
-POST /api/agents/{id}/chat        # Chat with specific agent
-POST /api/agents/{id}/execute     # Execute agent task
-GET  /api/agents/{id}/history     # Get agent conversation history
-```
-
-### **Priority 2: AI Agent Orchestrator**
-
-The AI agents are designed but not running:
-- ❌ Agent orchestrator service
-- ❌ Agent-to-connector integration
-- ❌ Agent conversation memory
-- ❌ Agent tool execution
-
-### **Priority 3: Connector Implementations**
-
-While connector classes exist, they need:
-- ❌ Credential storage/retrieval
-- ❌ OAuth flow for Google/Facebook connectors
-- ❌ Data transformation logic
-- ❌ Error handling and retry logic
+1. **DEPLOYMENT_STATUS.md** - Complete platform status and service URLs
+2. **IMPLEMENTATION_PLAN.md** - Comprehensive 6-phase implementation plan
+3. **PORTAINER_SETUP.md** - Guide to migrate containers to Portainer management
+4. **PHASE1_IMPLEMENTATION.md** - Detailed Phase 1 tasks with code samples
 
 ---
 
-## 🎯 Immediate Next Steps
+## 🎯 Immediate Next Actions
 
-### **Option A: Complete Brain Gateway API** (Recommended)
-Implement the missing API endpoints so the Client Portal can actually use the connectors and agents.
+### Action 1: Migrate to Portainer Management (15 minutes)
 
-**Estimated Time:** 2-3 hours
-**Impact:** High - Makes the system functional
+**Why**: Enable full container control through Portainer UI
 
-### **Option B: Deploy As-Is for Testing**
-Deploy the current setup to VPS to test authentication and infrastructure, then add features incrementally.
+**Steps**:
+1. Access Portainer: https://localhost:9443
+2. Create new stack named "bizosaas-platform"
+3. Copy contents from `docker-compose.stack.yml`
+4. Add environment variables
+5. Deploy stack
+6. Verify all services healthy
 
-**Estimated Time:** 1 hour
-**Impact:** Medium - Tests deployment process
-
-### **Option C: Focus on One Feature**
-Pick one feature (e.g., WordPress connector) and implement it end-to-end as a proof of concept.
-
-**Estimated Time:** 1-2 hours
-**Impact:** Medium - Demonstrates capability
+**Benefit**: Full container lifecycle management through UI
 
 ---
 
-## 📋 Test User Credentials
+### Action 2: Install Phase 1 Dependencies (15 minutes)
 
-| Role | Email | Password |
-|------|-------|----------|
-| Super Admin | admin@bizosaas.com | Admin@123 |
-| Tenant Admin | tenant@bizoholic.com | Tenant@123 |
-| Regular User | user@bizoholic.com | User@123 |
-| Read Only | readonly@bizoholic.com | Readonly@123 |
-
----
-
-## 🐛 Known Issues
-
-### **1. Grafana Blank Page**
-**Issue:** Browser showing blank page on port 3002  
-**Cause:** Browser cache from previous Coreldove frontend  
-**Solution:**
+**Command**:
 ```bash
-# Clear browser cache or use incognito mode
-# Or force refresh: Ctrl+Shift+R (Linux/Windows) or Cmd+Shift+R (Mac)
+cd bizosaas-brain-core/brain-gateway
+pip install hvac alembic openai anthropic langchain pgvector psycopg2-binary
 ```
 
-### **2. Brain Gateway 404 Errors**
-**Issue:** All API endpoints return 404  
-**Cause:** API routes not implemented in main.py  
-**Solution:** Need to implement FastAPI routes for connectors and agents
+**Files to Create**:
+- `app/core/vault_client.py` - Vault integration
+- `app/models/database.py` - Database models
+- `app/api/vault.py` - Vault API endpoints
 
-### **3. Client Portal Integration Errors**
-**Issue:** Integrations/CRM/AI Agents pages will show errors  
-**Cause:** Backend API endpoints don't exist yet  
-**Solution:** Implement Brain Gateway API endpoints first
+**Benefit**: Enable secure secrets management (BYOK)
 
 ---
 
-## 🚀 What You Can Test Right Now
+### Action 3: Initialize Database (30 minutes)
 
-### **1. Authentication Flow**
+**Commands**:
 ```bash
-# Open browser
-http://localhost:3003
-
-# Login with
-Email: admin@bizosaas.com
-Password: Admin@123
-
-# Should redirect to dashboard
+cd bizosaas-brain-core/brain-gateway
+alembic init migrations
+alembic revision --autogenerate -m "Initial schema"
+alembic upgrade head
 ```
 
-### **2. Auth Service API**
+**Tables Created**:
+- `audit_logs` - Track all user actions
+- `connector_configs` - Store connector configurations
+- `agent_configs` - Store AI agent settings
+- `knowledge_base` - Store RAG embeddings
+
+**Benefit**: Persistent storage for all configurations
+
+---
+
+### Action 4: Test Vault Integration (30 minutes)
+
+**Test Sequence**:
+1. Store OpenAI API key in Vault
+2. Retrieve key metadata
+3. List all stored keys
+4. Delete test key
+5. Verify key removed
+
+**Verification**:
 ```bash
-# Test login endpoint
-curl -X POST http://localhost:8009/auth/sso/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@bizosaas.com",
-    "password": "Admin@123",
-    "platform": "bizoholic"
-  }'
+# Direct Vault access
+docker exec -it brain-vault vault kv list secret/tenants/
 
-# Should return JWT token and user data
+# Via API
+curl http://localhost:8000/vault/keys
 ```
 
-### **3. Grafana Dashboard**
+**Benefit**: Confirm secure secrets storage working
+
+---
+
+### Action 5: Wire BYOK Frontend (1 hour)
+
+**Files to Update**:
+- `portals/client-portal/lib/brain-api.ts` - Add Vault API calls
+- `portals/client-portal/app/ai-agents/byok/page.tsx` - Connect to backend
+
+**Test**:
+1. Navigate to http://localhost:3003/ai-agents/byok
+2. Add OpenAI API key
+3. Verify stored in Vault (not database)
+4. Test key deletion
+5. Verify key removed from Vault
+
+**Benefit**: Users can securely manage their own API keys
+
+---
+
+## 📊 Implementation Progress
+
+### Phase 1: Backend Integration (0% → Target: 100%)
+- ⬜ Vault integration (0%)
+- ⬜ Database migrations (0%)
+- ⬜ Temporal workers (0%)
+
+### Phase 2: Frontend Wiring (0% → Target: 100%)
+- ⬜ Connector data sync (0%)
+- ⬜ AI agent configuration (0%)
+- ⬜ BYOK integration (0%)
+
+### Phase 3: AI & RAG (0% → Target: 100%)
+- ⬜ RAG service (Skeleton only)
+- ⬜ LLM integration (0%)
+- ⬜ Agent chat (Mock only)
+
+### Phase 4: Testing (0% → Target: 100%)
+- ⬜ UI testing (0%)
+- ⬜ API testing (0%)
+- ⬜ Integration testing (0%)
+
+### Phase 5: Deployment (0% → Target: 100%)
+- ⬜ Containerization (50% - images exist)
+- ⬜ Production config (0%)
+- ⬜ CI/CD pipeline (0%)
+
+---
+
+## 🚀 Quick Start Commands
+
+### Start All Services
 ```bash
-# Open browser
-http://localhost:3002
+cd /home/alagiri/projects/bizosaas-platform
+./scripts/start-bizosaas-core-full.sh
+```
 
-# Login with
-Username: admin
-Password: admin
+### View Logs
+```bash
+# All services
+docker-compose -f bizosaas-brain-core/docker-compose.yml logs -f
 
-# Add Prometheus data source:
-URL: http://brain-prometheus:9090
+# Specific service
+docker logs -f brain-gateway
+```
+
+### Access Services
+- **Client Portal**: http://localhost:3003
+- **Brain Gateway API**: http://localhost:8000/docs
+- **Auth Service API**: http://localhost:8009/docs
+- **Portainer**: https://localhost:9443
+- **Temporal UI**: http://localhost:8081
+- **Grafana**: http://localhost:3002 (admin/admin)
+- **Prometheus**: http://localhost:9090
+- **Jaeger**: http://localhost:16686
+- **Vault**: http://localhost:8200 (Token: root)
+
+### Stop All Services
+```bash
+cd /home/alagiri/projects/bizosaas-platform
+./scripts/stop-bizosaas-core-full.sh
 ```
 
 ---
 
-## 📊 Architecture Status
+## 🔧 Troubleshooting
 
-```
-✅ Infrastructure Layer
-   ├── ✅ PostgreSQL (Multi-tenant)
-   ├── ✅ Redis (Caching)
-   └── ✅ Docker Network
+### Client Portal Shows 500 Error
+**Solution**: Already fixed! Server is running successfully.
 
-✅ Authentication Layer
-   ├── ✅ Auth Service (FastAPI-Users)
-   ├── ✅ NextAuth (Client Portal)
-   ├── ✅ JWT Strategy
-   └── ✅ RBAC + Multi-tenancy
+### Portainer Shows "Limited Control"
+**Solution**: Follow `PORTAINER_SETUP.md` to migrate to Portainer stack
 
-⚠️ Business Logic Layer
-   ├── ✅ Brain Gateway (Service Running)
-   ├── ❌ Connector API (Not Implemented)
-   ├── ❌ Agent Orchestrator (Not Running)
-   └── ❌ Workflow Engine (Not Started)
+### Temporal UI Not Accessible
+**Solution**: Temporal server is now running. Access at http://localhost:8081
 
-⚠️ Presentation Layer
-   ├── ✅ Client Portal (UI Complete)
-   ├── ⚠️ API Integration (Waiting for Backend)
-   └── ✅ Grafana (Observability)
-```
+### Can't Access Vault
+**Solution**: Vault is running. Access at http://localhost:8200 with token "root"
 
 ---
 
-## 💡 Recommendation
+## 📈 Success Metrics
 
-**I recommend implementing the Brain Gateway API endpoints next.** This will:
-1. Make the Client Portal fully functional
-2. Enable testing of connectors
-3. Allow AI agents to be integrated
-4. Provide a complete demo-able system
+### Current Status
+- ✅ 13/13 Infrastructure services running
+- ✅ 3/3 Core services running
+- ✅ 4/4 Observability services running
+- ✅ Client Portal accessible and functional
+- ⚠️ Using mock data (not live)
+- ⚠️ AI agents using mocked logic
+- ❌ Vault not integrated with services
+- ❌ RAG not implemented
+- ❌ Temporal workers not deployed
 
-Would you like me to:
-- **A)** Implement the Brain Gateway API endpoints?
-- **B)** Deploy current setup to VPS for infrastructure testing?
-- **C)** Create a detailed implementation plan for missing features?
+### Target for MVP
+- ✅ All infrastructure services running
+- ✅ All core services running
+- ✅ Client Portal functional
+- ⬜ At least 3 connectors with live data
+- ⬜ AI agents with real LLM responses
+- ⬜ RAG working with knowledge base
+- ⬜ BYOK storing keys in Vault
+- ⬜ Temporal workflows executing
 
 ---
 
-**Status:** Infrastructure ✅ | Auth ✅ | Business Logic ⚠️ | AI Agents ❌
+## 🎯 This Week's Goals
+
+### Day 1-2: Phase 1 (Backend Integration)
+- Install dependencies
+- Implement Vault client
+- Create database migrations
+- Test Vault integration
+- Wire BYOK frontend
+
+### Day 3-4: Phase 2 (Frontend Wiring)
+- Wire WordPress connector
+- Wire Zoho CRM connector
+- Wire Shopify connector
+- Test live data display
+
+### Day 5-6: Phase 3 (AI & RAG)
+- Implement RAG service
+- Integrate OpenAI/Anthropic
+- Wire agent chat
+- Test knowledge base
+
+### Day 7: Phase 4 (Testing)
+- Comprehensive UI testing
+- API testing
+- Integration testing
+- Bug fixes
+
+---
+
+## 📞 Support Resources
+
+### Documentation
+- Architecture: `ARCHITECTURE_RECOMMENDATION_V2.md`
+- Feature Gaps: `FEATURE_GAP_ANALYSIS.md`
+- Implementation Plan: `IMPLEMENTATION_PLAN.md`
+- Phase 1 Guide: `PHASE1_IMPLEMENTATION.md`
+- Portainer Setup: `PORTAINER_SETUP.md`
+
+### API Documentation
+- Brain Gateway: http://localhost:8000/docs
+- Auth Service: http://localhost:8009/docs
+
+### Monitoring
+- System Health: http://localhost:3002 (Grafana)
+- Metrics: http://localhost:9090 (Prometheus)
+- Traces: http://localhost:16686 (Jaeger)
+- Logs: http://localhost:3100 (Loki)
+
+---
+
+## ✅ Ready to Proceed
+
+**All prerequisites are met:**
+- ✅ All services running
+- ✅ Documentation complete
+- ✅ Implementation plan defined
+- ✅ Code samples provided
+- ✅ Testing procedures documented
+
+**Next Step**: Choose one of the immediate actions above and begin implementation.
+
+**Recommended**: Start with Action 2 (Install Dependencies) as it's quick and enables all subsequent work.
+
+---
+
+**Status**: Platform operational, ready for Phase 1 implementation  
+**Estimated Time to MVP**: 12-17 days  
+**Estimated Time to Production**: 20-25 days

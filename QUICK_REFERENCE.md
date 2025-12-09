@@ -1,141 +1,318 @@
-# BizOSaaS Platform - Quick Reference
+# BizOSaaS Platform - Quick Reference Guide
 
-## 🚀 Start All Services
+## 🚀 Quick Start Commands
+
+### Start All Services
 ```bash
-./scripts/start-bizosaas-full.sh
+cd /home/alagiri/projects/bizosaas-platform
+./scripts/start-bizosaas-core-full.sh --wait
 ```
 
-## 🌐 Access Points
-
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| **Client Portal** | http://localhost:3003 | admin@bizoholic.com / AdminDemo2024! |
-| **Bizoholic Frontend** | http://localhost:3001 | - |
-| **Brain Gateway** | http://localhost:8001 | - |
-| **Auth Service** | http://localhost:8008 | - |
-
-## 🔐 Test Accounts
-
-```
-Admin:         admin@bizoholic.com / AdminDemo2024!
-Client:        client@bizosaas.com / ClientDemo2024!
-Super Admin:   superadmin@bizosaas.com / BizoSaaS2025!Admin
-Tenant Admin:  administrator@bizosaas.com / Bizoholic2025!Admin
-User:          user@bizosaas.com / Bizoholic2025!User
-```
-
-## 📝 View Logs
-
+### Stop All Services
 ```bash
-# Auth Service
-tail -f /tmp/auth-service.log
-
-# Brain Gateway
-tail -f /tmp/brain-gateway.log
-
-# Client Portal
-tail -f /tmp/client-portal.log
-
-# Bizoholic Frontend
-tail -f /tmp/bizoholic-frontend.log
+cd bizosaas-brain-core
+docker compose down
+docker compose -f docker-compose.authentik.yml down
+docker compose -f docker-compose.observability.yml down
 ```
 
-## 🛑 Stop All Services
-
+### View Logs
 ```bash
-# Stop Node processes
-kill $(cat /tmp/*.pid 2>/dev/null) 2>/dev/null || true
+# All services
+docker compose -f bizosaas-brain-core/docker-compose.yml logs -f
 
-# Stop Docker containers
-docker-compose -f shared/infrastructure/docker-compose.infrastructure.yml down
+# Specific service
+docker logs brain-gateway -f
+docker logs brain-auth -f
+docker logs client-portal -f
 ```
 
-## 🔧 Troubleshooting
-
-### Reset Admin Password
+### Restart a Service
 ```bash
-cd shared/services/auth
-export DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/bizosaas"
-python3 seed_test_users.py
+docker compose -f bizosaas-brain-core/docker-compose.yml restart brain-gateway
+docker compose -f bizosaas-brain-core/docker-compose.yml restart client-portal
 ```
 
-### Check Service Status
+---
+
+## 🔐 Access URLs & Credentials
+
+### Services
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Client Portal | http://localhost:3003 | Main application |
+| Brain Gateway API | http://localhost:8000 | Backend API |
+| Auth Service | http://localhost:8009 | Authentication |
+| Authentik SSO | http://localhost:9000 | SSO provider |
+| Portainer | http://localhost:9001 | Docker management |
+| Grafana | http://localhost:3002 | Monitoring |
+| Prometheus | http://localhost:9090 | Metrics |
+| Temporal UI | http://localhost:8082 | Workflow management |
+| Jaeger | http://localhost:16686 | Tracing |
+| Vault | http://localhost:8200 | Secrets management |
+
+### Default Credentials
+```
+Admin User:
+  Email: admin@bizosaas.com
+  Password: Admin@123
+
+Tenant Admin:
+  Email: tenant@bizoholic.com
+  Password: Tenant@123
+
+Regular User:
+  Email: user@bizoholic.com
+  Password: User@123
+
+Vault Token:
+  Token: root (development only)
+
+Grafana:
+  Username: admin
+  Password: admin
+```
+
+---
+
+## 🛠️ Common Tasks
+
+### Create New Admin User
 ```bash
-# Check if ports are listening
-lsof -i :3001  # Bizoholic Frontend
-lsof -i :3003  # Client Portal
-lsof -i :8001  # Brain Gateway
-lsof -i :8008  # Auth Service
-lsof -i :5432  # Postgres
-lsof -i :6379  # Redis
+docker exec -it brain-auth python3 /app/seed_users_simple.py
 ```
 
-### Restart Individual Service
-
-**Auth Service:**
+### Check Service Health
 ```bash
-cd shared/services/auth
-export DATABASE_URL="postgresql+asyncpg://postgres:postgres@localhost:5432/bizosaas"
-export REDIS_URL="redis://localhost:6379/0"
-uvicorn main:app --host 0.0.0.0 --port 8008 --reload
+curl http://localhost:8000/health  # Brain Gateway
+curl http://localhost:8009/health  # Auth Service
+curl http://localhost:3003         # Client Portal
 ```
 
-**Brain Gateway:**
+### Rebuild Client Portal
 ```bash
-cd shared/services/brain-gateway
-uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+cd bizosaas-brain-core
+docker compose down client-portal
+docker compose build client-portal
+docker compose up -d client-portal
 ```
 
-**Client Portal:**
+### Clean Up Docker Resources
 ```bash
-cd portals/client-portal
-npm run dev -- --port 3003
+./scripts/cleanup-docker-resources.sh
 ```
 
-**Bizoholic Frontend:**
+### View Database
 ```bash
-cd brands/bizoholic/frontend
-PORT=3001 npm run dev
+docker exec -it brain-postgres psql -U postgres -d bizosaas
 ```
+
+### Access Redis CLI
+```bash
+docker exec -it brain-redis redis-cli
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Service Won't Start
+```bash
+# Check logs
+docker logs <container-name>
+
+# Check if port is in use
+sudo lsof -i :<port-number>
+
+# Restart service
+docker compose restart <service-name>
+```
+
+### Database Connection Issues
+```bash
+# Check if PostgreSQL is running
+docker ps | grep postgres
+
+# Test connection
+docker exec brain-postgres pg_isready -U postgres
+
+# Reset database (WARNING: Deletes all data)
+docker compose down
+docker volume rm bizosaas-brain-core_postgres-data
+docker compose up -d
+```
+
+### Login Not Working
+```bash
+# Verify admin user exists
+docker exec brain-auth python3 -c "from main import *; import asyncio; asyncio.run(check_users())"
+
+# Reseed users
+docker exec brain-auth python3 /app/seed_users_simple.py
+
+# Check auth service logs
+docker logs brain-auth --tail 100
+```
+
+### Out of Disk Space
+```bash
+# Check disk usage
+docker system df
+
+# Clean up
+docker system prune -a --volumes
+
+# Or use cleanup script
+./scripts/cleanup-docker-resources.sh
+```
+
+---
+
+## 📦 Deployment
+
+### Oracle Cloud Setup
+```bash
+# 1. Create VM (4 OCPU, 24GB RAM, Ubuntu 22.04)
+# 2. SSH into VM
+ssh ubuntu@<your-vm-ip>
+
+# 3. Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# 4. Clone repository
+git clone https://github.com/Bizoholic-Digital/bizosaas-platform.git
+cd bizosaas-platform
+
+# 5. Configure environment
+cp .env.example .env
+nano .env
+
+# 6. Start services
+./scripts/start-bizosaas-core-full.sh --wait
+```
+
+### Using Coolify
+```bash
+# 1. Install Coolify on Oracle Cloud VM
+curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
+
+# 2. Access Coolify UI
+http://<your-vm-ip>:8000
+
+# 3. Add GitHub repository
+# 4. Configure environment variables
+# 5. Deploy
+```
+
+---
+
+## 🔄 Git Workflow
+
+### Pull Latest Changes
+```bash
+git pull origin staging
+```
+
+### Create Feature Branch
+```bash
+git checkout -b feature/your-feature-name
+```
+
+### Commit Changes
+```bash
+git add .
+git commit -m "feat: your feature description"
+git push origin feature/your-feature-name
+```
+
+### Merge to Staging
+```bash
+git checkout staging
+git merge feature/your-feature-name
+git push origin staging
+```
+
+---
+
+## 📊 Monitoring
+
+### View Metrics
+- **Grafana**: http://localhost:3002
+- **Prometheus**: http://localhost:9090
+
+### View Traces
+- **Jaeger**: http://localhost:16686
+
+### View Logs
+- **Loki**: Integrated with Grafana
+
+### Container Stats
+```bash
+docker stats
+```
+
+---
+
+## 🔐 Security
+
+### Rotate Secrets
+```bash
+# Generate new JWT secret
+openssl rand -hex 32
+
+# Update .env file
+nano bizosaas-brain-core/.env
+
+# Restart services
+docker compose restart
+```
+
+### Backup Database
+```bash
+docker exec brain-postgres pg_dump -U postgres bizosaas > backup.sql
+```
+
+### Restore Database
+```bash
+cat backup.sql | docker exec -i brain-postgres psql -U postgres bizosaas
+```
+
+---
 
 ## 📚 Documentation
 
-- `BIZOSAAS_COMPLETE_SETUP_SUMMARY.md` - Complete setup guide
-- `FIX_LOGIN_NOW.md` - Login credential fixes
-- `LOGIN_REWRITE_FIX.md` - NextAuth rewrite fix
-- `LOGIN_AND_DASHBOARD_FIX.md` - Dashboard protection
-- `UNIFIED_LOGIN_AND_DASHBOARD_STRATEGY.md` - Architecture overview
+- **Implementation Summary**: [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)
+- **Deployment Checklist**: [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)
+- **MCP Integration**: [bizosaas-brain-core/MCP_INTEGRATION_STRATEGY.md](./bizosaas-brain-core/MCP_INTEGRATION_STRATEGY.md)
+- **Architecture**: [bizosaas-brain-core/ARCHITECTURE_RECOMMENDATION_V3.md](./bizosaas-brain-core/ARCHITECTURE_RECOMMENDATION_V3.md)
+- **Final Status**: [FINAL_STATUS_REPORT.md](./FINAL_STATUS_REPORT.md)
 
-## ✅ Current Status
+---
 
-**Working:**
-- ✅ Login & Authentication
-- ✅ Dashboard Protection
-- ✅ Session Management
-- ✅ CRM Fallback Data
+## 🆘 Support
 
-**Pending:**
-- ⚠️ Logout Button (needs implementation)
-- ⚠️ Django CRM Service (optional - using fallback)
-- ⚠️ Wagtail CMS Service (optional - using fallback)
+### Check Service Status
+```bash
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+```
 
-## 🎯 Next Steps
+### View All Logs
+```bash
+docker compose -f bizosaas-brain-core/docker-compose.yml logs --tail=100
+```
 
-1. **Implement Logout:**
-   ```typescript
-   import { signOut } from 'next-auth/react'
-   <button onClick={() => signOut({ callbackUrl: '/login' })}>
-     Sign Out
-   </button>
-   ```
+### Emergency Stop
+```bash
+docker stop $(docker ps -aq)
+```
 
-2. **Start CRM/CMS (Optional):**
-   ```bash
-   docker-compose -f shared/services/docker-compose.services.yml up -d crm cms
-   ```
+### Emergency Cleanup
+```bash
+docker system prune -a --volumes -f
+```
 
-3. **Test Full Flow:**
-   - Access http://localhost:3003
-   - Login with admin credentials
-   - Navigate through dashboard tabs
-   - Test logout functionality
+---
+
+**Last Updated**: 2025-12-09
+**Version**: 1.0.0-beta

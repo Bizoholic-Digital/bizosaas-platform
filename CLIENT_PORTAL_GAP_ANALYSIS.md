@@ -217,7 +217,59 @@
 
 ---
 
-### 2.2 Missing Features (Need Both UI + API)
+### 2.2 Detailed Tab Implementation Status (User Request Analysis)
+
+| Tab / Sub-tab | Frontend Status | Backend Status | Interactive? | Notes |
+|---------------|-----------------|----------------|--------------|-------|
+| **Dashboard** | ✅ Ready | 🟡 Mixed | 🟡 Partial | `ProjectTasksWidget` uses GraphQL. Others are mock/static. |
+| **Connectors** | ✅ Ready | 🟡 Read-Only | ❌ No | "Connect" button has no action. Needs Modal + API. |
+| **Tools** | ✅ Ready | ❌ Static | ❌ No | Hardcoded list. Needs affiliation/marketplace API. |
+| **Get Website** | ✅ Ready | ❌ Static | ❌ No | Wizard exists but no final submission action. |
+| **CMS** | | | | |
+| - *Pages* | ✅ Ready | 🟡 Proxied | ❌ No | Proxied to Wagtail but needs seamless wiring. |
+| - *Posts* | ✅ Ready | 🟡 Proxied | ❌ No | Same as Pages. |
+| - *Media* | ✅ Ready | 🟡 Proxied | ❌ No | Same as Pages. |
+| **CRM** | | | | |
+| - *Contacts* | ✅ Ready | ❌ Missing | ❌ No | UI mimics HubSpot but no actual database storage yet. |
+| - *Deals* | ✅ Ready | ❌ Missing | ❌ No | Kanban board exists visually. |
+| - *Tasks* | ✅ Ready | ❌ Missing | ❌ No | Task list exists visually. |
+| **E-commerce** | | | | |
+| - *Products* | ✅ Ready | ❌ Missing | ❌ No | UI exists. Needs connection to Checkout/Saleor. |
+| - *Orders* | ✅ Ready | ❌ Missing | ❌ No | UI exists. |
+| **Marketing** | | | | |
+| - *Campaigns* | ✅ Ready | ❌ Missing | ❌ No | Forms exist. No email engine connected. |
+| **Analytics** | | | | |
+| - *Overview* | ✅ Ready | 🟡 Partial | ❌ No | Charts use hardcoded data. Needs GA4 aggregation. |
+| **Billing** | | | | |
+| - *Invoices* | ✅ Ready | ❌ Missing | ❌ No | Visual table only. No Stripe connection. |
+| **Integrations** | | | | |
+| - *API Keys* | ✅ Ready | ❌ Missing | ❌ No | UI exists. Needs Vault integration. |
+| **AI Agents** | ✅ Ready | 🟡 Partial | ✅ Yes | Chat interface works. Agent configuration is mock. |
+| **Settings** | ✅ Ready | ❌ Missing | ❌ No | Profile forms exist. No save action. |
+
+**Immediate Action Plan based on this Matrix:**
+1.  **Connectors**: Implement "Connect" modal -> Vault storage. (High Priority)
+2.  **Tools**: Convert to dynamic list from config/DB.
+3.  **CRM/CMS/Commerce**: Create "Data Wiring" interfaces (GraphQL resolvers or REST endpoints).
+
+---
+
+### 2.2 Data Aggregation Strategy (New)
+
+**Challenge**: Dashboard needs data from 6+ external sources (CRM, CMS, Commerce, etc.) which means 6+ API calls.
+**Solution**: Use **GraphQL** via Brain Gateway.
+- **Endpoint**: `/graphql`
+- **Client**: `urql` or `apollo-client`
+- **Benefits**: Single request to fetch all dashboard widgets. Fetch only fields needed for UI.
+
+**Implementation Plan**:
+1.  **Backend**: Implemented Strawberry GraphQL schema for Project/Task entities. Need to extend for CRM/Commerce.
+2.  **Frontend**: Configure GraphQL client in `layout.tsx` or `providers.tsx`.
+3.  **Widgets**: Update Dashboard widgets to use GraphQL queries instead of multiple REST `fetch` calls.
+
+---
+
+### 2.3 Missing Features (Need Both UI + API)
 
 | Feature | Estimated Effort |
 |---------|------------------|

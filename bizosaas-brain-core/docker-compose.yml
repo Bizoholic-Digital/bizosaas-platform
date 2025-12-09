@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ========================================
   # Infrastructure
@@ -48,19 +46,34 @@ services:
       timeout: 5s
       retries: 5
 
-  # ========================================
-  # Temporal (Workflow Engine - replaces n8n)
-  # ========================================
+  vault:
+    image: hashicorp/vault:latest
+    container_name: brain-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    networks:
+      - brain-network
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
   temporal:
     image: temporalio/auto-setup:latest
     container_name: brain-temporal
     environment:
-      - DB=postgresql
+      - DB=postgres12_pgx
       - DB_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_SEEDS=postgres
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+      - POSTGRES_SEEDS=postgres
     ports:
       - "7233:7233"
     networks:
@@ -70,9 +83,24 @@ services:
         limits:
           cpus: '0.3'
           memory: 384M
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: brain-temporal-ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3003
+    ports:
+      - "8082:8080"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
     depends_on:
-      postgres:
-        condition: service_healthy
+      - temporal
 
   # ========================================
   # Core Services
@@ -123,12 +151,42 @@ services:
       redis:
         condition: service_healthy
 
+  client-portal:
+    build: ../portals/client-portal
+    container_name: client-portal
+    ports:
+      - "3003:3000"
+    environment:
+      - NEXT_PUBLIC_GRAPHQL_URL=http://localhost:8000/graphql
+      - NEXTAUTH_URL=http://localhost:3003
+      - NEXTAUTH_SECRET=super-secret-key
+      - AUTHENTIK_CLIENT_ID=Y9XWiLbgBjg2k9dkX1al6ylsLzSsMLbVQRImYRcs
+      - AUTHENTIK_CLIENT_SECRET=DgcSVVBZwdeOKKNB3hir8uc6TEWBnd5hPH2a61awwvt2BBX5x3CGj20FP9W9h5lZTYB4WLAoAUQnef6aEsDAy0wAXRixfXnnX7XhpYypeoolK1euJs8BrCTYrwPhgemI
+      - AUTHENTIK_ISSUER=http://localhost:9000/application/o/bizosaas-brain/
+      - AUTHENTIK_URL=http://localhost:9000
+    networks:
+      - brain-network
+    depends_on:
+      - brain-gateway
+
+  github-mcp:
+    image: ghcr.io/modelcontextprotocol/servers/github:latest
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+
 networks:
   brain-network:
     driver: bridge
+    name: brain-network
 
 volumes:
   postgres-data:
   redis-data:
-
-

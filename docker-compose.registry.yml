@@ -1,0 +1,298 @@
+version: '3.8'
+
+# BizOSaaS Platform - Registry-Based Deployment
+# Uses images from local registry (localhost:5000) or GitHub Container Registry
+
+services:
+  # ========================================
+  # Infrastructure Layer
+  # ========================================
+
+  traefik:
+    image: traefik:latest
+    container_name: bizosaas-traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - brain-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.bizosaas.local`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "com.bizosaas.service=infrastructure"
+
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: bizosaas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bizosaas}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - brain-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "com.bizosaas.service=infrastructure"
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - brain-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "com.bizosaas.service=infrastructure"
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: bizosaas-vault
+    restart: unless-stopped
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    networks:
+      - brain-network
+    cap_add:
+      - IPC_LOCK
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`vault.bizosaas.local`)"
+      - "traefik.http.routers.vault.entrypoints=web"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
+      - "com.bizosaas.service=infrastructure"
+
+  # ========================================
+  # Workflow Engine
+  # ========================================
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: bizosaas-temporal
+    restart: unless-stopped
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_SEEDS=postgres
+    networks:
+      - brain-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "com.bizosaas.service=workflow"
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: bizosaas-temporal-ui
+    restart: unless-stopped
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://portal.bizosaas.local
+    networks:
+      - brain-network
+    depends_on:
+      - temporal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.temporal.rule=Host(`temporal.bizosaas.local`)"
+      - "traefik.http.routers.temporal.entrypoints=web"
+      - "traefik.http.services.temporal.loadbalancer.server.port=8080"
+      - "com.bizosaas.service=workflow"
+
+  # ========================================
+  # Core Services (From Registry)
+  # ========================================
+
+  brain-gateway:
+    image: ${REGISTRY:-localhost:5000}/bizosaas/brain-gateway:${VERSION:-latest}
+    container_name: bizosaas-brain-gateway
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-bizosaas}
+      - REDIS_URL=redis://redis:6379/0
+      - TEMPORAL_HOST=temporal:7233
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    networks:
+      - brain-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_started
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.bizosaas.local`)"
+      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+      - "com.bizosaas.service=core"
+
+  auth-service:
+    image: ${REGISTRY:-localhost:5000}/bizosaas/auth-service:${VERSION:-latest}
+    container_name: bizosaas-auth
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-bizosaas}
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key}
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+    networks:
+      - brain-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.bizosaas.local`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.services.auth.loadbalancer.server.port=8007"
+      - "com.bizosaas.service=core"
+
+  client-portal:
+    image: ${REGISTRY:-localhost:5000}/bizosaas/client-portal:${VERSION:-latest}
+    container_name: bizosaas-client-portal
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://api.bizosaas.local}
+      - NEXT_PUBLIC_AUTH_URL=${NEXT_PUBLIC_AUTH_URL:-http://auth.bizosaas.local}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://portal.bizosaas.local}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-local-nextauth-secret}
+    networks:
+      - brain-network
+    depends_on:
+      - brain-gateway
+      - auth-service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portal.rule=Host(`portal.bizosaas.local`) || Host(`bizosaas.local`)"
+      - "traefik.http.routers.portal.entrypoints=web"
+      - "traefik.http.services.portal.loadbalancer.server.port=3000"
+      - "com.bizosaas.service=frontend"
+
+  # ========================================
+  # Observability Stack
+  # ========================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bizosaas-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=http://prometheus.bizosaas.local'
+    volumes:
+      - ./bizosaas-brain-core/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - brain-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.bizosaas.local`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "com.bizosaas.service=observability"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bizosaas-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SERVER_ROOT_URL=http://grafana.bizosaas.local
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - brain-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.bizosaas.local`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "com.bizosaas.service=observability"
+
+  loki:
+    image: grafana/loki:latest
+    container_name: bizosaas-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+    networks:
+      - brain-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.loki.rule=Host(`loki.bizosaas.local`)"
+      - "traefik.http.routers.loki.entrypoints=web"
+      - "traefik.http.services.loki.loadbalancer.server.port=3100"
+      - "com.bizosaas.service=observability"
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: bizosaas-jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - brain-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jaeger.rule=Host(`jaeger.bizosaas.local`)"
+      - "traefik.http.routers.jaeger.entrypoints=web"
+      - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
+      - "com.bizosaas.service=observability"
+
+# ========================================
+# Networks
+# ========================================
+
+networks:
+  brain-network:
+    external: true
+
+# ========================================
+# Volumes
+# ========================================
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:

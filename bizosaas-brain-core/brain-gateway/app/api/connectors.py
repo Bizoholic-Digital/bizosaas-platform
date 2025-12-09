@@ -2,15 +2,18 @@ from fastapi import APIRouter, HTTPException, Depends, Body
 from typing import List, Dict, Any
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorConfig, ConnectorStatus
+from app.middleware.auth import get_current_user
+from domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/connectors", tags=["connectors"])
 
 # Mock database for MVP
-# In production, this would be a proper database model
 active_connectors = {}
 
 @router.get("/types", response_model=List[ConnectorConfig])
-async def list_connector_types():
+async def list_connector_types(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
     """List all available connector types"""
     return ConnectorRegistry.get_all_configs()
 
@@ -18,9 +21,11 @@ async def list_connector_types():
 async def connect_connector(
     connector_id: str, 
     credentials: Dict[str, Any] = Body(...),
-    tenant_id: str = "default_tenant" # In real app, get from auth context
+    user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Connect a new integration"""
+    tenant_id = user.tenant_id or "default_tenant"
+    
     try:
         connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
         is_valid = await connector.validate_credentials()
@@ -28,7 +33,7 @@ async def connect_connector(
         if not is_valid:
             raise HTTPException(status_code=400, detail="Invalid credentials")
             
-        # Save to mock DB
+        # Save to mock DB (keyed by tenant)
         active_connectors[f"{tenant_id}:{connector_id}"] = {
             "connector_id": connector_id,
             "credentials": credentials, # In prod, encrypt this!
@@ -44,10 +49,12 @@ async def connect_connector(
 @router.get("/{connector_id}/status")
 async def get_connector_status(
     connector_id: str,
-    tenant_id: str = "default_tenant"
+    user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Get connection status"""
+    tenant_id = user.tenant_id or "default_tenant"
     key = f"{tenant_id}:{connector_id}"
+    
     if key not in active_connectors:
         return {"status": ConnectorStatus.DISCONNECTED}
         
@@ -60,10 +67,12 @@ async def get_connector_status(
 async def sync_resource(
     connector_id: str,
     resource: str,
-    tenant_id: str = "default_tenant"
+    user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Sync data from connector"""
+    tenant_id = user.tenant_id or "default_tenant"
     key = f"{tenant_id}:{connector_id}"
+    
     if key not in active_connectors:
         raise HTTPException(status_code=404, detail="Connector not connected")
         
@@ -81,10 +90,12 @@ async def perform_action(
     connector_id: str,
     action: str,
     payload: Dict[str, Any] = Body(...),
-    tenant_id: str = "default_tenant"
+    user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Perform action on connector"""
+    tenant_id = user.tenant_id or "default_tenant"
     key = f"{tenant_id}:{connector_id}"
+    
     if key not in active_connectors:
         raise HTTPException(status_code=404, detail="Connector not connected")
         

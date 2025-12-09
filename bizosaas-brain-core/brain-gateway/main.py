@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import connectors, agents
+from app.api import connectors, agents, cms, onboarding
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -20,6 +20,13 @@ app.add_middleware(
 
 app.include_router(connectors.router)
 app.include_router(agents.router)
+app.include_router(cms.router, prefix="/api/cms", tags=["cms"])
+app.include_router(onboarding.router)
+
+from strawberry.fastapi import GraphQLRouter
+from app.graphql.schema import schema
+graphql_app = GraphQLRouter(schema)
+app.include_router(graphql_app, prefix="/graphql")
 
 # Configuration
 CMS_URL = os.getenv("CMS_URL", "http://cms:8002")

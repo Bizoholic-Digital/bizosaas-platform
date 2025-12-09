@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Plug, CheckCircle2, Plus } from "lucide-react"
 import type { Connector } from '@/lib/brain-api'
+import { ConnectorConfigDialog } from '@/components/dashboard/connectors/ConnectorConfigDialog'
 
 export default function ConnectorsPage() {
     const [connectors, setConnectors] = useState<Connector[]>([])
     const [loading, setLoading] = useState(true)
+    const [selectedConnector, setSelectedConnector] = useState<Connector | null>(null)
+    const [isDialogOpen, setIsDialogOpen] = useState(false)
 
     useEffect(() => {
         const fetchConnectors = async () => {
@@ -37,9 +40,22 @@ export default function ConnectorsPage() {
         fetchConnectors()
     }, [])
 
+    const handleConnectClick = (connector: Connector) => {
+        setSelectedConnector(connector)
+        setIsDialogOpen(true)
+    }
+
+    const handleConnectSuccess = (connectorId: string) => {
+        setConnectors(prev => prev.map(c =>
+            c.id === connectorId ? { ...c, status: 'connected' } : c
+        ))
+    }
+
     if (loading) {
         return <div className="p-8">Loading connectors...</div>
     }
+
+
 
     return (
         <div className="space-y-6">
@@ -81,11 +97,16 @@ export default function ConnectorsPage() {
                             <p className="text-sm text-muted-foreground mb-4 min-h-[40px]">
                                 {connector.description}
                             </p>
-                            <Button className="w-full" variant={connector.status === 'connected' ? 'outline' : 'default'}>
+                            <Button
+                                className="w-full"
+                                variant={connector.status === 'connected' ? 'outline' : 'default'}
+                                onClick={() => connector.status !== 'connected' && handleConnectClick(connector)}
+                                disabled={connector.status === 'connected'}
+                            >
                                 {connector.status === 'connected' ? (
                                     <>
                                         <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                                        Configure
+                                        Connected
                                     </>
                                 ) : (
                                     <>
@@ -98,6 +119,13 @@ export default function ConnectorsPage() {
                     </Card>
                 ))}
             </div>
+
+            <ConnectorConfigDialog
+                connector={selectedConnector}
+                isOpen={isDialogOpen}
+                onClose={() => setIsDialogOpen(false)}
+                onSuccess={handleConnectSuccess}
+            />
         </div>
     )
 }

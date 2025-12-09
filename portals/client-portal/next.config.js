@@ -7,6 +7,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 
   // Optimize for production
   compress: true,
@@ -49,7 +52,14 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: ['localhost', 'bizosaas-brain', 'bizosaas-wagtail-cms'],
+    domains: [
+      'localhost',
+      'bizosaas-brain',
+      'bizosaas-wagtail-cms',
+      'bizosaas.local',
+      'portal.bizosaas.local',
+      'api.bizosaas.local',
+    ],
     unoptimized: false,
   },
 

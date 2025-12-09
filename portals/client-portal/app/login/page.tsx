@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Github, Mail as Google, Lock, Mail } from 'lucide-react';
+import { Github, Layout, Lock, Mail, Mail as Google } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,10 +41,7 @@ const BRANDS = {
 
 type Brand = keyof typeof BRANDS;
 
-// Prevent static generation
-export const dynamic = 'force-dynamic';
-
-export default function UnifiedLoginPage() {
+function LoginContent() {
   const [brand, setBrand] = useState<Brand>('bizoholic');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,7 +78,7 @@ export default function UnifiedLoginPage() {
         password,
         brand,
         redirect: false,
-        callbackUrl: '/',
+        callbackUrl: '/onboarding',
       });
 
       console.log('Login result:', result);
@@ -90,9 +87,9 @@ export default function UnifiedLoginPage() {
         console.error('Login error:', result.error);
         setError('Invalid credentials. Please check your email and password.');
       } else if (result?.ok) {
-        console.log('Login successful, redirecting to dashboard');
+        console.log('Login successful, redirecting to onboarding');
         // Use window.location for a hard redirect to ensure clean state
-        window.location.href = '/';
+        window.location.href = '/onboarding';
       } else {
         setError('Login failed. Please try again.');
       }
@@ -104,17 +101,17 @@ export default function UnifiedLoginPage() {
     }
   };
 
-  const handleSocialLogin = async (provider: 'github' | 'google') => {
+  const handleAuthentikLogin = async () => {
     setIsLoading(true);
     setError('');
 
     try {
-      await signIn(provider, {
-        callbackUrl: '/',
+      await signIn('authentik', {
+        callbackUrl: '/onboarding',
         redirect: true,
       });
     } catch (err) {
-      setError(`${provider} login failed. Please try again.`);
+      setError('SSO login failed. Please try again.');
       setIsLoading(false);
     }
   };
@@ -125,64 +122,30 @@ export default function UnifiedLoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-12">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center space-y-4 pb-4">
-          {/* Brand Logo */}
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full transition-all"
-            style={{ backgroundColor: `${brandConfig.primaryColor}20` }}>
-            <div className="text-3xl font-bold transition-all" style={{ color: brandConfig.primaryColor }}>
-              {brandConfig.name.charAt(0)}
-            </div>
+          {/* Brand Logo - Bizoholic Exclusive */}
+          <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-2xl transition-all shadow-lg bg-blue-600 text-white mb-2">
+            <span className="text-4xl font-bold">B</span>
           </div>
 
           <div>
-            <CardTitle className="text-2xl font-bold">{brandConfig.name}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">{brandConfig.tagline}</p>
-          </div>
-
-          {/* Brand Switcher */}
-          <div className="flex flex-wrap gap-2 justify-center pt-2">
-            {Object.keys(BRANDS).map((b) => (
-              <button
-                key={b}
-                onClick={() => {
-                  setBrand(b as Brand);
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('selected_brand', b);
-                  }
-                }}
-                className={`px-3 py-1 text-xs rounded-full transition-all font-medium ${brand === b
-                  ? 'text-white shadow-md'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                  }`}
-                style={brand === b ? { backgroundColor: brandConfig.primaryColor } : {}}
-              >
-                {BRANDS[b as Brand].name}
-              </button>
-            ))}
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Bizoholic Digital</CardTitle>
+            <p className="text-sm text-muted-foreground mt-2">Unified Enterprise SaaS Platform</p>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-2">
-          {/* Social Login */}
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              onClick={() => handleSocialLogin('github')}
-              disabled={isLoading}
-              className="w-full"
-            >
-              <Github className="h-4 w-4 mr-2" />
-              GitHub
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleSocialLogin('google')}
-              disabled={isLoading}
-              className="w-full"
-            >
-              <Google className="h-4 w-4 mr-2" />
-              Google
-            </Button>
-          </div>
+          {/* Authentik SSO Login */}
+          <Button
+            type="button"
+            variant="default"
+            onClick={handleAuthentikLogin}
+            disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            size="lg"
+          >
+            <Lock className="h-5 w-5 mr-2" />
+            Sign in with BizOSaaS SSO
+          </Button>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -258,21 +221,32 @@ export default function UnifiedLoginPage() {
           <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
             <CardContent className="p-3">
               <p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-1">
-                Demo Credentials
+                SSO Login Credentials
               </p>
               <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                <div><strong>Admin:</strong> admin@bizoholic.com / AdminDemo2024!</div>
-                <div><strong>Client:</strong> client@bizosaas.com / ClientDemo2024!</div>
+                <div><strong>Admin:</strong> akadmin / Admin@123</div>
+                <div className="text-[10px] opacity-70">Use "Sign in with BizOSaaS SSO" button above</div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Port Info */}
-          <div className="text-center text-xs text-muted-foreground">
+          {/* Port Info & Security */}
+          <div className="text-center text-xs text-muted-foreground space-y-1">
             <p>🎯 Port 3003: Unified Dashboard</p>
+            <p className="text-[10px] opacity-70 flex items-center justify-center gap-1">
+              <Lock className="w-3 h-3" /> Secured by HashiCorp Vault. GDPR Compliant.
+            </p>
           </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function UnifiedLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

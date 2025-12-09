@@ -1,12 +1,23 @@
-'use client';
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { SessionProvider } from 'next-auth/react';
-import { ThemeProvider } from '@/components/theme-provider';
+import { Providers } from './providers';
 
-// Using system fonts to avoid network calls during Docker build
-const inter = { variable: '--font-sans' };
+// Simple font mock to avoid build issues, ensures Tailwind finds 'font-sans'
+const inter = { className: 'font-sans' };
+
+export const metadata: Metadata = {
+  title: 'BizOSaaS Platform',
+  description: 'Unified Enterprise SaaS Platform',
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#2563eb',
+};
 
 export default function RootLayout({
   children,
@@ -16,21 +27,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {/* Main Content Area */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <main className="flex-1 overflow-y-auto p-0">
-                {children}
-              </main>
-            </div>
-          </ThemeProvider>
-        </SessionProvider>
+        <Providers>
+          {/* Main Content Area */}
+          <div className="flex flex-1 flex-col overflow-hidden h-screen">
+            <main className="flex-1 overflow-y-auto p-0">
+              {children}
+            </main>
+          </div>
+        </Providers>
       </body>
     </html>
   );
