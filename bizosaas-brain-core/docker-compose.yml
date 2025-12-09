@@ -106,7 +106,7 @@ services:
   # Core Services
   # ========================================
   brain-gateway:
-    build: ./brain-gateway
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: brain-gateway
     ports:
       - "8000:8000"
@@ -130,7 +130,7 @@ services:
         condition: service_healthy
 
   auth-service:
-    build: ./auth
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     container_name: brain-auth
     ports:
       - "8009:8007"
@@ -152,7 +152,7 @@ services:
         condition: service_healthy
 
   client-portal:
-    build: ../portals/client-portal
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
     container_name: client-portal
     ports:
       - "3003:3000"
@@ -160,10 +160,10 @@ services:
       - NEXT_PUBLIC_GRAPHQL_URL=http://localhost:8000/graphql
       - NEXTAUTH_URL=http://localhost:3003
       - NEXTAUTH_SECRET=super-secret-key
-      - AUTHENTIK_CLIENT_ID=Y9XWiLbgBjg2k9dkX1al6ylsLzSsMLbVQRImYRcs
-      - AUTHENTIK_CLIENT_SECRET=DgcSVVBZwdeOKKNB3hir8uc6TEWBnd5hPH2a61awwvt2BBX5x3CGj20FP9W9h5lZTYB4WLAoAUQnef6aEsDAy0wAXRixfXnnX7XhpYypeoolK1euJs8BrCTYrwPhgemI
-      - AUTHENTIK_ISSUER=http://localhost:9000/application/o/bizosaas-brain/
-      - AUTHENTIK_URL=http://localhost:9000
+      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
+      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
+      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
+      - AUTHENTIK_URL=${AUTHENTIK_URL:-http://localhost:9000}
     networks:
       - brain-network
     depends_on:

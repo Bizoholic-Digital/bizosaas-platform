@@ -334,67 +334,63 @@ jobs:
           name: performance-results
           path: tests/performance/results/
 
-  # Build Docker Images
-  build:
-    name: Build Images
+  # Build & Push Docker Images
+  build-and-push:
+    name: Build & Push Images
     runs-on: ubuntu-latest
-    needs: [security-scan, dependency-check]
-    outputs:
-      image-digest: ${{ steps.build.outputs.digest }}
+    needs: [security-scan]
+    strategy:
+      matrix:
+        service: [brain-gateway, auth-service, client-portal]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to Container Registry
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata for ${{ matrix.service }}
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=sha
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
 
-      - name: Build and push CrewAI image
-        id: build-crewai
+      - name: Determine Context & Dockerfile
+        id: context
+        run: |
+          if [ "${{ matrix.service }}" == "brain-gateway" ]; then
+            echo "path=./bizosaas-brain-core/brain-gateway" >> $GITHUB_OUTPUT
+            echo "dockerfile=./bizosaas-brain-core/brain-gateway/Dockerfile" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.service }}" == "auth-service" ]; then
+            echo "path=./bizosaas-brain-core/auth" >> $GITHUB_OUTPUT
+            echo "dockerfile=./bizosaas-brain-core/auth/Dockerfile" >> $GITHUB_OUTPUT
+          elif [ "${{ matrix.service }}" == "client-portal" ]; then
+            echo "path=./portals/client-portal" >> $GITHUB_OUTPUT
+            echo "dockerfile=./portals/client-portal/Dockerfile.prod" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
-          context: ./n8n/crewai
-          file: ./n8n/crewai/Dockerfile
+          context: ${{ steps.context.outputs.path }}
+          file: ${{ steps.context.outputs.dockerfile }}
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-crewai:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push WordPress image
-        id: build-wordpress
-        uses: docker/build-push-action@v5
-        with:
-          context: ./n8n/wordpress
-          file: ./n8n/wordpress/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-wordpress:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push Frontend image
-        id: build-frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: ./n8n/frontend
-          file: ./n8n/frontend/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
