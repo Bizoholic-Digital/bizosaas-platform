@@ -1,0 +1,87 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# BizOSaaS Core Services Stack
+# ═══════════════════════════════════════════════════════════════════════════
+# Contains: API Gateway, Auth Service, MCP Servers
+# Deploy this AFTER infrastructure stack
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ========================================
+  # API Gateway
+  # ========================================
+  brain-gateway:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
+    container_name: brain-gateway
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/0
+      - TEMPORAL_HOST=temporal:7233
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    networks:
+      - brain-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+    restart: unless-stopped
+
+  # ========================================
+  # Auth Service
+  # ========================================
+  auth-service:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
+    container_name: brain-auth
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key}
+    networks:
+      - brain-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-auth.rule=Host(`auth-api.bizoholic.net`)"
+      - "traefik.http.routers.brain-auth.entrypoints=websecure"
+      - "traefik.http.routers.brain-auth.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-auth.loadbalancer.server.port=8007"
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (GitHub Integration)
+  # ========================================
+  github-mcp:
+    image: ghcr.io/modelcontextprotocol/servers/github:latest
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════════════════════════
+networks:
+  brain-network:
+    external: true
+  dokploy-network:
+    external: true

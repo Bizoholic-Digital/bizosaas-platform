@@ -1,0 +1,46 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# BizOSaaS Frontend Stack
+# ═══════════════════════════════════════════════════════════════════════════
+# Contains: Client Portal, Admin Portal (future)
+# Deploy this AFTER core services stack
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ========================================
+  # Client Portal
+  # ========================================
+  client-portal:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    container_name: client-portal
+    environment:
+      - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
+      - NEXTAUTH_URL=https://app.bizoholic.net
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-super-secret-key}
+      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
+      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
+      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
+      - AUTHENTIK_URL=${AUTHENTIK_URL:-http://localhost:9000}
+    networks:
+      - brain-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+    restart: unless-stopped
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════════════════════════
+networks:
+  brain-network:
+    external: true
+  dokploy-network:
+    external: true
