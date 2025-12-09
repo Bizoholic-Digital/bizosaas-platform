@@ -59,27 +59,27 @@ services:
       - "traefik.http.routers.brain-auth.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-auth.loadbalancer.server.port=8007"
     restart: unless-stopped
-
   # ========================================
   # MCP Server (GitHub Integration)
   # ========================================
-  github-mcp:
-    image: ghcr.io/modelcontextprotocol/servers/github:latest
-    container_name: brain-mcp-github
-    environment:
-      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
-    networks:
-      - brain-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
-    restart: unless-stopped
+  # Commented out - image not available
+  # github-mcp:
+  #   image: ghcr.io/modelcontextprotocol/servers/github:latest
+  #   container_name: brain-mcp-github
+  #   environment:
+  #     - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
+  #   networks:
+  #     - brain-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.2'
+  #         memory: 256M
+  #   restart: unless-stopped
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Networks
-# ═══════════════════════════════════════════════════════════════════════════
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Networks
+  # ═══════════════════════════════════════════════════════════════════════════
 networks:
   brain-network:
     external: true
