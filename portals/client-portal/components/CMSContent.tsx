@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { PageForm } from './PageForm';
 import { PostForm } from './PostForm';
+import { brainApi } from '@/lib/brain-api';
 
 interface CMSContentProps {
     activeTab: string;
@@ -27,25 +28,20 @@ export const CMSContent: React.FC<CMSContentProps> = ({ activeTab }) => {
         fetchData();
     }, [activeTab]);
 
+
+
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            // New logic: fetch via Brain Gateway -> WordPress Connector
-            let data: any = { data: [] };
-
             if (activeTab === 'cms-pages') {
-                // In a real app we'd get the connector ID dynamically.
-                // For MVP, we pass 'wordpress' type or assume first active WP connector
-                // This call should go to something like `/api/brain/connectors/proxy/wordpress/pages`
-                // But since we are client-side, we use the brainApi lib helper we will assume exists or mocked here
-                // For now, let's keep it mocked until we wire the exact proxy endpoint in next step
-                // data = await brainApi.connectors.sync('wordpress', 'pages'); 
-                setPages([]);
+                const data = await brainApi.cms.listPages();
+                setPages(data as any);
             } else if (activeTab === 'cms-posts') {
-                // data = await brainApi.connectors.sync('wordpress', 'posts');
-                setPosts([]);
+                const data = await brainApi.cms.listPosts();
+                setPosts(data as any);
             } else if (activeTab === 'cms-media') {
-                setMedia([]);
+                const data = await brainApi.cms.listMedia();
+                setMedia(data as any);
             }
         } catch (error) {
             console.error('Failed to fetch CMS data:', error);

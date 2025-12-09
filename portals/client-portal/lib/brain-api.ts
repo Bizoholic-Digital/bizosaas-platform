@@ -117,5 +117,22 @@ export const brainApi = {
             if (!res.ok) return [];
             return res.json();
         }
+    },
+    cms: {
+        listPages: async () => {
+            const res = await fetch(`${BRAIN_GATEWAY_URL}/api/cms/pages`);
+            if (!res.ok) return [];
+            return res.json();
+        },
+        listPosts: async () => {
+            const res = await fetch(`${BRAIN_GATEWAY_URL}/api/cms/posts`);
+            if (!res.ok) return [];
+            return res.json();
+        },
+        listMedia: async () => {
+            const res = await fetch(`${BRAIN_GATEWAY_URL}/api/cms/media`);
+            if (!res.ok) return [];
+            return res.json();
+        }
     }
 };

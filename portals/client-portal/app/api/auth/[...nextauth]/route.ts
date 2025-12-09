@@ -1,28 +1,48 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
+import AuthentikProvider from 'next-auth/providers/authentik';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GithubProvider from 'next-auth/providers/github';
-import GoogleProvider from 'next-auth/providers/google';
 
 const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8001';
 
+// Use Authentik service name for internal Docker communication
+const AUTHENTIK_INTERNAL_URL = process.env.AUTHENTIK_INTERNAL_URL || 'http://authentik-server:9000';
+// Use localhost for browser-redirects
+const AUTHENTIK_PUBLIC_URL = process.env.AUTHENTIK_URL || 'http://localhost:9000';
+
 export const authOptions: NextAuthOptions = {
     providers: [
-        // Credentials Provider - Email/Password via Brain Gateway
+        // Authentik Provider (SSO)
+        AuthentikProvider({
+            name: 'BizOSaaS SSO',
+            clientId: process.env.AUTHENTIK_CLIENT_ID || 'bizosaas-brain',
+            clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || '',
+            issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_INTERNAL_URL}/application/o/bizosaas-brain/`,
+            authorization: {
+                params: {
+                    scope: "openid profile email",
+                },
+                url: `${AUTHENTIK_PUBLIC_URL}/application/o/authorize/`,
+            },
+            token: `${AUTHENTIK_INTERNAL_URL}/application/o/token/`,
+            userinfo: `${AUTHENTIK_INTERNAL_URL}/application/o/userinfo/`,
+            wellKnown: `${AUTHENTIK_INTERNAL_URL}/application/o/bizosaas-brain/.well-known/openid-configuration`,
+        }),
+
+        // Legacy/Dev Credentials Provider
         CredentialsProvider({
-            name: 'Credentials',
+            name: 'Direct Login (Legacy)',
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
                 brand: { label: "Brand", type: "text" }
             },
             async authorize(credentials) {
+                // ... (Existing logic)
                 if (!credentials?.email || !credentials?.password) {
-                    throw new Error('Email and password required');
+                    return null;
                 }
-
+                const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
                 try {
-                    // Call Auth Service DIRECTLY (bypassing Brain Gateway for now)
-                    const AUTH_SERVICE_URL = 'http://localhost:8009';
                     const response = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -33,57 +53,22 @@ export const authOptions: NextAuthOptions = {
                             remember_me: true
                         })
                     });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('Login failed:', response.status, errorText);
-                        return null;
-                    }
-
+                    if (!response.ok) return null;
                     const data = await response.json();
-                    console.log('Login successful:', data);
-
-                    // Return user object with tokens
                     return {
                         id: data.user.id,
                         email: data.user.email,
-                        name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim() || data.user.email,
+                        name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim(),
                         role: data.user.role,
                         tenant_id: data.tenant.id,
                         brand: credentials.brand || 'bizoholic',
                         access_token: data.access_token,
                         refresh_token: data.refresh_token
                     };
-                } catch (error) {
-                    console.error('Auth error:', error);
-                    return null;
-                }
+                } catch (e) { return null; }
             }
         }),
-
-        // GitHub Provider
-        GithubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID || 'dummy',
-            clientSecret: process.env.GITHUB_CLIENT_SECRET || 'dummy',
-            authorization: {
-                params: {
-                    scope: 'read:user user:email'
-                }
-            }
-        }),
-
-        // Google Provider
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID || 'dummy',
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy',
-            authorization: {
-                params: {
-                    prompt: "consent",
-                    access_type: "offline",
-                    response_type: "code"
-                }
-            }
-        })
+        // Social Providers removed (Handled by Authentik)
     ],
 
     callbacks: {
@@ -99,7 +84,21 @@ export const authOptions: NextAuthOptions = {
                 token.refresh_token = user.refresh_token;
             }
 
-            // Handle social login
+            // Handle Authentik login - Map OIDC profile directly
+            if (account?.provider === 'authentik' && profile) {
+                // Determine role from groups or default
+                const groups = (profile as any).groups || [];
+                const role = groups.includes('authentik Admins') ? 'admin' : 'user';
+
+                token.id = profile.sub || token.id;
+                token.role = role;
+                token.tenant_id = (profile as any).tenant_id || 'default-tenant';
+                token.brand = 'bizoholic';
+                // Don't call backend yet - rely on OIDC profile
+                return token;
+            }
+
+            // Handle legacy social login (Github/Google)
             if (account?.provider === 'github' || account?.provider === 'google') {
                 try {
                     // Register/login user via Brain Gateway

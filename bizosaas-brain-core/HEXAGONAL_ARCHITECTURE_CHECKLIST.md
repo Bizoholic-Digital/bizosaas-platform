@@ -10,7 +10,7 @@ This checklist validates that the BizOSaaS platform follows DDD (Domain-Driven D
 |-------|----------|--------|-------|
 | ☐ | Brain Core business logic runs without external systems | 🔴 Not Met | Direct httpx calls to external services |
 | ☐ | Swap WordPress → Drupal without changing core | 🟡 Partial | Connectors abstracted, but no port layer |
-| ☐ | Domain models have no external dependencies | 🔴 Not Met | No formal domain models defined |
+| ☐ | Domain models have no external dependencies | 🟡 Partial | Onboarding entities defined as Pydantic models (Step 4.1) |
 
 **Action Required:**
 - Define domain entities (Content, Contact, Order, etc.) as pure Python classes
@@ -64,6 +64,7 @@ class WordPressAdapter(CMSPort):
 - ✅ Connectors (`brain-gateway/app/connectors/`) - 13 external system connectors
 - ✅ Auth (`auth/`) - Authentication service (37KB FastAPI-Users)
 - ✅ Workflows (`temporal-integration/`) - Temporal orchestration (14KB)
+- ✅ Onboarding (`brain-gateway/app/api/onboarding.py`) - New context for tenant induction
 - ☐ Orchestration (`brain-gateway/domain/`) - Agent routing and coordination (TO CREATE)
 
 **External System Connectors (NOT HOSTED - Data lives externally):**
@@ -107,7 +108,7 @@ async def publish_event(event: DomainEvent):
 
 | Check | Criteria | Status | Notes |
 |-------|----------|--------|-------|
-| ☐ | 12 core entities defined | 🔴 Not Met | No canonical entities |
+| ☐ | 12 core entities defined | 🟡 Partial | Onboarding entities defined (BusinessProfile, Goals) |
 | ☐ | External data mapped to canonical | 🔴 Not Met | Raw data passed through |
 | ☐ | Canonical schema is version-controlled | 🔴 Not Met | No schema files |
 
@@ -124,6 +125,7 @@ async def publish_event(event: DomainEvent):
 10. Workflow
 11. AgentDecision
 12. AuditRecord
+13. OnboardingProfile (New)
 
 ---
 
@@ -152,14 +154,16 @@ async def publish_event(event: DomainEvent):
 
 | Principle | Score | Target |
 |-----------|-------|--------|
-| Domain Independence | 15% | 100% |
+| Domain Independence | 20% | 100% |
 | Ports & Adapters | 10% | 100% |
-| Bounded Contexts | 45% | 100% |
+| Bounded Contexts | 50% | 100% |
 | Event-Driven | 0% | 100% |
-| Canonical Model | 5% | 100% |
+| Canonical Model | 10% | 100% |
 | Testability | 25% | 100% |
 | Explainability | 20% | 100% |
-| **Overall** | **17%** | **100%** |
+| **Overall** | **19%** | **100%** |
+
+*(Updated: 2025-12-09 - Added Onboarding Context and Entities)*
 
 ---
 
