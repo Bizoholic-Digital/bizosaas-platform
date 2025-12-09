@@ -375,10 +375,10 @@ jobs:
         run: |
           if [ "${{ matrix.service }}" == "brain-gateway" ]; then
             echo "path=./bizosaas-brain-core/brain-gateway" >> $GITHUB_OUTPUT
-            echo "dockerfile=./bizosaas-brain-core/brain-gateway/Dockerfile.prod" >> $GITHUB_OUTPUT
+            echo "dockerfile=./bizosaas-brain-core/brain-gateway/Dockerfile" >> $GITHUB_OUTPUT
           elif [ "${{ matrix.service }}" == "auth-service" ]; then
             echo "path=./bizosaas-brain-core/auth" >> $GITHUB_OUTPUT
-            echo "dockerfile=./bizosaas-brain-core/auth/Dockerfile.prod" >> $GITHUB_OUTPUT
+            echo "dockerfile=./bizosaas-brain-core/auth/Dockerfile" >> $GITHUB_OUTPUT
           elif [ "${{ matrix.service }}" == "client-portal" ]; then
             echo "path=./portals/client-portal" >> $GITHUB_OUTPUT
             echo "dockerfile=./portals/client-portal/Dockerfile.prod" >> $GITHUB_OUTPUT
