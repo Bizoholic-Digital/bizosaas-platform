@@ -26,9 +26,6 @@ import { IntegrationsContent } from '@/components/IntegrationsContent';
 import { SettingsContent } from '@/components/SettingsContent';
 import { useSession } from 'next-auth/react';
 import { getUserDisplayInfoFromSession, filterMenuByPermissions } from '@/utils/rbac';
-import ConnectorsPage from './connectors/page';
-import ToolsPage from './tools/page';
-import GetWebsitePage from './get-website/page';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
 
