@@ -1,6 +1,7 @@
+```json
 {
   "name": "client-portal",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Multi-Tenant Client Portal - Self-Service Dashboard",
   "scripts": {
