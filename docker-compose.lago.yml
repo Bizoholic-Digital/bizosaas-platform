@@ -19,11 +19,6 @@ services:
     networks:
       - brain-network
       - dokploy-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U lago -d lago -h localhost" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   lago-redis:
     image: redis:7-alpine
@@ -34,18 +29,13 @@ services:
     networks:
       - brain-network
       - dokploy-network
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   lago-migrate:
     image: getlago/api:v1.16.0
     container_name: lago-migrate
     depends_on:
-      lago-db:
-        condition: service_healthy
+      - lago-db
+      - lago-redis
     command: [ "./scripts/migrate.sh" ]
     environment:
       - DATABASE_URL=postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
@@ -68,9 +58,9 @@ services:
       lago-migrate:
         condition: service_completed_successfully
       lago-db:
-        condition: service_healthy
+        condition: service_started
       lago-redis:
-        condition: service_healthy
+        condition: service_started
     command: [ "./scripts/start.api.sh" ]
     environment:
       - LAGO_API_URL=http://lago-api:3000
@@ -103,9 +93,9 @@ services:
       lago-migrate:
         condition: service_completed_successfully
       lago-db:
-        condition: service_healthy
+        condition: service_started
       lago-redis:
-        condition: service_healthy
+        condition: service_started
     command: [ "./scripts/start.worker.sh" ]
     environment:
       - LAGO_API_URL=http://lago-api:3000
