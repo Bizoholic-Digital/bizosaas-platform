@@ -25,7 +25,7 @@ services:
       - lago-db
       - lago-redis
     environment:
-      - LAGO_API_URL=http://localhost:3000
+      - LAGO_API_URL=http://lago-api:3000
       - LAGO_FRONT_URL=http://localhost:8088
       - DATABASE_URL=postgresql://lago:lago@lago-db:5432/lago
       - REDIS_URL=redis://lago-redis:6379/1
@@ -36,13 +36,13 @@ services:
       - ENCRYPTION_PRIMARY_KEY=b871ed19c83665268c74149028bfdf37
       - LAGO_RSA_PRIVATE_KEY=${LAGO_RSA_PRIVATE_KEY}
     ports:
-      - "3000:3000"
+      - "3010:3000"
     networks:
       - dokploy-network
 
   lago-worker:
     image: getlago/api:v1.16.0
-    command: ./scripts/start_worker.sh
+    entrypoint: [ "/app/scripts/start_worker.sh" ]
     depends_on:
       - lago-db
       - lago-redis
@@ -60,10 +60,11 @@ services:
 
   lago-clock:
     image: getlago/api:v1.16.0
-    command: ./scripts/start_clock.sh
+    entrypoint: [ "/app/scripts/start_clock.sh" ]
     depends_on:
       - lago-db
       - lago-redis
+
     environment:
       - DATABASE_URL=postgresql://lago:lago@lago-db:5432/lago
       - REDIS_URL=redis://lago-redis:6379/1
