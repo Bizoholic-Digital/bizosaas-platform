@@ -119,45 +119,58 @@ function LoginContent() {
   const brandConfig = BRANDS[brand];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-12">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="text-center space-y-4 pb-4">
-          {/* Brand Logo */}
-          <div className="mx-auto flex items-center justify-center mb-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-4 py-12">
+      <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+        <CardHeader className="text-center space-y-6 pb-6">
+          {/* Brand Logo with subtle animation */}
+          <div className="mx-auto flex items-center justify-center mb-2 transition-transform hover:scale-105 duration-300">
             <img
               src="/logo.png"
               alt="Bizoholic Digital"
-              className="h-24 w-auto object-contain"
+              className="h-24 w-auto object-contain drop-shadow-lg"
             />
           </div>
 
-          <div>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Bizoholic Digital</CardTitle>
-            <p className="text-sm text-muted-foreground mt-2">Unified Enterprise SaaS Platform</p>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+              Welcome Back
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Sign in to access your enterprise dashboard
+            </p>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-2">
-          {/* Authentik SSO Login */}
-          <div className="space-y-4">
+          {/* Primary SSO Login */}
+          <div className="space-y-3">
             <Button
               type="button"
               variant="default"
               onClick={handleAuthentikLogin}
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
               size="lg"
             >
-              <Lock className="h-5 w-5 mr-3" />
-              Sign in with BizOSaaS SSO
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <Lock className="h-5 w-5 mr-3" />
+                  Sign in with SSO
+                </>
+              )}
             </Button>
 
             <Button
               type="button"
               variant="outline"
-              onClick={handleAuthentikLogin} // Authentik handles both Login and Signup flows
+              onClick={handleAuthentikLogin}
               disabled={isLoading}
-              className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-6 text-lg"
+              className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-6 text-lg font-semibold transition-all duration-300"
               size="lg"
             >
               <Mail className="h-5 w-5 mr-3" />
@@ -165,31 +178,67 @@ function LoginContent() {
             </Button>
           </div>
 
+          {/* Social Login Hint */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <Separator />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white dark:bg-gray-900 px-3 text-muted-foreground font-medium">
+                SSO includes social login
+              </span>
+            </div>
+          </div>
+
+          {/* Social Icons (Visual hint - actual auth via Authentik) */}
+          <div className="flex justify-center gap-4 opacity-60">
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Google className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Github className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <Layout className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            </div>
+          </div>
+
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 border border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-top-2 duration-300">
+              <p className="text-sm text-red-800 dark:text-red-200 font-medium">{error}</p>
             </div>
           )}
 
-          {/* Setup Info */}
-          <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 mt-6">
-            <CardContent className="p-4">
-              <p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                Setup & Access
-              </p>
-              <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                <div><strong>Admin Access:</strong> Use the SSO button above</div>
-                <div className="text-[10px] opacity-70">Credentials managed via Central Auth (Authentik)</div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Support Links */}
+          <div className="flex justify-center gap-6 text-sm">
+            <a
+              href="https://sso.bizoholic.net/if/flow/default-recovery-flow/"
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Forgot Password?
+            </a>
+            <span className="text-gray-300 dark:text-gray-700">|</span>
+            <a
+              href="#"
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
+            >
+              Need Help?
+            </a>
+          </div>
 
-          {/* Port Info & Security */}
-          <div className="text-center text-xs text-muted-foreground space-y-2 mt-6">
-            <p>🎯 Port 3003: Unified Dashboard</p>
-            <p className="text-[10px] opacity-70 flex items-center justify-center gap-1">
-              <Lock className="w-3 h-3" /> Secured by HashiCorp Vault. GDPR Compliant.
-            </p>
+          {/* Footer - Legal & Security */}
+          <div className="text-center space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <Lock className="w-3 h-3" />
+              <span>Enterprise-grade security with GDPR compliance</span>
+            </div>
+            <div className="flex justify-center gap-4 text-xs text-muted-foreground">
+              <a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a>
+              <span>•</span>
+              <a href="#" className="hover:text-blue-600 transition-colors">Terms of Service</a>
+            </div>
           </div>
         </CardContent>
       </Card>
