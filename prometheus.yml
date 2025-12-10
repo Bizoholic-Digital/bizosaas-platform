@@ -1,0 +1,36 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Brain Gateway
+  - job_name: 'brain-gateway'
+    static_configs:
+      - targets: ['brain-gateway:8000']
+    metrics_path: '/metrics'
+
+  # Auth Service
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['brain-auth:8007']
+    metrics_path: '/metrics'
+
+  # PostgreSQL Exporter (if available)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+
+  # Redis Exporter (if available)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  # Temporal
+  - job_name: 'temporal'
+    static_configs:
+      - targets: ['temporal:7233']
