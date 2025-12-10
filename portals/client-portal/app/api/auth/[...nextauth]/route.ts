@@ -4,28 +4,25 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 
 const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8001';
 
-// Use Authentik service name for internal Docker communication
-const AUTHENTIK_INTERNAL_URL = process.env.AUTHENTIK_INTERNAL_URL || 'http://authentik-server:9000';
-// Use localhost for browser-redirects
-const AUTHENTIK_PUBLIC_URL = process.env.AUTHENTIK_URL || 'http://localhost:9000';
+// Use Authentik URL from environment (same for both internal and public in Dokploy)
+const AUTHENTIK_URL = process.env.AUTHENTIK_URL || process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.bizoholic.net';
 
 export const authOptions: NextAuthOptions = {
     providers: [
         // Authentik Provider (SSO)
         AuthentikProvider({
             name: 'BizOSaaS SSO',
-            clientId: process.env.AUTHENTIK_CLIENT_ID || 'bizosaas-brain',
+            clientId: process.env.AUTHENTIK_CLIENT_ID || '',
             clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || '',
-            issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_INTERNAL_URL}/application/o/bizosaas-brain/`,
+            issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
             authorization: {
                 params: {
                     scope: "openid profile email",
                 },
-                url: `${AUTHENTIK_PUBLIC_URL}/application/o/authorize/`,
+                url: `${AUTHENTIK_URL}/application/o/authorize/`,
             },
-            token: `${AUTHENTIK_INTERNAL_URL}/application/o/token/`,
-            userinfo: `${AUTHENTIK_INTERNAL_URL}/application/o/userinfo/`,
-            wellKnown: `${AUTHENTIK_INTERNAL_URL}/application/o/bizosaas-brain/.well-known/openid-configuration`,
+            token: `${AUTHENTIK_URL}/application/o/token/`,
+            userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
         }),
 
         // Hybrid Credentials Provider (Email/Password via Authentik)
@@ -49,7 +46,7 @@ export const authOptions: NextAuthOptions = {
 
                     if (AUTHENTIK_API_TOKEN) {
                         const userResponse = await fetch(
-                            `${AUTHENTIK_INTERNAL_URL}/api/v3/core/users/?email=${encodeURIComponent(credentials.email)}`,
+                            `${AUTHENTIK_URL}/api/v3/core/users/?email=${encodeURIComponent(credentials.email)}`,
                             {
                                 headers: {
                                     'Authorization': `Bearer ${AUTHENTIK_API_TOKEN}`,
