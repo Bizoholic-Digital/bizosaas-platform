@@ -158,6 +158,10 @@ function LoginContent() {
         <CardContent className="space-y-6 pt-2">
           {/* Email/Password Form */}
           <form onSubmit={handleCredentialsLogin} className="space-y-4">
+            <div className="text-xs text-center text-muted-foreground bg-blue-50 dark:bg-blue-950 p-2 rounded-md border border-blue-200 dark:border-blue-800">
+              💡 <strong>Tip:</strong> Use SSO or social login buttons below for faster, more secure access
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
                 Email Address
