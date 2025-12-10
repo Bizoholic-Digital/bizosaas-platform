@@ -28,22 +28,67 @@ export const authOptions: NextAuthOptions = {
             wellKnown: `${AUTHENTIK_INTERNAL_URL}/application/o/bizosaas-brain/.well-known/openid-configuration`,
         }),
 
-        // Legacy/Dev Credentials Provider
+        // Hybrid Credentials Provider (Email/Password via Authentik)
         CredentialsProvider({
-            name: 'Direct Login (Legacy)',
+            name: 'Email & Password',
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
                 brand: { label: "Brand", type: "text" }
             },
             async authorize(credentials) {
-                // ... (Existing logic)
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
-                const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
+
                 try {
-                    const response = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
+                    // Try Authentik first (Resource Owner Password Credentials flow)
+                    const authentikTokenUrl = `${AUTHENTIK_INTERNAL_URL}/application/o/token/`;
+
+                    const authentikResponse = await fetch(authentikTokenUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            grant_type: 'password',
+                            username: credentials.email,
+                            password: credentials.password,
+                            client_id: process.env.AUTHENTIK_CLIENT_ID || '',
+                            client_secret: process.env.AUTHENTIK_CLIENT_SECRET || '',
+                            scope: 'openid profile email',
+                        }),
+                    });
+
+                    if (authentikResponse.ok) {
+                        const tokenData = await authentikResponse.json();
+
+                        // Get user info from Authentik
+                        const userinfoResponse = await fetch(`${AUTHENTIK_INTERNAL_URL}/application/o/userinfo/`, {
+                            headers: {
+                                'Authorization': `Bearer ${tokenData.access_token}`,
+                            },
+                        });
+
+                        if (userinfoResponse.ok) {
+                            const userInfo = await userinfoResponse.json();
+
+                            return {
+                                id: userInfo.sub,
+                                email: userInfo.email,
+                                name: userInfo.name || userInfo.preferred_username,
+                                role: userInfo.groups?.includes('authentik Admins') ? 'admin' : 'user',
+                                tenant_id: userInfo.tenant_id || 'default-tenant',
+                                brand: credentials.brand || 'bizoholic',
+                                access_token: tokenData.access_token,
+                                refresh_token: tokenData.refresh_token,
+                            };
+                        }
+                    }
+
+                    // Fallback to Auth Service (for legacy users not in Authentik)
+                    const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
+                    const authServiceResponse = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -53,19 +98,26 @@ export const authOptions: NextAuthOptions = {
                             remember_me: true
                         })
                     });
-                    if (!response.ok) return null;
-                    const data = await response.json();
-                    return {
-                        id: data.user.id,
-                        email: data.user.email,
-                        name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim(),
-                        role: data.user.role,
-                        tenant_id: data.tenant.id,
-                        brand: credentials.brand || 'bizoholic',
-                        access_token: data.access_token,
-                        refresh_token: data.refresh_token
-                    };
-                } catch (e) { return null; }
+
+                    if (authServiceResponse.ok) {
+                        const data = await authServiceResponse.json();
+                        return {
+                            id: data.user.id,
+                            email: data.user.email,
+                            name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim(),
+                            role: data.user.role,
+                            tenant_id: data.tenant.id,
+                            brand: credentials.brand || 'bizoholic',
+                            access_token: data.access_token,
+                            refresh_token: data.refresh_token
+                        };
+                    }
+
+                    return null;
+                } catch (e) {
+                    console.error('Login error:', e);
+                    return null;
+                }
             }
         }),
         // Social Providers removed (Handled by Authentik)
