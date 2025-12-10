@@ -79,11 +79,6 @@ services:
     networks:
       - brain-network
       - dokploy-network
-    healthcheck:
-      test: curl -f http://localhost:3000/health || exit 1
-      interval: 10s
-      start_period: 30s
-      timeout: 60s
 
   lago-worker:
     image: getlago/api:v1.16.0
@@ -116,8 +111,7 @@ services:
     container_name: lago-front
     restart: unless-stopped
     depends_on:
-      lago-api:
-        condition: service_healthy
+      - lago-api
     environment:
       - API_URL=http://lago-api:3000
       - APP_ENV=production
