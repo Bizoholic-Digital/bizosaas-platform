@@ -42,51 +42,39 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 try {
-                    // Try Authentik first (Resource Owner Password Credentials flow)
-                    const authentikTokenUrl = `${AUTHENTIK_INTERNAL_URL}/application/o/token/`;
+                    // Method 1: Validate against Authentik using API
+                    // Note: We can't directly validate password via API, so we check if user exists
+                    // and rely on SSO button for actual Authentik authentication
+                    const AUTHENTIK_API_TOKEN = process.env.AUTHENTIK_API_TOKEN;
 
-                    const authentikResponse = await fetch(authentikTokenUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            grant_type: 'password',
-                            username: credentials.email,
-                            password: credentials.password,
-                            client_id: process.env.AUTHENTIK_CLIENT_ID || '',
-                            client_secret: process.env.AUTHENTIK_CLIENT_SECRET || '',
-                            scope: 'openid profile email',
-                        }),
-                    });
+                    if (AUTHENTIK_API_TOKEN) {
+                        const userResponse = await fetch(
+                            `${AUTHENTIK_INTERNAL_URL}/api/v3/core/users/?email=${encodeURIComponent(credentials.email)}`,
+                            {
+                                headers: {
+                                    'Authorization': `Bearer ${AUTHENTIK_API_TOKEN}`,
+                                },
+                            }
+                        );
 
-                    if (authentikResponse.ok) {
-                        const tokenData = await authentikResponse.json();
+                        if (userResponse.ok) {
+                            const userData = await userResponse.json();
+                            const user = userData.results?.[0];
 
-                        // Get user info from Authentik
-                        const userinfoResponse = await fetch(`${AUTHENTIK_INTERNAL_URL}/application/o/userinfo/`, {
-                            headers: {
-                                'Authorization': `Bearer ${tokenData.access_token}`,
-                            },
-                        });
+                            if (user && user.is_active) {
+                                // User exists in Authentik
+                                // For security, we should use SSO button for Authentik users
+                                // But for convenience, we'll create a session if user exists
+                                // Note: This doesn't validate password! Use SSO for secure auth
 
-                        if (userinfoResponse.ok) {
-                            const userInfo = await userinfoResponse.json();
-
-                            return {
-                                id: userInfo.sub,
-                                email: userInfo.email,
-                                name: userInfo.name || userInfo.preferred_username,
-                                role: userInfo.groups?.includes('authentik Admins') ? 'admin' : 'user',
-                                tenant_id: userInfo.tenant_id || 'default-tenant',
-                                brand: credentials.brand || 'bizoholic',
-                                access_token: tokenData.access_token,
-                                refresh_token: tokenData.refresh_token,
-                            };
+                                console.log('User found in Authentik, but password validation requires SSO');
+                                // Don't authenticate here - redirect to SSO
+                                return null; // Force user to use SSO button
+                            }
                         }
                     }
 
-                    // Fallback to Auth Service (for legacy users not in Authentik)
+                    // Method 2: Fallback to Auth Service (for legacy users)
                     const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
                     const authServiceResponse = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
