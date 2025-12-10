@@ -122,9 +122,13 @@ function LoginContent() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-12">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center space-y-4 pb-4">
-          {/* Brand Logo - Bizoholic Exclusive */}
-          <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-2xl transition-all shadow-lg bg-blue-600 text-white mb-2">
-            <span className="text-4xl font-bold">B</span>
+          {/* Brand Logo */}
+          <div className="mx-auto flex items-center justify-center mb-4">
+            <img
+              src="/logo.png"
+              alt="Bizoholic Digital"
+              className="h-24 w-auto object-contain"
+            />
           </div>
 
           <div>
@@ -135,103 +139,53 @@ function LoginContent() {
 
         <CardContent className="space-y-6 pt-2">
           {/* Authentik SSO Login */}
-          <Button
-            type="button"
-            variant="default"
-            onClick={handleAuthentikLogin}
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            size="lg"
-          >
-            <Lock className="h-5 w-5 mr-2" />
-            Sign in with BizOSaaS SSO
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-950 px-2 text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
-          {/* Email/Password Form */}
-          <form onSubmit={handleCredentialsLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 border border-red-200 dark:border-red-800">
-                <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
-              </div>
-            )}
+          <div className="space-y-4">
+            <Button
+              type="button"
+              variant="default"
+              onClick={handleAuthentikLogin}
+              disabled={isLoading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg"
+              size="lg"
+            >
+              <Lock className="h-5 w-5 mr-3" />
+              Sign in with BizOSaaS SSO
+            </Button>
 
             <Button
-              type="submit"
-              className="w-full text-white font-medium"
+              type="button"
+              variant="outline"
+              onClick={handleAuthentikLogin} // Authentik handles both Login and Signup flows
               disabled={isLoading}
-              style={{ backgroundColor: brandConfig.primaryColor }}
+              className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 py-6 text-lg"
+              size="lg"
             >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
-                </>
-              ) : (
-                'Sign in to Dashboard'
-              )}
+              <Mail className="h-5 w-5 mr-3" />
+              Create New Account
             </Button>
-          </form>
+          </div>
 
-          {/* Demo Credentials */}
-          <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-3">
-              <p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-1">
-                SSO Login Credentials
+          {error && (
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          {/* Setup Info */}
+          <Card className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 mt-6">
+            <CardContent className="p-4">
+              <p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                Setup & Access
               </p>
               <div className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                <div><strong>Admin:</strong> akadmin / Admin@123</div>
-                <div className="text-[10px] opacity-70">Use "Sign in with BizOSaaS SSO" button above</div>
+                <div><strong>Admin Access:</strong> Use the SSO button above</div>
+                <div className="text-[10px] opacity-70">Credentials managed via Central Auth (Authentik)</div>
               </div>
             </CardContent>
           </Card>
 
           {/* Port Info & Security */}
-          <div className="text-center text-xs text-muted-foreground space-y-1">
+          <div className="text-center text-xs text-muted-foreground space-y-2 mt-6">
             <p>🎯 Port 3003: Unified Dashboard</p>
             <p className="text-[10px] opacity-70 flex items-center justify-center gap-1">
               <Lock className="w-3 h-3" /> Secured by HashiCorp Vault. GDPR Compliant.
