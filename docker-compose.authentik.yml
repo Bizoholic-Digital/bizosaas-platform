@@ -60,6 +60,7 @@ services:
       - "traefik.http.routers.authentik.rule=Host(`auth.bizoholic.net`)"
       - "traefik.http.routers.authentik.entrypoints=websecure"
       - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authentik.priority=100"
       - "traefik.http.services.authentik.loadbalancer.server.port=9000"
 
   authentik-worker:
