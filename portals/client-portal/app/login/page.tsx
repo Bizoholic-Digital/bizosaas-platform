@@ -183,7 +183,7 @@ function LoginContent() {
                   Password
                 </Label>
                 <a
-                  href="https://sso.bizoholic.net/if/flow/default-recovery-flow/"
+                  href="https://sso.bizoholic.net/if/flow/default-password-change/"
                   className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -303,7 +303,7 @@ function LoginContent() {
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>
             <a
-              href="https://sso.bizoholic.net/if/flow/default-enrollment-flow/"
+              href="https://sso.bizoholic.net/if/flow/enrollment/"
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold transition-colors"
               target="_blank"
               rel="noopener noreferrer"
