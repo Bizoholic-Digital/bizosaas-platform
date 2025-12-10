@@ -10,7 +10,9 @@ services:
   # Client Portal
   # ========================================
   client-portal:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    build:
+      context: ./portals/client-portal
+      dockerfile: Dockerfile.prod
     container_name: client-portal
     environment:
       - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
