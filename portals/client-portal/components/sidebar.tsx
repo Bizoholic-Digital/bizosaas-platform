@@ -13,6 +13,7 @@ import {
     Megaphone,
     LogOut,
     Sparkles,
+    Blocks,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,7 @@ export function Sidebar() {
             icon: Sparkles,
             badge: '93'
         }] : []),
+        { name: 'Integrations', href: '/dashboard/integrations', icon: Blocks },
         { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
         { name: 'Team', href: '/dashboard/team', icon: Users },
         { name: 'Support', href: '/dashboard/support', icon: HelpCircle },

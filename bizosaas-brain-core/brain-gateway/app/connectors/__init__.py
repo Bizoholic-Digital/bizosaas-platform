@@ -12,6 +12,11 @@ from .whatsapp import WhatsAppConnector
 from .google_shopping import GoogleShoppingConnector
 from .snapchat import SnapchatAdsConnector
 from .telegram import TelegramConnector
+from .fluent_crm import FluentCRMConnector
+from .woocommerce import WooCommerceConnector
+from .trello import TrelloConnector
+from .plane import PlaneConnector
+from .lago import LagoConnector
 
 __all__ = [
     "BaseConnector",
@@ -30,5 +35,10 @@ __all__ = [
     "WhatsAppConnector",
     "GoogleShoppingConnector",
     "SnapchatAdsConnector",
-    "TelegramConnector"
+    "TelegramConnector",
+    "FluentCRMConnector",
+    "WooCommerceConnector",
+    "TrelloConnector",
+    "PlaneConnector",
+    "LagoConnector"
 ]

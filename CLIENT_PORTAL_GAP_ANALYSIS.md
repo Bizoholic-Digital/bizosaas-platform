@@ -222,28 +222,28 @@
 | Tab / Sub-tab | Frontend Status | Backend Status | Interactive? | Notes |
 |---------------|-----------------|----------------|--------------|-------|
 | **Dashboard** | ✅ Ready | 🟡 Mixed | 🟡 Partial | `ProjectTasksWidget` uses GraphQL. Others are mock/static. |
-| **Connectors** | ✅ Ready | 🟡 Read-Only | ❌ No | "Connect" button has no action. Needs Modal + API. |
+| **Connectors** | ✅ Ready | ✅ API Ready | ✅ Yes | UI: `/dashboard/integrations`. API: `adapters` for CRM, CMS, Commerce, Tasks. |
 | **Tools** | ✅ Ready | ❌ Static | ❌ No | Hardcoded list. Needs affiliation/marketplace API. |
 | **Get Website** | ✅ Ready | ❌ Static | ❌ No | Wizard exists but no final submission action. |
 | **CMS** | | | | |
-| - *Pages* | ✅ Ready | 🟡 Proxied | ❌ No | Proxied to Wagtail but needs seamless wiring. |
-| - *Posts* | ✅ Ready | 🟡 Proxied | ❌ No | Same as Pages. |
-| - *Media* | ✅ Ready | 🟡 Proxied | ❌ No | Same as Pages. |
+| - *Pages* | ✅ Ready | 🟡 Proxied | ❌ No | Adapter created. Proxied to Wagtail but needs seamless wiring. |
+| - *Posts* | ✅ Ready | 🟡 Proxied | ❌ No | Adapter created. Same as Pages. |
+| - *Media* | ✅ Ready | 🟡 Proxied | ❌ No | Adapter created. Same as Pages. |
 | **CRM** | | | | |
-| - *Contacts* | ✅ Ready | ❌ Missing | ❌ No | UI mimics HubSpot but no actual database storage yet. |
+| - *Contacts* | ✅ Ready | ✅ Adapter | ❌ No | `FluentCRMConnector` created. Needs wiring to UI. |
 | - *Deals* | ✅ Ready | ❌ Missing | ❌ No | Kanban board exists visually. |
-| - *Tasks* | ✅ Ready | ❌ Missing | ❌ No | Task list exists visually. |
+| - *Tasks* | ✅ Ready | ✅ Adapter | ❌ No | `TrelloConnector` created. Needs wiring. |
 | **E-commerce** | | | | |
-| - *Products* | ✅ Ready | ❌ Missing | ❌ No | UI exists. Needs connection to Checkout/Saleor. |
-| - *Orders* | ✅ Ready | ❌ Missing | ❌ No | UI exists. |
+| - *Products* | ✅ Ready | ✅ Adapter | ❌ No | `WooCommerceConnector` created. Needs wiring. |
+| - *Orders* | ✅ Ready | ✅ Adapter | ❌ No | `WooCommerceConnector` created. |
 | **Marketing** | | | | |
 | - *Campaigns* | ✅ Ready | ❌ Missing | ❌ No | Forms exist. No email engine connected. |
 | **Analytics** | | | | |
 | - *Overview* | ✅ Ready | 🟡 Partial | ❌ No | Charts use hardcoded data. Needs GA4 aggregation. |
 | **Billing** | | | | |
-| - *Invoices* | ✅ Ready | ❌ Missing | ❌ No | Visual table only. No Stripe connection. |
+| - *Invoices* | ✅ Ready | ✅ Docker | ❌ No | `Lago` setup created. `LagoConnector` interface ready. |
 | **Integrations** | | | | |
-| - *API Keys* | ✅ Ready | ❌ Missing | ❌ No | UI exists. Needs Vault integration. |
+| - *API Keys* | ✅ Ready | ✅ Ready | ✅ Yes | New `Integrations` page implemented. Config dialogs ready. |
 | **AI Agents** | ✅ Ready | 🟡 Partial | ✅ Yes | Chat interface works. Agent configuration is mock. |
 | **Settings** | ✅ Ready | ❌ Missing | ❌ No | Profile forms exist. No save action. |
 
