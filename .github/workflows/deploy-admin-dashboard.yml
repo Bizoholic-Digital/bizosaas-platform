@@ -1,4 +1,7 @@
-name: Deploy Admin Dashboard to VPS
+name: Build Admin Dashboard Image
+
+# This workflow builds and pushes the Docker image to GHCR
+# Dokploy handles the actual deployment to VPS
 
 on:
   push:
@@ -16,7 +19,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}/admin-dashboard
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -53,51 +56,14 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            # Navigate to project directory
-            cd /opt/bizosaas-platform || exit 1
-            
-            # Pull latest code
-            git pull origin main
-            
-            # Pull latest Docker image
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # Update docker-compose and restart
-            docker compose -f docker-compose.prod.yml up -d admin-dashboard
-            
-            # Clean up old images
-            docker image prune -f
-
-      - name: Verify Deployment
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            # Check if container is running
-            docker ps | grep admin-dashboard
-            
-            # Check health
-            sleep 10
-            curl -f https://admin.bizoholic.net/api/health || exit 1
-
       - name: Notify on success
         if: success()
         run: |
-          echo "✅ Admin Dashboard deployed successfully to VPS"
-          echo "URL: https://admin.bizoholic.net"
+          echo "✅ Admin Dashboard image built and pushed successfully"
+          echo "Dokploy will handle deployment to https://admin.bizoholic.net"
 
       - name: Notify on failure
         if: failure()
         run: |
-          echo "❌ Deployment failed"
+          echo "❌ Build failed"
           exit 1
