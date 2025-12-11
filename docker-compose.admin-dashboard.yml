@@ -1,0 +1,53 @@
+# Docker Compose for Production VPS
+version: '3.9'
+
+services:
+  admin-dashboard:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:latest
+    container_name: bizosaas-admin-dashboard
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      # Authentik SSO Configuration (Production)
+      AUTHENTIK_URL: ${AUTHENTIK_URL:-https://sso.bizoholic.net}
+      NEXT_PUBLIC_SSO_URL: ${NEXT_PUBLIC_SSO_URL:-https://sso.bizoholic.net}
+      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas-admin/}
+      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
+      AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET}
+      AUTH_SECRET: ${AUTH_SECRET}
+
+      # Brain Gateway
+      NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL:-https://api.bizoholic.net}
+
+      # Temporal UI
+      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal.bizoholic.net}
+
+      # Vault UI
+      NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL:-https://vault.bizoholic.net}
+
+      # NextAuth
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://admin.bizoholic.net}
+      NEXTAUTH_URL_INTERNAL: ${NEXTAUTH_URL_INTERNAL:-http://localhost:3004}
+
+      # Environment
+      NODE_ENV: production
+      PORT: 3004
+    networks:
+      - bizosaas-network
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
+      - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3004"
+
+networks:
+  bizosaas-network:
+    external: true
