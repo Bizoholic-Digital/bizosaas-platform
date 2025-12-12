@@ -34,11 +34,11 @@ jobs:
             context: ./bizosaas/frontend/apps/coreldove-frontend
             dockerfile: Dockerfile.production
           - name: client-portal
-            context: ./bizosaas/frontend/apps/client-portal
-            dockerfile: Dockerfile.production
+            context: .
+            dockerfile: portals/client-portal/Dockerfile.prod
           - name: admin-dashboard
-            context: ./bizosaas/frontend/apps/bizosaas-admin
-            dockerfile: Dockerfile.production
+            context: .
+            dockerfile: portals/admin-dashboard/Dockerfile
           - name: business-directory-frontend
             context: ./bizosaas/frontend/apps/business-directory-frontend
             dockerfile: Dockerfile.production
