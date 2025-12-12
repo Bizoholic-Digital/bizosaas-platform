@@ -6,15 +6,15 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files from the admin-dashboard directory
+COPY portals/admin-dashboard/package.json portals/admin-dashboard/package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY portals/admin-dashboard/. .
 
 # Set build-time environment variables
 ENV NEXT_TELEMETRY_DISABLED 1

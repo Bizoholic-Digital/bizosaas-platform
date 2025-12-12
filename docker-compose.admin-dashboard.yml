@@ -4,8 +4,8 @@ version: '3.9'
 services:
   admin-dashboard:
     build:
-      context: ./portals/admin-dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: portals/admin-dashboard/Dockerfile
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:latest
     container_name: bizosaas-admin-dashboard
     restart: unless-stopped
