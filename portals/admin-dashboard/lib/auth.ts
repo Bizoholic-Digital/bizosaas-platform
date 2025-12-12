@@ -132,8 +132,12 @@ export const authConfig: NextAuthConfig = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 8 * 60 * 60, // 8 hours total session duration
+    updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
   },
+  secret: process.env.NEXTAUTH_SECRET || 'development-secret-change-in-production',
   trustHost: true,
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+```

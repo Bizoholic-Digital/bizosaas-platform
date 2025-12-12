@@ -1,344 +1,236 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Building2, Users, DollarSign, Activity, Search, Plus, Eye, Edit, Trash2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import {
+  Building2,
+  Search,
+  Plus,
+  MoreHorizontal,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Users,
+  DollarSign,
+  Activity
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface Tenant {
-  id: string
-  name: string
-  domain: string
-  status: 'active' | 'inactive' | 'trial' | 'suspended'
-  plan: 'starter' | 'professional' | 'enterprise' | 'trial'
-  users_count: number
-  created_at: string
-  last_activity: string
-  revenue: number
-  ai_agents_count: number
+  id: string;
+  name: string;
+  domain: string;
+  status: 'active' | 'suspended' | 'trial' | 'pending';
+  plan: string;
+  users_count: number;
+  created_at: string;
+  last_activity: string;
+  revenue: number;
+  ai_agents_count: number;
 }
 
-interface TenantMetrics {
-  total_count: number
-  active_count: number
-  trial_count: number
-  total_revenue: number
-  total_users: number
+interface TenantStats {
+  total_count: number;
+  active_count: number;
+  trial_count: number;
+  suspended_count: number;
+  total_revenue: number;
+  total_users: number;
+  growth_rate: number;
+  churn_rate: number;
 }
 
 export default function TenantsPage() {
-  const [tenants, setTenants] = useState<Tenant[]>([])
-  const [metrics, setMetrics] = useState<TenantMetrics | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [isLoading, setIsLoading] = useState(true)
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [stats, setStats] = useState<TenantStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    const fetchTenants = async () => {
-      try {
-        const queryParams = new URLSearchParams()
-        if (selectedStatus !== 'all') queryParams.append('status', selectedStatus)
-        if (searchTerm) queryParams.append('search', searchTerm)
-        
-        const response = await fetch(`/api/tenants?${queryParams}`)
-        const data = await response.json()
-        
-        setTenants(data.tenants || [])
-        setMetrics({
-          total_count: data.total_count || 0,
-          active_count: data.active_count || 0,
-          trial_count: data.trial_count || 0,
-          total_revenue: data.total_revenue || 0,
-          total_users: data.total_users || 0
-        })
-      } catch (error) {
-        console.error('Error fetching tenants:', error)
-        // Set fallback data
-        const mockTenants: Tenant[] = [
-          {
-            id: "tenant-001",
-            name: "Acme Corp",
-            domain: "acme.example.com",
-            status: "active",
-            plan: "enterprise",
-            users_count: 45,
-            created_at: "2024-01-15T10:00:00Z",
-            last_activity: "2024-09-26T07:30:00Z",
-            revenue: 15000,
-            ai_agents_count: 12
-          },
-          {
-            id: "tenant-002", 
-            name: "TechStart LLC",
-            domain: "techstart.example.com",
-            status: "active",
-            plan: "professional",
-            users_count: 23,
-            created_at: "2024-02-20T14:30:00Z",
-            last_activity: "2024-09-26T08:45:00Z",
-            revenue: 8500,
-            ai_agents_count: 8
-          },
-          {
-            id: "tenant-003",
-            name: "Global Dynamics",
-            domain: "globaldyn.example.com", 
-            status: "active",
-            plan: "starter",
-            users_count: 12,
-            created_at: "2024-03-10T09:15:00Z",
-            last_activity: "2024-09-25T16:20:00Z",
-            revenue: 2500,
-            ai_agents_count: 5
-          },
-          {
-            id: "tenant-004",
-            name: "Innovation Labs",
-            domain: "innolabs.example.com",
-            status: "trial", 
-            plan: "trial",
-            users_count: 7,
-            created_at: "2024-09-20T11:00:00Z",
-            last_activity: "2024-09-26T06:15:00Z",
-            revenue: 0,
-            ai_agents_count: 3
-          }
-        ]
-        setTenants(mockTenants)
-        setMetrics({
-          total_count: 247,
-          active_count: 243,
-          trial_count: 4,
-          total_revenue: 127543,
-          total_users: 8429
-        })
-      } finally {
-        setIsLoading(false)
+    fetchTenants();
+  }, []);
+
+  const fetchTenants = async () => {
+    try {
+      const response = await fetch('/api/tenants');
+      const data = await response.json();
+      if (data.tenants) {
+        setTenants(data.tenants);
+        setStats({
+          total_count: data.total_count,
+          active_count: data.active_count,
+          trial_count: data.trial_count,
+          suspended_count: data.suspended_count,
+          total_revenue: data.total_revenue,
+          total_users: data.total_users,
+          growth_rate: data.growth_rate,
+          churn_rate: data.churn_rate
+        });
       }
+    } catch (error) {
+      console.error('Failed to fetch tenants:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchTenants()
-  }, [selectedStatus, searchTerm])
-
-  // Server-side filtering is now handled by the API
-  const filteredTenants = tenants
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'text-green-600 bg-green-100'
-      case 'inactive': return 'text-gray-600 bg-gray-100'
-      case 'trial': return 'text-blue-600 bg-blue-100'
-      case 'suspended': return 'text-red-600 bg-red-100'
-      default: return 'text-gray-600 bg-gray-100'
-    }
-  }
-
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'enterprise': return 'text-purple-600 bg-purple-100'
-      case 'professional': return 'text-blue-600 bg-blue-100'
-      case 'starter': return 'text-green-600 bg-green-100'
-      case 'trial': return 'text-gray-600 bg-gray-100'
-      default: return 'text-gray-600 bg-gray-100'
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading tenants...</p>
-        </div>
-      </div>
-    )
-  }
+  const filteredTenants = tenants.filter(tenant =>
+    tenant.name.toLowerCase().includes(search.toLowerCase()) ||
+    tenant.domain.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <div className="p-8 space-y-8">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tenant Management</h1>
-          <p className="text-gray-600">Manage all tenant organizations and their subscriptions</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Tenant Management</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Manage all platform tenants, subscriptions, and access.</p>
         </div>
-        <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Tenant
-        </button>
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="mr-2 h-4 w-4" /> Create Tenant
+        </Button>
       </div>
 
-      {/* Metrics Overview */}
-      {metrics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <Building2 className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Tenants</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.total_count}</p>
-              </div>
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tenants</div>
+              <Building2 className="h-4 w-4 text-gray-500" />
             </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_count}</div>
+            <p className="text-xs text-green-500 flex items-center mt-1">
+              <Activity className="h-3 w-3 mr-1" /> +{stats.growth_rate}% from last month
+            </p>
           </div>
-          
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <Activity className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Active Tenants</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.active_count}</p>
-              </div>
+          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Subscriptions</div>
+              <CheckCircle className="h-4 w-4 text-green-500" />
             </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active_count}</div>
           </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-purple-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.total_users.toLocaleString()}</p>
-              </div>
+          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</div>
+              <Users className="h-4 w-4 text-blue-500" />
             </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_users.toLocaleString()}</div>
           </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-green-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${metrics.total_revenue.toLocaleString()}</p>
-              </div>
+          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="flex items-center justify-between space-y-0 pb-2">
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Monthly Revenue</div>
+              <DollarSign className="h-4 w-4 text-green-500" />
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <Activity className="h-8 w-8 text-blue-600" />
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-500">Trial Tenants</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.trial_count}</p>
-              </div>
-            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">${stats.total_revenue.toLocaleString()}</div>
           </div>
         </div>
       )}
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <input
-              type="text"
+      {/* Filters and Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
               placeholder="Search tenants..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
-          <div className="flex items-center space-x-4">
-            <select
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="trial">Trial</option>
-              <option value="suspended">Suspended</option>
-            </select>
+          <div className="flex gap-2">
+            <Button variant="outline">Filter</Button>
+            <Button variant="outline">Export</Button>
           </div>
         </div>
-      </div>
 
-      {/* Tenants Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Tenant Organizations</h3>
-          <p className="text-sm text-gray-500">{filteredTenants.length} of {tenants.length} tenants</p>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Organization
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Plan
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Users
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Revenue
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTenants.map((tenant) => (
-                <tr key={tenant.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{tenant.name}</div>
-                      <div className="text-sm text-gray-500">{tenant.domain}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(tenant.status)}`}>
-                      {tenant.status}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tenant Name</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Plan</TableHead>
+              <TableHead>Users</TableHead>
+              <TableHead>AI Agents</TableHead>
+              <TableHead>Revenue</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-10">Loading tenants...</TableCell>
+              </TableRow>
+            ) : filteredTenants.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-10">No tenants found.</TableCell>
+              </TableRow>
+            ) : (
+              filteredTenants.map((tenant) => (
+                <TableRow key={tenant.id}>
+                  <TableCell>
+                    <div className="font-medium text-gray-900 dark:text-white">{tenant.name}</div>
+                    <div className="text-sm text-gray-500">{tenant.domain}</div>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tenant.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                        tenant.status === 'suspended' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      }`}>
+                      {tenant.status === 'active' && <CheckCircle className="w-3 h-3 mr-1" />}
+                      {tenant.status === 'suspended' && <XCircle className="w-3 h-3 mr-1" />}
+                      {tenant.status === 'trial' && <AlertCircle className="w-3 h-3 mr-1" />}
+                      {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanColor(tenant.plan)}`}>
-                      {tenant.plan}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {tenant.users_count}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${tenant.revenue.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(tenant.created_at)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
-                      <button className="text-blue-600 hover:text-blue-900">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button className="text-green-600 hover:text-green-900">
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </TableCell>
+                  <TableCell className="capitalize">{tenant.plan}</TableCell>
+                  <TableCell>{tenant.users_count}</TableCell>
+                  <TableCell>{tenant.ai_agents_count}</TableCell>
+                  <TableCell>${tenant.revenue.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => navigator.clipboard.writeText(tenant.id)}>
+                          Copy Tenant ID
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem>Manage Subscription</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600">Suspend Tenant</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
-  )
+  );
 }
