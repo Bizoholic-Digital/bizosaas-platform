@@ -11,7 +11,7 @@ services:
   # ========================================
   client-portal:
     build:
-      context: ../..
+      context: .
       dockerfile: ./portals/client-portal/Dockerfile.prod
     container_name: client-portal
     environment:
