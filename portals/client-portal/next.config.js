@@ -75,14 +75,15 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config, { isServer }) => {
+    const path = require('path');
     // Fix module resolution for shared packages
     config.resolve.alias = {
       ...config.resolve.alias,
-      'lucide-react': require.resolve('lucide-react'),
-      'next-auth': require.resolve('next-auth'),
-      'react': require.resolve('react'),
-      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-      'react-dom': require.resolve('react-dom')
+      'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
+      'next-auth': path.resolve(__dirname, 'node_modules/next-auth'),
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom')
     };
 
     if (!isServer) {
