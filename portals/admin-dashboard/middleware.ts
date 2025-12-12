@@ -11,6 +11,7 @@ export default auth((req: NextRequest & { auth: Session | null }) => {
         pathname === "/login" ||
         pathname === "/unauthorized" ||
         pathname.startsWith("/api/auth") ||
+        pathname.startsWith("/api/health") ||
         pathname.startsWith("/_next") ||
         pathname.startsWith("/favicon")
     ) {
