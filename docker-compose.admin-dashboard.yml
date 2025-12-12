@@ -46,6 +46,10 @@ services:
       retries: 3
       start_period: 40s
     labels:
+      # Disable Dokploy auto-generated labels
+      - "com.docker.compose.project=bizosaas-admin"
+
+      # Manual Traefik configuration
       - "traefik.enable=true"
       - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
       - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
