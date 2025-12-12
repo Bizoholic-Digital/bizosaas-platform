@@ -15,6 +15,12 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
       - NEXT_TELEMETRY_DISABLED=1
+      # Authentication (Set in Dokploy Secrets)
+      # - NEXTAUTH_URL=https://cp.bizoholic.com
+      # - NEXTAUTH_SECRET=
+      # - AUTHENTIK_CLIENT_ID=
+      # - AUTHENTIK_CLIENT_SECRET=
+      # - AUTHENTIK_ISSUER=https://auth.bizoholic.com/application/o/bizosaas/
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -79,6 +85,12 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
       - NEXT_TELEMETRY_DISABLED=1
+      # Authentication (Set in Dokploy Secrets)
+      # - NEXTAUTH_URL=https://admin.bizoholic.com
+      # - NEXTAUTH_SECRET=
+      # - AUTHENTIK_CLIENT_ID=
+      # - AUTHENTIK_CLIENT_SECRET=
+      # - AUTHENTIK_ISSUER=https://auth.bizoholic.com/application/o/bizosaas/
     networks:
       - dokploy-network
     restart: unless-stopped
