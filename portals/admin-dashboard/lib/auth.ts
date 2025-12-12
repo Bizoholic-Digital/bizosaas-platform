@@ -61,7 +61,7 @@ export const authConfig: NextAuthConfig = {
       const { pathname } = request.nextUrl;
 
       // Public routes
-      if (pathname === "/login" || pathname === "/unauthorized" || pathname.startsWith("/api/auth")) {
+      if (pathname === "/login" || pathname === "/unauthorized" || pathname.startsWith("/api/auth") || pathname.startsWith("/api/health")) {
         return true;
       }
 
