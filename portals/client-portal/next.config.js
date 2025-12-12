@@ -1,3 +1,6 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
 /** @type {import('next').NextConfig} */
 /* eslint-disable @typescript-eslint/no-var-requires */
 const nextConfig = {
@@ -16,9 +19,6 @@ const nextConfig = {
   // Optimize for production
   compress: true,
   poweredByHeader: false,
-
-  // Base path for portal access
-  // basePath: '/portal', // Removed for subdomain architecture (client.bizoholic.com)
 
   // Environment variables
   env: {
@@ -75,6 +75,15 @@ const nextConfig = {
 
   // Webpack configuration
   webpack: (config, { isServer }) => {
+    // Fix module resolution for shared packages
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'lucide-react': require.resolve('lucide-react'),
+      'next-auth': require.resolve('next-auth'),
+      'react': require.resolve('react'),
+      'react-dom': require.resolve('react-dom')
+    };
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -86,8 +95,6 @@ const nextConfig = {
 };
 
 // PWA Configuration
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
 const withPWA = require('next-pwa')({
   dest: 'public',
   register: true,

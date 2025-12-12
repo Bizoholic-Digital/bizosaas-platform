@@ -25,24 +25,26 @@
       }
     ],
     "baseUrl": ".",
-    "@/*": [
-      "./src/*"
-    ],
-    "@/components/*": [
-      "./components/*"
-    ],
-    "@/app/*": [
-      "./app/*"
-    ],
-    "@/lib/*": [
-      "./lib/*"
-    ],
-    "@bizosaas/shared-ui": [
-      "../../packages/shared-ui"
-    ],
-    "@bizosaas/shared-ui/*": [
-      "../../packages/shared-ui/*"
-    ]
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/app/*": [
+        "./app/*"
+      ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+      "@bizosaas/shared-ui": [
+        "../../packages/shared-ui"
+      ],
+      "@bizosaas/shared-ui/*": [
+        "../../packages/shared-ui/*"
+      ]
+    }
   }
 },
 "include": [
