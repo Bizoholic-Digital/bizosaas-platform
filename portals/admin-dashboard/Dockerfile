@@ -32,10 +32,17 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built application
+# Copy built application - Next.js standalone structure
 COPY --from=builder /app/public ./public
+
+# Copy the standalone server and dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# The standalone build creates server.js in the root, but we need to ensure
+# all required files from .next are available
+RUN mkdir -p .next/server
+COPY --from=builder --chown=nextjs:nodejs /app/.next/server ./.next/server
 
 USER nextjs
 
