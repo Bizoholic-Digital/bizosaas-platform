@@ -33,6 +33,17 @@ const nextConfig = {
       },
     ];
   },
+  webpack: (config, { isServer }) => {
+    // Fix module resolution for shared packages
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'lucide-react': require.resolve('lucide-react'),
+      'next-auth': require.resolve('next-auth'),
+      'react': require.resolve('react'),
+      'react-dom': require.resolve('react-dom')
+    };
+    return config;
+  },
 }
 
 module.exports = withPWA(nextConfig);
