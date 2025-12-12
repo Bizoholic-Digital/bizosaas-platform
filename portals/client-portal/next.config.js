@@ -81,6 +81,7 @@ const nextConfig = {
       'lucide-react': require.resolve('lucide-react'),
       'next-auth': require.resolve('next-auth'),
       'react': require.resolve('react'),
+      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
       'react-dom': require.resolve('react-dom')
     };
 
