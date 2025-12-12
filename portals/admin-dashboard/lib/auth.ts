@@ -12,7 +12,7 @@ export const authConfig: NextAuthConfig = {
       name: "BizOSaaS SSO",
       type: "oidc",
       // Use same base URL, different application slug
-      issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas-admin/`,
+      issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
       clientId: process.env.AUTHENTIK_CLIENT_ID || "bizosaas-admin-dashboard",
       clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || "",
       authorization: {
