@@ -35,15 +35,13 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     const path = require('path');
-    // Fix module resolution for shared packages
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
-      'next-auth': path.resolve(__dirname, 'node_modules/next-auth'),
-      'react': path.resolve(__dirname, 'node_modules/react'),
-      'react/jsx-runtime': path.resolve(__dirname, 'node_modules/react/jsx-runtime'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom')
-    };
+
+    // Ensure modules resolve from the portal's node_modules first
+    config.resolve.modules = [
+      path.resolve(__dirname, 'node_modules'),
+      'node_modules'
+    ];
+
     return config;
   },
 }
