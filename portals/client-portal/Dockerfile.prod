@@ -21,7 +21,7 @@ WORKDIR /app
 
 # Copy node_modules from deps
 COPY --from=deps /app/portals/client-portal/node_modules ./portals/client-portal/node_modules
-COPY --from=deps /app/packages/shared-ui/node_modules ./packages/shared-ui/node_modules 2>/dev/null || :
+
 
 # Copy source code
 COPY portals/client-portal ./portals/client-portal

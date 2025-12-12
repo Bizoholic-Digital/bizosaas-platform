@@ -22,7 +22,7 @@ WORKDIR /app
 
 # Copy node_modules from deps
 COPY --from=deps /app/portals/admin-dashboard/node_modules ./portals/admin-dashboard/node_modules
-COPY --from=deps /app/packages/shared-ui/node_modules ./packages/shared-ui/node_modules 2>/dev/null || :
+
 
 # Copy source code
 COPY portals/admin-dashboard ./portals/admin-dashboard
