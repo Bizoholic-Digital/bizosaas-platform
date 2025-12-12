@@ -12,6 +12,8 @@ import {
   CheckCircle, Image, Layout, Sparkles, Gauge, Plug, Wrench, Globe, Building
 } from 'lucide-react';
 import { signOut } from "next-auth/react";
+import { DashboardSidebar } from '@/components/DashboardSidebar';
+import { useMobileSidebar } from '@/components/MobileSidebarContext';
 import { CRMContent } from '@/components/CRMContent';
 import { CMSContent } from '@/components/CMSContent';
 import { EcommerceContent } from '@/components/EcommerceContent';
@@ -34,7 +36,7 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { isSidebarOpen, toggleSidebar, isMobile } = useMobileSidebar();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [mounted, setMounted] = useState(false);
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
@@ -218,62 +220,7 @@ function DashboardContent() {
     }));
   };
 
-  const renderSidebarItem = (item: any) => {
-    const Icon = item.icon;
-    const isActive = activeTab === item.id || activeTab.startsWith(item.id + '-');
-    const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedSections[item.id];
-
-    if (item.hidden) return null;
-
-    return (
-      <div key={item.id}>
-        <button
-          onClick={() => {
-            if (hasChildren) {
-              toggleSection(item.id);
-            } else {
-              setActiveTab(item.id);
-              if (window.innerWidth < 1024) setIsSidebarOpen(false);
-            }
-          }}
-          className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors ${isActive
-            ? 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400'
-            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-        >
-          <div className="flex items-center space-x-3">
-            <Icon className="w-5 h-5" />
-            {isSidebarOpen && <span>{item.label}</span>}
-          </div>
-          {isSidebarOpen && hasChildren && (
-            isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-
-        {isSidebarOpen && hasChildren && isExpanded && (
-          <div className="ml-9 mt-1 space-y-1">
-            {item.children.map((child: any) => (
-              <button
-                key={child.id}
-                onClick={() => {
-                  setActiveTab(child.id);
-                  if (window.innerWidth < 1024) setIsSidebarOpen(false);
-                }}
-                className={`w-full flex items-center p-2 rounded-lg text-sm transition-colors ${activeTab === child.id
-                  ? 'text-purple-600 dark:text-purple-400 font-medium'
-                  : 'text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
-                  }`}
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-current mr-3" />
-                {child.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+  // renderSidebarItem has been moved to DashboardSidebar component
 
   const renderContent = () => {
     if (activeTab === 'dashboard') {
@@ -457,80 +404,31 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex">
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} transition-all duration-300 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-screen sticky top-0`}>
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-800 shrink-0">
-          <div className="flex items-center justify-between">
-            {isSidebarOpen && (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CP</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Client Portal</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">BizOSaaS Platform</p>
-                </div>
-              </div>
-            )}
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              {isSidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {menuItems.map((item) => renderSidebarItem(item))}
-        </nav>
-
-        {/* User Info */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800 shrink-0">
-          {isSidebarOpen ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">AC</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    Acme Corporation
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Premium Plan
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => signOut({ callbackUrl: '/login' })}
-                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
-              className="w-full p-2 flex justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-              title="Logout"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </div>
+      <DashboardSidebar
+        menuItems={menuItems}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        userInfo={{ displayName }}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
         <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800 p-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {activeTab === 'dashboard' ? 'Dashboard' : activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-            </h1>
+            <div className="flex items-center gap-3">
+              {isMobile && (
+                <button
+                  onClick={toggleSidebar}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+              )}
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {activeTab === 'dashboard' ? 'Dashboard' : activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </h1>
+            </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
 

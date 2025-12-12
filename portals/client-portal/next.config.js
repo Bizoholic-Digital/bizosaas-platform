@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const nextConfig = {
+  transpilePackages: ['@bizosaas/shared-ui'],
   // Enable standalone output for Docker optimization
   output: 'standalone',
 
@@ -83,4 +85,14 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// PWA Configuration
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
+
+export default withPWA(nextConfig);

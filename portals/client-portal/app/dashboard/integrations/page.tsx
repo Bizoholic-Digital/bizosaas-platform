@@ -33,7 +33,8 @@ interface Integration {
     category: 'crm' | 'cms' | 'ecommerce' | 'marketing' | 'tasks' | 'projects' | 'billing'
     icon: any
     status: IntegrationStatus
-    fields: { name: string; label: string; type: string; placeholder?: string }[]
+    fields?: { name: string; label: string; type: string; placeholder?: string }[]
+    authType: 'oauth' | 'api_key' | 'manual'
 }
 
 const integrations: Integration[] = [
@@ -48,7 +49,8 @@ const integrations: Integration[] = [
             { name: 'url', label: 'WordPress URL', type: 'url', placeholder: 'https://your-site.com' },
             { name: 'username', label: 'Username', type: 'text' },
             { name: 'application_password', label: 'Application Password', type: 'password' }
-        ]
+        ],
+        authType: 'manual'
     },
     {
         id: 'wordpress',
@@ -61,7 +63,8 @@ const integrations: Integration[] = [
             { name: 'url', label: 'WordPress URL', type: 'url' },
             { name: 'username', label: 'Username', type: 'text' },
             { name: 'application_password', label: 'Application Password', type: 'password' }
-        ]
+        ],
+        authType: 'manual'
     },
     {
         id: 'woocommerce',
@@ -74,7 +77,8 @@ const integrations: Integration[] = [
             { name: 'url', label: 'Store URL', type: 'url' },
             { name: 'consumer_key', label: 'Consumer Key', type: 'text' },
             { name: 'consumer_secret', label: 'Consumer Secret', type: 'password' }
-        ]
+        ],
+        authType: 'manual'
     },
     {
         id: 'trello',
@@ -86,7 +90,8 @@ const integrations: Integration[] = [
         fields: [
             { name: 'api_key', label: 'API Key', type: 'text' },
             { name: 'api_token', label: 'API Token', type: 'password' }
-        ]
+        ],
+        authType: 'manual'
     },
     {
         id: 'plane',
@@ -99,7 +104,8 @@ const integrations: Integration[] = [
             { name: 'url', label: 'Instance URL', type: 'url', placeholder: 'https://app.plane.so' },
             { name: 'api_key', label: 'API Key', type: 'password' },
             { name: 'workspace_slug', label: 'Workspace Slug', type: 'text' }
-        ]
+        ],
+        authType: 'manual'
     },
     {
         id: 'lago',
@@ -111,7 +117,17 @@ const integrations: Integration[] = [
         fields: [
             { name: 'api_url', label: 'API URL', type: 'url', placeholder: 'http://localhost:3000' },
             { name: 'api_key', label: 'API Key', type: 'password' }
-        ]
+        ],
+        authType: 'manual'
+    },
+    {
+        id: 'google_analytics',
+        name: 'Google Analytics 4',
+        description: 'Track website traffic and user behavior.',
+        category: 'marketing',
+        icon: Globe, // Fallback icon
+        status: 'disconnected',
+        authType: 'oauth'
     }
 ]
 
@@ -119,6 +135,28 @@ export default function IntegrationsPage() {
     const [activeTab, setActiveTab] = useState('all')
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
+
+    const handleOAuthConnect = async (integrationId: string) => {
+        try {
+            // Get tenant ID from session or context (mock for now)
+            const tenantId = 'default-tenant';
+
+            // Call backend to get auth URL
+            const response = await fetch(`/api/brain/auth/oauth/authorize/${integrationId}?tenant_id=${tenantId}&redirect_uri=${window.location.origin}/dashboard/integrations/callback`);
+
+            if (!response.ok) {
+                console.error('Failed to start OAuth flow');
+                return;
+            }
+
+            const data = await response.json();
+            if (data.url) {
+                window.location.href = data.url;
+            }
+        } catch (error) {
+            console.error('OAuth Error:', error);
+        }
+    };
 
     const filteredIntegrations = integrations.filter(integration => {
         const matchesSearch = integration.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -185,52 +223,61 @@ export default function IntegrationsPage() {
                                 </CardDescription>
                             </CardContent>
                             <CardFooter>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button
-                                            variant={integration.status === 'connected' ? "outline" : "default"}
-                                            className={`w-full ${integration.status === 'connected' ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-700'}`}
-                                            onClick={() => setSelectedIntegration(integration)}
-                                        >
-                                            {integration.status === 'connected' ? (
-                                                <>
-                                                    <Settings2 className="mr-2 h-4 w-4" /> Configure
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <PlusCircle className="mr-2 h-4 w-4" /> Connect
-                                                </>
-                                            )}
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-[425px]">
-                                        <DialogHeader>
-                                            <DialogTitle>Connect {integration.name}</DialogTitle>
-                                            <DialogDescription className="text-slate-400">
-                                                Enter your credentials to connect {integration.name} to BizOSaaS.
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <div className="grid gap-4 py-4">
-                                            {integration.fields.map((field) => (
-                                                <div key={field.name} className="space-y-2">
-                                                    <Label htmlFor={field.name} className="text-right">
-                                                        {field.label}
-                                                    </Label>
-                                                    <Input
-                                                        id={field.name}
-                                                        type={field.type}
-                                                        placeholder={field.placeholder}
-                                                        className="bg-slate-800 border-slate-700 text-white"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <DialogFooter>
-                                            <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">Cancel</Button>
-                                            <Button className="bg-blue-600 hover:bg-blue-700">Save Changes</Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
+                                {integration.authType === 'oauth' && integration.status !== 'connected' ? (
+                                    <Button
+                                        className="w-full bg-blue-600 hover:bg-blue-700"
+                                        onClick={() => handleOAuthConnect(integration.id)}
+                                    >
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Connect with {integration.name}
+                                    </Button>
+                                ) : (
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button
+                                                variant={integration.status === 'connected' ? "outline" : "default"}
+                                                className={`w-full ${integration.status === 'connected' ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'bg-blue-600 hover:bg-blue-700'}`}
+                                                onClick={() => setSelectedIntegration(integration)}
+                                            >
+                                                {integration.status === 'connected' ? (
+                                                    <>
+                                                        <Settings2 className="mr-2 h-4 w-4" /> Configure
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <PlusCircle className="mr-2 h-4 w-4" /> Connect
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="bg-slate-900 border-slate-800 text-white sm:max-w-[425px]">
+                                            <DialogHeader>
+                                                <DialogTitle>Connect {integration.name}</DialogTitle>
+                                                <DialogDescription className="text-slate-400">
+                                                    Enter your credentials to connect {integration.name} to BizOSaaS.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="grid gap-4 py-4">
+                                                {integration.fields?.map((field) => (
+                                                    <div key={field.name} className="space-y-2">
+                                                        <Label htmlFor={field.name} className="text-right">
+                                                            {field.label}
+                                                        </Label>
+                                                        <Input
+                                                            id={field.name}
+                                                            type={field.type}
+                                                            placeholder={field.placeholder}
+                                                            className="bg-slate-800 border-slate-700 text-white"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <DialogFooter>
+                                                <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">Cancel</Button>
+                                                <Button className="bg-blue-600 hover:bg-blue-700">Save Changes</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
+                                )}
                             </CardFooter>
                         </Card>
                     ))}

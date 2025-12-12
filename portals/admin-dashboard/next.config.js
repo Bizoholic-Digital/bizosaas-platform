@@ -8,6 +8,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@bizosaas/shared-ui'],
   typescript: {
     ignoreBuildErrors: true,  // Temporarily ignore TS errors for deployment
   },
