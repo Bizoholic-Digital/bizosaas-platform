@@ -5,8 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
+
 
 // LLM Provider SDKs (will be installed)
 // import OpenAI from 'openai';
@@ -46,7 +46,7 @@ const COST_PER_1K_TOKENS: Record<string, { input: number; output: number }> = {
 export async function POST(request: NextRequest) {
     try {
         // Authenticate user
-        const session = await getServerSession(authOptions);
+        const session = await auth();
         if (!session?.user) {
             return NextResponse.json(
                 { error: 'Unauthorized' },

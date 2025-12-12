@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
+
 
 const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'
 
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const limit = searchParams.get('limit') || '20'
 
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const status = searchParams.get('status')
     const source = searchParams.get('source')
     const search = searchParams.get('search')
@@ -257,7 +257,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const response = await fetch(`${BRAIN_API_URL}/api/crm/leads`, {
       method: 'POST',
       headers: {
@@ -342,7 +342,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const response = await fetch(`${BRAIN_API_URL}/api/crm/leads/${lead_id}`, {
       method: 'PUT',
       headers: {
@@ -403,7 +403,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const response = await fetch(`${BRAIN_API_URL}/api/crm/leads/${leadId}`, {
       method: 'DELETE',
       headers: {

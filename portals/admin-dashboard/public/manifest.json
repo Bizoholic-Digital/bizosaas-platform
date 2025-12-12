@@ -2,13 +2,17 @@
   "name": "BizOSaaS Admin Dashboard",
   "short_name": "BizOSaaS Admin",
   "description": "Platform administration and monitoring dashboard for BizOSaaS",
-  "start_url": "http://localhost:3009/",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#6366f1",
   "orientation": "portrait-primary",
-  "categories": ["business", "productivity", "utility"],
+  "categories": [
+    "business",
+    "productivity",
+    "utility"
+  ],
   "lang": "en-US",
   "icons": [
     {
@@ -66,21 +70,36 @@
       "short_name": "Users",
       "description": "Manage platform users",
       "url": "/users",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Analytics",
       "short_name": "Analytics",
       "description": "View platform analytics",
       "url": "/analytics",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "System Monitor",
       "short_name": "Monitor",
       "description": "Monitor system health",
       "url": "/monitor",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

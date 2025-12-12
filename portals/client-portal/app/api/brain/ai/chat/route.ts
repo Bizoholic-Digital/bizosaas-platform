@@ -5,8 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
+
 import { getOrchestrator } from '@/lib/ai';
 
 const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
@@ -14,7 +14,7 @@ const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:
 export async function POST(request: NextRequest) {
     try {
         // Authenticate user
-        const session = await getServerSession(authOptions);
+        const session = await auth();
         if (!session?.user) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 // Health check endpoint
 export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
         return NextResponse.json({
             status: 'healthy',

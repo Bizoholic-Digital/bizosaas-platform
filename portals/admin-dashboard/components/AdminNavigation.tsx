@@ -23,9 +23,11 @@ import {
   Menu,
   X,
   Bot,
-  MessageCircle
+  MessageCircle,
+  FileText
 } from 'lucide-react';
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface NavigationItem {
   name: string;
@@ -51,7 +53,7 @@ const navigation: NavigationItem[] = [
     description: 'AI workflows and automation control',
     category: 'main'
   },
-  
+
   // Management
   {
     name: 'Tenant Management',
@@ -74,7 +76,14 @@ const navigation: NavigationItem[] = [
     description: 'Financial metrics and subscription analytics',
     category: 'management'
   },
-  
+  {
+    name: 'CMS Management',
+    href: '/cms',
+    icon: FileText,
+    description: 'Global content management system',
+    category: 'management'
+  },
+
   // Monitoring
   {
     name: 'AI Agent Monitor',
@@ -104,7 +113,7 @@ const navigation: NavigationItem[] = [
     description: 'API usage and rate limiting dashboard',
     category: 'monitoring'
   },
-  
+
   // System
   {
     name: 'Security & Audit',
@@ -151,6 +160,11 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Hide sidebar/header on login and unauthorized pages
+  if (pathname === '/login' || pathname === '/unauthorized') {
+    return <>{children}</>;
+  }
+
   const isActiveLink = (href: string) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
@@ -165,10 +179,10 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
   }, {} as Record<string, NavigationItem[]>);
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-950">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-gray-600 bg-opacity-75 lg:hidden z-40"
           onClick={() => setSidebarOpen(false)}
         />
@@ -176,15 +190,15 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 dark:border-gray-800",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Database className="w-5 h-5 text-white" />
             </div>
-            <span className="ml-2 text-xl font-bold text-gray-900">BizOSaaS</span>
+            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">BizOSaaS</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -198,20 +212,20 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
         <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
           {Object.entries(groupedNavigation).map(([category, items]) => (
             <div key={category}>
-              <h3 className="px-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <h3 className="px-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {categoryLabels[category as keyof typeof categoryLabels]}
               </h3>
               <div className="mt-2 space-y-1">
                 {items.map((item) => {
                   const isActive = isActiveLink(item.href);
                   const isExternal = item.href.startsWith('http');
-                  
+
                   const linkContent = (
                     <div className={cn(
                       "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200",
                       isActive
-                        ? "bg-blue-100 text-blue-900 border-r-2 border-blue-600"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100 border-r-2 border-blue-600"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
                     )}>
                       <item.icon className={cn(
                         "mr-3 h-5 w-5 flex-shrink-0",
@@ -249,14 +263,14 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 dark:border-gray-800 p-4">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center">
               <Users className="w-4 h-4 text-gray-600" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900">Super Admin</div>
-              <div className="text-xs text-gray-500">Platform Owner</div>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">Super Admin</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Platform Owner</div>
             </div>
             <button className="p-1 rounded-md hover:bg-gray-100">
               <LogOut className="w-4 h-4 text-gray-500" />
@@ -268,7 +282,7 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top navigation */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
+        <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center">
               <button
@@ -278,27 +292,28 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
                 <Menu className="w-6 h-6" />
               </button>
               <div className="hidden lg:block">
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Platform Administration
                 </h1>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 />
               </div>
-              <button className="p-2 rounded-md hover:bg-gray-100 relative">
+              <ThemeToggle />
+              <button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 relative">
                 <Bell className="w-5 h-5 text-gray-600" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
-              <button className="p-2 rounded-md hover:bg-gray-100">
-                <AlertCircle className="w-5 h-5 text-gray-600" />
+              <button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
+                <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
             </div>
           </div>

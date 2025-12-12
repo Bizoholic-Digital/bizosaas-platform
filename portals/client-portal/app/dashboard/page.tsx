@@ -21,6 +21,9 @@ import { MarketingContent } from '@/components/MarketingContent';
 import { AnalyticsContent } from '@/components/AnalyticsContent';
 import { AdminContent } from '@/components/AdminContent';
 import { AIChat } from '@/components/AIChat';
+import { ConnectorsContent } from '@/components/ConnectorsContent';
+import { ToolsContent } from '@/components/ToolsContent';
+import { GetWebsiteContent } from '@/components/GetWebsiteContent';
 import { PlatformOverview } from '@/components/PlatformOverview';
 import { TenantManagement } from '@/components/TenantManagement';
 import { BillingContent } from '@/components/BillingContent';
@@ -46,11 +49,21 @@ function DashboardContent() {
   const { role, permissions, tenantId, displayName } = userInfo;
 
   // Define menu items
+  // Define menu items
   const allMenuItems = [
+    // Overview
     {
       id: 'dashboard',
       icon: Home,
       label: 'Dashboard'
+    },
+
+    // AI & Tools
+    {
+      id: 'ai-assistant',
+      icon: Sparkles,
+      label: 'AI Agents',
+      requiredPermissions: ['ai:use']
     },
     {
       id: 'connectors',
@@ -58,11 +71,31 @@ function DashboardContent() {
       label: 'Connectors'
     },
     {
-      id: 'ai-assistant',
-      icon: Sparkles,
-      label: 'AI Agents',
-      requiredPermissions: ['ai:use']
+      id: 'integrations',
+      icon: LinkIcon,
+      label: 'Integrations',
+      children: [
+        { id: 'integrations-overview', label: 'Overview', icon: LinkIcon },
+        { id: 'integrations-webhooks', label: 'Webhooks', icon: Activity },
+        { id: 'integrations-api-keys', label: 'API Keys', icon: Key },
+        { id: 'integrations-third-party', label: 'Third-party Apps', icon: Grid },
+        { id: 'integrations-automation', label: 'Automation Rules', icon: Zap },
+        { id: 'integrations-logs', label: 'Logs', icon: FileText },
+        { id: 'integrations-marketplace', label: 'Marketplace', icon: ShoppingCart }
+      ]
     },
+    {
+      id: 'tools',
+      icon: Wrench,
+      label: 'Tools'
+    },
+    {
+      id: 'get-website',
+      icon: Globe,
+      label: 'Get Website'
+    },
+
+    // Content
     {
       id: 'cms',
       icon: Layout,
@@ -72,28 +105,6 @@ function DashboardContent() {
         { id: 'cms-posts', label: 'Blog Posts', icon: FileText },
         { id: 'cms-media', label: 'Media Library', icon: Image },
         { id: 'cms-menus', label: 'Menus', icon: Layout }
-      ]
-    },
-    {
-      id: 'crm',
-      icon: Users,
-      label: 'CRM',
-      children: [
-        { id: 'crm-contacts', label: 'Contacts', icon: Users },
-        { id: 'crm-companies', label: 'Companies', icon: Building },
-        { id: 'crm-deals', label: 'Deals', icon: DollarSign },
-        { id: 'crm-tasks', label: 'Tasks', icon: CheckCircle }
-      ]
-    },
-    {
-      id: 'ecommerce',
-      icon: ShoppingCart,
-      label: 'E-commerce',
-      children: [
-        { id: 'ecommerce-products', label: 'Products', icon: Package },
-        { id: 'ecommerce-orders', label: 'Orders', icon: ShoppingCart },
-        { id: 'ecommerce-customers', label: 'Customers', icon: Users },
-        { id: 'ecommerce-analytics', label: 'Analytics', icon: BarChart3 }
       ]
     },
     {
@@ -107,6 +118,30 @@ function DashboardContent() {
         { id: 'marketing-automation', label: 'Automation', icon: Zap },
         { id: 'marketing-leads', label: 'Lead Generation', icon: Users },
         { id: 'marketing-seo', label: 'SEO Tools', icon: TrendingUp }
+      ]
+    },
+    {
+      id: 'ecommerce',
+      icon: ShoppingCart,
+      label: 'E-commerce',
+      children: [
+        { id: 'ecommerce-products', label: 'Products', icon: Package },
+        { id: 'ecommerce-orders', label: 'Orders', icon: ShoppingCart },
+        { id: 'ecommerce-customers', label: 'Customers', icon: Users },
+        { id: 'ecommerce-analytics', label: 'Analytics', icon: BarChart3 }
+      ]
+    },
+
+    // Business
+    {
+      id: 'crm',
+      icon: Users,
+      label: 'CRM',
+      children: [
+        { id: 'crm-contacts', label: 'Contacts', icon: Users },
+        { id: 'crm-companies', label: 'Companies', icon: Building },
+        { id: 'crm-deals', label: 'Deals', icon: DollarSign },
+        { id: 'crm-tasks', label: 'Tasks', icon: CheckCircle }
       ]
     },
     {
@@ -125,16 +160,6 @@ function DashboardContent() {
       ]
     },
     {
-      id: 'tools',
-      icon: Wrench,
-      label: 'Tools'
-    },
-    {
-      id: 'get-website',
-      icon: Globe,
-      label: 'Get Website'
-    },
-    {
       id: 'billing',
       icon: CreditCard,
       label: 'Billing',
@@ -148,45 +173,8 @@ function DashboardContent() {
         { id: 'billing-tax', label: 'Tax Settings', icon: Settings }
       ]
     },
-    {
-      id: 'integrations',
-      icon: LinkIcon,
-      label: 'Integrations',
-      children: [
-        { id: 'integrations-overview', label: 'Overview', icon: LinkIcon },
-        { id: 'integrations-webhooks', label: 'Webhooks', icon: Activity },
-        { id: 'integrations-api-keys', label: 'API Keys', icon: Key },
-        { id: 'integrations-third-party', label: 'Third-party Apps', icon: Grid },
-        { id: 'integrations-automation', label: 'Automation Rules', icon: Zap },
-        { id: 'integrations-logs', label: 'Logs', icon: FileText },
-        { id: 'integrations-marketplace', label: 'Marketplace', icon: ShoppingCart }
-      ]
-    },
-    {
-      id: 'super-admin',
-      icon: Gauge,
-      label: 'Super Admin',
-      requiredRole: 'super_admin',
-      children: [
-        { id: 'super-admin-platform', label: 'Platform Overview', icon: Gauge },
-        { id: 'super-admin-tenants', label: 'Tenant Management', icon: Users },
-        { id: 'super-admin-users', label: 'User Management', icon: User },
-        { id: 'super-admin-system', label: 'System Health', icon: Server },
-        { id: 'super-admin-analytics', label: 'Analytics', icon: BarChart3 },
-        { id: 'super-admin-config', label: 'Configuration', icon: Settings }
-      ]
-    },
-    {
-      id: 'admin',
-      icon: Shield,
-      label: 'Admin',
-      children: [
-        { id: 'admin-services', label: 'Service Status', icon: Server },
-        { id: 'admin-metrics', label: 'System Metrics', icon: BarChart3 },
-        { id: 'admin-users', label: 'User Management', icon: Users },
-        { id: 'admin-settings', label: 'Admin Settings', icon: Settings }
-      ]
-    },
+
+    // Account
     {
       id: 'settings',
       icon: Settings,
@@ -200,6 +188,17 @@ function DashboardContent() {
         { id: 'settings-advanced', label: 'Advanced', icon: Code },
         { id: 'settings-backup', label: 'Backup & Restore', icon: Database },
         { id: 'settings-api', label: 'API Configuration', icon: Terminal }
+      ]
+    },
+    {
+      id: 'admin',
+      icon: Shield,
+      label: 'Admin',
+      children: [
+        { id: 'admin-services', label: 'Service Status', icon: Server },
+        { id: 'admin-metrics', label: 'System Metrics', icon: BarChart3 },
+        { id: 'admin-users', label: 'User Management', icon: Users },
+        { id: 'admin-settings', label: 'Admin Settings', icon: Settings }
       ]
     }
   ];
@@ -316,17 +315,17 @@ function DashboardContent() {
 
     // Handle Connectors section
     if (activeTab === 'connectors') {
-      return <ConnectorsPage />;
+      return <ConnectorsContent />;
     }
 
     // Handle Tools section
     if (activeTab === 'tools') {
-      return <ToolsPage />;
+      return <ToolsContent />;
     }
 
     // Handle Get Website section
     if (activeTab === 'get-website') {
-      return <GetWebsitePage />;
+      return <GetWebsiteContent />;
     }
 
     // Handle CMS section
@@ -379,20 +378,7 @@ function DashboardContent() {
       return <AIChat activeTab={activeTab} />;
     }
 
-    // Handle Super Admin section
-    if (activeTab.startsWith('super-admin')) {
-      if (activeTab === 'super-admin-platform') {
-        return <PlatformOverview />;
-      }
-      if (activeTab === 'super-admin-tenants') {
-        return <TenantManagement />;
-      }
-      return (
-        <div className="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
-          Super Admin module: {activeTab.replace('super-admin-', '')} coming soon
-        </div>
-      );
-    }
+
 
     return (
       <div className="flex items-center justify-center h-96 text-gray-500 dark:text-gray-400">
