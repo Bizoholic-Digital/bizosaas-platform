@@ -1,10 +1,11 @@
 import httpx
 from typing import Dict, Any, Optional
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
+from .oauth_mixin import OAuthMixin
 from .registry import ConnectorRegistry
 
 @ConnectorRegistry.register
-class GoogleAnalyticsConnector(BaseConnector):
+class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
     @classmethod
     def get_config(cls) -> ConnectorConfig:
         return ConnectorConfig(
@@ -98,3 +99,46 @@ class GoogleAnalyticsConnector(BaseConnector):
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError("Google Analytics connector is read-only")
+
+    # OAuthMixin Implementation
+    async def get_auth_url(self, redirect_uri: str, state: str) -> str:
+        # TODO: Load from env or secure vault
+        client_id = "YOUR_GOOGLE_CLIENT_ID"
+        scope = "https://www.googleapis.com/auth/analytics.readonly"
+        return (
+            f"https://accounts.google.com/o/oauth2/v2/auth?"
+            f"client_id={client_id}&"
+            f"redirect_uri={redirect_uri}&"
+            f"response_type=code&"
+            f"scope={scope}&"
+            f"state={state}&"
+            f"access_type=offline&"
+            f"prompt=consent"
+        )
+    
+    async def exchange_code(self, code: str, redirect_uri: str) -> Dict[str, Any]:
+        url = "https://oauth2.googleapis.com/token"
+        data = {
+            "code": code,
+            "client_id": "YOUR_GOOGLE_CLIENT_ID", # TODO: Load from env
+            "client_secret": "YOUR_GOOGLE_CLIENT_SECRET", # TODO: Load from env
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code"
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, data=data)
+            resp.raise_for_status()
+            return resp.json()
+    
+    async def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+        url = "https://oauth2.googleapis.com/token"
+        data = {
+            "refresh_token": refresh_token,
+            "client_id": "YOUR_GOOGLE_CLIENT_ID", # TODO: Load from env
+            "client_secret": "YOUR_GOOGLE_CLIENT_SECRET", # TODO: Load from env
+            "grant_type": "refresh_token"
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, data=data)
+            resp.raise_for_status()
+            return resp.json()

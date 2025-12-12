@@ -23,6 +23,9 @@ app.include_router(agents.router)
 app.include_router(cms.router, prefix="/api/cms", tags=["cms"])
 app.include_router(onboarding.router)
 
+from app.routers import oauth
+app.include_router(oauth.router)
+
 from strawberry.fastapi import GraphQLRouter
 from app.graphql.schema import schema
 graphql_app = GraphQLRouter(schema)
