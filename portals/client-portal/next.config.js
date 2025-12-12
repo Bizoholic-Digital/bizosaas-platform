@@ -76,6 +76,8 @@ const nextConfig = {
   // Webpack configuration
   webpack: (config, { isServer }) => {
     const path = require('path');
+    const { fileURLToPath } = require('url');
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
     // Ensure modules resolve from the portal's node_modules first
     config.resolve.modules = [
