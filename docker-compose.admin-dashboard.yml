@@ -47,11 +47,11 @@ services:
       start_period: 40s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.bizosaas-admin.rule=Host(`admin.bizoholic.net`)"
-      - "traefik.http.routers.bizosaas-admin.entrypoints=websecure"
-      - "traefik.http.routers.bizosaas-admin.tls=true"
-      - "traefik.http.routers.bizosaas-admin.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bizosaas-admin.loadbalancer.server.port=3004"
+      - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
+      - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.admin-dashboard.tls=true"
+      - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3004"
       - "traefik.docker.network=dokploy-network"
 
 networks:
