@@ -5,15 +5,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
+
 
 const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
 
 // GET - List all pages
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     // Build query parameters
     const searchParams = request.nextUrl.searchParams;
@@ -353,7 +353,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new page
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.access_token) {
       return NextResponse.json(
@@ -430,7 +430,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update existing page
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.access_token) {
       return NextResponse.json(
@@ -485,7 +485,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete page
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.access_token) {
       return NextResponse.json(

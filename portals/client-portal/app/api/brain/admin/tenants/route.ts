@@ -5,17 +5,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
 
 const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
+
+export const dynamic = 'force-dynamic';
 
 // GET - List all tenants
 export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
-        if (!session?.access_token || session.user?.role !== 'super_admin') {
+        if (!session?.access_token || (session.user as any)?.role !== 'super_admin') {
             return NextResponse.json(
                 { error: 'Forbidden - Super Admin access required' },
                 { status: 403 }
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
         if (searchParams.get('search')) params.set('search', searchParams.get('search')!);
         if (searchParams.get('status')) params.set('status', searchParams.get('status')!); // active, suspended, trial
 
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`
         };
@@ -63,9 +64,9 @@ export async function GET(request: NextRequest) {
 // POST - Create new tenant
 export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
-        if (!session?.access_token || session.user?.role !== 'super_admin') {
+        if (!session?.access_token || (session.user as any)?.role !== 'super_admin') {
             return NextResponse.json(
                 { error: 'Forbidden - Super Admin access required' },
                 { status: 403 }
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
 
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`
         };
@@ -108,9 +109,9 @@ export async function POST(request: NextRequest) {
 // PUT - Update tenant
 export async function PUT(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
-        if (!session?.access_token || session.user?.role !== 'super_admin') {
+        if (!session?.access_token || (session.user as any)?.role !== 'super_admin') {
             return NextResponse.json(
                 { error: 'Forbidden - Super Admin access required' },
                 { status: 403 }
@@ -129,7 +130,7 @@ export async function PUT(request: NextRequest) {
 
         const body = await request.json();
 
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session.access_token}`
         };
@@ -163,9 +164,9 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete/Suspend tenant
 export async function DELETE(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
-        if (!session?.access_token || session.user?.role !== 'super_admin') {
+        if (!session?.access_token || (session.user as any)?.role !== 'super_admin') {
             return NextResponse.json(
                 { error: 'Forbidden - Super Admin access required' },
                 { status: 403 }
@@ -183,7 +184,7 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        const headers: HeadersInit = {
+        const headers: Record<string, string> = {
             'Authorization': `Bearer ${session.access_token}`
         };
 

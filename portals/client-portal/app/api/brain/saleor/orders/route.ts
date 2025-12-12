@@ -4,15 +4,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
+
 
 const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'
 
 // GET /api/brain/saleor/orders - Fetch all orders
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
     const payment_status = searchParams.get('payment_status')
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const response = await fetch(`${BRAIN_API_URL}/api/brain/saleor/orders`, {
       method: 'POST',
       headers: {
@@ -345,7 +345,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const response = await fetch(`${BRAIN_API_URL}/api/brain/saleor/orders/${order_id}`, {
       method: 'PUT',
       headers: {
@@ -399,7 +399,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const response = await fetch(`${BRAIN_API_URL}/api/brain/saleor/orders/${orderId}?reason=${reason}&refund_payment=${refund_payment}`, {
       method: 'DELETE',
       headers: {

@@ -1,24 +1,47 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { UnifiedLoginForm } from '@bizosaas/shared-ui'
 import { PlatformBranding } from '@/components/ui/platform-branding'
 
 export function ClientLoginForm() {
+    const router = useRouter()
+
+    const handleRoleBasedRedirect = async () => {
+        const session = await getSession();
+        // @ts-ignore
+        const role = (session?.user as any)?.role;
+
+        if (role === 'super_admin' || role === 'platform_admin') {
+            // Redirect to Admin Dashboard
+            window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3009';
+        } else {
+            router.push('/dashboard');
+        }
+    }
+
     return (
         <UnifiedLoginForm
-            mode="credentials"
+            mode="both"
             platformName="Client Portal"
             platformSubtitle="Access your projects and services"
-            defaultRedirectUrl="/"
+            defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
+            ssoProviderName="Authentik"
+            ssoProviderId="authentik"
+            onSSOLogin={() => signIn('authentik', { callbackUrl: '/dashboard' })}
             onCredentialsLogin={async (email, password) => {
                 const result = await signIn('credentials', {
                     email,
                     password,
                     redirect: false,
                 })
+
+                if (result?.ok) {
+                    await handleRoleBasedRedirect();
+                }
 
                 return {
                     ok: result?.ok || false,

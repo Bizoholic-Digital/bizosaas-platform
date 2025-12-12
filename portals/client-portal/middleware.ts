@@ -1,29 +1,34 @@
-import { withAuth } from "next-auth/middleware";
+import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-export default withAuth(
-    async function middleware(req) {
-        const token = req.nextauth.token;
-        const path = req.nextUrl.pathname;
+export default auth(async (req) => {
+    const session = req.auth;
+    const path = req.nextUrl.pathname;
 
-        // Skip onboarding check for these paths
-        if (
-            path.startsWith('/onboarding') ||
-            path.startsWith('/api') ||
-            path.startsWith('/login') ||
-            path.startsWith('/_next') ||
-            path === '/favicon.ico'
-        ) {
-            return NextResponse.next();
-        }
+    // Skip onboarding check for these paths
+    if (
+        path.startsWith('/onboarding') ||
+        path.startsWith('/api') ||
+        path.startsWith('/login') ||
+        path.startsWith('/_next') ||
+        path === '/favicon.ico'
+    ) {
+        return NextResponse.next();
+    }
 
-        // Check if user has completed onboarding
-        if (token?.email) {
-            try {
+    // Check if user has completed onboarding
+    if (session?.user?.email) {
+        try {
+            // Note: In middleware we might not have full access to env vars or fetch might behave differently
+            // We use the accessToken from the session
+            const accessToken = (session as any).access_token;
+
+            if (accessToken) {
                 // Call Brain Gateway API to check onboarding status
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/brain/users/profile`, {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+                const response = await fetch(`${apiUrl}/api/brain/users/profile`, {
                     headers: {
-                        'Authorization': `Bearer ${token.accessToken}`,
+                        'Authorization': `Bearer ${accessToken}`,
                         'Content-Type': 'application/json',
                     },
                 });
@@ -41,23 +46,15 @@ export default withAuth(
                         return NextResponse.redirect(new URL('/dashboard', req.url));
                     }
                 }
-            } catch (error) {
-                console.error('Error checking onboarding status:', error);
-                // On error, allow access (fail open for better UX)
             }
+        } catch (error) {
+            console.error('Error checking onboarding status:', error);
+            // On error, allow access (fail open for better UX)
         }
-
-        return NextResponse.next();
-    },
-    {
-        pages: {
-            signIn: "/login",
-        },
-        callbacks: {
-            authorized: ({ token }) => !!token,
-        },
     }
-);
+
+    return NextResponse.next();
+});
 
 export const config = {
     matcher: [

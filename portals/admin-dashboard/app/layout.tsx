@@ -1,7 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AdminNavigation } from '@/components/AdminNavigation';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import AuthProvider from '../shared/components/AuthProvider';
+import { Providers } from './providers';
 
 // Using system fonts to avoid network calls during Docker build
 const inter = { variable: '--font-sans' };
@@ -11,8 +14,12 @@ export const metadata: Metadata = {
   description: 'Super Admin Dashboard for BizOSaaS Multi-Tenant Platform - Workflow Management & AI Agent Control',
   keywords: ['BizOSaaS', 'Admin', 'Platform', 'Management', 'Multi-tenant', 'AI Workflows', 'Super Admin'],
   authors: [{ name: 'BizOSaaS Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'noindex, nofollow', // Admin dashboard should not be indexed
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -24,9 +31,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
         <AuthProvider platform="bizosaas-admin">
-          <AdminNavigation>
-            {children}
-          </AdminNavigation>
+          <Providers>
+            <OfflineBanner />
+            <AdminNavigation>
+              {children}
+            </AdminNavigation>
+            <PWAInstallPrompt />
+          </Providers>
         </AuthProvider>
       </body>
     </html>

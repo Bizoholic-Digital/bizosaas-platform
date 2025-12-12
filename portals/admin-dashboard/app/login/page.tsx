@@ -1,27 +1,15 @@
-import { signIn } from "@/lib/auth";
-import { UnifiedLoginForm } from "@bizosaas/shared-ui";
-import { PlatformBranding } from "@/components/ui/platform-branding";
+import AdminLoginForm from './AdminLoginForm';
+import { ThemeToggle } from '@/components/theme-toggle';
 
-export default function AdminLoginPage({
-  searchParams,
-}: {
-  searchParams: { callbackUrl?: string };
-}) {
+export default function AdminLoginPage() {
   return (
-    <UnifiedLoginForm
-      mode="sso"
-      platformName="Admin Dashboard"
-      platformSubtitle="Platform Administration & Management"
-      ssoProviderName="Authentik"
-      ssoProviderId="authentik"
-      defaultRedirectUrl="/dashboard"
-      BrandingComponent={() => <PlatformBranding platform="BIZOSAAS" size="lg" />}
-      onSSOLogin={async () => {
-        "use server";
-        await signIn("authentik", {
-          redirectTo: searchParams.callbackUrl || "/dashboard",
-        });
-      }}
-    />
+    <div className="relative min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+      <div className="w-full max-w-md">
+        <AdminLoginForm />
+      </div>
+    </div>
   );
 }

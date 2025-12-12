@@ -5,15 +5,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/lib/auth";
+
 
 const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
 
 // GET - Get platform metrics
 export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await auth();
 
         // Check if user is super admin
         if (!session?.access_token || session.user?.role !== 'super_admin') {

@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 
 // Use same Authentik URL pattern as client portal
 const AUTHENTIK_URL = process.env.AUTHENTIK_URL || process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.bizoholic.net';
@@ -39,6 +40,48 @@ export const authConfig: NextAuthConfig = {
         };
       },
     },
+    Credentials({
+      name: "BizOSaaS Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        try {
+          // Validate against Auth Service
+          const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
+          const authServiceResponse = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+              platform: 'bizosaas-admin', // Use admin platform identifier
+              remember_me: true
+            })
+          });
+
+          if (authServiceResponse.ok) {
+            const data = await authServiceResponse.json();
+
+            // Allow all users to login, role based routing handled in authorized callback
+            return {
+              id: data.user.id,
+              name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim(),
+              email: data.user.email,
+              roles: [data.user?.role],
+              tenant_id: data.tenant.id,
+            };
+          }
+          return null;
+        } catch (e) {
+          console.error('Admin login error:', e);
+          return null;
+        }
+      }
+    }),
   ],
   callbacks: {
     async jwt({ token, user, account, profile }) {
@@ -75,7 +118,9 @@ export const authConfig: NextAuthConfig = {
       const hasAdminRole = roles.includes("platform_admin") || roles.includes("super_admin");
 
       if (!hasAdminRole) {
-        return Response.redirect(new URL("/unauthorized", request.url));
+        // Redirect non-admins to Client Portal
+        const clientPortalUrl = process.env.NEXT_PUBLIC_CLIENT_PORTAL_URL || 'http://localhost:3003';
+        return Response.redirect(`${clientPortalUrl}/dashboard`);
       }
 
       return true;
