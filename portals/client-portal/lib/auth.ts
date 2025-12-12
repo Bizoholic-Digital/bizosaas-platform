@@ -6,6 +6,11 @@ import Credentials from "next-auth/providers/credentials";
 const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8001';
 const AUTHENTIK_URL = process.env.AUTHENTIK_URL || process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.bizoholic.net';
 
+// Ensure NEXTAUTH_URL is set for production
+if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
+    console.warn('⚠️  NEXTAUTH_URL is not set in production!');
+}
+
 export const authConfig = {
     providers: [
         Authentik({
@@ -141,6 +146,7 @@ export const authConfig = {
         signIn: '/login',
         error: '/login',
     },
+    debug: process.env.NODE_ENV === 'development',
     session: {
         strategy: 'jwt',
         maxAge: 8 * 60 * 60, // 8 hours total session duration
