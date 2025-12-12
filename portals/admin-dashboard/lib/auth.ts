@@ -5,6 +5,11 @@ import Credentials from "next-auth/providers/credentials";
 // Use same Authentik URL pattern as client portal
 const AUTHENTIK_URL = process.env.AUTHENTIK_URL || process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.bizoholic.net';
 
+// Ensure NEXTAUTH_URL is set for production
+if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
+  console.warn('⚠️  NEXTAUTH_URL is not set in production!');
+}
+
 export const authConfig: NextAuthConfig = {
   providers: [
     {
@@ -130,6 +135,7 @@ export const authConfig: NextAuthConfig = {
     signIn: "/login",
     error: "/login",
   },
+  debug: process.env.NODE_ENV === 'development',
   session: {
     strategy: "jwt",
     maxAge: 8 * 60 * 60, // 8 hours total session duration
