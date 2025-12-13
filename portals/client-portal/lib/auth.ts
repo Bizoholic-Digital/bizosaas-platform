@@ -13,20 +13,22 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
 
 export const authConfig = {
     providers: [
-        Authentik({
-            name: 'BizOSaaS SSO',
-            clientId: process.env.AUTHENTIK_CLIENT_ID,
-            clientSecret: process.env.AUTHENTIK_CLIENT_SECRET,
-            issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
-            authorization: {
-                params: {
-                    scope: "openid profile email",
+        ...(process.env.AUTHENTIK_CLIENT_ID && process.env.AUTHENTIK_CLIENT_SECRET ? [
+            Authentik({
+                name: 'BizOSaaS SSO',
+                clientId: process.env.AUTHENTIK_CLIENT_ID,
+                clientSecret: process.env.AUTHENTIK_CLIENT_SECRET,
+                issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
+                authorization: {
+                    params: {
+                        scope: "openid profile email",
+                    },
+                    url: `${AUTHENTIK_URL}/application/o/authorize/`,
                 },
-                url: `${AUTHENTIK_URL}/application/o/authorize/`,
-            },
-            token: `${AUTHENTIK_URL}/application/o/token/`,
-            userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
-        }),
+                token: `${AUTHENTIK_URL}/application/o/token/`,
+                userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
+            })
+        ] : []),
         Credentials({
             name: 'Email & Password',
             credentials: {
@@ -41,58 +43,63 @@ export const authConfig = {
 
                 try {
                     // Method 1: Direct Resource Owner Password Credentials (ROPC) flow against Authentik
-                    // This allows background login without redirecting to the Authentik UI
-                    const tokenEndpoint = `${AUTHENTIK_URL}/application/o/token/`;
                     const clientId = process.env.AUTHENTIK_CLIENT_ID;
                     const clientSecret = process.env.AUTHENTIK_CLIENT_SECRET;
 
                     if (clientId && clientSecret) {
-                        const params = new URLSearchParams();
-                        params.append('grant_type', 'password');
-                        params.append('username', credentials.email as string);
-                        params.append('password', credentials.password as string);
-                        params.append('client_id', clientId);
-                        params.append('client_secret', clientSecret);
-                        params.append('scope', 'openid profile email');
+                        try {
+                            const tokenEndpoint = `${AUTHENTIK_URL}/application/o/token/`;
+                            const params = new URLSearchParams();
+                            params.append('grant_type', 'password');
+                            params.append('username', credentials.email as string);
+                            params.append('password', credentials.password as string);
+                            params.append('client_id', clientId);
+                            params.append('client_secret', clientSecret);
+                            params.append('scope', 'openid profile email');
 
-                        const tokenResponse = await fetch(tokenEndpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: params
-                        });
-
-                        if (tokenResponse.ok) {
-                            const tokens = await tokenResponse.json();
-
-                            // Now fetch user profile with the access token
-                            const userinfoResponse = await fetch(`${AUTHENTIK_URL}/application/o/userinfo/`, {
+                            const tokenResponse = await fetch(tokenEndpoint, {
+                                method: 'POST',
                                 headers: {
-                                    'Authorization': `Bearer ${tokens.access_token}`
-                                }
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: params
                             });
 
-                            if (userinfoResponse.ok) {
-                                const profile = await userinfoResponse.json();
-                                const groups = profile.groups || [];
-                                const role = groups.includes('authentik Admins') ? 'admin' : 'user';
+                            if (tokenResponse.ok) {
+                                const tokens = await tokenResponse.json();
+                                if (tokens.access_token) {
+                                    // Now fetch user profile with the access token
+                                    const userinfoResponse = await fetch(`${AUTHENTIK_URL}/application/o/userinfo/`, {
+                                        headers: {
+                                            'Authorization': `Bearer ${tokens.access_token}`
+                                        }
+                                    });
 
-                                console.log("✅ Authentik Background Login Successful for:", profile.email);
+                                    if (userinfoResponse.ok) {
+                                        const profile = await userinfoResponse.json();
+                                        const groups = profile.groups || [];
+                                        const role = groups.includes('authentik Admins') ? 'admin' : 'user';
 
-                                return {
-                                    id: profile.sub,
-                                    name: profile.name,
-                                    email: profile.email,
-                                    role: role, // Default role mapping
-                                    tenant_id: 'default-tenant', // Placeholder, ideally from profile
-                                    brand: 'bizoholic',
-                                    access_token: tokens.access_token,
-                                    refresh_token: tokens.refresh_token
-                                };
+                                        console.log("✅ Authentik Background Login Successful for:", profile.email);
+
+                                        return {
+                                            id: profile.sub,
+                                            name: profile.name,
+                                            email: profile.email,
+                                            role: role,
+                                            tenant_id: 'default-tenant',
+                                            brand: 'bizoholic',
+                                            access_token: tokens.access_token,
+                                            refresh_token: tokens.refresh_token
+                                        };
+                                    }
+                                }
+                            } else {
+                                const errorText = await tokenResponse.text();
+                                console.warn("⚠️ Authentik ROPC Login failed (falling back):", tokenResponse.status, errorText);
                             }
-                        } else {
-                            console.warn("⚠️ Authentik ROPC Login failed:", await tokenResponse.text());
+                        } catch (ropcError) {
+                            console.error("⚠️ Authentik ROPC Error (falling back):", ropcError);
                         }
                     }
 
