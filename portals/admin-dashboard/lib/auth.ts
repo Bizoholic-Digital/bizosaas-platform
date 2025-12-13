@@ -191,9 +191,8 @@ export const authConfig: NextAuthConfig = {
 
       if (!hasAdminRole) {
         console.warn("⚠️ User authenticated but lacks admin role:", auth.user?.email, roles);
-        // Redirect non-admins to Client Portal
-        const clientPortalUrl = process.env.NEXT_PUBLIC_CLIENT_PORTAL_URL || 'http://localhost:3003';
-        return Response.redirect(`${clientPortalUrl}/dashboard`);
+        // Redirect to unauthorized page instead of Client Portal to prevent loops
+        return Response.redirect(new URL("/unauthorized", request.url));
       }
 
       return true;

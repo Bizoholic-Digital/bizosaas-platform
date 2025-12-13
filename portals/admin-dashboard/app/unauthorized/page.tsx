@@ -1,8 +1,14 @@
+'use client';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlatformBranding } from "@/components/ui/platform-branding";
+import { signOut } from "next-auth/react";
 
 export default function UnauthorizedPage() {
+    const handleSignOut = async () => {
+        await signOut({ callbackUrl: '/login' });
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
             <div className="max-w-md w-full mx-4">
@@ -59,24 +65,25 @@ export default function UnauthorizedPage() {
 
                     {/* Actions */}
                     <div className="space-y-3">
-                        <Link href="/login" className="block">
-                            <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                                <svg
-                                    className="w-5 h-5 mr-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                                    />
-                                </svg>
-                                Back to Login
-                            </Button>
-                        </Link>
+                        <Button
+                            onClick={handleSignOut}
+                            className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        >
+                            <svg
+                                className="w-5 h-5 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                                />
+                            </svg>
+                            Sign Out & Return to Login
+                        </Button>
                         <a
                             href="mailto:admin@bizosaas.com"
                             className="block text-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
