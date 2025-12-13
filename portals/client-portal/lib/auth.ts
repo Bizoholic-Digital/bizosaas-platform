@@ -40,31 +40,65 @@ export const authConfig = {
                 }
 
                 try {
-                    // Method 1: Validate against Authentik using API
-                    const AUTHENTIK_API_TOKEN = process.env.AUTHENTIK_API_TOKEN;
+                    // Method 1: Direct Resource Owner Password Credentials (ROPC) flow against Authentik
+                    // This allows background login without redirecting to the Authentik UI
+                    const tokenEndpoint = `${AUTHENTIK_URL}/application/o/token/`;
+                    const clientId = process.env.AUTHENTIK_CLIENT_ID;
+                    const clientSecret = process.env.AUTHENTIK_CLIENT_SECRET;
 
-                    if (AUTHENTIK_API_TOKEN) {
-                        const userResponse = await fetch(
-                            `${AUTHENTIK_URL}/api/v3/core/users/?email=${encodeURIComponent(credentials.email as string)}`,
-                            {
+                    if (clientId && clientSecret) {
+                        const params = new URLSearchParams();
+                        params.append('grant_type', 'password');
+                        params.append('username', credentials.email as string);
+                        params.append('password', credentials.password as string);
+                        params.append('client_id', clientId);
+                        params.append('client_secret', clientSecret);
+                        params.append('scope', 'openid profile email');
+
+                        const tokenResponse = await fetch(tokenEndpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: params
+                        });
+
+                        if (tokenResponse.ok) {
+                            const tokens = await tokenResponse.json();
+
+                            // Now fetch user profile with the access token
+                            const userinfoResponse = await fetch(`${AUTHENTIK_URL}/application/o/userinfo/`, {
                                 headers: {
-                                    'Authorization': `Bearer ${AUTHENTIK_API_TOKEN}`,
-                                },
-                            }
-                        );
+                                    'Authorization': `Bearer ${tokens.access_token}`
+                                }
+                            });
 
-                        if (userResponse.ok) {
-                            const userData = await userResponse.json();
-                            const user = userData.results?.[0];
+                            if (userinfoResponse.ok) {
+                                const profile = await userinfoResponse.json();
+                                const groups = profile.groups || [];
+                                const role = groups.includes('authentik Admins') ? 'admin' : 'user';
 
-                            if (user && user.is_active) {
-                                console.log('User found in Authentik, but password validation requires SSO');
-                                return null;
+                                console.log("✅ Authentik Background Login Successful for:", profile.email);
+
+                                return {
+                                    id: profile.sub,
+                                    name: profile.name,
+                                    email: profile.email,
+                                    role: role, // Default role mapping
+                                    tenant_id: 'default-tenant', // Placeholder, ideally from profile
+                                    brand: 'bizoholic',
+                                    access_token: tokens.access_token,
+                                    refresh_token: tokens.refresh_token
+                                };
                             }
+                        } else {
+                            console.warn("⚠️ Authentik ROPC Login failed:", await tokenResponse.text());
                         }
                     }
 
                     // Method 2: Fallback to Auth Service
+                    // Only used if Direct Authentik login failed or wasn't configured
+                    console.log("🔄 Falling back to Brain Auth Service...");
                     const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
                     const authServiceResponse = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
@@ -148,7 +182,7 @@ export const authConfig = {
     },
     debug: process.env.NODE_ENV === 'development',
     session: {
-        strategy: 'jwt',
+        strategy: 'jwt' as const,
         maxAge: 8 * 60 * 60, // 8 hours total session duration
         updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
     },
@@ -157,7 +191,7 @@ export const authConfig = {
             name: `next-auth.session-token`,
             options: {
                 httpOnly: true,
-                sameSite: 'lax',
+                sameSite: 'lax' as const,
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
             },
