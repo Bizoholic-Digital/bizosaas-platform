@@ -203,7 +203,7 @@ export const authConfig: NextAuthConfig = {
   },
   debug: process.env.NODE_ENV === 'development',
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 8 * 60 * 60, // 8 hours total session duration
     updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
   },
@@ -212,7 +212,7 @@ export const authConfig: NextAuthConfig = {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'lax' as const,
         path: '/',
         secure: process.env.NODE_ENV === 'production',
       },
