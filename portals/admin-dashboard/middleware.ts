@@ -27,7 +27,7 @@ export default auth((req: NextRequest & { auth: Session | null }) => {
 
     // Check authorization - require admin role
     const roles = (req.auth.user as any)?.roles || [];
-    const hasAdminRole = roles.includes("platform_admin") || roles.includes("super_admin");
+    const hasAdminRole = roles.includes("platform_admin") || roles.includes("super_admin") || roles.includes("admin");
 
     if (!hasAdminRole) {
         return NextResponse.redirect(new URL("/unauthorized", req.url));
