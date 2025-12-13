@@ -12,39 +12,41 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
 
 export const authConfig: NextAuthConfig = {
   providers: [
-    {
-      id: "authentik",
-      name: "BizOSaaS SSO",
-      type: "oidc",
-      // Use same base URL, different application slug
-      issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
-      clientId: process.env.AUTHENTIK_CLIENT_ID || "bizosaas-admin-dashboard",
-      clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || "",
-      authorization: {
-        params: {
-          scope: "openid profile email groups",
+    ...(process.env.AUTHENTIK_CLIENT_ID && process.env.AUTHENTIK_CLIENT_SECRET ? [
+      {
+        id: "authentik",
+        name: "BizOSaaS SSO",
+        type: "oidc",
+        // Use same base URL, different application slug
+        issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
+        clientId: process.env.AUTHENTIK_CLIENT_ID || "bizosaas-admin-dashboard",
+        clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || "",
+        authorization: {
+          params: {
+            scope: "openid profile email groups",
+          },
+          url: `${AUTHENTIK_URL}/application/o/authorize/`,
         },
-        url: `${AUTHENTIK_URL}/application/o/authorize/`,
-      },
-      token: `${AUTHENTIK_URL}/application/o/token/`,
-      userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
-      profile(profile) {
-        // Map Authentik groups to roles
-        const groups = profile.groups || [];
-        const roles = groups.filter((g: string) =>
-          g === 'super_admin' || g === 'platform_admin'
-        );
+        token: `${AUTHENTIK_URL}/application/o/token/`,
+        userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
+        profile(profile) {
+          // Map Authentik groups to roles
+          const groups = profile.groups || [];
+          const roles = groups.filter((g: string) =>
+            g === 'super_admin' || g === 'platform_admin'
+          );
 
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          roles: roles,
-          tenant_id: (profile as any).tenant_id,
-        };
-      },
-    },
+          return {
+            id: profile.sub,
+            name: profile.name,
+            email: profile.email,
+            image: profile.picture,
+            roles: roles,
+            tenant_id: (profile as any).tenant_id,
+          };
+        },
+      }
+    ] : []),
     Credentials({
       name: "BizOSaaS Credentials",
       credentials: {
@@ -55,6 +57,70 @@ export const authConfig: NextAuthConfig = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
+          // Method 1: Direct Resource Owner Password Credentials (ROPC) flow against Authentik
+          // This allows background login without redirecting to the Authentik UI
+          const clientId = process.env.AUTHENTIK_CLIENT_ID;
+          const clientSecret = process.env.AUTHENTIK_CLIENT_SECRET;
+
+          if (clientId && clientSecret) {
+            try {
+              const tokenEndpoint = `${AUTHENTIK_URL}/application/o/token/`;
+              const params = new URLSearchParams();
+              params.append('grant_type', 'password');
+              params.append('username', credentials.email as string);
+              params.append('password', credentials.password as string);
+              params.append('client_id', clientId);
+              params.append('client_secret', clientSecret);
+              // Admin might need specific scopes or just standard ones
+              params.append('scope', 'openid profile email groups');
+
+              const tokenResponse = await fetch(tokenEndpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params
+              });
+
+              if (tokenResponse.ok) {
+                const tokens = await tokenResponse.json();
+
+                if (tokens.access_token) {
+                  // Now fetch user profile with the access token
+                  const userinfoResponse = await fetch(`${AUTHENTIK_URL}/application/o/userinfo/`, {
+                    headers: {
+                      'Authorization': `Bearer ${tokens.access_token}`
+                    }
+                  });
+
+                  if (userinfoResponse.ok) {
+                    const profile = await userinfoResponse.json();
+                    const groups = profile.groups || [];
+                    const roles = groups.filter((g: string) =>
+                      g === 'super_admin' || g === 'platform_admin'
+                    );
+
+                    console.log("✅ Admin Authentik Background Login Successful for:", profile.email);
+
+                    return {
+                      id: profile.sub,
+                      name: profile.name,
+                      email: profile.email,
+                      image: profile.picture,
+                      roles: roles,
+                      tenant_id: (profile as any).tenant_id,
+                    };
+                  }
+                }
+              } else {
+                const errorText = await tokenResponse.text();
+                console.warn("⚠️ Admin Authentik ROPC Login failed (falling back):", tokenResponse.status, errorText);
+              }
+            } catch (ropcError) {
+              console.error("⚠️ Admin Authentik ROPC Error (falling back):", ropcError);
+            }
+          }
+
           // Validate against Auth Service
           const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://brain-auth:8007';
           const authServiceResponse = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
