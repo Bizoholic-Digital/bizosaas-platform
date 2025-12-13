@@ -32,9 +32,13 @@ export const authConfig: NextAuthConfig = {
         profile(profile: any) {
           // Map Authentik groups to roles
           const groups = profile.groups || [];
-          const roles = groups.filter((g: string) =>
-            g === 'super_admin' || g === 'platform_admin'
-          );
+
+          // Map 'authentik Admins' to 'super_admin' for compatibility
+          const roles = groups.flatMap((g: string) => {
+            if (g === 'authentik Admins') return ['super_admin'];
+            if (g === 'admin' || g === 'super_admin' || g === 'platform_admin') return [g];
+            return [];
+          });
 
           return {
             id: profile.sub,
@@ -96,11 +100,15 @@ export const authConfig: NextAuthConfig = {
                   if (userinfoResponse.ok) {
                     const profile = await userinfoResponse.json();
                     const groups = profile.groups || [];
-                    const roles = groups.filter((g: string) =>
-                      g === 'super_admin' || g === 'platform_admin'
-                    );
 
-                    console.log("✅ Admin Authentik Background Login Successful for:", profile.email);
+                    // Consistent role mapping
+                    const roles = groups.flatMap((g: string) => {
+                      if (g === 'authentik Admins') return ['super_admin'];
+                      if (g === 'admin' || g === 'super_admin' || g === 'platform_admin') return [g];
+                      return [];
+                    });
+
+                    console.log("✅ Admin Authentik Background Login Successful for:", profile.email, roles);
 
                     return {
                       id: profile.sub,
