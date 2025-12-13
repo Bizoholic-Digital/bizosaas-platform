@@ -16,7 +16,7 @@ export const authConfig: NextAuthConfig = {
       {
         id: "authentik",
         name: "BizOSaaS SSO",
-        type: "oidc",
+        type: "oidc" as const,
         // Use same base URL, different application slug
         issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
         clientId: process.env.AUTHENTIK_CLIENT_ID || "bizosaas-admin-dashboard",
@@ -29,7 +29,7 @@ export const authConfig: NextAuthConfig = {
         },
         token: `${AUTHENTIK_URL}/application/o/token/`,
         userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
-        profile(profile) {
+        profile(profile: any) {
           // Map Authentik groups to roles
           const groups = profile.groups || [];
           const roles = groups.filter((g: string) =>
@@ -186,9 +186,11 @@ export const authConfig: NextAuthConfig = {
 
       // Check if user has admin role
       const roles = (auth.user as any).roles || [];
-      const hasAdminRole = roles.includes("platform_admin") || roles.includes("super_admin");
+      // Accept 'admin' as well, as some backends might return generic 'admin' role
+      const hasAdminRole = roles.includes("platform_admin") || roles.includes("super_admin") || roles.includes("admin");
 
       if (!hasAdminRole) {
+        console.warn("⚠️ User authenticated but lacks admin role:", auth.user?.email, roles);
         // Redirect non-admins to Client Portal
         const clientPortalUrl = process.env.NEXT_PUBLIC_CLIENT_PORTAL_URL || 'http://localhost:3003';
         return Response.redirect(`${clientPortalUrl}/dashboard`);
@@ -214,6 +216,7 @@ export const authConfig: NextAuthConfig = {
         httpOnly: true,
         sameSite: 'lax' as const,
         path: '/',
+        domain: process.env.NODE_ENV === 'production' ? '.bizoholic.net' : undefined,
         secure: process.env.NODE_ENV === 'production',
       },
     },
