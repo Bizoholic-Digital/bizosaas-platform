@@ -200,7 +200,6 @@ export const authConfig = {
                 httpOnly: true,
                 sameSite: 'lax' as const,
                 path: '/',
-                domain: process.env.NODE_ENV === 'production' ? '.bizoholic.net' : undefined,
                 secure: process.env.NODE_ENV === 'production',
             },
         },
