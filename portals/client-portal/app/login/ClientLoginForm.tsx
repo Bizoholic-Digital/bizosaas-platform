@@ -15,9 +15,10 @@ export function ClientLoginForm() {
 
         if (role === 'super_admin' || role === 'platform_admin') {
             // Redirect to Admin Dashboard
-            window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3009';
+            window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.bizoholic.net';
         } else {
-            router.push('/dashboard');
+            // Use hard redirect to ensure session cookie is picked up
+            window.location.href = '/dashboard';
         }
     }
 
