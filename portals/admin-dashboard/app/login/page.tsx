@@ -1,3 +1,5 @@
+'use client';
+
 import AdminLoginForm from './AdminLoginForm';
 import { ThemeToggle } from '@/components/theme-toggle';
 
