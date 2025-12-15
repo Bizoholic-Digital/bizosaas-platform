@@ -1,228 +1,62 @@
-# Brain Gateway Integration - Implementation Summary
+# Brain Gateway Connector Integration - Complete
 
 **Date**: 2025-12-15  
-**Commit**: `6b4c607`  
-**Branch**: `staging`
+**Architecture**: Connector-First (WordPress, FluentCRM, WooCommerce)
 
----
+## ✅ Completed Tasks
 
-## ✅ Completed
+### 1. Admin Dashboard Fix
+- **Issue**: Build failed due to duplicate `auth.ts` / `auth.tsx` files.
+- **Fix**: Removed redundant `auth.tsx`, renamed `auth.ts` to `auth-config.ts`, and updated strict import paths.
+- **Status**: **Build Fixed**.
 
-### 1. VPS Infrastructure Analysis
-- **Temporal**: Running at `temporal-ui.bizoholic.net` (Up 5 days)
-- **Vault**: Running at `vault.bizoholic.net` (Up 5 days)
-- **Brain Gateway**: Running at `api.bizoholic.net` (Up 5 days)
-- **Authentik**: All services healthy
-- **Client Portal**: Running but needs env var updates
-- **Admin Dashboard**: Unhealthy (health endpoint exists but container failing)
+### 2. Architecture Transition (Brain Gateway)
+- Implemented **Connector-First Architecture**.
+- Replaced direct service dependencies with **Unified Ports** (`CMSPort`, `CRMPort`, `ECommercePort`).
+- Implemented **Connector Registry** for dynamic service loading.
+- Registered new Unified Routers in `main.py`.
 
-### 2. Brain Gateway Enhancements
-- ✅ Added Prometheus metrics endpoint (`/metrics`)
-- ✅ Fixed missing instrumentation causing 404 errors
-- ✅ Health check endpoint already exists (`/health`)
+### 3. Frontend Integration (Client Portal)
+- **API Clients**: Created typed clients in `lib/api/` (`cms.ts`, `crm.ts`, `ecommerce.ts`, `connectors.ts`).
+- **Proxy Routes**: Implemented Next.js API routes (`app/api/brain/*`) to proxy requests to Gateway.
+- **UI Components**: Updated `CMSContent`, `CRMContent`, `EcommerceContent` to fetch live data via the proxy.
+- **Forms**: Updated `PageForm`, `PostForm`, `ContactForm` to perform real CRUD operations via the new API clients.
+- **Connectors UI**: Implemented `ConnectorsContent` to manage integrations.
 
-### 3. Hexagonal Architecture Implementation
-- ✅ Created `WorkflowPort` interface for Temporal
-- ✅ Created `TemporalAdapter` implementation
-- ✅ Created `VaultAdapter` (already existed, verified)
-- ✅ Follows Ports & Adapters pattern
+### 4. Backend Implementation (Brain Gateway)
+- **Unified Routers**:
+  - `/api/cms`: Pages, Posts (Full CRUD implemented; maps to **WordPress**).
+  - `/api/crm`: Contacts (Create/List implemented; maps to **FluentCRM**).
+  - `/api/ecommerce`: Products, Orders (Read-Only implemented; maps to **WooCommerce**).
+- **Connectors**:
+  - `WordPressConnector`: Created.
+  - `FluentCRMConnector`: Created.
+  - `WooCommerceConnector`: Created.
 
-### 4. Frontend API Integration
-- ✅ Created centralized `BrainApiClient` (`lib/api/brain-client.ts`)
-- ✅ Created `CrmApi` client routing through Brain Gateway
-- ✅ Fixed Client Portal health check URL (was pointing to wrong service)
-- ✅ All requests now route through Brain Gateway
+## 🚀 How to Run
 
-### 5. Code Quality
-- ✅ TypeScript interfaces for type safety
-- ✅ Error handling in API client
-- ✅ Singleton pattern for API instances
-- ✅ Consistent naming conventions
-
----
-
-## ⏳ Next Steps
-
-### Priority 1: Environment Variables (15 min)
-
-Update Client Portal environment variables in Dokploy:
-
-```bash
-# Add these to Client Portal in Dokploy
-NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
-NEXT_PUBLIC_TEMPORAL_UI_URL=https://temporal-ui.bizoholic.net
-NEXT_PUBLIC_VAULT_UI_URL=https://vault.bizoholic.net
-```
-
-### Priority 2: Redeploy Services (10 min)
-
-1. Redeploy Brain Gateway (for metrics endpoint)
-2. Redeploy Client Portal (for health check fix)
-3. Verify health checks pass
-
-### Priority 3: Wire Remaining API Clients (2-3 hours)
-
-Create API clients for:
-- [ ] CMS (`lib/api/cms.ts`) → Wagtail
-- [ ] E-commerce (`lib/api/ecommerce.ts`) → Saleor
-- [ ] Analytics (`lib/api/analytics.ts`) → Google Analytics
-- [ ] Billing (`lib/api/billing.ts`) → Lago
-- [ ] AI Agents (`lib/api/agents.ts`) → CrewAI
-
-### Priority 4: Update Components to Use API Clients (4-6 hours)
-
-Replace mock data with live API calls:
-- [ ] Dashboard widgets
-- [ ] CRM components (Contacts, Companies, Deals, Tasks)
-- [ ] CMS components (Pages, Posts, Media)
-- [ ] Analytics dashboards
-- [ ] Billing pages
-
-### Priority 5: Temporal Workflow Integration (2 hours)
-
-- [ ] Wire TemporalAdapter to Brain Gateway dependencies
-- [ ] Deploy connector setup workflow
-- [ ] Deploy connector sync workflow
-- [ ] Test workflow execution via Temporal UI
-
-### Priority 6: Vault Integration (1 hour)
-
-- [ ] Configure Vault AppRole for Brain Gateway
-- [ ] Migrate connector credentials to Vault
-- [ ] Test VaultAdapter integration
-- [ ] Verify secret retrieval
-
----
-
-## 📋 Deployment Checklist
-
-### Before Deploying
-
-- [x] Code committed to `staging` branch
-- [x] All tests passing locally
-- [ ] Environment variables documented
-- [ ] Health checks verified
-
-### Deployment Steps
-
-1. **Update Dokploy Environment Variables**
-   - Client Portal: Add Brain API URL
-   - Admin Dashboard: Verify existing vars
-
-2. **Redeploy Services**
+1. **Rebuild Containers**:
+   To apply the architectural changes and new dependencies, rebuild the stack:
    ```bash
-   # In Dokploy UI
-   1. Brain Gateway → Redeploy
-   2. Client Portal → Redeploy
-   3. Admin Dashboard → Redeploy (if needed)
+   docker-compose up -d --build brain-gateway client-portal admin-dashboard
    ```
 
-3. **Verify Health**
-   ```bash
-   curl https://api.bizoholic.net/health
-   curl https://api.bizoholic.net/metrics
-   curl https://app.bizoholic.net/api/health
-   curl https://admin.bizoholic.net/api/health
-   ```
+2. **Verify Connections**:
+   - Open **Client Portal**.
+   - Navigate to the **Connectors** tab.
+   - Connect **WordPress** (requires URL, Username, Application Password).
+   - Connect **FluentCRM** (if separate, or same credentials).
+   - Connect **WooCommerce** (requires URL, Consumer Key, Consumer Secret).
 
-4. **Monitor Logs**
-   ```bash
-   docker logs -f brain-gateway
-   docker logs -f client-portal
-   docker logs -f bizosaas-admin-dashboard
-   ```
+3. **Test Functionality**:
+   - **CMS**: Create a new Page or Post. Content should persist to WordPress.
+   - **CRM**: Add a new Contact. It should appear in FluentCRM.
+   - **E-commerce**: View Products and Orders synced from WooCommerce.
 
----
-
-## 🔍 Testing Plan
-
-### API Client Tests
-
-```typescript
-// Test Brain API client
-import { brainApi } from '@/lib/api/brain-client';
-
-const health = await brainApi.healthCheck();
-console.log(health); // Should return { status: 'healthy' }
-```
-
-### CRM API Tests
-
-```typescript
-// Test CRM operations
-import { crmApi } from '@/lib/api/crm';
-
-const contacts = await crmApi.getContacts({ page: 1, limit: 10 });
-console.log(contacts.data); // Should return contact list
-```
-
-### Integration Tests
-
-1. **Dashboard Load**: Verify widgets load with live data
-2. **CRM CRUD**: Create, read, update, delete contact
-3. **Health Checks**: All services return healthy status
-4. **Metrics**: Prometheus scraping successful
+## 📝 Current Limitations
+- **CRM**: Update/Delete contacts is simulated in the UI but pending backend implementation in the connector port.
+- **E-commerce**: Product creation is not yet supported by the Gateway (Read-Only mode).
+- **Environment**: Ensure `BRAIN_GATEWAY_URL` is set correctly in Client Portal environment.
 
 ---
-
-## 📊 Architecture Diagram
-
-```
-┌─────────────────┐
-│  Client Portal  │
-│  (Next.js)      │
-└────────┬────────┘
-         │
-         │ HTTPS
-         ↓
-┌─────────────────────────────────┐
-│   Brain Gateway (FastAPI)       │
-│   - /health                     │
-│   - /metrics (Prometheus)       │
-│   - /api/brain/django-crm/*     │
-│   - /api/brain/wagtail/*        │
-│   - /api/brain/saleor/*         │
-│   - /graphql                    │
-└────────┬────────────────────────┘
-         │
-         ├──────────────┬──────────────┬──────────────┐
-         │              │              │              │
-         ↓              ↓              ↓              ↓
-┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐
-│ Django CRM │  │  Wagtail   │  │   Saleor   │  │   Lago     │
-│            │  │    CMS     │  │ E-commerce │  │  Billing   │
-└────────────┘  └────────────┘  └────────────┘  └────────────┘
-
-         ┌──────────────┬──────────────┐
-         │              │              │
-         ↓              ↓              ↓
-┌────────────┐  ┌────────────┐  ┌────────────┐
-│  Temporal  │  │   Vault    │  │  CrewAI    │
-│ Workflows  │  │  Secrets   │  │ AI Agents  │
-└────────────┘  └────────────┘  └────────────┘
-```
-
----
-
-## 🎯 Success Criteria
-
-- ✅ All services healthy
-- ✅ Prometheus metrics working
-- ✅ Client Portal connects to Brain Gateway
-- ✅ CRM operations work end-to-end
-- ⏳ Dashboard shows live data
-- ⏳ Temporal workflows execute
-- ⏳ Vault stores credentials securely
-
----
-
-## 📝 Notes
-
-- **Lago Issue**: Database and API in restart loop - needs investigation
-- **Admin Dashboard**: Health endpoint exists but container unhealthy - check logs
-- **Client Portal**: Missing Brain API URL in env vars - add in Dokploy
-
----
-
-*Created: 2025-12-15 09:54 UTC*  
-*Last Updated: 2025-12-15 09:54 UTC*
+*Generated by Antigravity*

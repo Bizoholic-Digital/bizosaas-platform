@@ -1,87 +1,61 @@
-/**
- * Centralized Brain API Gateway Client
- * All backend requests route through the Brain Gateway following hexagonal architecture
- */
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
-const BRAIN_API_URL = process.env.NEXT_PUBLIC_BRAIN_API_URL || 'https://api.bizoholic.net';
-
+// Base API response wrapper
 export interface ApiResponse<T = any> {
     data?: T;
     error?: string;
     status: number;
 }
 
-export class BrainApiClient {
-    private baseUrl: string;
+class BrainApiClient {
+    private client: AxiosInstance;
 
-    constructor(baseUrl: string = BRAIN_API_URL) {
-        this.baseUrl = baseUrl;
+    constructor() {
+        this.client = axios.create({
+            baseURL: '', // Relative URL to use Next.js API routes
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            timeout: 30000,
+        });
     }
 
-    private async request<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<ApiResponse<T>> {
-        const url = `${this.baseUrl}${endpoint}`;
-
+    private async request<T>(method: string, url: string, data?: any): Promise<ApiResponse<T>> {
         try {
-            const response = await fetch(url, {
-                ...options,
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers,
-                },
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                return {
-                    error: data.error || data.message || 'Request failed',
-                    status: response.status,
-                };
-            }
-
-            return {
+            const response: AxiosResponse<T> = await this.client.request({
+                method,
+                url,
                 data,
+            });
+            return {
+                data: response.data,
                 status: response.status,
             };
-        } catch (error) {
+        } catch (error: any) {
+            console.error(`API Error ${method} ${url}:`, error);
             return {
-                error: error instanceof Error ? error.message : 'Network error',
-                status: 500,
+                error: error.response?.data?.detail || error.message || 'Unknown error',
+                status: error.response?.status || 500,
+                data: error.response?.data
             };
         }
     }
 
-    // Generic CRUD operations
-    async get<T>(endpoint: string): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, { method: 'GET' });
+    async get<T>(url: string): Promise<ApiResponse<T>> {
+        return this.request<T>('GET', url);
     }
 
-    async post<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(body),
-        });
+    async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+        return this.request<T>('POST', url, data);
     }
 
-    async put<T>(endpoint: string, body: any): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, {
-            method: 'PUT',
-            body: JSON.stringify(body),
-        });
+    async put<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+        return this.request<T>('PUT', url, data);
     }
 
-    async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, { method: 'DELETE' });
-    }
-
-    // Health check
-    async healthCheck() {
-        return this.get('/health');
+    async delete<T>(url: string): Promise<ApiResponse<T>> {
+        return this.request<T>('DELETE', url);
     }
 }
 
-// Export singleton instance
 export const brainApi = new BrainApiClient();
