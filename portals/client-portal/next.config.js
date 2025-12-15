@@ -1,23 +1,14 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
 /** @type {import('next').NextConfig} */
-import nextPwa from 'next-pwa';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const withPWA = nextPwa({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-});
-
+/* eslint-disable @typescript-eslint/no-var-requires */
 const nextConfig = {
   transpilePackages: ['@bizosaas/shared-ui'],
+  // Enable standalone output for Docker optimization
   output: 'standalone',
 
-  // Skip type checking during build
+  // Skip type checking during build (for faster container builds)
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -29,9 +20,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
 
-  // Disable static generation for pages that might depend on unavailable APIs during build
-  staticPageGenerationTimeout: 120,
-
   // Environment variables
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
@@ -39,6 +27,7 @@ const nextConfig = {
     PORT: process.env.PORT || '3000',
   },
 
+  // API configuration - Central Hub Integration
   async rewrites() {
     return [
       {
@@ -48,6 +37,7 @@ const nextConfig = {
     ];
   },
 
+  // CORS headers for API routes
   async headers() {
     return [
       {
@@ -62,12 +52,15 @@ const nextConfig = {
     ];
   },
 
+  // Image optimization
   images: {
-    remotePatterns: [
-      { protocol: 'http', hostname: 'localhost' },
-      { protocol: 'http', hostname: 'host.docker.internal' },
-      { protocol: 'https', hostname: '**.bizoholic.net' },
-      { protocol: 'https', hostname: '**.bizosaas.com' },
+    domains: [
+      'localhost',
+      'bizosaas-brain',
+      'bizosaas-wagtail-cms',
+      'bizosaas.local',
+      'portal.bizosaas.local',
+      'api.bizosaas.local',
     ],
     unoptimized: false,
   },
@@ -75,25 +68,22 @@ const nextConfig = {
   // Move external packages out of experimental
   serverExternalPackages: ['axios'],
 
+  // Experimental features
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons'],
   },
 
+  // Webpack configuration
   webpack: (config, { isServer }) => {
-    // 1. Force resolution of shared dependencies from client-portal/node_modules
-    // This fixes the "Module not found: Can't resolve 'lucide-react'" error when building shared-ui
+    const path = require('path');
+    const { fileURLToPath } = require('url');
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+    // Ensure modules resolve from the portal's node_modules first
     config.resolve.modules = [
       path.resolve(__dirname, 'node_modules'),
       'node_modules'
     ];
-
-    // 2. Add aliases for critical shared packages to ensure singleton instances
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
-      'react': path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
-    };
 
     if (!isServer) {
       config.resolve.fallback = {
@@ -104,5 +94,13 @@ const nextConfig = {
     return config;
   },
 };
+
+// PWA Configuration
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
 
 export default withPWA(nextConfig);
