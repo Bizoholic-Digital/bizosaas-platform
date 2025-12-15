@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
+import nextPwa from 'next-pwa';
+
+const withPWA = nextPwa({
   dest: 'public',
   register: true,
   skipWaiting: true,
@@ -22,7 +24,7 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
 
-  // Disable static generation for pages that might depend on unavailabe APIs during build
+  // Disable static generation for pages that might depend on unavailable APIs during build
   staticPageGenerationTimeout: 120,
 
   // Environment variables
@@ -73,7 +75,6 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Standard webpack config without ESM/CJS mixing
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -84,4 +85,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withPWA(nextConfig);
+export default withPWA(nextConfig);
