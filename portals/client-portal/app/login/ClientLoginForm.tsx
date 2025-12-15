@@ -29,6 +29,7 @@ export function ClientLoginForm() {
             platformSubtitle="Access your projects and services"
             defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
+            className="!bg-transparent"
             BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
             onCredentialsLogin={async (email, password) => {
                 const result = await signIn('credentials', {
