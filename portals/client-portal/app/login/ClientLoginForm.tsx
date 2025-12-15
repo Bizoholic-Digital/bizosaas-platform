@@ -24,29 +24,12 @@ export function ClientLoginForm() {
 
     return (
         <UnifiedLoginForm
-            mode="social"
+            mode="credentials"
             platformName="Client Portal"
             platformSubtitle="Access your projects and services"
             defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
-            socialProviders={[
-                {
-                    id: 'google',
-                    name: 'Google',
-                    onClick: () => signIn('google', { callbackUrl: '/dashboard' })
-                },
-                {
-                    id: 'azure-ad',
-                    name: 'Microsoft',
-                    onClick: () => signIn('azure-ad', { callbackUrl: '/dashboard' })
-                },
-                {
-                    id: 'linkedin',
-                    name: 'LinkedIn',
-                    onClick: () => signIn('linkedin', { callbackUrl: '/dashboard' })
-                }
-            ]}
             onCredentialsLogin={async (email, password) => {
                 const result = await signIn('credentials', {
                     email,
