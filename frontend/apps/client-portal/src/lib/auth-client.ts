@@ -13,6 +13,7 @@ export const authClient = {
                 ...credentials,
                 grant_type: 'password'
             }),
+            redirect: 'manual'
         })
 
         if (!response.ok) {
