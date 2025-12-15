@@ -1,14 +1,16 @@
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
 /** @type {import('next').NextConfig} */
-/* eslint-disable @typescript-eslint/no-var-requires */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+});
+
 const nextConfig = {
   transpilePackages: ['@bizosaas/shared-ui'],
-  // Enable standalone output for Docker optimization
   output: 'standalone',
 
-  // Skip type checking during build (for faster container builds)
+  // Skip type checking during build
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -20,6 +22,9 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
 
+  // Disable static generation for pages that might depend on unavailabe APIs during build
+  staticPageGenerationTimeout: 120,
+
   // Environment variables
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
@@ -27,7 +32,6 @@ const nextConfig = {
     PORT: process.env.PORT || '3000',
   },
 
-  // API configuration - Central Hub Integration
   async rewrites() {
     return [
       {
@@ -37,7 +41,6 @@ const nextConfig = {
     ];
   },
 
-  // CORS headers for API routes
   async headers() {
     return [
       {
@@ -52,15 +55,12 @@ const nextConfig = {
     ];
   },
 
-  // Image optimization
   images: {
-    domains: [
-      'localhost',
-      'bizosaas-brain',
-      'bizosaas-wagtail-cms',
-      'bizosaas.local',
-      'portal.bizosaas.local',
-      'api.bizosaas.local',
+    remotePatterns: [
+      { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'http', hostname: 'host.docker.internal' },
+      { protocol: 'https', hostname: '**.bizoholic.net' },
+      { protocol: 'https', hostname: '**.bizosaas.com' },
     ],
     unoptimized: false,
   },
@@ -68,23 +68,12 @@ const nextConfig = {
   // Move external packages out of experimental
   serverExternalPackages: ['axios'],
 
-  // Experimental features
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons'],
   },
 
-  // Webpack configuration
   webpack: (config, { isServer }) => {
-    const path = require('path');
-    const { fileURLToPath } = require('url');
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-    // Ensure modules resolve from the portal's node_modules first
-    config.resolve.modules = [
-      path.resolve(__dirname, 'node_modules'),
-      'node_modules'
-    ];
-
+    // Standard webpack config without ESM/CJS mixing
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -95,12 +84,4 @@ const nextConfig = {
   },
 };
 
-// PWA Configuration
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-});
-
-export default withPWA(nextConfig);
+module.exports = withPWA(nextConfig);
