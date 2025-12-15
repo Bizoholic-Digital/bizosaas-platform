@@ -3,62 +3,86 @@
 import React, { useState, useEffect } from 'react';
 import {
     Plus, Search, Filter, Edit, Trash2, Package,
-    ShoppingCart, Users, BarChart3, Target, MessageSquare
+    ShoppingCart, Users, BarChart3, Target, MessageSquare, RefreshCw, AlertCircle
 } from 'lucide-react';
 import { ProductForm } from './ProductForm';
 import { OrderForm } from './OrderForm';
 import { CustomerForm } from './CustomerForm';
+import { ecommerceApi, Product, Order } from '@/lib/api/ecommerce';
+import { toast } from 'sonner';
 
 interface EcommerceContentProps {
     activeTab: string;
 }
 
 export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab }) => {
-    const [ecomData, setEcomData] = useState({
-        products: [],
-        orders: [],
-        customers: [],
-        inventory: [],
-        coupons: [],
-        reviews: []
-    });
+    const [products, setProducts] = useState<Product[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Mock other data
+    const [customers] = useState([]);
+    const [inventory] = useState([]);
 
     // Modal States
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-    const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any>(null);
 
-    // Mock function to represent fetching from Brain Gateway -> WooCommerce
-    const refreshData = async () => {
+    useEffect(() => {
+        if (activeTab === 'ecom-products') {
+            fetchProducts();
+        } else if (activeTab === 'ecom-orders') {
+            fetchOrders();
+        }
+    }, [activeTab]);
+
+    const fetchProducts = async () => {
+        setIsLoading(true);
+        setError(null);
         try {
-            console.log('Fetching E-commerce data via Brain Gateway...');
-
-            // Logic to fetch via Connector Proxy:
-            // const products = await brainApi.connectors.sync('woocommerce', 'products');
-
-            // For now, we stub this out as well until the backend proxy is confirmed live.
-            if (activeTab === 'ecom-products') {
-                // ...
+            const res = await ecommerceApi.getProducts();
+            if (res.error) {
+                setError(res.error);
+                if (res.status === 404) toast.error("E-commerce connector not configured.");
+            } else {
+                setProducts(res.data || []);
             }
-        } catch (error) {
-            console.error('Error refreshing data:', error);
+        } catch (err) {
+            console.error("Failed to fetch products", err);
+            setError("Failed to load products.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleCreate = async (type: string, data: any) => {
-        console.log(`Creating ${type} in WooCommerce via Connector`, data);
-        await refreshData();
+    const fetchOrders = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const res = await ecommerceApi.getOrders();
+            if (res.error) {
+                setError(res.error);
+                if (res.status === 404) toast.error("E-commerce connector not configured.");
+            } else {
+                setOrders(res.data || []);
+            }
+        } catch (err) {
+            console.error("Failed to fetch orders", err);
+            setError("Failed to load orders.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleUpdate = async (type: string, id: string, data: any) => {
-        console.log(`Updating ${type} ${id} in WooCommerce via Connector`, data);
-        await refreshData();
+    const handleCreate = async () => {
+        // Assume modal submission does API call
+        if (activeTab === 'ecom-products') fetchProducts();
+        if (activeTab === 'ecom-orders') fetchOrders();
     };
 
-    useEffect(() => {
-        refreshData();
-    }, [activeTab]);
 
     const renderProducts = () => (
         <div className="space-y-6">
@@ -66,36 +90,27 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Products</h2>
                 <button
                     onClick={() => { setSelectedItem(null); setIsProductModalOpen(true); }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+                    className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary/90"
                 >
                     <Plus className="w-4 h-4" /> Add Product
                 </button>
                 <ProductForm
                     isOpen={isProductModalOpen}
                     onClose={() => setIsProductModalOpen(false)}
-                    onSubmit={(data) => selectedItem ? handleUpdate('products', selectedItem.id, data) : handleCreate('products', data)}
+                    onSubmit={handleCreate}
                     initialData={selectedItem}
                 />
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-                    <div className="flex gap-4">
-                        <div className="relative flex-1">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                                type="text"
-                                placeholder="Search products..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
-                            />
-                        </div>
-                        <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg flex items-center gap-2">
-                            <Filter className="w-4 h-4" /> Filter
-                        </button>
-                    </div>
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    {error}
                 </div>
+            )}
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
+                        <thead className="bg-gray-50 dark:bg-gray-800/50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">SKU</th>
@@ -105,27 +120,31 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                            {ecomData.products.map((product: any) => (
-                                <tr key={product.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{product.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.sku || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${product.price || '0.00'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.stock || 0}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                            {product.status || 'Active'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div className="flex gap-2">
-                                            <button className="text-blue-600 hover:text-blue-900"><Edit className="w-4 h-4" /></button>
-                                            <button className="text-red-600 hover:text-red-900"><Trash2 className="w-4 h-4" /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                            {isLoading ? (
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500"><RefreshCw className="animate-spin h-6 w-6 mx-auto" /></td></tr>
+                            ) : products.length === 0 && !error ? (
+                                <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">No products found.</td></tr>
+                            ) : (
+                                products.map((product) => (
+                                    <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{product.name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.sku || 'N/A'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${product.price || '0.00'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{product.stock_quantity || 0}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${product.status === 'publish' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800'}`}>
+                                                {product.status || 'Active'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <div className="flex gap-2">
+                                                <button className="text-gray-400 hover:text-blue-600"><Edit className="w-4 h-4" /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -139,21 +158,27 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h2>
                 <button
                     onClick={() => { setSelectedItem(null); setIsOrderModalOpen(true); }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+                    className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary/90"
                 >
                     <Plus className="w-4 h-4" /> Add Order
                 </button>
                 <OrderForm
                     isOpen={isOrderModalOpen}
                     onClose={() => setIsOrderModalOpen(false)}
-                    onSubmit={(data) => selectedItem ? handleUpdate('orders', selectedItem.id, data) : handleCreate('orders', data)}
+                    onSubmit={handleCreate}
                     initialData={selectedItem}
                 />
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    {error}
+                </div>
+            )}
+            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
+                        <thead className="bg-gray-50 dark:bg-gray-800/50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
@@ -162,20 +187,26 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                            {ecomData.orders.map((order: any) => (
-                                <tr key={order.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{order.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{order.customer || 'Guest'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${order.total || '0.00'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            {order.status || 'Pending'}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{order.date || 'N/A'}</td>
-                                </tr>
-                            ))}
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                            {isLoading ? (
+                                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500"><RefreshCw className="animate-spin h-6 w-6 mx-auto" /></td></tr>
+                            ) : orders.length === 0 && !error ? (
+                                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No orders found.</td></tr>
+                            ) : (
+                                orders.map((order) => (
+                                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">#{order.number || order.id}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{order.customer_id || 'Guest'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{order.total} {order.currency}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${order.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                {order.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -183,179 +214,34 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
         </div>
     );
 
-    const renderCustomers = () => (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Customers</h2>
-                <button
-                    onClick={() => { setSelectedItem(null); setIsCustomerModalOpen(true); }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
-                >
-                    <Plus className="w-4 h-4" /> Add Customer
-                </button>
-                <CustomerForm
-                    isOpen={isCustomerModalOpen}
-                    onClose={() => setIsCustomerModalOpen(false)}
-                    onSubmit={(data) => selectedItem ? handleUpdate('customers', selectedItem.id, data) : handleCreate('customers', data)}
-                    initialData={selectedItem}
-                />
-            </div>
-            <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Orders</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Spent</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                            {ecomData.customers.map((customer: any) => (
-                                <tr key={customer.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{customer.name || 'N/A'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{customer.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{customer.orders || 0}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${customer.total_spent || '0.00'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <button className="text-blue-600 hover:text-blue-900">View</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderInventory = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Inventory Management</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                            <Package className="w-6 h-6 text-green-600 dark:text-green-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">In Stock</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{ecomData.products.length}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-                            <BarChart3 className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Low Stock</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                            <Target className="w-6 h-6 text-red-600 dark:text-red-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Out of Stock</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-
-    const renderCoupons = () => (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Coupons & Discounts</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
-                    <Plus className="w-4 h-4" /> Create Coupon
-                </button>
-            </div>
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                <p className="text-gray-600 dark:text-gray-400">No coupons available. Create your first coupon to start offering discounts.</p>
-            </div>
-        </div>
-    );
-
-    const renderReviews = () => (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Product Reviews</h2>
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                <p className="text-gray-600 dark:text-gray-400">No reviews yet. Reviews will appear here once customers start rating products.</p>
-            </div>
+    // Simplistic placeholder renderer for now
+    const renderPlaceholder = (title: string) => (
+        <div className="flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-lg">
+            <Package className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{title}</h3>
+            <p className="text-gray-500 dark:text-gray-400">Feature not yet connected to active E-commerce provider.</p>
         </div>
     );
 
     if (activeTab === 'ecom-products') return renderProducts();
     if (activeTab === 'ecom-orders') return renderOrders();
-    if (activeTab === 'ecom-customers') return renderCustomers();
-    if (activeTab === 'ecom-inventory') return renderInventory();
-    if (activeTab === 'ecom-coupons') return renderCoupons();
-    if (activeTab === 'ecom-reviews') return renderReviews();
-
-    // Default E-commerce overview
+    // Default or other tabs
     return (
         <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">E-commerce Overview</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                            <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Products</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{ecomData.products.length}</p>
-                        </div>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200">
+                    <h3 className="text-lg font-medium mb-2">Products</h3>
+                    <p className="text-3xl font-bold">{products.length || 0}</p>
+                    <button onClick={fetchProducts} className="text-primary text-sm mt-2">Refresh</button>
                 </div>
-
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                            <ShoppingCart className="w-6 h-6 text-green-600 dark:text-green-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Orders</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{ecomData.orders.length}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                            <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Customers</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{ecomData.customers.length}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                            <BarChart3 className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                        </div>
-                        <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Revenue</p>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">$0</p>
-                        </div>
-                    </div>
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200">
+                    <h3 className="text-lg font-medium mb-2">Orders</h3>
+                    <p className="text-3xl font-bold">{orders.length || 0}</p>
+                    <button onClick={fetchOrders} className="text-primary text-sm mt-2">Refresh</button>
                 </div>
             </div>
+            {activeTab !== 'ecom-overview' && renderPlaceholder(activeTab.replace('ecom-', ''))}
         </div>
     );
 };

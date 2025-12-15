@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
 import { RichTextEditor } from './RichTextEditor';
+import { cmsApi } from '@/lib/api/cms';
 
 interface PageFormProps {
     isOpen: boolean;
@@ -51,22 +52,15 @@ export const PageForm: React.FC<PageFormProps> = ({ isOpen, onClose, onSuccess, 
         setError('');
 
         try {
-            const url = initialData
-                ? `/api/brain/wagtail/pages?page_id=${initialData.id}`
-                : '/api/brain/wagtail/pages';
+            let response;
+            if (initialData) {
+                response = await cmsApi.updatePage(initialData.id, formData);
+            } else {
+                response = await cmsApi.createPage(formData);
+            }
 
-            const method = initialData ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to save page');
+            if (response.error) {
+                throw new Error(response.error);
             }
 
             onSuccess();

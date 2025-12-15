@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Loader2 } from 'lucide-react';
 import { RichTextEditor } from './RichTextEditor';
+import { cmsApi } from '@/lib/api/cms';
 
 interface PostFormProps {
     isOpen: boolean;
@@ -57,34 +58,27 @@ export const PostForm: React.FC<PostFormProps> = ({ isOpen, onClose, onSuccess, 
         setError('');
 
         try {
-            const url = initialData
-                ? `/api/brain/wagtail/posts?post_id=${initialData.id}`
-                : '/api/brain/wagtail/posts';
-
-            const method = initialData ? 'PUT' : 'POST';
-
             // Process tags
             const processedData = {
                 ...formData,
                 tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
             };
 
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(processedData),
-            });
+            let response;
+            if (initialData) {
+                response = await cmsApi.updatePost(initialData.id, processedData);
+            } else {
+                response = await cmsApi.createPost(processedData);
+            }
 
-            if (!response.ok) {
-                throw new Error('Failed to save post');
+            if (response.error) {
+                throw new Error(response.error);
             }
 
             onSuccess();
             onClose();
-        } catch (err) {
-            setError('Failed to save post. Please try again.');
+        } catch (err: any) {
+            setError(err.message || 'Failed to save post. Please try again.');
             console.error(err);
         } finally {
             setIsLoading(false);
