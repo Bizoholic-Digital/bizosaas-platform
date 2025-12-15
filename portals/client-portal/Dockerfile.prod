@@ -26,6 +26,7 @@ COPY --from=deps /app/portals/client-portal/node_modules ./portals/client-portal
 # Copy source code
 COPY portals/client-portal ./portals/client-portal
 COPY packages/shared-ui ./packages/shared-ui
+COPY shared ./shared
 COPY tsconfig.json ./tsconfig.json
 
 # Set environment variables for build
