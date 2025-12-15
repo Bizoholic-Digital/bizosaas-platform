@@ -27,6 +27,7 @@ COPY --from=deps /app/portals/admin-dashboard/node_modules ./portals/admin-dashb
 # Copy source code
 COPY portals/admin-dashboard ./portals/admin-dashboard
 COPY packages/shared-ui ./packages/shared-ui
+COPY shared ./shared
 COPY tsconfig.json ./tsconfig.json
 
 # Set build-time environment variables
