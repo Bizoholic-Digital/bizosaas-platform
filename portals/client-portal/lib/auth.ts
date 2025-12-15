@@ -1,6 +1,9 @@
 import NextAuth from "next-auth";
 // import type { NextAuthConfig } from "next-auth"; // Removed to avoid resolution error
 import Authentik from "next-auth/providers/authentik";
+import Google from "next-auth/providers/google";
+import AzureAD from "next-auth/providers/azure-ad";
+import LinkedIn from "next-auth/providers/linkedin";
 import Credentials from "next-auth/providers/credentials";
 
 const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8001';
@@ -13,6 +16,39 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
 
 export const authConfig = {
     providers: [
+        // Google OAuth
+        ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
+            Google({
+                clientId: process.env.GOOGLE_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                authorization: {
+                    params: {
+                        prompt: "consent",
+                        access_type: "offline",
+                        response_type: "code"
+                    }
+                }
+            })
+        ] : []),
+        // Microsoft OAuth
+        ...(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET ? [
+            AzureAD({
+                clientId: process.env.MICROSOFT_CLIENT_ID,
+                clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+                tenantId: process.env.MICROSOFT_TENANT_ID || "common",
+            })
+        ] : []),
+        // LinkedIn OAuth
+        ...(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET ? [
+            LinkedIn({
+                clientId: process.env.LINKEDIN_CLIENT_ID,
+                clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+                authorization: {
+                    params: { scope: "r_liteprofile r_emailaddress" }
+                }
+            })
+        ] : []),
+        // Authentik SSO (optional, for advanced users)
         ...(process.env.AUTHENTIK_CLIENT_ID && process.env.AUTHENTIK_CLIENT_SECRET ? [
             Authentik({
                 name: 'BizOSaaS SSO',

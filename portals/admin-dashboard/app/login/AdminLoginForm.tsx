@@ -20,18 +20,12 @@ function LoginFormContent() {
 
     return (
         <UnifiedLoginForm
-            mode="both"
+            mode="credentials"
             platformName="Admin Dashboard"
             platformSubtitle="Platform Administration & Management"
-            ssoProviderName="Authentik"
-            ssoProviderId="authentik"
             defaultRedirectUrl={callbackUrl}
+            showDemoCredentials={process.env.NODE_ENV === 'development'}
             BrandingComponent={() => <PlatformBranding platform="BIZOSAAS" size="lg" />}
-            onSSOLogin={async () => {
-                await signIn("authentik", {
-                    callbackUrl: callbackUrl,
-                });
-            }}
             onCredentialsLogin={async (email, password) => {
                 try {
                     const result = await signIn("credentials", {
