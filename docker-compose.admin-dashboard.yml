@@ -15,7 +15,7 @@ services:
       # Authentik SSO Configuration (Production)
       AUTHENTIK_URL: ${AUTHENTIK_URL:-https://sso.bizoholic.net}
       NEXT_PUBLIC_SSO_URL: ${NEXT_PUBLIC_SSO_URL:-https://sso.bizoholic.net}
-      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas-admin/}
+      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas/}
       AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
       AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET}
       AUTH_SECRET: ${AUTH_SECRET}
