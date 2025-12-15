@@ -25,6 +25,7 @@ function LoginFormContent() {
             platformSubtitle="Platform Administration & Management"
             defaultRedirectUrl={callbackUrl}
             showDemoCredentials={process.env.NODE_ENV === 'development'}
+            className="!bg-transparent"
             BrandingComponent={() => <PlatformBranding platform="BIZOSAAS" size="lg" />}
             onCredentialsLogin={async (email, password) => {
                 try {

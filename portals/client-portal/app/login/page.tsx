@@ -20,27 +20,15 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md">
-          {/* Glassmorphism Card */}
-          <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 rounded-2xl shadow-2xl border border-white/20 dark:border-gray-700/50 p-8">
-            <Suspense fallback={
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
-              </div>
-            }>
-              <ClientLoginForm />
-            </Suspense>
+      {/* Main Content - UnifiedLoginForm handles its own card */}
+      <div className="relative z-10">
+        <Suspense fallback={
+          <div className="min-h-screen flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
           </div>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              © 2024 Bizoholic. All rights reserved.
-            </p>
-          </div>
-        </div>
+        }>
+          <ClientLoginForm />
+        </Suspense>
       </div>
 
       {/* Custom Animations */}

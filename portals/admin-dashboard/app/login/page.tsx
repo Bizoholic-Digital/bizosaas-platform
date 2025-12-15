@@ -19,21 +19,9 @@ export default function AdminLoginPage() {
         <ThemeToggle />
       </div>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md">
-          {/* Glassmorphism Card */}
-          <div className="backdrop-blur-xl bg-white/70 dark:bg-slate-900/70 rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-8">
-            <AdminLoginForm />
-          </div>
-
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              © 2024 Bizoholic Admin. All rights reserved.
-            </p>
-          </div>
-        </div>
+      {/* Main Content - UnifiedLoginForm handles its own card */}
+      <div className="relative z-10">
+        <AdminLoginForm />
       </div>
 
       {/* Custom Animations */}
