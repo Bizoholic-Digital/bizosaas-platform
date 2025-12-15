@@ -24,15 +24,12 @@ export function ClientLoginForm() {
 
     return (
         <UnifiedLoginForm
-            mode="both"
+            mode="credentials"
             platformName="Client Portal"
             platformSubtitle="Access your projects and services"
             defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
-            ssoProviderName="Authentik"
-            ssoProviderId="authentik"
-            onSSOLogin={() => signIn('authentik', { callbackUrl: '/dashboard' })}
             onCredentialsLogin={async (email, password) => {
                 const result = await signIn('credentials', {
                     email,
