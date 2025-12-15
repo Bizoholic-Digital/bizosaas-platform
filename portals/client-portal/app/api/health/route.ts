@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BRAIN_HUB_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://bizosaas-brain-unified:8001";
+const BRAIN_API_URL = process.env.NEXT_PUBLIC_BRAIN_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://brain-gateway:8000";
 
 export async function GET(request: NextRequest) {
   try {
-    const url = `${BRAIN_HUB_URL}/health`;
+    const url = `${BRAIN_API_URL}/health`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
     return NextResponse.json(data);
-    
+
   } catch (error) {
     console.error("Health Check API Error:", error);
-    
+
     // Return unhealthy status when Brain Hub is not reachable
     const fallbackData = {
       status: "unhealthy",
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       },
       message: "Brain Hub connection failed"
     };
-    
+
     return NextResponse.json(fallbackData, { status: 503 });
   }
 }
