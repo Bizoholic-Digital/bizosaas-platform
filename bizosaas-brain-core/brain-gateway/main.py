@@ -4,10 +4,14 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 from app.api import connectors, agents, cms, onboarding
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
+
+# Add Prometheus metrics
+Instrumentator().instrument(app).expose(app)
 
 # CORS
 app.add_middleware(
