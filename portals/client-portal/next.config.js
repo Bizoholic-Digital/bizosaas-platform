@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 import nextPwa from 'next-pwa';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const withPWA = nextPwa({
   dest: 'public',
@@ -75,6 +80,21 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
+    // 1. Force resolution of shared dependencies from client-portal/node_modules
+    // This fixes the "Module not found: Can't resolve 'lucide-react'" error when building shared-ui
+    config.resolve.modules = [
+      path.resolve(__dirname, 'node_modules'),
+      'node_modules'
+    ];
+
+    // 2. Add aliases for critical shared packages to ensure singleton instances
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      'lucide-react': path.resolve(__dirname, 'node_modules/lucide-react'),
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+    };
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
