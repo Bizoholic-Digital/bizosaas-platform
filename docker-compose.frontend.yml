@@ -34,7 +34,7 @@ services:
 
       # New Brain Gateway Integration
       - NEXT_PUBLIC_BRAIN_API_URL=${NEXT_PUBLIC_BRAIN_API_URL:-https://api.bizoholic.net}
-      - NEXT_PUBLIC_TEMPORAL_UI_URL=${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal-ui.bizoholic.net}
+      - NEXT_PUBLIC_TEMPORAL_UI_URL=${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal.bizoholic.net}
       - NEXT_PUBLIC_VAULT_UI_URL=${NEXT_PUBLIC_VAULT_UI_URL:-https://vault.bizoholic.net}
 
       # Environment

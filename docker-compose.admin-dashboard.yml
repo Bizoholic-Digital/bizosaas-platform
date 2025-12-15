@@ -24,7 +24,7 @@ services:
       NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL:-https://api.bizoholic.net}
 
       # Temporal UI
-      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal-ui.bizoholic.net}
+      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal.bizoholic.net}
 
       # Vault UI
       NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL:-https://vault.bizoholic.net}
