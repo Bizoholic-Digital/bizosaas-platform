@@ -1,3 +1,5 @@
+'use client'
+
 import { ClientLoginForm } from './ClientLoginForm'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Suspense } from 'react'
