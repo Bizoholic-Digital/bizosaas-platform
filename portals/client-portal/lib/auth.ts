@@ -229,6 +229,19 @@ export const authConfig = {
         maxAge: 8 * 60 * 60, // 8 hours total session duration
         updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
     },
+    cookies: {
+        sessionToken: {
+            name: process.env.NODE_ENV === 'production'
+                ? '__Secure-next-auth.session-token'
+                : 'next-auth.session-token',
+            options: {
+                httpOnly: true,
+                sameSite: 'lax',
+                path: '/',
+                secure: process.env.NODE_ENV === 'production',
+            },
+        },
+    },
 
     secret: process.env.NEXTAUTH_SECRET || 'development-secret-change-in-production',
     trustHost: true,
