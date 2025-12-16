@@ -5,6 +5,7 @@ on:
     branches: [staging, main]
     paths:
       - 'bizosaas/**'
+      - 'portals/**'
       - 'dokploy-*-ghcr.yml'
       - '.github/workflows/**'
   workflow_dispatch:  # Allow manual triggering
