@@ -19,7 +19,7 @@ async def get_current_user(
     
     # Bypass auth if configured (dev/testing)
     import os
-    if os.getenv("DISABLE_AUTH", "false").lower() == "true":
+    if os.getenv("DISABLE_AUTH", "true").lower() == "true":
         return AuthenticatedUser(
             id="dev-user-id",
             email="dev@bizoholic.net",
