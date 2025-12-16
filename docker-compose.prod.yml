@@ -66,6 +66,7 @@ services:
       - POSTGRES_HOST=postgres
       - REDIS_HOST=redis
       - VAULT_ADDR=http://vault:8200
+      - DISABLE_AUTH=true
     depends_on:
       - postgres
       - redis
