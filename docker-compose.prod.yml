@@ -66,6 +66,23 @@ services:
       - POSTGRES_HOST=postgres
       - REDIS_HOST=redis
       - VAULT_ADDR=http://vault:8200
+      # AI Provider Keys
+      - OPENAI_API_KEY
+      - ANTHROPIC_API_KEY
+      - GOOGLE_API_KEY
+      - OPENROUTER_API_KEY
+      - COHERE_API_KEY
+      - MISTRAL_API_KEY
+      - GROQ_API_KEY
+      - TOGETHER_API_KEY
+      - PERPLEXITY_API_KEY
+      # Integration Keys
+      - GITHUB_TOKEN
+      - AUTH_SECRET
+      - AUTHENTIK_CLIENT_ID
+      - AUTHENTIK_CLIENT_SECRET
+      - POSTGRES_PASSWORD
+      - JWT_SECRET
     depends_on:
       - postgres
       - redis
@@ -104,11 +121,30 @@ services:
     restart: on-failure
     environment:
       - PORT=3001
-      - AUTH_SECRET=fed4d8c2-3e21-4f1a-9c7b-8d6e5f0a1b2c
-      - NEXTAUTH_SECRET=fed4d8c2-3e21-4f1a-9c7b-8d6e5f0a1b2c
+      - NODE_ENV=production
+
+      # Authentik SSO
+      - AUTHENTIK_URL=https://sso.bizoholic.net
+      - NEXT_PUBLIC_SSO_URL=https://sso.bizoholic.net
+      - AUTHENTIK_ISSUER=https://sso.bizoholic.net/application/o/bizosaas/
+      - AUTHENTIK_CLIENT_ID=Tib8uZl1hqA5WXDxLFnl32MSbOkmISJ3GBUsOate
+      - AUTHENTIK_CLIENT_SECRET=RQTn62rsx7SmKcXFFcT6nb2E4gaZS1DIBTi4XhboQV8Mxm6ygQFBEaEnQf1IYI08oezj4B3vXmNSoadpn3QxtzopEojtLVCDgSxMBUBtnIAyOfqZcwmKWiMejqlKEasp
+
+      # NextAuth
       - NEXTAUTH_URL=https://app.bizoholic.net
-      - BRAIN_GATEWAY_URL=http://brain-gateway:8001
+      - NEXTAUTH_SECRET=vc+i1safx5PvOaK9gc6PYLwetF4UFFWX/exE+OtzNP0=
+      - AUTH_SECRET=vc+i1safx5PvOaK9gc6PYLwetF4UFFWX/exE+OtzNP0=
       - AUTH_TRUST_HOST=true
+
+      # API Endpoints
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+      - BRAIN_GATEWAY_URL=http://brain-gateway:8001
+      - NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_AUTH_URL=https://auth-api.bizoholic.net
+      - NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_TEMPORAL_UI_URL=https://temporal.bizoholic.net
+      - NEXT_PUBLIC_VAULT_UI_URL=https://vault.bizoholic.net
     deploy:
       resources:
         limits:
