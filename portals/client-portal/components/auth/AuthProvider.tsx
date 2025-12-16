@@ -133,11 +133,13 @@ export default function AuthProvider({
   useEffect(() => {
     if (status === "loading") return;
 
-    if (!session && !pathname?.includes("/login")) {
-      console.log("[AUTH] No session found, redirecting to login from:", pathname);
+    // Only redirect if we're CERTAIN the user is unauthenticated
+    // Don't redirect during intermediate states
+    if (status === "unauthenticated" && !pathname?.includes("/login")) {
+      console.log("[AUTH] User is unauthenticated, redirecting to login from:", pathname);
       router.push('/login?error=session_expired');
     }
-  }, [session, status, pathname, router]);
+  }, [status, pathname, router]);
 
   const value = {
     user,
