@@ -67,328 +67,97 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
     {
       id: 'dashboard',
       name: 'Dashboard',
-      href: '/?tab=dashboard',
+      href: '/dashboard',
       icon: <Home className="w-5 h-5" />,
-      badge: 'NEW',
-      active: pathname === '/' && (!searchParams?.get('tab') || searchParams?.get('tab') === 'dashboard')
+      active: pathname === '/dashboard' || pathname === '/'
     },
     {
-      id: 'leads',
-      name: 'Leads',
-      href: '/?tab=leads',
-      icon: <Target className="w-5 h-5" />,
-      badge: metrics.leads > 0 ? metrics.leads.toString() : '47',
-      active: searchParams?.get('tab') === 'leads'
-    },
-    {
-      id: 'orders',
-      name: 'Orders',
-      href: '/?tab=orders',
-      icon: <ShoppingCart className="w-5 h-5" />,
-      badge: metrics.orders > 0 ? metrics.orders.toString() : '12',
-      active: searchParams?.get('tab') === 'orders'
+      id: 'connectors',
+      name: 'Connectors',
+      href: '/dashboard/connectors',
+      icon: <Zap className="w-5 h-5" />,
+      active: pathname.startsWith('/dashboard/connectors')
     },
     {
       id: 'crm',
       name: 'CRM Management',
-      href: '/?tab=crm',
+      href: '/crm',
       icon: <Users className="w-5 h-5" />,
-      badge: '!',
-      active: searchParams?.get('tab') === 'crm',
+      active: pathname.startsWith('/crm'),
       subItems: [
-        {
-          id: 'crm-leads',
-          name: 'Leads',
-          href: '/?tab=crm-leads',
-          icon: <Target className="w-4 h-4" />,
-          badge: '47',
-          active: searchParams?.get('tab') === 'crm-leads'
-        },
         {
           id: 'crm-contacts',
           name: 'Contacts',
-          href: '/?tab=crm-contacts',
+          href: '/crm/contacts',
           icon: <Users className="w-4 h-4" />,
-          badge: '234',
-          active: searchParams?.get('tab') === 'crm-contacts'
+          active: pathname === '/crm/contacts'
         },
         {
           id: 'crm-campaigns',
           name: 'Campaigns',
-          href: '/?tab=crm-campaigns',
-          icon: <Zap className="w-4 h-4" />,
-          badge: '8',
-          active: searchParams?.get('tab') === 'crm-campaigns'
+          href: '/crm/campaigns',
+          icon: <Target className="w-4 h-4" />,
+          active: pathname === '/crm/campaigns'
         },
         {
           id: 'crm-reports',
           name: 'Reports',
-          href: '/?tab=crm-reports',
+          href: '/crm/reports',
           icon: <BarChart3 className="w-4 h-4" />,
-          badge: 'NEW',
-          active: searchParams?.get('tab') === 'crm-reports'
+          active: pathname === '/crm/reports'
         }
       ]
     },
     {
       id: 'content',
       name: 'Content Management',
-      href: '/?tab=cms',
+      href: '/content',
       icon: <FileText className="w-5 h-5" />,
-      badge: '!',
-      active: searchParams?.get('tab') === 'cms',
+      active: pathname.startsWith('/content'),
       subItems: [
         {
           id: 'content-pages',
           name: 'Pages',
-          href: '/?tab=cms-pages',
+          href: '/content/pages',
           icon: <FileText className="w-4 h-4" />,
-          badge: '24',
-          active: searchParams?.get('tab') === 'cms-pages'
+          active: pathname === '/content/pages'
         },
         {
           id: 'content-blog',
           name: 'Blog Posts',
-          href: '/?tab=cms-posts',
+          href: '/content/blog',
           icon: <Newspaper className="w-4 h-4" />,
-          badge: '15',
-          active: searchParams?.get('tab') === 'cms-posts'
-        },
-        {
-          id: 'content-media',
-          name: 'Media',
-          href: '/?tab=cms-media',
-          icon: <Image className="w-4 h-4" />,
-          badge: '156',
-          active: searchParams?.get('tab') === 'cms-media'
+          active: pathname === '/content/blog'
         },
         {
           id: 'content-forms',
           name: 'Forms',
-          href: '/?tab=cms-forms',
+          href: '/content/forms',
           icon: <MessageSquare className="w-4 h-4" />,
-          badge: '!',
-          active: searchParams?.get('tab') === 'cms-forms'
+          active: pathname === '/content/forms'
         }
       ]
     },
     {
       id: 'ecommerce',
       name: 'E-commerce',
-      href: '/?tab=ecommerce',
+      href: '/ecommerce',
       icon: <ShoppingCart className="w-5 h-5" />,
-      badge: '7',
-      active: searchParams?.get('tab') === 'ecommerce',
-      subItems: [
-        {
-          id: 'ecommerce-products',
-          name: 'Products',
-          href: '/?tab=ecom-products',
-          icon: <Package className="w-4 h-4" />,
-          badge: '89',
-          active: searchParams?.get('tab') === 'ecom-products'
-        },
-        {
-          id: 'ecommerce-orders',
-          name: 'Orders',
-          href: '/?tab=ecom-orders',
-          icon: <ShoppingCart className="w-4 h-4" />,
-          badge: '12',
-          active: searchParams?.get('tab') === 'ecom-orders'
-        },
-        {
-          id: 'ecommerce-customers',
-          name: 'Customers',
-          href: '/?tab=ecom-customers',
-          icon: <Users className="w-4 h-4" />,
-          badge: '234',
-          active: searchParams?.get('tab') === 'ecom-customers'
-        },
-        {
-          id: 'ecommerce-inventory',
-          name: 'Inventory',
-          href: '/?tab=ecom-inventory',
-          icon: <Database className="w-4 h-4" />,
-          badge: '!',
-          active: searchParams?.get('tab') === 'ecom-inventory'
-        }
-      ]
+      active: pathname.startsWith('/ecommerce')
     },
     {
-      id: 'directory',
-      name: 'Business Directory',
-      href: '/?tab=directory',
-      icon: <Building2 className="w-5 h-5" />,
-      badge: 'NEW',
-      active: searchParams?.get('tab') === 'directory',
-      subItems: [
-        {
-          id: 'directory-businesses',
-          name: 'Businesses',
-          href: '/?tab=directory-businesses',
-          icon: <Building2 className="w-4 h-4" />,
-          badge: '142',
-          active: searchParams?.get('tab') === 'directory-businesses'
-        },
-        {
-          id: 'directory-categories',
-          name: 'Categories',
-          href: '/?tab=directory-categories',
-          icon: <Tag className="w-4 h-4" />,
-          badge: '28',
-          active: searchParams?.get('tab') === 'directory-categories'
-        },
-        {
-          id: 'directory-reviews',
-          name: 'Reviews',
-          href: '/?tab=directory-reviews',
-          icon: <MessageSquare className="w-4 h-4" />,
-          badge: '56',
-          active: searchParams?.get('tab') === 'directory-reviews'
-        },
-        {
-          id: 'directory-analytics',
-          name: 'Directory Analytics',
-          href: '/?tab=directory-analytics',
-          icon: <TrendingUp className="w-4 h-4" />,
-          badge: 'HOT',
-          active: searchParams?.get('tab') === 'directory-analytics'
-        }
-      ]
-    },
-    {
-      id: 'analytics',
-      name: 'Analytics & Insights',
-      href: '/?tab=analytics',
-      icon: <BarChart3 className="w-5 h-5" />,
-      badge: 'HOT',
-      active: searchParams?.get('tab') === 'analytics',
-      subItems: [
-        {
-          id: 'analytics-performance',
-          name: 'Performance',
-          href: '/?tab=analytics-performance',
-          icon: <TrendingUp className="w-4 h-4" />,
-          badge: '95%',
-          active: searchParams?.get('tab') === 'analytics-performance'
-        },
-        {
-          id: 'analytics-traffic',
-          name: 'Traffic',
-          href: '/?tab=analytics-traffic',
-          icon: <Activity className="w-4 h-4" />,
-          badge: '2.3K',
-          active: searchParams?.get('tab') === 'analytics-traffic'
-        },
-        {
-          id: 'analytics-conversions',
-          name: 'Conversions',
-          href: '/?tab=analytics-conversions',
-          icon: <Target className="w-4 h-4" />,
-          badge: '!',
-          active: searchParams?.get('tab') === 'analytics-conversions'
-        },
-        {
-          id: 'analytics-reports',
-          name: 'Reports',
-          href: '/?tab=analytics-reports',
-          icon: <FileText className="w-4 h-4" />,
-          badge: '18',
-          active: searchParams?.get('tab') === 'analytics-reports'
-        },
-        {
-          id: 'analytics-ai-insights',
-          name: 'AI Insights',
-          href: '/?tab=analytics-ai-insights',
-          icon: <Brain className="w-4 h-4" />,
-          badge: 'AI',
-          active: searchParams?.get('tab') === 'analytics-ai-insights'
-        }
-      ]
-    },
-    {
-      id: 'users',
-      name: 'User Management',
-      href: '/?tab=users',
-      icon: <UserCheck className="w-5 h-5" />,
-      badge: '3',
-      active: searchParams?.get('tab') === 'users',
-      subItems: [
-        {
-          id: 'users-roles',
-          name: 'Roles',
-          href: '/?tab=users-roles',
-          icon: <Shield className="w-4 h-4" />,
-          badge: '7',
-          active: searchParams?.get('tab') === 'users-roles'
-        },
-        {
-          id: 'users-permissions',
-          name: 'Permissions',
-          href: '/?tab=users-permissions',
-          icon: <UserCheck className="w-4 h-4" />,
-          badge: 'NEW',
-          active: searchParams?.get('tab') === 'users-permissions'
-        },
-        {
-          id: 'users-activity',
-          name: 'Activity',
-          href: '/?tab=users-activity',
-          icon: <Activity className="w-4 h-4" />,
-          badge: '24',
-          active: searchParams?.get('tab') === 'users-activity'
-        }
-      ]
-    },
-    {
-      id: 'chat',
-      name: 'AI Assistant',
-      href: '/chat',
+      id: 'tools',
+      name: 'Tools',
+      href: '/dashboard/tools',
       icon: <Bot className="w-5 h-5" />,
-      badge: 'AI',
-      active: pathname === '/chat'
+      active: pathname.startsWith('/dashboard/tools')
     },
     {
       id: 'settings',
-      name: 'System Settings',
-      href: '/?tab=settings',
+      name: 'Settings',
+      href: '/settings',
       icon: <Settings className="w-5 h-5" />,
-      badge: '!',
-      active: searchParams?.get('tab') === 'settings',
-      subItems: [
-        {
-          id: 'settings-integrations',
-          name: 'Integrations',
-          href: '/?tab=settings-integrations',
-          icon: <Globe className="w-4 h-4" />,
-          badge: '!',
-          active: searchParams?.get('tab') === 'settings-integrations'
-        },
-        {
-          id: 'settings-billing',
-          name: 'Billing',
-          href: '/?tab=settings-billing',
-          icon: <CreditCard className="w-4 h-4" />,
-          badge: 'DUE',
-          active: searchParams?.get('tab') === 'settings-billing'
-        },
-        {
-          id: 'settings-security',
-          name: 'Security',
-          href: '/?tab=settings-security',
-          icon: <Shield className="w-4 h-4" />,
-          badge: '!',
-          active: searchParams?.get('tab') === 'settings-security'
-        },
-        {
-          id: 'settings-notifications',
-          name: 'Notifications',
-          href: '/?tab=settings-notifications',
-          icon: <Bell className="w-4 h-4" />,
-          badge: '15',
-          active: searchParams?.get('tab') === 'settings-notifications'
-        }
-      ]
+      active: pathname.startsWith('/settings')
     }
   ];
 
