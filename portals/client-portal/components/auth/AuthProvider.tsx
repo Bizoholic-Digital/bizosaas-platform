@@ -53,12 +53,16 @@ export default function AuthProvider({
 
   // Sync NextAuth session with our user state
   useEffect(() => {
+    console.log('[AUTH] Session sync effect triggered:', { status, hasSession: !!session, sessionUser: session?.user?.email });
+
     if (status === "loading") {
+      console.log('[AUTH] Status is loading, waiting...');
       setIsLoading(true);
       return;
     }
 
     if (session?.user) {
+      console.log('[AUTH] Session found, setting user data:', session.user.email);
       const userData: User = {
         id: session.user.id,
         email: session.user.email,
@@ -75,6 +79,7 @@ export default function AuthProvider({
         localStorage.setItem("user_data", JSON.stringify(userData));
       }
     } else {
+      console.log('[AUTH] No session found, clearing user data. Status:', status);
       setUser(null);
       if (typeof window !== "undefined") {
         localStorage.removeItem("access_token");
