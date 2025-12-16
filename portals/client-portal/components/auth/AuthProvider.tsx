@@ -134,16 +134,19 @@ export default function AuthProvider({
     return !!session?.user;
   };
 
-  // Redirect logic
+  // Redirect logic - TEMPORARILY DISABLED FOR DEBUGGING
   useEffect(() => {
     if (status === "loading") return;
 
     // Only redirect if we're CERTAIN the user is unauthenticated
     // Don't redirect during intermediate states
-    if (status === "unauthenticated" && !pathname?.includes("/login")) {
-      console.log("[AUTH] User is unauthenticated, redirecting to login from:", pathname);
-      router.push('/login?error=session_expired');
-    }
+    console.log('[AUTH] Redirect check:', { status, pathname, shouldRedirect: status === "unauthenticated" && !pathname?.includes("/login") });
+
+    // TEMPORARILY COMMENTED OUT TO DEBUG
+    // if (status === "unauthenticated" && !pathname?.includes("/login")) {
+    //   console.log("[AUTH] User is unauthenticated, redirecting to login from:", pathname);
+    //   router.push('/login?error=session_expired');
+    // }
   }, [status, pathname, router]);
 
   const value = {
