@@ -17,6 +17,17 @@ async def get_current_user(
     Can be used as: user: AuthenticatedUser = Depends(get_current_user)
     """
     
+    # Bypass auth if configured (dev/testing)
+    import os
+    if os.getenv("DISABLE_AUTH", "false").lower() == "true":
+        return AuthenticatedUser(
+            id="dev-user-id",
+            email="dev@bizoholic.net",
+            username="dev_admin",
+            roles=["Super Admin"],
+            tenant_id="default_tenant"
+        )
+
     token_str = None
     if token:
         token_str = token.credentials
