@@ -22,12 +22,19 @@ export const viewport: Viewport = {
   themeColor: '#2563eb',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const session = await auth();
+  console.log('[SERVER-LAYOUT] Session fetch result:', {
+    hasSession: !!session,
+    user: session?.user?.email,
+    id: session?.user?.id
+  });
 
   return (
     <html lang="en" suppressHydrationWarning>
