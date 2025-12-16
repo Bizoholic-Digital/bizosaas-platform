@@ -12,7 +12,7 @@ def get_identity_port() -> IdentityPort:
     """Dependency Injection: Returns the configured Identity Adapter.
     Uses lru_cache to create a singleton instance.
     """
-    if os.getenv("DISABLE_AUTH", "true").lower() == "true":
+    if os.getenv("DISABLE_AUTH", "false").lower() == "true":
         logger.info("Auth disabled: Using MockIdentityAdapter")
         return MockIdentityAdapter()
 

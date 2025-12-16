@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BRAIN_GATEWAY_URL } from './config';
+import { auth } from '@/lib/auth';
 
 export async function proxyRequest(request: NextRequest, targetPath: string) {
     const url = `${BRAIN_GATEWAY_URL}/${targetPath.replace(/^\//, '')}`;
@@ -9,10 +10,19 @@ export async function proxyRequest(request: NextRequest, targetPath: string) {
         headers.delete('host');
         headers.delete('connection');
 
-        // Pass auth token if present
-        const authHeader = request.headers.get('authorization');
-        if (authHeader) {
-            headers.set('Authorization', authHeader);
+        // 1. Get Session Token (Server-Side)
+        const session = await auth();
+        // @ts-ignore
+        const sessionToken = session?.access_token;
+
+        // 2. Pass auth token (Session priority, fallback to header)
+        if (sessionToken) {
+            headers.set('Authorization', `Bearer ${sessionToken}`);
+        } else {
+            const authHeader = request.headers.get('authorization');
+            if (authHeader) {
+                headers.set('Authorization', authHeader);
+            }
         }
 
         const body = request.body;
