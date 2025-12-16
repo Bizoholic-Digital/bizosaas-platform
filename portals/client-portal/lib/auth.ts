@@ -182,8 +182,8 @@ export const authConfig = {
                 token.role = (user as any).role;
                 token.tenant_id = (user as any).tenant_id;
                 token.brand = (user as any).brand;
-                // token.access_token = (user as any).access_token;
-                // token.refresh_token = (user as any).refresh_token;
+                token.access_token = (user as any).access_token;
+                token.refresh_token = (user as any).refresh_token;
             }
 
             if (account?.provider === 'authentik' && profile) {
@@ -202,8 +202,8 @@ export const authConfig = {
                 (session.user as any).role = token.role as string;
                 (session.user as any).tenant_id = token.tenant_id as string;
                 (session.user as any).brand = token.brand as string;
-                // (session as any).access_token = token.access_token as string;
-                // (session as any).refresh_token = token.refresh_token as string;
+                (session as any).access_token = token.access_token as string;
+                (session as any).refresh_token = token.refresh_token as string;
             }
             return session;
         },
