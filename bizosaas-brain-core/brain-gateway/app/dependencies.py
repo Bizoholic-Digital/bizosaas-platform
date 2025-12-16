@@ -3,6 +3,7 @@ import os
 import logging
 from domain.ports.identity_port import IdentityPort
 from adapters.identity.authentik_adapter import AuthentikAdapter
+from adapters.identity.mock_adapter import MockIdentityAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,10 @@ def get_identity_port() -> IdentityPort:
     """Dependency Injection: Returns the configured Identity Adapter.
     Uses lru_cache to create a singleton instance.
     """
+    if os.getenv("DISABLE_AUTH", "false").lower() == "true":
+        logger.info("Auth disabled: Using MockIdentityAdapter")
+        return MockIdentityAdapter()
+
     # Default to localhost for dev, but in Docker it should be container name
     authentik_url = os.getenv("AUTHENTIK_URL", "http://authentik-server:9000")
     client_id = os.getenv("AUTHENTIK_CLIENT_ID", "bizosaas-brain")
