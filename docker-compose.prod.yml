@@ -105,6 +105,11 @@ services:
     restart: on-failure
     environment:
       - PORT=3001
+      - AUTH_SECRET=fed4d8c2-3e21-4f1a-9c7b-8d6e5f0a1b2c
+      - NEXTAUTH_SECRET=fed4d8c2-3e21-4f1a-9c7b-8d6e5f0a1b2c
+      - NEXTAUTH_URL=https://app.bizoholic.net
+      - BRAIN_GATEWAY_URL=http://brain-gateway:8001
+      - AUTH_TRUST_HOST=true
     deploy:
       resources:
         limits:
