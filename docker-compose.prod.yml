@@ -14,8 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.3'
-          memory: 384M
+          cpus: '1.0'
+          memory: 1024M
     logging:
       driver: "json-file"
       options:
@@ -30,8 +30,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: 128M
+          cpus: '0.5'
+          memory: 256M
     logging:
       driver: "json-file"
       options:
@@ -49,8 +49,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: 128M
+          cpus: '0.5'
+          memory: 256M
     logging:
       driver: "json-file"
       options:
@@ -66,15 +66,14 @@ services:
       - POSTGRES_HOST=postgres
       - REDIS_HOST=redis
       - VAULT_ADDR=http://vault:8200
-      - DISABLE_AUTH=true
     depends_on:
       - postgres
       - redis
     deploy:
       resources:
         limits:
-          cpus: '0.4'
-          memory: 400M
+          cpus: '1.0'
+          memory: 1024M
     logging:
       driver: "json-file"
       options:
@@ -113,8 +112,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.2'
-          memory: 256M
+          cpus: '1.0'
+          memory: 1024M
     logging:
       driver: "json-file"
       options:
