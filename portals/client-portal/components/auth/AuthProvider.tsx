@@ -135,7 +135,7 @@ export default function AuthProvider({
 
     if (!session && !pathname?.includes("/login")) {
       console.log("[AUTH] No session found, redirecting to login from:", pathname);
-      router.push('/login');
+      router.push('/login?error=session_expired');
     }
   }, [session, status, pathname, router]);
 
