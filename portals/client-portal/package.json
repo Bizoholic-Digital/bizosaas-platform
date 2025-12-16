@@ -4,9 +4,9 @@
   "private": true,
   "description": "Multi-Tenant Client Portal - Self-Service Dashboard",
   "scripts": {
-    "dev": "next dev --port 3003",
+    "dev": "next dev",
     "build": "next build",
-    "start": "next start --port 3003",
+    "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
