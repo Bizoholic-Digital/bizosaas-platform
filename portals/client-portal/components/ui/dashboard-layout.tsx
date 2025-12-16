@@ -90,7 +90,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   // Debug logging
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex h-screen">
         <div className="dashboard-sidebar w-80 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 flex flex-col" style={{ minHeight: "100vh" }}>
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -119,8 +119,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
                     </div>
                     <div className={`w-2 h-2 rounded-full ${metrics?.status === 'down' ? 'bg-red-500' :
-                        metrics?.status === 'degraded' ? 'bg-yellow-500' :
-                          'bg-green-500'
+                      metrics?.status === 'degraded' ? 'bg-yellow-500' :
+                        'bg-green-500'
                       }`} />
                   </div>
                   <div className="grid grid-cols-2 gap-1 text-xs text-gray-500 dark:text-gray-400">
@@ -159,7 +159,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Wifi className="w-3 h-3 text-green-500" />
               <span>Online</span>
-              <span className="ml-auto">Updated: Loading...</span>
+              <span>Online</span>
             </div>
           </div>
         </div>
@@ -201,16 +201,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   >
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user?.name || "Loading..."}
+                        {user?.name || "Guest User"}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user?.email || "user@bizosaas.com"}
+                        {user?.email || "Not signed in"}
                       </p>
                     </div>
                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" />
                     </div>
                   </button>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700 z-50">
+                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Guest'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || ''}</p>
+                      </div>
+                      <button
+                        onClick={() => router.push('/settings')}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
+                      >
+                        <Settings className="w-4 h-4" />
+                        Settings
+                      </button>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setShowUserMenu(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
