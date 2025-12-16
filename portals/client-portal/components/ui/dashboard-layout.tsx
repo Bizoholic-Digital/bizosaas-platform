@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { usePathname } from 'next/navigation';
-import { 
+import {
   Menu, X, Bell, User, Moon, Sun, Search, RefreshCw,
   Wifi, WifiOff, AlertCircle, CheckCircle, Clock,
   Settings, LogOut, HelpCircle, Zap, Activity
@@ -19,19 +19,12 @@ interface DashboardLayoutProps {
   description?: string;
 }
 
-interface SystemStatus {
-  brainHub: 'healthy' | 'warning' | 'error' | 'loading';
-  crmService: 'healthy' | 'warning' | 'error' | 'loading';
-  wagtailCms: 'healthy' | 'warning' | 'error' | 'loading';
-  saleorEcommerce: 'healthy' | 'warning' | 'error' | 'loading';
-  businessDirectory: 'healthy' | 'warning' | 'error' | 'loading';
-  lastUpdated: Date;
-}
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
-  children, 
-  title, 
-  description 
+
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  children,
+  title,
+  description
 }) => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
@@ -45,14 +38,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   });
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { 
-    systemStatus, 
-    metrics, 
-    isLoading: statusLoading, 
-    error: statusError, 
-    refreshStatus, 
-    getOverallHealth 
+  const {
+    metrics,
+    isLoading: statusLoading,
+    error: statusError
   } = useSystemStatus();
+
+  const refreshStatus = () => {
+    // Trigger re-fetch by forcing component update
+    window.location.reload();
+  };
   const [isOnline, setIsOnline] = useState(true);
 
   // Close user menu when clicking outside
@@ -60,7 +55,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   // Initialize theme on client side
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+
     const savedTheme = theme;
     try {
       document.documentElement.classList.toggle("dark", savedTheme === "dark");
@@ -84,63 +79,41 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const getPageTitle = () => {
     if (title) return title;
-    
+
     const pathSegments = pathname.split('/').filter(Boolean);
     if (pathSegments.length === 0) return 'Dashboard';
-    
+
     return pathSegments
       .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
       .join(' › ');
   };
 
-  const getStatusIcon = (status: SystemStatus[keyof SystemStatus]) => {
-    switch (status) {
-      case 'healthy':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'warning':
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
-      case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
-      case 'loading':
-        return <Clock className="w-4 h-4 text-gray-400 animate-pulse" />;
-      default:
-        return <AlertCircle className="w-4 h-4 text-gray-400" />;
-    }
-  };
-
-  const getOverallSystemHealth = () => {
-    const statuses = Object.values(systemStatus).filter(s => typeof s === 'string') as string[];
-    if (statuses.some(s => s === 'error')) return 'error';
-    if (statuses.some(s => s === 'warning')) return 'warning';
-    if (statuses.some(s => s === 'loading')) return 'loading';
-    return 'healthy';
-  };
 
   // Debug logging
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        <div className="dashboard-sidebar w-80 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 flex flex-col" style={{minHeight: "100vh"}}>
+        <div className="dashboard-sidebar w-80 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 flex flex-col" style={{ minHeight: "100vh" }}>
           <div className="p-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-6">
               <div className="false">
                 <h1 className="font-bold text-xl text-gray-900 dark:text-white">BizOSaaS Portal</h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Multi-Service Dashboard</p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
               </button>
             </div>
-            
+
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <Clock className="w-4 h-4 text-gray-400 animate-pulse" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
-                <button 
+                <button
                   onClick={refreshStatus}
                   className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
@@ -167,7 +140,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-6">
             <Suspense fallback={
               <div className="animate-pulse space-y-2">
@@ -179,7 +152,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <ComprehensiveNavigation />
             </Suspense>
           </div>
-          
+
           <div className="p-6 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
               <Wifi className="w-3 h-3 text-green-500" />
@@ -201,26 +174,26 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  <input 
-                    type="text" 
-                    placeholder="Search..." 
+                  <input
+                    type="text"
+                    placeholder="Search..."
                     className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                
-                <button 
+
+                <button
                   onClick={toggleTheme}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
-                
+
                 <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
                   <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
-                
+
                 <div className="relative" data-user-menu>
-                  <button 
+                  <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
@@ -240,7 +213,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto">
             {children}
           </div>
