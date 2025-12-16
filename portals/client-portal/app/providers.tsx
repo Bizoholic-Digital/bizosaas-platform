@@ -2,6 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from 'sonner';
 
 import { GraphQLProvider } from '@/components/providers/GraphQLProvider';
 import { MobileSidebarProvider } from '@/components/MobileSidebarContext';
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 >
                     <MobileSidebarProvider>
                         {children}
+                        <Toaster />
                     </MobileSidebarProvider>
                 </ThemeProvider>
             </GraphQLProvider>

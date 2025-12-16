@@ -10,10 +10,16 @@ export async function proxyRequest(request: NextRequest, targetPath: string) {
         headers.delete('host');
         headers.delete('connection');
 
-        // 1. Get Session Token (Server-Side)
-        const session = await auth();
-        // @ts-ignore
-        const sessionToken = session?.access_token;
+        // 1. Get Session Token (Server-Side) with Error Handling
+        let sessionToken: string | undefined;
+        try {
+            const session = await auth();
+            // @ts-ignore
+            sessionToken = session?.access_token;
+        } catch (authError) {
+            console.warn("Proxy: Failed to retrieve auth session", authError);
+            // Continue without session token
+        }
 
         // 2. Pass auth token (Session priority, fallback to header)
         if (sessionToken) {
