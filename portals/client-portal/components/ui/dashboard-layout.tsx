@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Menu, X, Bell, User, Moon, Sun, Search, RefreshCw,
   Wifi, WifiOff, AlertCircle, CheckCircle, Clock,
@@ -21,22 +21,23 @@ interface DashboardLayoutProps {
 
 
 
+const StatusIcon = ({ status }: { status?: string }) => {
+  if (status === 'down') return <AlertCircle className="w-3 h-3 text-red-500" />;
+  if (status === 'degraded') return <Activity className="w-3 h-3 text-yellow-500" />;
+  if (status === 'healthy') return <CheckCircle className="w-3 h-3 text-green-500" />;
+  return <Clock className="w-3 h-3 text-gray-400" />;
+};
+
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
   title,
   description
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "light";
-    try {
-      return localStorage.getItem("theme") || "light";
-    } catch {
-      return "light";
-    }
-  });
+  const [theme, setTheme] = useState("light");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const {
     metrics,
@@ -54,15 +55,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   // Initialize theme on client side
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const savedTheme = theme;
-    try {
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } catch (e) {
-      console.warn("Cannot set theme class");
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme") || "light";
+      setTheme(saved);
+      document.documentElement.classList.toggle("dark", saved === "dark");
     }
-  }, [theme]);
+  }, []);
 
 
 
@@ -110,33 +108,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
 
             <div className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-gray-400 animate-pulse" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
+              <div className="mb-4">
                 <button
-                  onClick={refreshStatus}
-                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={() => router.push('/dashboard/system-status')}
+                  className="w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors group"
                 >
-                  <RefreshCw className="w-3 h-3 text-gray-500" />
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
+                    </div>
+                    <div className={`w-2 h-2 rounded-full ${metrics?.status === 'down' ? 'bg-red-500' :
+                        metrics?.status === 'degraded' ? 'bg-yellow-500' :
+                          'bg-green-500'
+                      }`} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 text-xs text-gray-500 dark:text-gray-400">
+                    {metrics?.services ? Object.entries(metrics.services).map(([service, status]) => (
+                      <div key={service} className="flex items-center gap-1">
+                        <StatusIcon status={status as string} />
+                        <span className="truncate">{service}</span>
+                      </div>
+                    )) : (
+                      <>
+                        <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> Brain Hub</div>
+                        <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> CRM</div>
+                        <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> CMS</div>
+                        <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> E-com</div>
+                      </>
+                    )}
+                  </div>
                 </button>
-              </div>
-              <div className="grid grid-cols-2 gap-1 text-xs">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4 text-gray-400 animate-pulse" />
-                  <span>Brain Hub</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4 text-gray-400 animate-pulse" />
-                  <span>CRM</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4 text-gray-400 animate-pulse" />
-                  <span>CMS</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4 text-gray-400 animate-pulse" />
-                  <span>E-commerce</span>
-                </div>
               </div>
             </div>
           </div>

@@ -11,8 +11,10 @@ import {
   Package, CreditCard, UserCheck, Shield, Bell, Download,
   BookOpen, Image, Video, Newspaper, Tag, Filter,
   PieChart, Activity, LineChart, TrendingDown, AlertCircle,
-  ChevronDown, ChevronRight, Menu, X, RefreshCw, Bot
+  ChevronDown, ChevronRight, Menu, X, RefreshCw, Bot,
+  CheckSquare, ListChecks, FolderKanban
 } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface NavigationItem {
   id: string;
@@ -22,6 +24,7 @@ interface NavigationItem {
   badge?: string;
   active?: boolean;
   subItems?: NavigationItem[];
+  show?: boolean;
 }
 
 interface NavigationProps {
@@ -33,6 +36,8 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
   const searchParams = useSearchParams();
   const [expandedSections, setExpandedSections] = useState<string[]>(['dashboard']);
   const { metrics } = useSystemStatus();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   // Auto-expand sections based on current path
   useEffect(() => {
@@ -158,6 +163,52 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
       href: '/settings',
       icon: <Settings className="w-5 h-5" />,
       active: pathname.startsWith('/settings')
+    },
+    {
+      id: 'analytics',
+      name: 'Analytics',
+      href: '/analytics',
+      icon: <BarChart3 className="w-5 h-5" />,
+      active: pathname.startsWith('/analytics')
+    },
+    {
+      id: 'ai-agents',
+      name: 'AI Agents',
+      href: '/ai-agents',
+      icon: <Brain className="w-5 h-5" />,
+      badge: '93',
+      active: pathname.startsWith('/ai-agents'),
+      show: isAdmin
+    },
+    {
+      id: 'tasks',
+      name: 'Tasks & Projects',
+      href: '/tasks',
+      icon: <CheckSquare className="w-5 h-5" />,
+      active: pathname.startsWith('/tasks'),
+      subItems: [
+        {
+          id: 'tasks-my-tasks',
+          name: 'My Tasks',
+          href: '/tasks/my-tasks',
+          icon: <ListChecks className="w-4 h-4" />,
+          active: pathname === '/tasks/my-tasks'
+        },
+        {
+          id: 'tasks-projects',
+          name: 'Projects',
+          href: '/tasks/projects',
+          icon: <FolderKanban className="w-4 h-4" />,
+          active: pathname === '/tasks/projects'
+        },
+        {
+          id: 'tasks-calendar',
+          name: 'Calendar',
+          href: '/tasks/calendar',
+          icon: <Calendar className="w-4 h-4" />,
+          active: pathname === '/tasks/calendar'
+        }
+      ]
     }
   ];
 
@@ -254,7 +305,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
 
   return (
     <nav className="space-y-2">
-      {navigationItems.map(item => renderNavigationItem(item))}
+      {navigationItems.filter(item => item.show !== false).map(item => renderNavigationItem(item))}
     </nav>
   );
 };
