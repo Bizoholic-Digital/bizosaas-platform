@@ -22,7 +22,7 @@ services:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.authentik.rule=Host(`sso.staging.bizoholic.com`)"
+      - "traefik.http.routers.authentik.rule=Host(`sso.bizoholic.net`)"
       - "traefik.http.routers.authentik.entrypoints=websecure"
       - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.authentik.priority=100"
