@@ -53,7 +53,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.ORG_NAME }}/bizosaas-${{ matrix.name }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
           tags: |
             type=ref,event=branch,suffix=-{{sha}}
             type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
