@@ -1,0 +1,59 @@
+services:
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2024.10.1
+    container_name: bizosaas-authentik-server
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: bizosaas-redis-staging
+      AUTHENTIK_REDIS__PORT: "6379"
+      AUTHENTIK_REDIS__DB: "6"
+      AUTHENTIK_POSTGRESQL__HOST: bizosaas-postgres-staging
+      AUTHENTIK_POSTGRESQL__PORT: "5432"
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: admin
+      AUTHENTIK_POSTGRESQL__PASSWORD: BizOSaaS2025!StagingDB
+      # Set in Dokploy UI
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+    networks:
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik.rule=Host(`sso.staging.bizoholic.com`)"
+      - "traefik.http.routers.authentik.entrypoints=websecure"
+      - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.authentik.priority=100"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2024.10.1
+    container_name: bizosaas-authentik-worker
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: bizosaas-redis-staging
+      AUTHENTIK_REDIS__PORT: "6379"
+      AUTHENTIK_REDIS__DB: "6"
+      AUTHENTIK_POSTGRESQL__HOST: bizosaas-postgres-staging
+      AUTHENTIK_POSTGRESQL__PORT: "5432"
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: admin
+      AUTHENTIK_POSTGRESQL__PASSWORD: BizOSaaS2025!StagingDB
+      # Set in Dokploy UI
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+    volumes:
+      - authentik_media:/media
+      - authentik_templates:/templates
+    networks:
+      - dokploy-network
+
+volumes:
+  authentik_media:
+  authentik_templates:
+
+networks:
+  dokploy-network:
+    external: true
