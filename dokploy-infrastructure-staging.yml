@@ -117,35 +117,55 @@ services:
   # APACHE SUPERSET
   # Analytics and Business Intelligence
   # ==========================================
-  # superset:
-  #   image: ghcr.io/bizoholic-digital/apache-superset:staging
-  #   container_name: bizosaas-superset-staging
-  #   ports:
-  #     - "8088:8088"
-  #   environment:
-  #     # Core Configuration
-  #     - SUPERSET_CONFIG_PATH=/app/pythonpath/superset_config.py
-  #     - SUPERSET_SECRET_KEY=staging-secret-key-superset-bizosaas-2025
-  #     - SUPERSET_ADMIN_PASSWORD=Bizoholic2024Admin
-  #     # Database Configuration
-  #     - POSTGRES_USER=admin
-  #     - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
-  #     - POSTGRES_HOST=bizosaas-postgres-staging
-  #     - POSTGRES_PORT=5432
-  #     - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-  #     # Redis Configuration
-  #     - REDIS_HOST=bizosaas-redis-staging
-  #     - REDIS_PORT=6379
-  #     - REDIS_URL=redis://bizosaas-redis-staging:6379/2
-  #     # BizOSaaS Integration
-  #     - BIZOSAAS_BRAIN_API_URL=http://bizosaas-brain-staging:8001
-  #     - DEFAULT_TENANT_ID=bizosaas
-  #   depends_on:
-  #     - postgres
-  #     - redis
-  #   networks:
-  #     - dokploy-network
-  #   restart: unless-stopped
+  # ==========================================
+  # MONITORING STACK
+  # Prometheus, Grafana, Loki
+  # ==========================================
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: bizosaas-loki-staging
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    volumes:
+      - loki_staging_data:/loki
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: bizosaas-prometheus-staging
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_staging_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: bizosaas-grafana-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=BizOSaaS2025!Grafana
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
       interval: 30s
@@ -163,6 +183,12 @@ volumes:
   redis_staging_data:
     driver: local
   vault_staging_data:
+    driver: local
+  loki_staging_data:
+    driver: local
+  prometheus_staging_data:
+    driver: local
+  grafana_staging_data:
     driver: local
 
 networks:
