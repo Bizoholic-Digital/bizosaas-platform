@@ -18,8 +18,8 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      contents: write # Fixes Git 128 error during checkout/tagging
+      packages: write # Required for GHCR push
 
     strategy:
       matrix:

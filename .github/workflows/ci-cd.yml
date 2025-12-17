@@ -344,8 +344,9 @@ jobs:
       matrix:
         service: [brain-gateway, auth-service, client-portal]
     permissions:
-      contents: read
+      contents: write
       packages: write
+      security-events: write # Required for uploading SARIF results
     steps:
       - uses: actions/checkout@v4
 
