@@ -70,6 +70,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix Git Safe Directory
+        run: git config --global --add safe.directory '*'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -132,6 +137,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix Git Safe Directory
+        run: git config --global --add safe.directory '*'
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -175,6 +185,11 @@ jobs:
     if: ${{ !inputs.skip_tests }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix Git Safe Directory
+        run: git config --global --add safe.directory '*'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -211,6 +226,11 @@ jobs:
     if: ${{ !inputs.skip_tests }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix Git Safe Directory
+        run: git config --global --add safe.directory '*'
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -252,6 +272,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fix Git Safe Directory
+        run: git config --global --add safe.directory '*'
 
       - name: Setup WordPress Test Environment
         run: |
@@ -372,7 +397,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}-v2
           tags: |
             type=ref,event=branch
             type=sha
