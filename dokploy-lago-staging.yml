@@ -78,7 +78,7 @@ services:
       - "8088:80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.lago-front.rule=Host(`billing.staging.bizosaas.com`)"
+      - "traefik.http.routers.lago-front.rule=Host(`billing.bizoholic.net`)"
       - "traefik.http.routers.lago-front.entrypoints=websecure"
       - "traefik.http.routers.lago-front.tls.certresolver=myresolver"
       - "traefik.http.services.lago-front.loadbalancer.server.port=80"
