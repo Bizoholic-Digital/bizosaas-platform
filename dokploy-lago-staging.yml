@@ -1,0 +1,103 @@
+version: '3.8'
+
+# Lago Billing - Optimized Staging Deployment
+# Connects to shared Infrastructure (Postgres/Redis) to save resources.
+
+services:
+  # ============================
+  # LAGO API
+  # ============================
+  lago-api:
+    image: getlago/api:v1.16.0
+    restart: unless-stopped
+    depends_on:
+      lago-migrate:
+        condition: service_completed_successfully
+    command: [ "./scripts/start.api.sh" ]
+    environment:
+      - LAGO_API_URL=http://lago-api:3000
+      - LAGO_FRONT_URL=${LAGO_FRONT_URL:-https://billing.staging.bizosaas.com}
+      # Connect to Shared Postgres (DB: lago)
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${LAGO_POSTGRES_DB:-lago}
+      # Connect to Shared Redis (DB: 5)
+      - REDIS_URL=redis://redis:6379/5
+      - SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
+      - LAGO_RSA_PRIVATE_KEY=${LAGO_RSA_PRIVATE_KEY}
+      - LAGO_ENCRYPTION_PRIMARY_KEY=${LAGO_ENCRYPTION_PRIMARY_KEY}
+      - LAGO_ENCRYPTION_DETERMINISTIC_KEY=${LAGO_ENCRYPTION_DETERMINISTIC_KEY}
+      - LAGO_ENCRYPTION_KEY_DERIVATION_SALT=${LAGO_ENCRYPTION_KEY_DERIVATION_SALT}
+      - RAILS_ENV=production
+      - LAGO_DISABLE_SIGNUP=false
+    networks:
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lago-api.rule=Host(`billing-api.staging.bizosaas.com`)"
+      - "traefik.http.routers.lago-api.entrypoints=websecure"
+      - "traefik.http.routers.lago-api.tls.certresolver=myresolver"
+      - "traefik.http.services.lago-api.loadbalancer.server.port=3000"
+
+  # ============================
+  # LAGO WORKER
+  # ============================
+  lago-worker:
+    image: getlago/api:v1.16.0
+    restart: unless-stopped
+    depends_on:
+      lago-migrate:
+        condition: service_completed_successfully
+    command: [ "./scripts/start.worker.sh" ]
+    environment:
+      - LAGO_API_URL=http://lago-api:3000
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${LAGO_POSTGRES_DB:-lago}
+      - REDIS_URL=redis://redis:6379/5
+      - SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
+      - LAGO_RSA_PRIVATE_KEY=${LAGO_RSA_PRIVATE_KEY}
+      - LAGO_ENCRYPTION_PRIMARY_KEY=${LAGO_ENCRYPTION_PRIMARY_KEY}
+      - LAGO_ENCRYPTION_DETERMINISTIC_KEY=${LAGO_ENCRYPTION_DETERMINISTIC_KEY}
+      - LAGO_ENCRYPTION_KEY_DERIVATION_SALT=${LAGO_ENCRYPTION_KEY_DERIVATION_SALT}
+      - RAILS_ENV=production
+    networks:
+      - dokploy-network
+
+  # ============================
+  # LAGO FRONTEND
+  # ============================
+  lago-front:
+    image: getlago/front:v1.16.0
+    restart: unless-stopped
+    depends_on:
+      - lago-api
+    environment:
+      - API_URL=${LAGO_API_URL:-https://billing-api.staging.bizosaas.com}
+      - APP_ENV=production
+    networks:
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lago-front.rule=Host(`billing.staging.bizosaas.com`)"
+      - "traefik.http.routers.lago-front.entrypoints=websecure"
+      - "traefik.http.routers.lago-front.tls.certresolver=myresolver"
+      - "traefik.http.services.lago-front.loadbalancer.server.port=80"
+
+  # ============================
+  # MIGRATION UTILITY
+  # ============================
+  lago-migrate:
+    image: getlago/api:v1.16.0
+    command: [ "./scripts/migrate.sh" ]
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${LAGO_POSTGRES_DB:-lago}
+      - REDIS_URL=redis://redis:6379/5
+      - SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
+      - LAGO_RSA_PRIVATE_KEY=${LAGO_RSA_PRIVATE_KEY}
+      - LAGO_ENCRYPTION_PRIMARY_KEY=${LAGO_ENCRYPTION_PRIMARY_KEY}
+      - LAGO_ENCRYPTION_DETERMINISTIC_KEY=${LAGO_ENCRYPTION_DETERMINISTIC_KEY}
+      - LAGO_ENCRYPTION_KEY_DERIVATION_SALT=${LAGO_ENCRYPTION_KEY_DERIVATION_SALT}
+      - RAILS_ENV=production
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
