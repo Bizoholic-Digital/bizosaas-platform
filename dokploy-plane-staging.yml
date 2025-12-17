@@ -7,6 +7,7 @@ services:
     volumes:
       - /var/www/plane/logs:/app/logs
     environment:
+      - PORT=3005
       - NEXT_PUBLIC_API_BASE_URL=https://plane-api.bizoholic.net
       - NEXT_PUBLIC_DEPLOY_URL=https://plane.bizoholic.net
     networks:
@@ -16,7 +17,7 @@ services:
       - "traefik.http.routers.plane-web.rule=Host(`plane.bizoholic.net`)"
       - "traefik.http.routers.plane-web.entrypoints=websecure"
       - "traefik.http.routers.plane-web.tls.certresolver=myresolver"
-      - "traefik.http.services.plane-web.loadbalancer.server.port=3000"
+      - "traefik.http.services.plane-web.loadbalancer.server.port=3005"
 
   plane-api:
     image: makeplane/plane-backend:stable
