@@ -9,19 +9,20 @@ services:
   # ============================
   lago-api:
     image: getlago/api:v1.16.0
+    container_name: lago-api
     restart: unless-stopped
     depends_on:
-      lago-migrate:
-        condition: service_completed_successfully
-    command: [ "./scripts/start.api.sh" ]
+      - lago-worker
     environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/lago
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
+      - LAGO_REDIS_CACHE_URL=redis://bizosaas-redis-staging:6379/5
+      - LAGO_SIDEKIQ_REDIS_URL=redis://bizosaas-redis-staging:6379/5
       - LAGO_API_URL=http://lago-api:3000
-      - LAGO_FRONT_URL=${LAGO_FRONT_URL:-https://billing.staging.bizosaas.com}
-      # Connect to Shared Postgres (DB: lago)
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${LAGO_POSTGRES_DB:-lago}
-      # Connect to Shared Redis (DB: 5)
-      - REDIS_URL=redis://redis:6379/5
-      - SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
+      - LAGO_FRONT_URL=http://lago-front:80
+      - LAGO_DISABLE_SEGMENT=true
+      # Values to be set in Dokploy UI
+      - LAGO_SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
       - LAGO_RSA_PRIVATE_KEY=${LAGO_RSA_PRIVATE_KEY}
       - LAGO_ENCRYPTION_PRIMARY_KEY=${LAGO_ENCRYPTION_PRIMARY_KEY}
       - LAGO_ENCRYPTION_DETERMINISTIC_KEY=${LAGO_ENCRYPTION_DETERMINISTIC_KEY}
@@ -30,28 +31,27 @@ services:
       - LAGO_DISABLE_SIGNUP=false
     networks:
       - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.lago-api.rule=Host(`billing-api.staging.bizosaas.com`)"
-      - "traefik.http.routers.lago-api.entrypoints=websecure"
-      - "traefik.http.routers.lago-api.tls.certresolver=myresolver"
-      - "traefik.http.services.lago-api.loadbalancer.server.port=3000"
+    ports:
+      - "3000"
 
   # ============================
   # LAGO WORKER
   # ============================
   lago-worker:
     image: getlago/api:v1.16.0
+    container_name: lago-worker
     restart: unless-stopped
-    depends_on:
-      lago-migrate:
-        condition: service_completed_successfully
-    command: [ "./scripts/start.worker.sh" ]
+    command: ./scripts/start.worker.sh
     environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/lago
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
+      - LAGO_REDIS_CACHE_URL=redis://bizosaas-redis-staging:6379/5
+      - LAGO_SIDEKIQ_REDIS_URL=redis://bizosaas-redis-staging:6379/5
       - LAGO_API_URL=http://lago-api:3000
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${LAGO_POSTGRES_DB:-lago}
-      - REDIS_URL=redis://redis:6379/5
-      - SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
+      - LAGO_FRONT_URL=http://lago-front:80
+      - LAGO_DISABLE_SEGMENT=true
+      # Values to be set in Dokploy UI
+      - LAGO_SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
       - LAGO_RSA_PRIVATE_KEY=${LAGO_RSA_PRIVATE_KEY}
       - LAGO_ENCRYPTION_PRIMARY_KEY=${LAGO_ENCRYPTION_PRIMARY_KEY}
       - LAGO_ENCRYPTION_DETERMINISTIC_KEY=${LAGO_ENCRYPTION_DETERMINISTIC_KEY}
@@ -65,14 +65,17 @@ services:
   # ============================
   lago-front:
     image: getlago/front:v1.16.0
+    container_name: lago-front
     restart: unless-stopped
     depends_on:
       - lago-api
     environment:
-      - API_URL=${LAGO_API_URL:-https://billing-api.staging.bizosaas.com}
-      - APP_ENV=production
+      - API_URL=http://lago-api:3000
+      - API_BASE_URL=/
     networks:
       - dokploy-network
+    ports:
+      - "8088:80"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.lago-front.rule=Host(`billing.staging.bizosaas.com`)"

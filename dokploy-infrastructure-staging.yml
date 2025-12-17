@@ -88,6 +88,7 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PWD=BizOSaaS2025!StagingDB
       - POSTGRES_SEEDS=bizosaas-postgres-staging
+      - POSTGRES_DB=temporal
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     networks:
       - dokploy-network
