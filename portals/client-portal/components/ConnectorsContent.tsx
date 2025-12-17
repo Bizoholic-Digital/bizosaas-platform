@@ -83,7 +83,7 @@ export function ConnectorsContent() {
         try {
             // Attempt API call
             const res = await connectorsApi.getConnectors();
-            if (res.data && res.data.length > 0) {
+            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                 setConnectors(res.data);
             } else {
                 // Fallback to mock data if API is empty or not ready
@@ -228,7 +228,7 @@ export function ConnectorsContent() {
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-muted-foreground">Status</span>
                                         <span className={`font-medium ${c.status === 'connected' ? 'text-green-600' :
-                                                c.status === 'syncing' ? 'text-blue-600 animate-pulse' : 'text-gray-500'
+                                            c.status === 'syncing' ? 'text-blue-600 animate-pulse' : 'text-gray-500'
                                             }`}>
                                             {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
                                         </span>
