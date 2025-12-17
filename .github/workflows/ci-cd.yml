@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
 
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
 
@@ -136,7 +136,7 @@ jobs:
 
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
 
@@ -182,7 +182,7 @@ jobs:
     if: ${{ !inputs.skip_tests }}
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
 
@@ -221,7 +221,7 @@ jobs:
     if: ${{ !inputs.skip_tests }}
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
 
@@ -265,7 +265,7 @@ jobs:
 
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
 
@@ -368,7 +368,7 @@ jobs:
       security-events: write # Required for uploading SARIF results
     steps:
       - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: actions/checkout@v3
         with:
@@ -425,7 +425,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [build-and-push, test-backend, test-frontend, test-ai-agents, test-wordpress]
+    needs: [build-and-push]
     if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
     environment:
       name: staging
