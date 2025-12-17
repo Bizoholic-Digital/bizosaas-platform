@@ -10,7 +10,7 @@ services:
       - NEXT_PUBLIC_API_BASE_URL=https://plane-api.staging.bizosaas.com
       - NEXT_PUBLIC_DEPLOY_URL=https://plane.staging.bizosaas.com
     networks:
-      - bizosaas-network
+      - dokploy-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.plane-web.rule=Host(`plane.staging.bizosaas.com`)"
@@ -39,7 +39,7 @@ services:
       - CORS_ALLOWED_ORIGINS=https://plane.staging.bizosaas.com
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
-      - bizosaas-network
+      - dokploy-network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.plane-api.rule=Host(`plane-api.staging.bizosaas.com`)"
@@ -56,7 +56,7 @@ services:
       - REDIS_URL=redis://redis:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
-      - bizosaas-network
+      - dokploy-network
 
   plane-beat:
     image: makeplane/plane-backend:stable
@@ -67,11 +67,11 @@ services:
       - REDIS_URL=redis://redis:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
-      - bizosaas-network
+      - dokploy-network
 
 volumes:
   plane_media:
 
 networks:
-  bizosaas-network:
+  dokploy-network:
     external: true
