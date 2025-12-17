@@ -86,7 +86,7 @@ services:
       - DB=postgresql
       - DB_PORT=5432
       - POSTGRES_USER=admin
-      - POSTGRES_PWD=BizOSaaS2025!StagingDB
+      - POSTGRES_PWD=QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=
       - POSTGRES_SEEDS=bizosaas-postgres-staging
       - POSTGRES_DB=temporal
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
