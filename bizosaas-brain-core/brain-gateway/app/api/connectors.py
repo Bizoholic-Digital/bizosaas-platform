@@ -65,9 +65,12 @@ async def connect_connector(
         }
         
         return {"status": "connected", "message": f"Successfully connected to {connector.config.name}"}
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
+        logger.error(f"Failed to connect connector {connector_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/{connector_id}/disconnect")
