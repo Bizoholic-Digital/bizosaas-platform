@@ -17,9 +17,7 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Fixes Git 128 error during checkout/tagging
-      packages: write # Required for GHCR push
+    permissions: write-all
 
     strategy:
       matrix:
@@ -53,7 +51,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}-v2
           tags: |
             type=ref,event=branch,suffix=-{{sha}}
             type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
