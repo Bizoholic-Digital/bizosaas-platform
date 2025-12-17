@@ -399,7 +399,7 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: [build, test-backend, test-frontend, test-ai-agents, test-wordpress]
+    needs: [build-and-push, test-backend, test-frontend, test-ai-agents, test-wordpress]
     if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
     environment:
       name: staging
@@ -447,7 +447,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build, performance-tests]
+    needs: [build-and-push, performance-tests]
     if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
     environment:
       name: production
