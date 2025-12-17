@@ -35,11 +35,12 @@ BizOSaaS is an AI-powered multi-tenant SaaS platform that leverages 93+ speciali
 
 | Service | Technology | Purpose | Port | Status |
 |---------|-----------|---------|------|--------|
-| **PostgreSQL** | pgvector/pgvector:pg16 | Multi-tenant database with vector support | 5433 | ✅ Active |
+| **PostgreSQL** | pgvector/pgvector:pg16 | Multi-tenant database with vector support for RAG/KAG | 5433 | ✅ Active |
 | **Redis** | redis:7-alpine | Caching, sessions, analytics streams | 6380 | ✅ Active |
 | **Vault** | hashicorp/vault:1.15 | Secrets management | 8201 | ✅ Active |
 | **Temporal** | temporalio/auto-setup:1.22.0 | Workflow orchestration (replaces n8n) | 7234 | ✅ Active |
 | **Temporal UI** | temporalio/ui:2.21.0 | Workflow management interface | 8083 | ✅ Active |
+| **RAG Service** | Python (FastAPI) | Knowledge-Augmented Generation with pgvector | N/A | ✅ Active |
 
 ### Observability Stack
 
@@ -150,10 +151,19 @@ Internet → Traefik (Reverse Proxy)
 **Guided Setup Process**:
 1. **Account Creation**: Client registers via Client Portal
 2. **Profile Configuration**: Business details, industry, goals
-3. **Service Integration**: Connect CMS, CRM, eCommerce platforms
+3. **Service Integration**: Connect CMS, CRM, eCommerce platforms via 21+ connectors
 4. **Credential Management**: Secure storage via Vault
 5. **AI Agent Activation**: Personal AI agent assigned
-6. **Automation Setup**: AI agents configure workflows
+6. **Automation Setup**: AI agents configure workflows using connected data
+
+**Supported Integrations**:
+- **CMS**: WordPress, Shopify, WooCommerce
+- **CRM**: FluentCRM, Zoho CRM
+- **Advertising**: Google Ads, Facebook Ads, Pinterest, Snapchat
+- **Analytics**: Google Analytics, Google Tag Manager
+- **Communication**: WhatsApp, Telegram, Email
+- **Project Management**: Plane, Trello
+- **Billing**: Lago (built-in)
 
 ### 2. Multi-Tenant Architecture
 
@@ -232,6 +242,148 @@ Each client gets a **Personal AI Agent** that:
    - etc.
 
 > **Note**: Detailed agent specifications available in [`AI_AGENTS_SPECIFICATION.md`](file:///home/alagiri/projects/bizosaas-platform/AI_AGENTS_SPECIFICATION.md) (to be created)
+
+---
+
+## RAG & Knowledge Augmented Generation (KAG)
+
+### AI-Powered Knowledge System
+
+BizOSaaS implements a sophisticated **RAG (Retrieval-Augmented Generation)** and **KAG (Knowledge-Augmented Generation)** system to enhance AI agent capabilities with contextual knowledge.
+
+#### Architecture
+
+**Vector Database**: PostgreSQL with pgvector extension
+**Embedding Model**: OpenAI Embeddings (configurable)
+**Storage**: Shared `bizosaas-postgres-staging` database
+
+#### Core Capabilities
+
+| Feature | Description | Implementation |
+|---------|-------------|----------------|
+| **Document Ingestion** | Ingest client documents, knowledge bases, product catalogs | `RAGService.ingest_knowledge()` |
+| **Context Retrieval** | Retrieve relevant context for AI agent queries | `RAGService.retrieve_context()` |
+| **Hybrid Search** | Combine vector similarity + keyword search | `RAGService.hybrid_search()` |
+| **Agent-Specific Knowledge** | Isolate knowledge per agent or share globally | Metadata filtering |
+| **Multi-Tenant Isolation** | Separate knowledge bases per client | Tenant ID filtering |
+
+#### Use Cases
+
+1. **Product Knowledge**: AI agents access product catalogs, specifications, pricing
+2. **Customer History**: AI agents retrieve past interactions, preferences, purchase history
+3. **Business Policies**: AI agents reference company policies, SLAs, guidelines
+4. **Market Intelligence**: AI agents analyze competitor data, market trends
+5. **Technical Documentation**: AI agents access API docs, integration guides
+
+#### Data Flow
+
+```
+Client Upload → Document Chunking → Embedding Generation → pgvector Storage
+                                                                    ↓
+AI Agent Query → Query Embedding → Similarity Search → Context Retrieval → LLM Response
+```
+
+**Implementation**: [`app/core/rag.py`](file:///home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/brain-gateway/app/core/rag.py)
+
+---
+
+## External Service Connectors
+
+### Connector Architecture
+
+BizOSaaS provides **21 pre-built connectors** to integrate with external services, tools, and platforms. All connectors follow a unified architecture with standardized interfaces.
+
+#### Connector Registry System
+
+**Central Registry**: [`ConnectorRegistry`](file:///home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/brain-gateway/app/connectors/registry.py)
+- Auto-discovery of available connectors
+- Factory pattern for instantiation
+- Credential validation
+- Status monitoring
+
+#### Available Connectors
+
+##### CMS & Website Management (3)
+| Connector | Type | Capabilities | Status |
+|-----------|------|--------------|--------|
+| **WordPress** | CMS | Posts, pages, media, users, comments | ✅ Active |
+| **WooCommerce** | eCommerce | Products, orders, customers, inventory | ✅ Active |
+| **Shopify** | eCommerce | Products, orders, customers, analytics | ⏳ Implemented |
+
+##### CRM & Marketing (4)
+| Connector | Type | Capabilities | Status |
+|-----------|------|--------------|--------|
+| **FluentCRM** | CRM | Contacts, campaigns, tags, segments | ✅ Active |
+| **Zoho CRM** | CRM | Leads, contacts, deals, activities | ⏳ Implemented |
+| **Google Analytics** | Analytics | Traffic, conversions, user behavior | ⏳ Implemented |
+| **Google Tag Manager** | Tag Management | Tags, triggers, variables | ⏳ Implemented |
+
+##### Advertising Platforms (5)
+| Connector | Type | Capabilities | Status |
+|-----------|------|--------------|--------|
+| **Google Ads** | Advertising | Campaigns, ad groups, keywords, performance | ⏳ Implemented |
+| **Facebook Ads** | Advertising | Campaigns, ad sets, ads, insights | ⏳ Implemented |
+| **Pinterest Ads** | Advertising | Campaigns, pins, analytics | ⏳ Implemented |
+| **Snapchat Ads** | Advertising | Campaigns, creatives, metrics | ⏳ Implemented |
+| **Google Shopping** | eCommerce Ads | Product feeds, campaigns, performance | ⏳ Implemented |
+
+##### Communication & Messaging (3)
+| Connector | Type | Capabilities | Status |
+|-----------|------|--------------|--------|
+| **WhatsApp Business** | Messaging | Send messages, templates, webhooks | ⏳ Implemented |
+| **Telegram** | Messaging | Bots, channels, messages | ⏳ Implemented |
+| **Email (SMTP)** | Email | Send emails, templates | ✅ Built-in |
+
+##### Project Management & Billing (3)
+| Connector | Type | Capabilities | Status |
+|-----------|------|--------------|--------|
+| **Plane** | Project Management | Workspaces, projects, issues, cycles | ✅ Active |
+| **Trello** | Project Management | Boards, lists, cards, members | ⏳ Implemented |
+| **Lago** | Billing | Customers, subscriptions, invoices, usage | ✅ Active |
+
+##### Other Integrations (3)
+| Connector | Type | Capabilities | Status |
+|-----------|------|--------------|--------|
+| **Stripe** | Payments | Payments, subscriptions, customers | ⏳ Planned |
+| **Slack** | Communication | Channels, messages, notifications | ⏳ Planned |
+| **Zapier** | Automation | Triggers, actions, webhooks | ⏳ Planned |
+
+#### Connector Workflow
+
+**Setup Process** (Temporal Workflow):
+1. **Credential Validation**: Verify API keys, OAuth tokens
+2. **Connection Test**: Test API connectivity
+3. **Credential Storage**: Securely store in Vault
+4. **Initial Sync**: Import existing data
+5. **Webhook Setup**: Configure real-time updates
+
+**Sync Process** (Temporal Workflow):
+1. **Incremental Sync**: Fetch new/updated data
+2. **Data Transformation**: Normalize to BizOSaaS schema
+3. **Storage**: Save to PostgreSQL
+4. **Indexing**: Update vector embeddings (RAG)
+5. **Event Emission**: Notify AI agents of changes
+
+**Implementation Files**:
+- **Connector Base**: [`app/connectors/base.py`](file:///home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/brain-gateway/app/connectors/base.py)
+- **Registry**: [`app/connectors/registry.py`](file:///home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/brain-gateway/app/connectors/registry.py)
+- **Workflows**: [`app/workflows/connector_setup.py`](file:///home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/brain-gateway/app/workflows/connector_setup.py)
+- **API Routes**: [`app/api/connectors.py`](file:///home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/brain-gateway/app/api/connectors.py)
+
+#### Client Dashboard Integration
+
+**Connector Management UI** (Client Portal):
+- **Discovery**: Browse available connectors
+- **Connect**: OAuth flow or API key input
+- **Status**: Real-time connection health
+- **Sync**: Manual or scheduled data sync
+- **Logs**: View sync history and errors
+- **Disconnect**: Revoke access and delete credentials
+
+**Data Visibility**:
+- Imported data accessible via unified API
+- AI agents automatically leverage connected data
+- Cross-platform insights and automation
 
 ---
 
