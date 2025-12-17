@@ -29,10 +29,7 @@ env:
   K3S_KUBECONFIG: ${{ secrets.K3S_KUBECONFIG }}
   DOCKER_BUILDKIT: 1
 
-permissions:
-  contents: write
-  packages: write
-  security-events: write
+permissions: write-all
 
 
 jobs:
