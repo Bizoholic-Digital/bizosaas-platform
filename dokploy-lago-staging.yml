@@ -14,7 +14,7 @@ services:
     depends_on:
       - lago-worker
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/lago
+      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/lago
       - REDIS_URL=redis://bizosaas-redis-staging:6379/5
       - LAGO_REDIS_CACHE_URL=redis://bizosaas-redis-staging:6379/5
       - LAGO_SIDEKIQ_REDIS_URL=redis://bizosaas-redis-staging:6379/5

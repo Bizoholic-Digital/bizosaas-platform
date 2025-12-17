@@ -28,8 +28,8 @@ services:
       - /var/www/plane/logs:/app/logs
       - plane_media:/app/media
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - REDIS_URL=redis://redis:6379/4
+      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/plane_db
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - EMAIL_HOST=${EMAIL_HOST}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
@@ -52,8 +52,8 @@ services:
     restart: unless-stopped
     command: ./bin/worker
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - REDIS_URL=redis://redis:6379/4
+      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/plane_db
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
       - dokploy-network
@@ -63,8 +63,8 @@ services:
     restart: unless-stopped
     command: ./bin/beat
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      - REDIS_URL=redis://redis:6379/4
+      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/plane_db
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
       - dokploy-network
