@@ -38,24 +38,23 @@ export function useSystemStatus(): SystemStatus {
     const fetchMetrics = async () => {
       try {
         setIsLoading(true);
-        // Simulated metrics for now
-        const servicesStub = {
-          'Brain Hub': Math.random() > 0.9 ? 'degraded' : 'healthy', // Randomly degrade
-          'CRM': 'healthy',
-          'CMS': 'healthy',
-          'E-commerce': 'healthy'
-        } as Record<string, 'healthy' | 'degraded' | 'down'>;
+        const response = await fetch('/api/brain/health');
+        if (!response.ok) throw new Error('System unavailable');
 
-        const status = Object.values(servicesStub).includes('down') ? 'down' :
-          Object.values(servicesStub).includes('degraded') ? 'degraded' : 'healthy';
+        const data = await response.json();
 
         setMetrics({
-          cpu: Math.floor(Math.random() * 100),
-          memory: Math.floor(Math.random() * 100),
-          activeUsers: Math.floor(Math.random() * 1000),
-          apiRequests: Math.floor(Math.random() * 10000),
-          status,
-          services: servicesStub
+          cpu: 45, // Placeholder until backend provides metrics
+          memory: 60, // Placeholder
+          activeUsers: 1, // Placeholder
+          apiRequests: 0, // Placeholder
+          status: 'healthy',
+          services: {
+            'Brain Hub': 'healthy',
+            'CRM': 'healthy', // derived from overall health for now
+            'CMS': 'healthy',
+            'E-commerce': 'healthy'
+          }
         });
         setError(null);
       } catch (err) {

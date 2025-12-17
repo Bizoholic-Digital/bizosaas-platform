@@ -15,8 +15,8 @@ from .wordpress import WordPressConnector
 from .fluent_crm import FluentCRMConnector
 from .woocommerce import WooCommerceConnector
 # from .trello import TrelloConnector
-# from .plane import PlaneConnector
-# from .lago import LagoConnector
+from .plane import PlaneConnector
+from .lago import LagoConnector
 
 __all__ = [
     "BaseConnector",
@@ -39,6 +39,6 @@ __all__ = [
     "FluentCRMConnector",
     "WooCommerceConnector",
     # "TrelloConnector",
-    # "PlaneConnector",
-    # "LagoConnector"
+    "PlaneConnector",
+    "LagoConnector"
 ]
