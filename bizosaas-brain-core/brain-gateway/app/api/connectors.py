@@ -1,10 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends, Body
 from typing import List, Dict, Any
+import logging
+
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorConfig, ConnectorStatus
 from app.middleware.auth import get_current_user
 from domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/connectors", tags=["connectors"])
 
