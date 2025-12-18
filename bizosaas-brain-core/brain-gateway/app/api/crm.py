@@ -8,7 +8,7 @@ from domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType, ConnectorStatus
-from app.connectors.ports.crm_port import CRMPort
+from app.ports.crm_port import CRMPort
 
 router = APIRouter()
 
