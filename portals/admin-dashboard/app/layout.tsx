@@ -3,7 +3,7 @@ import './globals.css';
 import { AdminNavigation } from '@/components/AdminNavigation';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import AuthProvider from '../shared/components/AuthProvider';
+
 import { Providers } from './providers';
 
 // Using system fonts to avoid network calls during Docker build
@@ -30,15 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <AuthProvider platform="bizosaas-admin">
-          <Providers>
-            <OfflineBanner />
-            <AdminNavigation>
-              {children}
-            </AdminNavigation>
-            <PWAInstallPrompt />
-          </Providers>
-        </AuthProvider>
+        <Providers>
+          <OfflineBanner />
+          <AdminNavigation>
+            {children}
+          </AdminNavigation>
+          <PWAInstallPrompt />
+        </Providers>
       </body>
     </html>
   );
