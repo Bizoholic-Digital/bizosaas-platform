@@ -5,6 +5,27 @@ import GoogleProvider from 'next-auth/providers/google';
 
 const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8001';
 
+// Authentik Provider Configuration
+const authentikProvider = {
+    id: "authentik",
+    name: "Authentik",
+    type: "oauth",
+    wellKnown: process.env.AUTHENTIK_ISSUER ? `${process.env.AUTHENTIK_ISSUER}/.well-known/openid-configuration` : undefined,
+    authorization: { params: { scope: "openid email profile" } },
+    idToken: true,
+    clientId: process.env.AUTHENTIK_CLIENT_ID,
+    clientSecret: process.env.AUTHENTIK_CLIENT_SECRET,
+    checks: ["pkce", "state"],
+    profile(profile: any) {
+        return {
+            id: profile.sub,
+            name: profile.name,
+            email: profile.email,
+            image: profile.picture,
+        }
+    },
+} as any;
+
 export const authOptions: NextAuthOptions = {
     providers: [
         // Credentials Provider - Email/Password via Brain Gateway
@@ -83,7 +104,10 @@ export const authOptions: NextAuthOptions = {
                     response_type: "code"
                 }
             }
-        })
+        }),
+
+        // Authentik SSO Provider
+        ...(process.env.AUTHENTIK_ISSUER ? [authentikProvider] : [])
     ],
 
     callbacks: {
