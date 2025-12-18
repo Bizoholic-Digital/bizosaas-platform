@@ -27,11 +27,20 @@ class BrainApiClient {
                     // Dynamically import to avoid server-side issues
                     const { getSession } = await import('next-auth/react');
                     const session: any = await getSession();
+                    console.log("[BrainSDK] Interceptor Session Check:", {
+                        hasSession: !!session,
+                        hasToken: !!session?.access_token,
+                        tokenPreview: session?.access_token ? session.access_token.substring(0, 10) + '...' : 'N/A'
+                    });
+
                     if (session?.access_token) {
                         config.headers.Authorization = `Bearer ${session.access_token}`;
+                        console.log("[BrainSDK] Attached Authorization Header");
+                    } else {
+                        console.warn("[BrainSDK] No access token found in session");
                     }
                 } catch (e) {
-                    console.warn('Failed to attach auth token', e);
+                    console.warn('[BrainSDK] Failed to attach auth token', e);
                 }
             }
             return config;
