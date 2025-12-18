@@ -66,7 +66,7 @@ export default function AuthProvider({
       const userData: User = {
         id: session.user.id,
         email: session.user.email,
-        name: session.user.name,
+        name: session.user.name || session.user.email?.split('@')[0] || 'User',
         role: session.user.role,
         tenant: session.user.tenant_id
       };
