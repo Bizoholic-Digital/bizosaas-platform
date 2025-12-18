@@ -12,6 +12,7 @@ services:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging
       dockerfile: portals/client-portal/Dockerfile
       args:
+        SERVICE_PATH: portals/client-portal
         NEXT_PUBLIC_API_BASE_URL: http://bizosaas-brain-staging:8001
         NEXT_PUBLIC_CRM_API_URL: http://bizosaas-django-crm-staging:8000
         NEXT_PUBLIC_CMS_API_URL: http://bizosaas-wagtail-staging:8000
@@ -148,6 +149,7 @@ services:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging
       dockerfile: portals/admin-dashboard/Dockerfile
       args:
+        SERVICE_PATH: portals/admin-dashboard
         NEXT_PUBLIC_API_BASE_URL: http://bizosaas-brain-staging:8001
         NEXT_PUBLIC_SUPERSET_URL: http://bizosaas-superset-staging:8088
         NEXT_PUBLIC_TEMPORAL_UI_URL: http://bizosaas-temporal-ui-staging:8080
