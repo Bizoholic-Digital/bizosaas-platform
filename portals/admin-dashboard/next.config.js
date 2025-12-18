@@ -28,8 +28,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/api/brain/health',
+        destination: 'http://localhost:8000/health',
+      },
+      {
         source: '/api/brain/:path*',
-        destination: 'http://localhost:8000/:path*',
+        destination: 'http://localhost:8000/api/:path*',
       },
     ];
   },

@@ -31,8 +31,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/api/brain/health',
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/health`,
+      },
+      {
         source: '/api/brain/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/api/brain/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/api/:path*`,
       },
     ];
   },
