@@ -22,10 +22,10 @@
         "./*"
       ],
       "@bizosaas/shared-ui": [
-        "../../packages/shared-ui"
+        "./packages/shared-ui"
       ],
       "@bizosaas/shared-ui/*": [
-        "../../packages/shared-ui/*"
+        "./packages/shared-ui/*"
       ]
     },
     "plugins": [
