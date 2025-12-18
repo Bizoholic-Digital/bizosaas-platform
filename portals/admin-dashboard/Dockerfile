@@ -8,7 +8,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
-COPY portals/admin-dashboard/package.json ./portals/admin-dashboard/
+COPY portals/admin-dashboard/package.json portals/admin-dashboard/package-lock.json* ./portals/admin-dashboard/
 # Copy shared-ui package.json (if needed for install context, though we use legacy-peer-deps)
 COPY packages/shared-ui/package.json ./packages/shared-ui/
 
