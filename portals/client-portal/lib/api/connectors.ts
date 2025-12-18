@@ -29,7 +29,7 @@ export class ConnectorsApi {
      * Get all available connectors with their status for the current tenant
      */
     async getConnectors(): Promise<ApiResponse<ConnectorConfig[]>> {
-        return brainApi.get<ConnectorConfig[]>('/api/brain/connectors');
+        return brainApi.get<ConnectorConfig[]>('/api/brain/connectors/');
     }
 
     /**
