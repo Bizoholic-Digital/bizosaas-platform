@@ -18,6 +18,24 @@ class BrainApiClient {
             },
             timeout: 30000,
         });
+
+        // Add request interceptor to attach bearer token
+        this.client.interceptors.request.use(async (config) => {
+            // Only running on client-side
+            if (typeof window !== 'undefined') {
+                try {
+                    // Dynamically import to avoid server-side issues
+                    const { getSession } = await import('next-auth/react');
+                    const session: any = await getSession();
+                    if (session?.access_token) {
+                        config.headers.Authorization = `Bearer ${session.access_token}`;
+                    }
+                } catch (e) {
+                    console.warn('Failed to attach auth token', e);
+                }
+            }
+            return config;
+        });
     }
 
     private async request<T>(method: string, url: string, data?: any): Promise<ApiResponse<T>> {
