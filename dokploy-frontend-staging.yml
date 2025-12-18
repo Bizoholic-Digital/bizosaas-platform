@@ -9,7 +9,7 @@ services:
   # FIX: Created missing TypeScript modules in GitHub repository
   client-portal:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-platform/frontend/apps/client-portal
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:portals/client-portal
       dockerfile: Dockerfile
     container_name: bizosaas-client-portal-staging
     ports:
