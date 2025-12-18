@@ -33,7 +33,13 @@ const nextConfig = {
       },
     ];
   },
-  // Webpack configuration removed to allow default Next.js module resolution
-};
+  // Explicitly configure webpack aliases to fallback if tsconfig paths fail
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname),
+    };
+    return config;
+  },
 
-module.exports = withPWA(nextConfig);
+  module.exports = withPWA(nextConfig);
