@@ -13,6 +13,13 @@ services:
     build:
       context: .
       dockerfile: ./portals/client-portal/Dockerfile.prod
+      args:
+        SERVICE_PATH: portals/client-portal
+        NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
+        NEXT_PUBLIC_GRAPHQL_URL: https://api.bizoholic.net/graphql
+        NEXTAUTH_URL: https://app.bizoholic.net
+        NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
     container_name: client-portal
     environment:
       # Authentik SSO

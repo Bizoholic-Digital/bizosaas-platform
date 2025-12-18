@@ -1,0 +1,91 @@
+version: "3.9"
+services:
+  # ==========================================
+  # 1. BRAIN API GATEWAY (Port 8001) - CORE
+  # ==========================================
+  # FIX: Switch to build on server to ensure latest code from staging branch
+  brain-api:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-brain-core/brain-gateway
+      dockerfile: Dockerfile
+    container_name: bizosaas-brain-staging
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. AUTHENTICATION SERVICE (Port 8006)
+  # ==========================================
+  auth-service:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-brain-core/auth-service
+      dockerfile: Dockerfile
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
+      - ENVIRONMENT=staging
+      - PORT=8006
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 3. AI AGENTS (Port 8008)
+  # ==========================================
+  ai-agents:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-platform/backend/services/ai-agents
+      dockerfile: Dockerfile
+    container_name: bizosaas-ai-agents-staging
+    ports:
+      - "8008:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/8
+      - BRAIN_API_URL=http://bizosaas-brain-staging:8001
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ENVIRONMENT=staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # NOTE: The following services (Wagtail, DjangoCRM, Saleor) are disabled 
+  # as the platform uses external connectors.
+  
+  # business-directory-backend: ...
+  # coreldove-backend: ...
+  # amazon-sourcing: ...
+
+networks:
+  dokploy-network:
+    external: true

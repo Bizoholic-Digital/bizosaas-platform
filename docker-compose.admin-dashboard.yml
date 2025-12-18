@@ -6,6 +6,12 @@ services:
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
+      args:
+        SERVICE_PATH: portals/admin-dashboard
+        NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
+        NEXTAUTH_URL: https://admin.bizoholic.net
+        NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:latest
     container_name: bizosaas-admin-dashboard
     restart: unless-stopped
