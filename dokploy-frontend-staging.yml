@@ -153,6 +153,8 @@ services:
         NEXT_PUBLIC_API_BASE_URL: http://bizosaas-brain-staging:8001
         NEXT_PUBLIC_SUPERSET_URL: http://bizosaas-superset-staging:8088
         NEXT_PUBLIC_TEMPORAL_UI_URL: http://bizosaas-temporal-ui-staging:8080
+        NEXTAUTH_URL: https://admin.bizoholic.net
+        NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
     container_name: bizosaas-admin-dashboard-staging
     ports:
       - "3005:3000"
