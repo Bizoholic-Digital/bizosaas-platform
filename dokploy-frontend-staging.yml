@@ -9,7 +9,7 @@ services:
   # FIX: Created missing TypeScript modules in GitHub repository
   client-portal:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/client-portal
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-platform/frontend/apps/client-portal
       dockerfile: Dockerfile
     container_name: bizosaas-client-portal-staging
     ports:
@@ -20,6 +20,10 @@ services:
       - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
       - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
       - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
+      - NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
+      - NEXTAUTH_URL=https://app.bizoholic.net
+      - NEXTAUTH_SECRET=bizosaas-client-portal-staging-secret-2025
       - NEXT_TELEMETRY_DISABLED=1
     networks:
       - dokploy-network
