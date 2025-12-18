@@ -105,5 +105,3 @@ networks:
     external: true
   dokploy-network:
     external: true
-
-POSTGRES_INITDB_ARGS: "--encoding=UTF8"

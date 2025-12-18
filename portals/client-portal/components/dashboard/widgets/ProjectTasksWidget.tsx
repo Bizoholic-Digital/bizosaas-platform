@@ -20,9 +20,12 @@ export function ProjectTasksWidget({ tenantId = "default-tenant" }: { tenantId?:
     const [result] = useQuery({
         query: PROJECTS_QUERY,
         variables: { tenantId },
+        pause: !tenantId
     });
 
     const { data, fetching, error } = result;
+
+    if (!tenantId) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Please log in to view projects.</p></CardContent></Card>;
 
     if (fetching) return <div className="p-4 text-sm text-muted-foreground">Loading projects...</div>;
     if (error) return <div className="p-4 text-sm text-red-500">Error loading projects: {error.message}</div>;
