@@ -1,8 +1,6 @@
-'use client';
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { SessionProvider } from 'next-auth/react';
+import { Providers } from './providers';
 
 // Using system fonts to avoid network calls during Docker build
 const inter = { variable: '--font-sans' };
@@ -15,14 +13,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <SessionProvider>
+        <Providers>
           {/* Main Content Area */}
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden min-h-screen bg-background text-foreground">
             <main className="flex-1 overflow-y-auto p-0">
               {children}
             </main>
           </div>
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );
