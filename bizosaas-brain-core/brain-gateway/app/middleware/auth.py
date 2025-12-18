@@ -38,6 +38,7 @@ async def get_current_user(
             token_str = parts[1]
             
     if not token_str:
+        print(f"DEBUG AUTH FAILURE: Headers received: {request.headers}")
         raise HTTPException(status_code=401, detail="Missing authentication credentials")
     
     # 1. Validate Token (Introspection)
