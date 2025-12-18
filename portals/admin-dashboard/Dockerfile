@@ -14,7 +14,7 @@ COPY packages/shared-ui/package.json ./packages/shared-ui/
 
 # Install dependencies in the portal directory
 WORKDIR /app/portals/admin-dashboard
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
