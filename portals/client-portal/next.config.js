@@ -74,7 +74,6 @@ const nextConfig = {
   },
 
   // Webpack configuration removed to allow default Next.js module resolution
-},
 };
 
 // PWA Configuration

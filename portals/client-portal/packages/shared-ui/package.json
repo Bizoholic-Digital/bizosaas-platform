@@ -1,0 +1,23 @@
+{
+    "name": "@bizosaas/shared-ui",
+    "version": "1.0.0",
+    "description": "Shared UI components for BizOSaaS platform",
+    "main": "index.ts",
+    "types": "index.ts",
+    "scripts": {
+        "lint": "eslint .",
+        "type-check": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0",
+        "next": "^14.0.0 || ^15.0.0",
+        "next-auth": "^5.0.0-beta",
+        "lucide-react": "^0.263.1"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "typescript": "^5.0.0"
+    }
+}

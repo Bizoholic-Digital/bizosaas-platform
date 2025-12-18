@@ -34,7 +34,6 @@ const nextConfig = {
     ];
   },
   // Webpack configuration removed to allow default Next.js module resolution
-},
-}
+};
 
 module.exports = withPWA(nextConfig);
