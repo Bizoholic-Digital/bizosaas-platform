@@ -54,11 +54,16 @@ RUN apk add --no-cache libc6-compat
 # Copy the entire repository to ensure access to shared packages and correct paths
 COPY . .
 
+
+
 # Switch to the service directory
 WORKDIR /app/${SERVICE_PATH}
 
 # Install dependencies
 RUN npm ci --legacy-peer-deps
+
+# Remove root package files to prevent Next.js from inferring the wrong workspace root
+RUN rm -f /app/package.json /app/package-lock.json /app/tsconfig.json
 
 # Build the application
 RUN npm run build
