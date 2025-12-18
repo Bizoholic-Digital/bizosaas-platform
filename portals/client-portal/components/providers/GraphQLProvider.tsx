@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 export function GraphQLProvider({ children }: { children: React.ReactNode }) {
     const client = useMemo(() => {
         return new Client({
-            url: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:8000/graphql',
+            url: process.env.NEXT_PUBLIC_GRAPHQL_URL || `${process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL}/graphql` || 'http://localhost:8000/graphql',
             exchanges: [cacheExchange, fetchExchange],
         });
     }, []);
