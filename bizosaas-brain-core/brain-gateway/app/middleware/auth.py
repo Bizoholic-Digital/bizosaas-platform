@@ -46,14 +46,19 @@ async def get_current_user(
     try:
         is_valid = await identity.validate_token(token_str)
         if not is_valid:
+            import logging
+            logging.error(f"DEBUG AUTH FAILURE: Token validation returned False for token: {token_str[:10]}...")
             raise HTTPException(status_code=401, detail="Invalid, expired or revoked token")
     except Exception as e:
-        # Log error?
+        import logging
+        logging.error(f"DEBUG AUTH FAILURE: Validation Exception: {str(e)}")
         raise HTTPException(status_code=401, detail="Token validation failed")
     
     # 2. Get User Profile
     user = await identity.get_user_from_token(token_str)
     if not user:
+        import logging
+        logging.error(f"DEBUG AUTH FAILURE: Could not retrieve user profile for token: {token_str[:10]}...")
         raise HTTPException(status_code=401, detail="Could not retrieve user profile")
     
     return user

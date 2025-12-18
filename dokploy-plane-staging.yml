@@ -63,7 +63,7 @@ services:
     restart: unless-stopped
     command: ./bin/docker-entrypoint-beat.sh
     environment:
-      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/plane_db
+      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R%2F%2BDTz%2BSkA%3D@bizosaas-postgres-staging:5432/plane_db
       - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
