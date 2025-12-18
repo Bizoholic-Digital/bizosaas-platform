@@ -1,9 +1,10 @@
+import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 
 // Using system fonts to avoid network calls during Docker build
-const inter = { variable: '--font-sans' };
+const inter = { variable: '--font-sans', className: 'font-sans' };
 
 export default function RootLayout({
   children,
