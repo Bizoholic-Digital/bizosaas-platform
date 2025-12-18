@@ -18,40 +18,14 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Stage 1: Dependencies
-# ═══════════════════════════════════════════════════════════════════════════
-FROM node:20-alpine AS deps
-
-WORKDIR /app
-
-# Install dependencies for node-gyp
-RUN apk add --no-cache libc6-compat
-
-# Copy package files
-COPY package.json package-lock.json* ./
-
-# Install dependencies with clean cache
-RUN npm ci --legacy-peer-deps && \
-    npm cache clean --force
-
-# ═══════════════════════════════════════════════════════════════════════════
-# Stage 2: Builder
+# Stage 1: Builder (and Dependencies)
 # ═══════════════════════════════════════════════════════════════════════════
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy node_modules from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-
-# Copy application code
-COPY . .
-
-# Build configuration
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-
 # Define build arguments
+ARG SERVICE_PATH
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_CRM_API_URL
 ARG NEXT_PUBLIC_CMS_API_URL
@@ -71,11 +45,26 @@ ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Install global dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy the entire repository to ensure access to shared packages and correct paths
+COPY . .
+
+# Switch to the service directory
+WORKDIR /app/${SERVICE_PATH}
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
 # Build the application
 RUN npm run build
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Stage 3: Production Runner
+# Stage 2: Production Runner
 # ═══════════════════════════════════════════════════════════════════════════
 FROM node:20-alpine AS runner
 
@@ -89,26 +78,25 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Install curl for healthchecks (before switching user)
+# Install curl for healthchecks
 RUN apk add --no-cache curl
 
-# Create .next directory with correct permissions
+# Create .next directory
 RUN mkdir .next && chown nextjs:nodejs .next
 
-# Copy built application
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy built application from builder stage
+# Note: standalone output puts everything in .next/standalone
+COPY --from=builder /app/${SERVICE_PATH}/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
 
 # Switch to non-root user
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start application
 CMD ["node", "server.js"]
