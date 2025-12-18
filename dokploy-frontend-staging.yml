@@ -137,7 +137,6 @@ services:
   # ==========================================
   admin-dashboard:
     build:
-    build:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging
       dockerfile: portals/admin-dashboard/Dockerfile
     container_name: bizosaas-admin-dashboard-staging
