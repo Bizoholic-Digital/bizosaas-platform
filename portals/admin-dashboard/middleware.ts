@@ -38,6 +38,6 @@ export default auth((req: NextRequest & { auth: Session | null }) => {
 
 export const config = {
     matcher: [
-        "/((?!_next/static|_next/image|favicon.ico).*)",
+        "/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|service-worker.js|icons).*)",
     ],
 };
