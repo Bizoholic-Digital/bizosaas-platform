@@ -8,7 +8,7 @@ from domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType, ConnectorStatus
-from app.connectors.ports.ecommerce_port import ECommercePort
+from app.ports.ecommerce_port import ECommercePort
 
 router = APIRouter()
 

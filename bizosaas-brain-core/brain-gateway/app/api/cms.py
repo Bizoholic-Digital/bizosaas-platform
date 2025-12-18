@@ -8,7 +8,7 @@ from domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType, ConnectorStatus
-from app.connectors.ports.cms_port import CMSPort, Page as PortPage, Post as PortPost
+from app.ports.cms_port import CMSPort, Page as PortPage, Post as PortPost
 
 router = APIRouter()
 
