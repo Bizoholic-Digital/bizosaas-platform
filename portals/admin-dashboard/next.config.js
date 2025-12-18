@@ -33,17 +33,8 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config, { isServer }) => {
-    const path = require('path');
-
-    // Ensure modules resolve from the portal's node_modules first
-    config.resolve.modules = [
-      path.resolve(__dirname, 'node_modules'),
-      'node_modules'
-    ];
-
-    return config;
-  },
+  // Webpack configuration removed to allow default Next.js module resolution
+},
 }
 
 module.exports = withPWA(nextConfig);

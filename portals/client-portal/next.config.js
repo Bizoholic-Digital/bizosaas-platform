@@ -73,26 +73,8 @@ const nextConfig = {
     optimizePackageImports: ['@radix-ui/react-icons'],
   },
 
-  // Webpack configuration
-  webpack: (config, { isServer }) => {
-    const path = require('path');
-    const { fileURLToPath } = require('url');
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-    // Ensure modules resolve from the portal's node_modules first
-    config.resolve.modules = [
-      path.resolve(__dirname, 'node_modules'),
-      'node_modules'
-    ];
-
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
-    return config;
-  },
+  // Webpack configuration removed to allow default Next.js module resolution
+},
 };
 
 // PWA Configuration
