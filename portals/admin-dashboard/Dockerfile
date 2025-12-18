@@ -1,45 +1,42 @@
 # ═══════════════════════════════════════════════════════════════════════════
-# BizOSaaS Frontend - Optimized Multi-Stage Dockerfile
-# ═══════════════════════════════════════════════════════════════════════════
-#
-# This is the standard Dockerfile for all BizOSaaS frontend microservices.
-# Copy this to each frontend service directory.
-#
-# Key Optimizations:
-# - Multi-stage build (3 stages) reduces final image size by ~70%
-# - Dependency caching speeds up rebuilds
-# - Clean npm cache saves 50-100MB
-# - Standalone output includes only necessary files
-# - Non-root user for security
-# - Built-in healthcheck
-#
-# Expected final image size: ~110-120MB
-# Build time (with cache): ~1-2 minutes
+# BizOSaaS Admin Dashboard - Standardized Dockerfile
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Stage 1: Builder (and Dependencies)
-# ═══════════════════════════════════════════════════════════════════════════
-FROM node:20-alpine AS builder
-
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+# Copy package files
+COPY portals/admin-dashboard/package.json ./portals/admin-dashboard/
+# Copy shared-ui package.json (if needed for install context, though we use legacy-peer-deps)
+COPY packages/shared-ui/package.json ./packages/shared-ui/
+
+# Install dependencies in the portal directory
+WORKDIR /app/portals/admin-dashboard
+RUN npm ci --legacy-peer-deps
+
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Copy node_modules from deps
+COPY --from=deps /app/portals/admin-dashboard/node_modules ./portals/admin-dashboard/node_modules
+
+# Copy source code
+COPY portals/admin-dashboard ./portals/admin-dashboard
+# Copy shared-ui INTO the portal directory to match tsconfig paths
+COPY packages/shared-ui ./portals/admin-dashboard/packages/shared-ui
+
 # Define build arguments
-ARG SERVICE_PATH
 ARG NEXT_PUBLIC_API_BASE_URL
-ARG NEXT_PUBLIC_CRM_API_URL
-ARG NEXT_PUBLIC_CMS_API_URL
-ARG NEXT_PUBLIC_ECOM_API_URL
 ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
 ARG NEXT_PUBLIC_GRAPHQL_URL
 ARG NEXTAUTH_URL
 ARG NEXTAUTH_SECRET
 
-# Set as environment variables for the build
+# Set environment variables
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_CRM_API_URL=$NEXT_PUBLIC_CRM_API_URL
-ENV NEXT_PUBLIC_CMS_API_URL=$NEXT_PUBLIC_CMS_API_URL
-ENV NEXT_PUBLIC_ECOM_API_URL=$NEXT_PUBLIC_ECOM_API_URL
 ENV NEXT_PUBLIC_BRAIN_GATEWAY_URL=$NEXT_PUBLIC_BRAIN_GATEWAY_URL
 ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
@@ -48,31 +45,12 @@ ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Install global dependencies
-RUN apk add --no-cache libc6-compat
-
-# Copy the entire repository to ensure access to shared packages and correct paths
-COPY . .
-
-
-
-# Switch to the service directory
-WORKDIR /app/${SERVICE_PATH}
-
-# Install dependencies
-RUN npm ci --legacy-peer-deps
-
-# Remove root package files to prevent Next.js from inferring the wrong workspace root
-RUN rm -f /app/package.json /app/package-lock.json /app/tsconfig.json
-
-# Build the application
+# Build Next.js
+WORKDIR /app/portals/admin-dashboard
 RUN npm run build
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Stage 2: Production Runner
-# ═══════════════════════════════════════════════════════════════════════════
+# Stage 3: Runner
 FROM node:20-alpine AS runner
-
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -83,24 +61,23 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Install curl for healthchecks
+# Install curl
 RUN apk add --no-cache curl
 
 # Create .next directory
 RUN mkdir .next && chown nextjs:nodejs .next
 
-# Copy built application from builder stage
-# Note: standalone output puts everything in .next/standalone
-COPY --from=builder /app/${SERVICE_PATH}/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
+# Copy built application
+COPY --from=builder /app/portals/admin-dashboard/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/static ./.next/static
 
-# Switch to non-root user
 USER nextjs
 
 EXPOSE 3000
 
-# Health check
+ENV HOSTNAME="0.0.0.0"
+
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
