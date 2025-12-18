@@ -25,7 +25,18 @@ export function ProjectTasksWidget({ tenantId = "default-tenant" }: { tenantId?:
 
     const { data, fetching, error } = result;
 
-    if (!tenantId) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Please log in to view projects.</p></CardContent></Card>;
+    if (!tenantId) {
+        return (
+            <Card>
+                <CardContent className="pt-6 flex flex-col items-center gap-4">
+                    <p className="text-sm text-muted-foreground">Please log in to view projects.</p>
+                    <a href="/login" className="text-sm font-medium text-blue-600 hover:underline">
+                        Log In
+                    </a>
+                </CardContent>
+            </Card>
+        );
+    }
 
     if (fetching) return <div className="p-4 text-sm text-muted-foreground">Loading projects...</div>;
     if (error) return <div className="p-4 text-sm text-red-500">Error loading projects: {error.message}</div>;
