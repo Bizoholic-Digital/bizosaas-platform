@@ -137,7 +137,7 @@ services:
   # ==========================================
   admin-dashboard:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/bizosaas-admin
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:portals/admin-dashboard
       dockerfile: Dockerfile
     container_name: bizosaas-admin-dashboard-staging
     ports:
