@@ -37,14 +37,7 @@ const nextConfig = {
       },
     ];
   },
-  // Explicitly configure webpack aliases to fallback if tsconfig paths fail
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': require('path').resolve(__dirname),
-    };
-    return config;
-  },
+
 
 };
 module.exports = withPWA(nextConfig);
