@@ -42,4 +42,5 @@ const nextConfig = {
     return config;
   },
 
-  module.exports = withPWA(nextConfig);
+};
+module.exports = withPWA(nextConfig);
