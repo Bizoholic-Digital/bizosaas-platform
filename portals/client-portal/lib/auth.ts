@@ -178,6 +178,7 @@ export const authConfig = {
     callbacks: {
         async jwt({ token, user, account, profile }) {
             if (user) {
+                console.log("DEBUG: JWT Callback - User:", { id: user.id, hasToken: !!(user as any).access_token });
                 token.id = user.id;
                 token.role = (user as any).role;
                 token.tenant_id = (user as any).tenant_id;
@@ -197,6 +198,7 @@ export const authConfig = {
             return token;
         },
         async session({ session, token }) {
+            console.log("DEBUG: Session Callback - Token:", { hasToken: !!token.access_token });
             if (token && session.user) {
                 session.user.id = token.id as string;
                 (session.user as any).role = token.role as string;
