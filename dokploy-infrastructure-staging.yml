@@ -115,10 +115,11 @@ services:
       - temporal-server
 
   # ==========================================
-  # APACHE SUPERSET
+  # APACHE SUPERSET - DEPRECATED / REMOVED
   # Analytics and Business Intelligence
   # ==========================================
-  # ==========================================
+  # Service removed to save resources.
+  # Use Grafana with Postgres datasource for BI.
   # MONITORING STACK
   # Prometheus, Grafana, Loki
   # ==========================================
