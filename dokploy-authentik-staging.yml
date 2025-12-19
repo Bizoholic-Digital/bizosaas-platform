@@ -1,13 +1,13 @@
 services:
   authentik-server:
-    image: ghcr.io/goauthentik/server:2024.10.1
+    image: ghcr.io/goauthentik/server:2025.10.3
     container_name: bizosaas-authentik-server
     restart: unless-stopped
     command: server
     environment:
       AUTHENTIK_REDIS__HOST: bizosaas-redis-staging
       AUTHENTIK_REDIS__PORT: "6379"
-      AUTHENTIK_REDIS__DB: "6"
+      AUTHENTIK_REDIS__DB: "1"
       AUTHENTIK_POSTGRESQL__HOST: bizosaas-postgres-staging
       AUTHENTIK_POSTGRESQL__PORT: "5432"
       AUTHENTIK_POSTGRESQL__NAME: authentik
@@ -29,14 +29,14 @@ services:
       - "traefik.http.services.authentik.loadbalancer.server.port=9000"
 
   authentik-worker:
-    image: ghcr.io/goauthentik/server:2024.10.1
+    image: ghcr.io/goauthentik/server:2025.10.3
     container_name: bizosaas-authentik-worker
     restart: unless-stopped
     command: worker
     environment:
       AUTHENTIK_REDIS__HOST: bizosaas-redis-staging
       AUTHENTIK_REDIS__PORT: "6379"
-      AUTHENTIK_REDIS__DB: "6"
+      AUTHENTIK_REDIS__DB: "1"
       AUTHENTIK_POSTGRESQL__HOST: bizosaas-postgres-staging
       AUTHENTIK_POSTGRESQL__PORT: "5432"
       AUTHENTIK_POSTGRESQL__NAME: authentik
