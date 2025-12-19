@@ -11,7 +11,8 @@ services:
     build:
       context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging
       dockerfile: portals/client-portal/Dockerfile
-      args:
+    container_name: bizosaas-client-portal-staging
+    args:
         SERVICE_PATH: portals/client-portal
         NEXT_PUBLIC_API_BASE_URL: http://bizosaas-brain-staging:8001
         NEXT_PUBLIC_CRM_API_URL: http://bizosaas-django-crm-staging:8000
@@ -34,6 +35,10 @@ services:
       - NEXTAUTH_URL=https://app.bizoholic.net
       - NEXTAUTH_SECRET=bizosaas-client-portal-staging-secret-2025
       - NEXT_TELEMETRY_DISABLED=1
+      # Authentik SSO Configuration
+      - AUTHENTIK_ISSUER=https://sso.bizoholic.net/application/o/bizosaas/
+      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
+      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
     networks:
       - dokploy-network
     restart: unless-stopped
