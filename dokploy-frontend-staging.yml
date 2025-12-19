@@ -25,11 +25,11 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_API_BASE_URL=http://brain-gateway:8000
       - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
       - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
       - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
-      - NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_BRAIN_GATEWAY_URL=http://brain-gateway:8000
       - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
       - NEXTAUTH_URL=https://app.bizoholic.net
       - NEXTAUTH_SECRET=bizosaas-client-portal-staging-secret-2025
