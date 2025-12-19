@@ -156,7 +156,7 @@ services:
     image: grafana/grafana:10.2.0
     container_name: bizosaas-grafana-staging
     ports:
-      - "3003:3000"
+      - "8084:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=BizOSaaS2025!Grafana
       - GF_USERS_ALLOW_SIGN_UP=false

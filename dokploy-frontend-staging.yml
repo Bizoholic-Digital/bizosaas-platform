@@ -4,7 +4,7 @@
 
 services:
   # ==========================================
-  # 1. CLIENT PORTAL (Port 3000) - FIXED
+  # 1. CLIENT PORTAL (Port 3006) - FIXED
   # ==========================================
   # FIX: Created missing TypeScript modules in GitHub repository
   client-portal:
@@ -22,7 +22,7 @@ services:
         NEXTAUTH_URL: https://app.bizoholic.net
         NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
     ports:
-      - "3000:3000"
+      - "3006:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://brain-gateway:8000
@@ -42,9 +42,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
 
   # ==========================================
-  # 2. BIZOHOLIC FRONTEND (Port 3001)
+  # 2. BIZOHOLIC FRONTEND (Port 3007)
   # ==========================================
   bizoholic-frontend:
     build:
@@ -52,7 +58,7 @@ services:
       dockerfile: Dockerfile
     container_name: bizosaas-bizoholic-frontend-staging
     ports:
-      - "3001:3000"
+      - "3007:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
@@ -67,9 +73,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-frontend.rule=Host(`www.bizoholic.net`)"
+      - "traefik.http.routers.bizoholic-frontend.entrypoints=websecure"
+      - "traefik.http.routers.bizoholic-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-frontend.loadbalancer.server.port=3000"
 
   # ==========================================
-  # 3. CORELDOVE FRONTEND (Port 3002)
+  # 3. CORELDOVE FRONTEND (Port 3008)
   # ==========================================
   coreldove-frontend:
     build:
@@ -77,7 +89,7 @@ services:
       dockerfile: Dockerfile
     container_name: bizosaas-coreldove-frontend-staging
     ports:
-      - "3002:3000"
+      - "3008:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
@@ -92,9 +104,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-frontend.rule=Host(`coreldove.bizoholic.net`)"
+      - "traefik.http.routers.coreldove-frontend.entrypoints=websecure"
+      - "traefik.http.routers.coreldove-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.coreldove-frontend.loadbalancer.server.port=3000"
 
   # ==========================================
-  # 4. BUSINESS DIRECTORY FRONTEND (Port 3003)
+  # 4. BUSINESS DIRECTORY FRONTEND (Port 3009)
   # ==========================================
   business-directory-frontend:
     build:
@@ -102,7 +120,7 @@ services:
       dockerfile: Dockerfile
     container_name: bizosaas-business-directory-frontend-staging
     ports:
-      - "3003:3000"
+      - "3009:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
@@ -116,9 +134,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.business-directory.rule=Host(`directory.bizoholic.net`)"
+      - "traefik.http.routers.business-directory.entrypoints=websecure"
+      - "traefik.http.routers.business-directory.tls.certresolver=letsencrypt"
+      - "traefik.http.services.business-directory.loadbalancer.server.port=3000"
 
   # ==========================================
-  # 5. THRILLRING GAMING (Port 3004) - FIXED
+  # 5. THRILLRING GAMING (Port 3010) - FIXED
   # ==========================================
   # FIX: Created thrillring-gaming app directory in GitHub repository
   thrillring-gaming:
@@ -127,7 +151,7 @@ services:
       dockerfile: Dockerfile
     container_name: bizosaas-thrillring-gaming-staging
     ports:
-      - "3004:3000"
+      - "3010:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
@@ -140,9 +164,15 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.thrillring-gaming.rule=Host(`gaming.bizoholic.net`)"
+      - "traefik.http.routers.thrillring-gaming.entrypoints=websecure"
+      - "traefik.http.routers.thrillring-gaming.tls.certresolver=letsencrypt"
+      - "traefik.http.services.thrillring-gaming.loadbalancer.server.port=3000"
 
   # ==========================================
-  # 6. BIZOSAAS ADMIN DASHBOARD (Port 3005)
+  # 6. BIZOSAAS ADMIN DASHBOARD (Port 3011)
   # ==========================================
   admin-dashboard:
     build:
@@ -157,7 +187,7 @@ services:
         NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
     container_name: bizosaas-admin-dashboard-staging
     ports:
-      - "3005:3000"
+      - "3011:3000"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
@@ -172,6 +202,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
+      - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
 
 networks:
   dokploy-network:
