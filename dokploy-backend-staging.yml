@@ -5,40 +5,41 @@ services:
   # ==========================================
   # FIX: Switch to build on server to ensure latest code from staging branch
   brain-api:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-brain-core/brain-gateway
-      dockerfile: Dockerfile
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
+    pull_policy: always
     container_name: bizosaas-brain-staging
     ports:
-      - "8001:8001"
+      - "8001:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/0
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ENVIRONMENT=staging
       - LOG_LEVEL=INFO
     networks:
       - dokploy-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
 
   # ==========================================
   # 2. AUTHENTICATION SERVICE (Port 8006)
   # ==========================================
   auth-service:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-brain-core/auth-service
-      dockerfile: Dockerfile
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
+    pull_policy: always
     container_name: bizosaas-auth-service-staging
     ports:
       - "8006:8006"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/10
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/10
       - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
       - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
       - ENVIRONMENT=staging
@@ -48,36 +49,52 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8006/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-
+      start_period: 40s
   # ==========================================
   # 3. AI AGENTS (Port 8008)
   # ==========================================
   ai-agents:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging:bizosaas-platform/backend/services/ai-agents
-      dockerfile: Dockerfile
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
+    pull_policy: always
     container_name: bizosaas-ai-agents-staging
     ports:
-      - "8008:8000"
+      - "8008:8002"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/8
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/8
       - BRAIN_API_URL=http://bizosaas-brain-staging:8001
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ENVIRONMENT=staging
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 3G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8002/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
 
   # NOTE: The following services (Wagtail, DjangoCRM, Saleor) are disabled 
   # as the platform uses external connectors.

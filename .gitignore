@@ -80,3 +80,6 @@ uploads/
 *.egg
 *.whl
 credentials.md
+
+credentials*.md
+migrate_to_kvm8.py

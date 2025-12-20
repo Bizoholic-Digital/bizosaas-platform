@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Menu, X, Home, Users, ShoppingCart, BarChart3,
@@ -9,7 +9,7 @@ import {
   DollarSign, User, Target, Calendar, Package,
   Mail, MessageSquare, Share2, Activity, Zap,
   Lightbulb, Key, Shield, Terminal, Database, Grid, Code, LogOut, Server,
-  CheckCircle, Image, Layout, Sparkles, Gauge
+  CheckCircle, Image, Layout, Sparkles, Gauge, Plug, Wrench, Globe
 } from 'lucide-react';
 import { signOut } from "next-auth/react";
 import { CRMContent } from '@/components/CRMContent';
@@ -27,7 +27,12 @@ import { SettingsContent } from '@/components/SettingsContent';
 import { useSession } from 'next-auth/react';
 import { getUserDisplayInfoFromSession, filterMenuByPermissions } from '@/utils/rbac';
 
-export default function ClientPortalDashboard() {
+// Import new modular components
+import ConnectorsPage from './connectors/page';
+import ToolsPage from './tools/page';
+import GetWebsitePage from './get-website/page';
+
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -43,9 +48,7 @@ export default function ClientPortalDashboard() {
   const { role, permissions, tenantId, displayName } = userInfo;
 
   // Import new modular components
-  import ConnectorsPage from './connectors/page';
-  import ToolsPage from './tools/page';
-  import GetWebsitePage from './get-website/page';
+
 
   // ... (keep existing imports)
 
@@ -427,5 +430,13 @@ export default function ClientPortalDashboard() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ClientPortalDashboard() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

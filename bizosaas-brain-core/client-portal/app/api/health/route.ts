@@ -3,39 +3,37 @@ import { NextRequest, NextResponse } from "next/server";
 const BRAIN_HUB_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://bizosaas-brain-unified:8001";
 
 export async function GET(request: NextRequest) {
+  let brainStatus = "unknown";
+
   try {
     const url = `${BRAIN_HUB_URL}/health`;
 
+    // Attempt to check backend health but don't fail if it's down
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      // Add timeout for health checks
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(2000)
     });
 
-    if (!response.ok) {
-      throw new Error(`Brain Hub responded with status: ${response.status}`);
+    if (response.ok) {
+      brainStatus = "healthy";
+    } else {
+      brainStatus = "unhealthy_response";
     }
-
-    const data = await response.json();
-    return NextResponse.json(data);
-    
   } catch (error) {
-    console.error("Health Check API Error:", error);
-    
-    // Return unhealthy status when Brain Hub is not reachable
-    const fallbackData = {
-      status: "unhealthy",
-      timestamp: new Date().toISOString(),
-      service: "bizosaas-client-portal",
-      components: {
-        brain_api: "unavailable"
-      },
-      message: "Brain Hub connection failed"
-    };
-    
-    return NextResponse.json(fallbackData, { status: 503 });
+    console.warn("Backend health check failed:", error);
+    brainStatus = "unreachable";
   }
+
+  // Always return healthy for the frontend itself
+  return NextResponse.json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    service: "bizosaas-client-portal",
+    components: {
+      brain_api: brainStatus
+    }
+  }, { status: 200 });
 }

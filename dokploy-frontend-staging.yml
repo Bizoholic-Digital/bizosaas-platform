@@ -8,20 +8,9 @@ services:
   # ==========================================
   # FIX: Created missing TypeScript modules in GitHub repository
   client-portal:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging
-      dockerfile: portals/client-portal/Dockerfile
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    pull_policy: always
     container_name: bizosaas-client-portal-staging
-    args:
-        SERVICE_PATH: portals/client-portal
-        NEXT_PUBLIC_API_BASE_URL: http://bizosaas-brain-staging:8001
-        NEXT_PUBLIC_CRM_API_URL: http://bizosaas-django-crm-staging:8000
-        NEXT_PUBLIC_CMS_API_URL: http://bizosaas-wagtail-staging:8000
-        NEXT_PUBLIC_ECOM_API_URL: http://bizosaas-saleor-staging:8000
-        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
-        NEXT_PUBLIC_GRAPHQL_URL: https://api.bizoholic.net/graphql
-        NEXTAUTH_URL: https://app.bizoholic.net
-        NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
     ports:
       - "3003:3000"
     environment:
@@ -42,11 +31,17 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
@@ -73,6 +68,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -104,6 +104,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -134,6 +139,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -164,6 +174,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
@@ -180,16 +195,8 @@ services:
   # 6. BIZOSAAS ADMIN DASHBOARD (Port 3011)
   # ==========================================
   admin-dashboard:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#staging
-      dockerfile: portals/admin-dashboard/Dockerfile
-      args:
-        SERVICE_PATH: portals/admin-dashboard
-        NEXT_PUBLIC_API_BASE_URL: http://bizosaas-brain-staging:8001
-        NEXT_PUBLIC_SUPERSET_URL: http://bizosaas-superset-staging:8088
-        NEXT_PUBLIC_TEMPORAL_UI_URL: http://bizosaas-temporal-ui-staging:8080
-        NEXTAUTH_URL: https://admin.bizoholic.net
-        NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
+    pull_policy: always
     container_name: bizosaas-admin-dashboard-staging
     ports:
       - "3004:3000"
@@ -202,6 +209,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
       interval: 30s
