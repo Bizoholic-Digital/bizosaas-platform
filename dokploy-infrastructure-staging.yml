@@ -20,6 +20,14 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 6G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas_staging"]
       interval: 30s
@@ -41,6 +49,14 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -67,6 +83,14 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 30s
@@ -93,6 +117,14 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
     depends_on:
       - postgres
 
@@ -111,6 +143,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     depends_on:
       - temporal-server
 
@@ -132,6 +169,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     volumes:
       - loki_staging_data:/loki
 
@@ -151,6 +193,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
 
   grafana:
     image: grafana/grafana:10.2.0
@@ -165,6 +212,11 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     depends_on:
       - prometheus
       - loki

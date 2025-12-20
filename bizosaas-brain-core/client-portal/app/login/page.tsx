@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Github, Mail as Google, Lock, Mail } from 'lucide-react';
@@ -44,7 +44,7 @@ type Brand = keyof typeof BRANDS;
 // Prevent static generation
 export const dynamic = 'force-dynamic';
 
-export default function UnifiedLoginPage() {
+function LoginPageContent() {
   const [brand, setBrand] = useState<Brand>('bizoholic');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -274,5 +274,13 @@ export default function UnifiedLoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function UnifiedLoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading login...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
