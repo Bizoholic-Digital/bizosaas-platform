@@ -11,6 +11,8 @@ Production-ready FastAPI-Users implementation with:
 - Vault integration for secrets
 """
 
+
+# CI/CD Trigger Test - 2025-12-20
 import asyncio
 import os
 import uuid
@@ -89,7 +91,8 @@ auth_duration = Histogram('auth_request_duration_seconds', 'Authentication reque
 # Configuration
 class Settings:
     # Database
-    database_url: str = os.getenv(
+    display_url: str = os.getenv("DATABASE_URL_FIX")
+    database_url: str = display_url if display_url else os.getenv(
         "DATABASE_URL", 
         "postgresql+asyncpg://postgres:Bizoholic2024Alagiri@bizosaas-postgres-unified:5432/bizosaas"
     )
