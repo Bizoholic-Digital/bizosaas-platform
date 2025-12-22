@@ -19,6 +19,12 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.gateway.entrypoints=websecure"
+      - "traefik.http.routers.gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8000"
     deploy:
       resources:
         limits:
@@ -35,10 +41,18 @@ services:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     pull_policy: always
     container_name: bizosaas-auth-service-staging
+    command: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8006", "--workers", "1"]
     ports:
       - "8006:8006"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.bizoholic.net`)"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.routers.auth.tls.certresolver=letsencrypt"
+      - "traefik.http.services.auth.loadbalancer.server.port=8006"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - DATABASE_URL=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - DATABASE_URL_FIX=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
       - REDIS_URL=redis://bizosaas-redis-staging:6379/10
       - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
       - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
@@ -90,7 +104,7 @@ services:
           cpus: '0.5'
           memory: 1G
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8002/health"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8002/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
