@@ -73,12 +73,7 @@ class WordPressConnector(BaseConnector, CMSPort):
         """Legacy action support"""
         return {}
 
-from ..ports.cms_port import CMSPort, Page, Post, CMSStats
-
-# ... (rest of imports)
-
     # --- CMSPort Implementation ---
-
     async def get_stats(self) -> CMSStats:
         async with httpx.AsyncClient() as client:
             try:
