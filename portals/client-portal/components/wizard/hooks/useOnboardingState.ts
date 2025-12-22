@@ -52,12 +52,16 @@ export function useOnboardingState() {
         setState(prev => ({ ...prev, tools: { ...prev.tools, ...tools } }));
     };
 
+    const updateAgent = (agent: Partial<OnboardingState['agent']>) => {
+        setState(prev => ({ ...prev, agent: { ...prev.agent, ...agent } }));
+    };
+
     const nextStep = () => {
         setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
     };
 
     const prevStep = () => {
-        setState(prev => Math.max(0, { ...prev, currentStep: prev.currentStep - 1 }.currentStep));
+        setState(prev => ({ ...prev, currentStep: Math.max(0, prev.currentStep - 1) }));
     };
 
     const resetOnboarding = () => {
@@ -74,6 +78,7 @@ export function useOnboardingState() {
         updateSocialMedia,
         updateGoals,
         updateTools,
+        updateAgent,
         nextStep,
         prevStep,
         resetOnboarding

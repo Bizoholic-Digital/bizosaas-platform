@@ -18,6 +18,8 @@ interface EcommerceContentProps {
 export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [connection, setConnection] = useState<{ connected: boolean; platform?: string; version?: string } | null>(null);
+    const [stats, setStats] = useState<{ products: number; orders: number; revenue: number; lastSync?: string } | null>(null);
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -32,12 +34,25 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
     const [selectedItem, setSelectedItem] = useState<any>(null);
 
     useEffect(() => {
+        fetchStatus();
         if (activeTab === 'ecom-products') {
             fetchProducts();
         } else if (activeTab === 'ecom-orders') {
             fetchOrders();
         }
     }, [activeTab]);
+
+    const fetchStatus = async () => {
+        try {
+            const conn = await ecommerceApi.checkConnection();
+            if (conn.data) setConnection(conn.data);
+
+            const st = await ecommerceApi.getStats();
+            if (st.data) setStats(st.data);
+        } catch (e) {
+            console.error("Failed to fetch E-commerce status", e);
+        }
+    };
 
     const fetchProducts = async () => {
         setIsLoading(true);
@@ -223,21 +238,53 @@ export const EcommerceContent: React.FC<EcommerceContentProps> = ({ activeTab })
         </div>
     );
 
-    if (activeTab === 'ecom-products') return renderProducts();
-    if (activeTab === 'ecom-orders') return renderOrders();
+    const renderConnectionStatus = () => {
+        if (!connection) return null;
+        return (
+            <div className={`mb-6 p-4 rounded-lg flex items-center justify-between ${connection.connected ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                <div className="flex items-center gap-3">
+                    {connection.connected ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                    <div>
+                        <h4 className="font-semibold">{connection.connected ? 'Connected' : 'Disconnected'}</h4>
+                        <p className="text-sm opacity-90">
+                            {connection.connected
+                                ? `Connected to ${connection.platform || 'WooCommerce'} (${connection.version || 'v1.0'})`
+                                : 'Please check your integration settings.'}
+                        </p>
+                    </div>
+                </div>
+                {connection.connected && (
+                    <div className="flex gap-4 text-sm font-medium">
+                        <div>
+                            <span className="block text-2xl font-bold">{stats?.products || 0}</span>
+                            <span className="opacity-75">Products</span>
+                        </div>
+                        <div>
+                            <span className="block text-2xl font-bold">{stats?.orders || 0}</span>
+                            <span className="opacity-75">Orders</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    if (activeTab === 'ecom-products') return <>{renderConnectionStatus()}{renderProducts()}</>;
+    if (activeTab === 'ecom-orders') return <>{renderConnectionStatus()}{renderOrders()}</>;
     // Default or other tabs
     return (
         <div className="space-y-6">
+            {renderConnectionStatus()}
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">E-commerce Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200">
                     <h3 className="text-lg font-medium mb-2">Products</h3>
-                    <p className="text-3xl font-bold">{products.length || 0}</p>
+                    <p className="text-3xl font-bold">{products.length || stats?.products || 0}</p>
                     <button onClick={fetchProducts} className="text-primary text-sm mt-2">Refresh</button>
                 </div>
                 <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200">
                     <h3 className="text-lg font-medium mb-2">Orders</h3>
-                    <p className="text-3xl font-bold">{orders.length || 0}</p>
+                    <p className="text-3xl font-bold">{orders.length || stats?.orders || 0}</p>
                     <button onClick={fetchOrders} className="text-primary text-sm mt-2">Refresh</button>
                 </div>
             </div>

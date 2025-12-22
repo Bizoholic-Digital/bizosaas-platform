@@ -54,9 +54,30 @@ class CampaignGoals(BaseModel):
     currency: str = "USD"
     targetAudience: TargetAudience
 
+class WordPressConfig(BaseModel):
+    connected: bool
+    siteUrl: Optional[str] = None
+    adminUrl: Optional[str] = None
+
+class FluentCRMConfig(BaseModel):
+    connected: bool
+
+class WooCommerceConfig(BaseModel):
+    connected: bool
+    consumerKey: Optional[str] = None
+    consumerSecret: Optional[str] = None
+
 class ToolIntegration(BaseModel):
     emailMarketing: Optional[str] = None
     adPlatforms: List[str] = []
+    wordpress: Optional[WordPressConfig] = None
+    fluentCrm: Optional[FluentCRMConfig] = None
+    wooCommerce: Optional[WooCommerceConfig] = None
+
+class AgentConfig(BaseModel):
+    persona: str
+    name: str = "Alex"
+    tone: str = "professional"
 
 class OnboardingState(BaseModel):
     currentStep: int
@@ -66,6 +87,7 @@ class OnboardingState(BaseModel):
     socialMedia: SocialMediaConfig
     goals: CampaignGoals
     tools: ToolIntegration
+    agent: AgentConfig
     isComplete: bool
 
 # --- Mock Data Store ---

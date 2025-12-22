@@ -9,8 +9,19 @@ services:
     environment:
       - NEXT_PUBLIC_API_BASE_URL=https://plane-api.bizoholic.net
       - NEXT_PUBLIC_DEPLOY_URL=https://plane.bizoholic.net
+      # Authentik SSO
+      - AUTHENTIK_CLIENT_ID=08rwr1J2kGCnIgUPEdm9FHG2XOwPqL0NmCe3edi8
+      - AUTHENTIK_CLIENT_SECRET=HphPzREPM5TlPcgOxf6k5iXJAnFtcThBFS1d8zPoFcV9zzTV3pRgKFBysM2rdNFCZg7ApDweACM06e6H428faOPj5RDNDuuhliCqyYNuBsATOmM7RmvdRjWn4GUJMsIL
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.plane-web.rule=Host(`plane.bizoholic.net`)"
@@ -28,7 +39,7 @@ services:
       - /var/www/plane/logs:/app/logs
       - plane_media:/app/media
     environment:
-      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R%2F%2BDTz%2BSkA%3D@bizosaas-postgres-staging:5432/plane_db
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/plane_db
       - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - CELERY_BROKER_URL=redis://bizosaas-redis-staging:6379/4
       - EMAIL_HOST=${EMAIL_HOST}
@@ -45,6 +56,14 @@ services:
       - GUNICORN_MAX_REQUESTS_JITTER=100
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.plane-api.rule=Host(`plane-api.bizoholic.net`)"
@@ -57,23 +76,39 @@ services:
     restart: unless-stopped
     command: ./bin/docker-entrypoint-worker.sh
     environment:
-      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R%2F%2BDTz%2BSkA%3D@bizosaas-postgres-staging:5432/plane_db
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/plane_db
       - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - CELERY_BROKER_URL=redis://bizosaas-redis-staging:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 384M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
 
   plane-beat:
     image: makeplane/plane-backend:stable
     restart: unless-stopped
     command: ./bin/docker-entrypoint-beat.sh
     environment:
-      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R%2F%2BDTz%2BSkA%3D@bizosaas-postgres-staging:5432/plane_db
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/plane_db
       - REDIS_URL=redis://bizosaas-redis-staging:6379/4
       - SECRET_KEY=${PLANE_SECRET_KEY}
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
 
 volumes:
   plane_media:

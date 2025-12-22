@@ -43,10 +43,21 @@ class Order(BaseModel):
     billing_address: Optional[Dict[str, Any]] = None
     created_at: Optional[datetime] = None
 
+class EcommerceStats(BaseModel):
+    products: int
+    orders: int
+    revenue: float
+    last_sync: Optional[datetime] = None
+
 class ECommercePort(ABC):
     """
     Abstract Port for E-Commerce platforms (WooCommerce, Shopify, Saleor).
     """
+
+    @abstractmethod
+    async def get_stats(self) -> EcommerceStats:
+        """Retrieve E-commerce statistics."""
+        pass
 
     @abstractmethod
     async def get_products(self, limit: int = 100, category_id: Optional[str] = None) -> List[Product]:

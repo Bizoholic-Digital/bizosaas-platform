@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import {
     CreditCard, FileText, Check, AlertTriangle,
-    Download, Plus, Star, Shield, Zap
+    Download, Plus, Star, Shield, Zap, RefreshCw
 } from 'lucide-react';
+import { billingApi, SubscriptionPlan, Subscription, Invoice } from '@/lib/api/billing';
+import { toast } from 'sonner';
 
 interface BillingContentProps {
     activeTab: string;
@@ -12,26 +14,42 @@ interface BillingContentProps {
 
 export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => {
     const [currentTab, setCurrentTab] = useState('overview');
-    const [data, setData] = useState<any>(null);
+
+    // Data States
+    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [connection, setConnection] = useState<{ connected: boolean; platform?: string } | null>(null);
+
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch('/api/brain/billing');
-                if (response.ok) {
-                    const result = await response.json();
-                    setData(result);
-                }
-            } catch (error) {
-                console.error('Failed to fetch billing data:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
+        fetchBillingData();
     }, []);
+
+    const fetchBillingData = async () => {
+        setIsLoading(true);
+        try {
+            // Parallel fetch
+            const [statusRes, plansRes, subsRes, invoicesRes] = await Promise.all([
+                billingApi.getStatus(),
+                billingApi.getPlans(),
+                billingApi.getSubscriptions(),
+                billingApi.getInvoices()
+            ]);
+
+            if (statusRes.data) setConnection(statusRes.data);
+            if (plansRes.data) setPlans(plansRes.data);
+            if (subsRes.data) setSubscriptions(subsRes.data);
+            if (invoicesRes.data) setInvoices(invoicesRes.data);
+
+        } catch (error) {
+            console.error('Failed to fetch billing data:', error);
+            toast.error("Failed to load billing information.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     if (isLoading) {
         return (
@@ -41,51 +59,45 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
         );
     }
 
-    if (!data) return null;
+    // Mock usage data for now since backend doesn't provide it yet
+    const usage = {
+        leads: { used: 450, limit: 1000 },
+        storage: { used: 2.5, limit: 10, unit: 'GB' },
+        api_calls: { used: 15200, limit: 50000 }
+    };
 
-    const { subscription, usage, invoices, payment_methods: paymentMethods } = data;
-
-    const plans = [
-        {
-            name: 'Basic',
-            price: '$29',
-            period: '/month',
-            description: 'Essential features for small businesses',
-            features: ['5 Team Members', '1,000 Leads', 'Basic Analytics', 'Email Support'],
-            current: subscription.plan === 'Basic',
-            color: 'blue'
-        },
-        {
-            name: 'Professional',
-            price: '$99',
-            period: '/month',
-            description: 'Advanced tools for growing companies',
-            features: ['Unlimited Team Members', '10,000 Leads', 'Advanced Analytics', 'Priority Support', 'AI Assistant'],
-            current: subscription.plan === 'Professional',
-            color: 'purple'
-        },
-        {
-            name: 'Enterprise',
-            price: 'Custom',
-            period: '',
-            description: 'Tailored solutions for large organizations',
-            features: ['Unlimited Everything', 'Custom Integrations', 'Dedicated Account Manager', 'SLA', 'On-premise Option'],
-            current: subscription.plan === 'Enterprise',
-            color: 'gray'
-        }
-    ];
+    // Find current plan
+    const currentSubscription = subscriptions[0];
+    const currentPlan = plans.find(p => p.code === currentSubscription?.plan_id) || { name: 'Free', code: 'free' };
 
     const renderOverview = () => (
         <div className="space-y-6">
+            {/* Connection Status Banner */}
+            {connection && !connection.connected && (
+                <div className="bg-orange-50 text-orange-800 p-4 rounded-lg flex items-center gap-3 border border-orange-200">
+                    <AlertTriangle className="h-5 w-5" />
+                    <div>
+                        <h4 className="font-semibold">Billing System Disconnected</h4>
+                        <p className="text-sm">We are unable to connect to the billing provider. Displayed data may be outdated.</p>
+                    </div>
+                    <button onClick={fetchBillingData} className="ml-auto text-sm font-medium hover:underline">Retry</button>
+                </div>
+            )}
+
             {/* Current Plan Card */}
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white shadow-lg">
                 <div className="flex justify-between items-start">
                     <div>
                         <p className="text-purple-100 font-medium mb-1">Current Plan</p>
-                        <h2 className="text-3xl font-bold mb-2">{subscription.plan}</h2>
+                        <h2 className="text-3xl font-bold mb-2">{currentPlan.name}</h2>
                         <p className="text-purple-100 opacity-90">
-                            Next billing date: <span className="font-semibold">{new Date(subscription.next_billing_date).toLocaleDateString()}</span>
+                            Status: <span className="font-semibold uppercase">{currentSubscription?.status || 'Inactive'}</span>
                         </p>
+                        {currentSubscription?.current_period_end && (
+                            <p className="text-purple-100 opacity-90 text-sm mt-1">
+                                Renews: {new Date(currentSubscription.current_period_end).toLocaleDateString()}
+                            </p>
+                        )}
                     </div>
                     <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
                         <Star className="w-8 h-8 text-white" />
@@ -101,7 +113,7 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
                 </div>
             </div>
 
-            {/* Usage Stats */}
+            {/* Usage Stats (Mock for now) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
                     <div className="flex justify-between items-center mb-4">
@@ -156,46 +168,57 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
 
     const renderPlans = () => (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-                <div
-                    key={plan.name}
-                    className={`relative bg-white dark:bg-gray-900 rounded-lg border ${plan.current
-                        ? 'border-purple-500 dark:border-purple-500 ring-2 ring-purple-500/20'
-                        : 'border-gray-200 dark:border-gray-800'
-                        } p-6 flex flex-col`}
-                >
-                    {plan.current && (
-                        <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                            CURRENT PLAN
-                        </div>
-                    )}
-                    <div className="mb-4">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{plan.name}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{plan.description}</p>
-                    </div>
-                    <div className="mb-6">
-                        <span className="text-3xl font-bold text-gray-900 dark:text-white">{plan.price}</span>
-                        <span className="text-gray-500 dark:text-gray-400">{plan.period}</span>
-                    </div>
-                    <ul className="space-y-3 mb-8 flex-1">
-                        {plan.features.map((feature, idx) => (
-                            <li key={idx} className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                                <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                                {feature}
-                            </li>
-                        ))}
-                    </ul>
-                    <button
-                        className={`w-full py-2 rounded-lg font-semibold transition-colors ${plan.current
-                            ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }`}
-                        disabled={plan.current}
+            {plans.map((plan) => {
+                const isCurrent = currentSubscription?.plan_id === plan.code;
+                return (
+                    <div
+                        key={plan.id || plan.code}
+                        className={`relative bg-white dark:bg-gray-900 rounded-lg border ${isCurrent
+                            ? 'border-purple-500 dark:border-purple-500 ring-2 ring-purple-500/20'
+                            : 'border-gray-200 dark:border-gray-800'
+                            } p-6 flex flex-col`}
                     >
-                        {plan.current ? 'Current Plan' : 'Upgrade'}
-                    </button>
+                        {isCurrent && (
+                            <div className="absolute top-0 right-0 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
+                                CURRENT PLAN
+                            </div>
+                        )}
+                        <div className="mb-4">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{plan.name}</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Inclusive of taxes & fees</p>
+                        </div>
+                        <div className="mb-6">
+                            <span className="text-3xl font-bold text-gray-900 dark:text-white">{plan.currency} {plan.amount}</span>
+                            <span className="text-gray-500 dark:text-gray-400">/{plan.interval}</span>
+                        </div>
+                        {/* Features list would come from API or hardcoded map based on plan code */}
+                        <ul className="space-y-3 mb-8 flex-1">
+                            <li className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                                <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                                Core Platform Access
+                            </li>
+                            <li className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                                <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                                {plan.trial_period_days ? `${plan.trial_period_days}-day Free Trial` : 'Instant Access'}
+                            </li>
+                        </ul>
+                        <button
+                            className={`w-full py-2 rounded-lg font-semibold transition-colors ${isCurrent
+                                ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
+                            disabled={isCurrent}
+                        >
+                            {isCurrent ? 'Current Plan' : 'Upgrade'}
+                        </button>
+                    </div>
+                )
+            })}
+            {plans.length === 0 && (
+                <div className="col-span-3 text-center py-12 text-gray-500">
+                    No plans available.
                 </div>
-            ))}
+            )}
         </div>
     );
 
@@ -208,30 +231,12 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
                 </button>
             </div>
 
+            {/* Mock payment methods for visual consistency until API ready */}
             <div className="space-y-4">
-                {paymentMethods.map((method) => (
-                    <div key={method.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                                <CreditCard className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                            </div>
-                            <div>
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    {method.type} ending in {method.last4}
-                                </p>
-                                <p className="text-sm text-gray-500">Expires {method.expiry}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            {method.default && (
-                                <span className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full">
-                                    Default
-                                </span>
-                            )}
-                            <button className="text-gray-400 hover:text-red-600">Delete</button>
-                        </div>
-                    </div>
-                ))}
+                <div className="text-center py-8 text-gray-500 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+                    <CreditCard className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p>Manage payment methods in the Client Portal Billing settings.</p>
+                </div>
             </div>
         </div>
     );
@@ -249,29 +254,32 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                    {invoices.map((invoice) => (
-                        <tr key={invoice.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                {invoice.id}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {invoice.date}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                {invoice.amount}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                                <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                                    {invoice.status}
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button className="text-blue-600 hover:text-blue-800 dark:hover:text-blue-400">
-                                    <Download className="w-4 h-4" />
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
+                    {invoices.length === 0 ? (
+                        <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No invoices found.</td></tr>
+                    ) : (
+                        invoices.map((invoice) => (
+                            <tr key={invoice.id}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                    {invoice.id}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {new Date(invoice.created_at).toLocaleDateString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    {invoice.currency} {(invoice.amount_due).toFixed(2)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                        {invoice.status || 'Paid'}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button className="text-blue-600 hover:text-blue-800 dark:hover:text-blue-400">
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                </td>
+                            </tr>
+                        )))}
                 </tbody>
             </table>
         </div>
