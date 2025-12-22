@@ -107,6 +107,9 @@ services:
   # ========================================
   brain-gateway:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
+    build:
+      context: ./brain-gateway
+      dockerfile: Dockerfile
     container_name: brain-gateway
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
