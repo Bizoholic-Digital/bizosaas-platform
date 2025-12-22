@@ -96,6 +96,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`vault.bizoholic.net`)"
+      - "traefik.http.routers.vault.entrypoints=websecure"
+      - "traefik.http.routers.vault.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
 
   # ==========================================
   # TEMPORAL SERVER
@@ -110,7 +116,7 @@ services:
       - DB=postgresql
       - DB_PORT=5432
       - POSTGRES_USER=admin
-      - POSTGRES_PWD=QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=
+      - POSTGRES_PWD=BizOSaaS2025!StagingDB
       - POSTGRES_SEEDS=bizosaas-postgres-staging
       - POSTGRES_DB=temporal
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
@@ -150,6 +156,12 @@ services:
           memory: 256M
     depends_on:
       - temporal-server
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.temporal-ui.rule=Host(`temporal.bizoholic.net`)"
+      - "traefik.http.routers.temporal-ui.entrypoints=websecure"
+      - "traefik.http.routers.temporal-ui.tls.certresolver=letsencrypt"
+      - "traefik.http.services.temporal-ui.loadbalancer.server.port=8080"
 
   # ==========================================
   # APACHE SUPERSET - DEPRECATED / REMOVED
@@ -169,6 +181,12 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.loki.rule=Host(`loki.bizoholic.net`)"
+      - "traefik.http.routers.loki.entrypoints=websecure"
+      - "traefik.http.routers.loki.tls.certresolver=letsencrypt"
+      - "traefik.http.services.loki.loadbalancer.server.port=3100"
     deploy:
       resources:
         limits:
@@ -193,6 +211,12 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.bizoholic.net`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
     deploy:
       resources:
         limits:
@@ -212,6 +236,12 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.bizoholic.net`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     deploy:
       resources:
         limits:
@@ -225,6 +255,12 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.bizoholic.net`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
 
 volumes:

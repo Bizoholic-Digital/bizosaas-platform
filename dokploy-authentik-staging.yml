@@ -13,6 +13,8 @@ services:
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__USER: admin
       AUTHENTIK_POSTGRESQL__PASSWORD: BizOSaaS2025!StagingDB
+      AUTHENTIK_BOOTSTRAP_PASSWORD: "BizOSaaS2025!AuthentikAdmin"
+      AUTHENTIK_BOOTSTRAP_EMAIL: "admin@bizoholic.net"
       # Set in Dokploy UI
       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
     volumes:

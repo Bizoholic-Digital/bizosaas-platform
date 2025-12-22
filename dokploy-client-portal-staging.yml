@@ -1,0 +1,47 @@
+services:
+  client-portal:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    pull_policy: always
+    container_name: bizosaas-client-portal-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
+      - NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
+      - NEXTAUTH_URL=https://app.bizoholic.net
+      - NEXTAUTH_SECRET=vc+i1safx5PvOaK9gc6PYLwetF4UFFWX/exE+OtzNP0=
+      - NEXT_TELEMETRY_DISABLED=1
+      - AUTH_SERVICE_URL=https://api.bizoholic.net
+      # Authentik SSO Configuration
+      - AUTHENTIK_ISSUER=https://sso.bizoholic.net/application/o/bizosaas/
+      - AUTHENTIK_CLIENT_ID=boemWale3ZtGCAbYxCiMhFOP7s6mUTPTEIZMn82W
+      - AUTHENTIK_CLIENT_SECRET=3y17JID2MUxjQAJAFUs9cmcTVXe54VJV6qbE0afg3DzjDqZt70Bj35CVCtxT93VUzW04UJDemEX4qqYMzO2i5TjoMV0sqEGzdfau1O16apsNOizAtf8EpEo7X09A2pZZ
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+
+networks:
+  dokploy-network:
+    external: true
