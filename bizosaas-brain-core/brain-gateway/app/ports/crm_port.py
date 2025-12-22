@@ -23,11 +23,22 @@ class Deal(BaseModel):
     contact_ids: List[str] = []
     close_date: Optional[str] = None
 
+class CRMStats(BaseModel):
+    contacts: int
+    leads: int
+    campaigns: int
+    last_sync: Optional[str] = None
+
 class CRMPort(ABC):
     """
     Abstract Port for Customer Relationship Management systems.
     Adapters (Connectors) must implement these methods.
     """
+
+    @abstractmethod
+    async def get_stats(self) -> CRMStats:
+        """Retrieve CRM statistics."""
+        pass
 
     @abstractmethod
     async def get_contacts(self, limit: int = 100, cursor: Optional[str] = None) -> List[Contact]:

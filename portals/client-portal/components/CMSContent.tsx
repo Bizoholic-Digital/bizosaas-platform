@@ -18,6 +18,8 @@ export const CMSContent: React.FC<CMSContentProps> = ({ activeTab }) => {
     const [pages, setPages] = useState<CMSPage[]>([]);
     const [posts, setPosts] = useState<CMSPost[]>([]);
     const [media, setMedia] = useState<CMSMedia[]>([]);
+    const [connection, setConnection] = useState<{ connected: boolean; platform?: string; version?: string } | null>(null);
+    const [stats, setStats] = useState<{ pages: number; posts: number; media: number; lastSync?: string } | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     // Modal states
@@ -27,7 +29,20 @@ export const CMSContent: React.FC<CMSContentProps> = ({ activeTab }) => {
 
     useEffect(() => {
         fetchData();
+        fetchStatus();
     }, [activeTab]);
+
+    const fetchStatus = async () => {
+        try {
+            const conn = await cmsApi.checkConnection();
+            if (conn.data) setConnection(conn.data);
+
+            const st = await cmsApi.getStats();
+            if (st.data) setStats(st.data);
+        } catch (e) {
+            console.error("Failed to fetch CMS status", e);
+        }
+    };
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -242,13 +257,57 @@ export const CMSContent: React.FC<CMSContentProps> = ({ activeTab }) => {
         </div>
     );
 
+    const renderConnectionStatus = () => {
+        if (!connection) return null;
+        return (
+            <div className={`mb-6 p-4 rounded-lg flex items-center justify-between ${connection.connected ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                <div className="flex items-center gap-3">
+                    {connection.connected ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                    <div>
+                        <h4 className="font-semibold">{connection.connected ? 'CMS Connected' : 'CMS Disconnected'}</h4>
+                        <p className="text-sm opacity-90">
+                            {connection.connected
+                                ? `Connected to ${connection.platform || 'WordPress'} (${connection.version || 'v6.x'})`
+                                : 'Please check your integration settings.'}
+                        </p>
+                    </div>
+                </div>
+                {connection.connected && (
+                    <div className="flex gap-4 text-sm font-medium">
+                        <div>
+                            <span className="block text-2xl font-bold">{stats?.pages || 0}</span>
+                            <span className="opacity-75">Pages</span>
+                        </div>
+                        <div>
+                            <span className="block text-2xl font-bold">{stats?.posts || 0}</span>
+                            <span className="opacity-75">Posts</span>
+                        </div>
+                        <div>
+                            <span className="block text-2xl font-bold">{stats?.media || 0}</span>
+                            <span className="opacity-75">Media</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const renderContent = () => {
-        switch (activeTab) {
-            case 'cms-pages': return renderPages();
-            case 'cms-posts': return renderPosts();
-            case 'cms-media': return renderMedia();
-            default: return <div>Select a tab</div>;
-        }
+        const content = (() => {
+            switch (activeTab) {
+                case 'cms-pages': return renderPages();
+                case 'cms-posts': return renderPosts();
+                case 'cms-media': return renderMedia();
+                default: return <div>Select a tab</div>;
+            }
+        })();
+
+        return (
+            <>
+                {renderConnectionStatus()}
+                {content}
+            </>
+        );
     };
 
     return (

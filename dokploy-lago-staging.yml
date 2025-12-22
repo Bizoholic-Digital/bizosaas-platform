@@ -21,6 +21,10 @@ services:
       - LAGO_API_URL=http://lago-api:3000
       - LAGO_FRONT_URL=http://lago-front:80
       - LAGO_DISABLE_SEGMENT=true
+      # Authentik SSO
+      - LAGO_OIDC_CLIENT_ID=XttoJ7BOVlJCoy2tymWkWAuXf2Gc82UbmOe7aMuE
+      - LAGO_OIDC_CLIENT_SECRET=N3YbnttmAFCSMxyhyTPf696Pzyxfmud4RZGj0NMW4BOUjV61gRsBMN2jeq07c8Qw5x7eXpl3jiSakDgK7QbOQ1BexhWvpRHYKC4dQpWvAephZTJIzJVNoWar3wUd4An7
+      - LAGO_OIDC_ISSUER=https://sso.bizoholic.net/application/o/bizosaas/
       # Values to be set in Dokploy UI
       - LAGO_SECRET_KEY_BASE=${LAGO_SECRET_KEY_BASE}
       - |
@@ -69,6 +73,14 @@ services:
       - LAGO_DISABLE_SIGNUP=false
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
     ports:
       - "3000"
 
@@ -135,6 +147,14 @@ services:
       - RAILS_ENV=production
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: 384M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
 
   # ============================
   # LAGO FRONTEND
@@ -158,6 +178,14 @@ services:
       - "traefik.http.routers.lago-front.entrypoints=websecure"
       - "traefik.http.routers.lago-front.tls.certresolver=myresolver"
       - "traefik.http.services.lago-front.loadbalancer.server.port=80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
 
   # ============================
   # MIGRATION UTILITY
@@ -214,6 +242,11 @@ services:
       - RAILS_ENV=production
     networks:
       - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
 
 networks:
   dokploy-network:

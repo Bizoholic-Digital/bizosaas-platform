@@ -36,6 +36,14 @@ export class EcommerceApi {
     async updateInventory(sku: string, quantity: number): Promise<ApiResponse<any>> {
         return brainApi.post('/api/brain/ecommerce/inventory', { sku, quantity });
     }
+
+    async checkConnection(): Promise<ApiResponse<{ connected: boolean; platform?: string; version?: string }>> {
+        return brainApi.get<{ connected: boolean; platform?: string; version?: string }>('/api/brain/ecommerce/status');
+    }
+
+    async getStats(): Promise<ApiResponse<{ products: number; orders: number; revenue: number; lastSync?: string }>> {
+        return brainApi.get<{ products: number; orders: number; revenue: number; lastSync?: string }>('/api/brain/ecommerce/stats');
+    }
 }
 
 export const ecommerceApi = new EcommerceApi();

@@ -9,7 +9,9 @@ import {
     Share2,
     Target,
     Plug,
-    Rocket
+    Rocket,
+    Megaphone,
+    Bot
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,19 +20,23 @@ import { useOnboardingState } from './hooks/useOnboardingState';
 // Step Components
 import { CompanyIdentityStep } from './OnboardingSteps/CompanyIdentityStep';
 import { DigitalPresenceStep } from './OnboardingSteps/DigitalPresenceStep';
+import { ServiceConnectionStep } from './OnboardingSteps/ServiceConnectionStep';
 import { AnalyticsTrackingStep } from './OnboardingSteps/AnalyticsTrackingStep';
 import { SocialMediaStep } from './OnboardingSteps/SocialMediaStep';
 import { CampaignGoalsStep } from './OnboardingSteps/CampaignGoalsStep';
 import { ToolIntegrationStep } from './OnboardingSteps/ToolIntegrationStep';
+import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
     { id: 'presence', title: 'Presence', icon: Globe },
+    { id: 'connect', title: 'Connect', icon: Plug },
     { id: 'analytics', title: 'Analytics', icon: BarChart3 },
     { id: 'social', title: 'Social', icon: Share2 },
     { id: 'goals', title: 'Goals', icon: Target },
-    { id: 'tools', title: 'Integrations', icon: Plug },
+    { id: 'tools', title: 'Marketing', icon: Megaphone },
+    { id: 'agent', title: 'AI Agent', icon: Bot },
     { id: 'approval', title: 'Strategy', icon: Rocket }
 ];
 
@@ -44,6 +50,7 @@ export function OnboardingWizard() {
         updateSocialMedia,
         updateGoals,
         updateTools,
+        updateAgent,
         nextStep,
         prevStep,
         isLoaded
@@ -94,14 +101,18 @@ export function OnboardingWizard() {
                     onUpdate={updateDigitalPresence}
                 />;
             case 2:
-                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
+                return <ServiceConnectionStep data={state.tools} onUpdate={updateTools} />;
             case 3:
-                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
+                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
             case 4:
-                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
+                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
             case 5:
-                return <ToolIntegrationStep data={state.tools} onUpdate={updateTools} />;
+                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
             case 6:
+                return <ToolIntegrationStep data={state.tools} onUpdate={updateTools} />;
+            case 7:
+                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+            case 8:
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;
@@ -136,11 +147,11 @@ export function OnboardingWizard() {
                             <div
                                 key={step.id}
                                 className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${isActive ? 'bg-white shadow-sm text-blue-700' :
-                                        isCompleted ? 'text-gray-600' : 'text-gray-400'
+                                    isCompleted ? 'text-gray-600' : 'text-gray-400'
                                     }`}
                             >
                                 <div className={`p-1.5 rounded-md ${isActive ? 'bg-blue-100' :
-                                        isCompleted ? 'bg-green-100 text-green-600' : 'bg-transparent'
+                                    isCompleted ? 'bg-green-100 text-green-600' : 'bg-transparent'
                                     }`}>
                                     <step.icon size={18} />
                                 </div>

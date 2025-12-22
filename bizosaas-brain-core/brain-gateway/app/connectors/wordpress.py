@@ -2,7 +2,7 @@ import httpx
 import base64
 import logging
 from typing import Dict, Any, List, Optional
-from ..ports.cms_port import CMSPort, Page, Post
+from ..ports.cms_port import CMSPort, Page, Post, CMSStats
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
 
@@ -73,7 +73,46 @@ class WordPressConnector(BaseConnector, CMSPort):
         """Legacy action support"""
         return {}
 
+from ..ports.cms_port import CMSPort, Page, Post, CMSStats
+
+# ... (rest of imports)
+
     # --- CMSPort Implementation ---
+
+    async def get_stats(self) -> CMSStats:
+        async with httpx.AsyncClient() as client:
+            try:
+                # Parallel fetch for headers to get totals
+                # WordPress uses X-WP-Total header for counts
+                auth = self._get_auth_header()
+                stats = {"pages": 0, "posts": 0, "media": 0}
+                
+                endpoints = {
+                    "pages": "pages", 
+                    "posts": "posts", 
+                    "media": "media"
+                }
+                
+                for key, endpoint in endpoints.items():
+                    try:
+                        resp = await client.head(
+                            self._get_api_url(endpoint), 
+                            headers=auth, 
+                            params={"per_page": 1}
+                        )
+                        if resp.status_code == 200:
+                            stats[key] = int(resp.headers.get("X-WP-Total", 0))
+                    except Exception:
+                         pass
+
+                return CMSStats(
+                    pages=stats["pages"],
+                    posts=stats["posts"],
+                    media=stats["media"]
+                )
+            except Exception as e:
+                logger.error(f"Stats fetch failed: {e}")
+                return CMSStats(pages=0, posts=0, media=0)
 
     async def get_pages(self, limit: int = 100) -> List[Page]:
         async with httpx.AsyncClient() as client:

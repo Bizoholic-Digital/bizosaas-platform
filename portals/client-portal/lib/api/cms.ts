@@ -74,8 +74,16 @@ export class CmsApi {
 
     // Media
     async getMedia(params?: { limit?: number }): Promise<ApiResponse<CMSMedia[]>> {
-        // brain-gateway implementation pending for media, but defining client for future
         return brainApi.get<CMSMedia[]>('/api/brain/cms/media');
+    }
+
+    // Connection & Analytics
+    async checkConnection(): Promise<ApiResponse<{ connected: boolean; platform?: string; version?: string }>> {
+        return brainApi.get<{ connected: boolean; platform?: string; version?: string }>('/api/brain/cms/status');
+    }
+
+    async getStats(): Promise<ApiResponse<{ pages: number; posts: number; media: number; lastSync?: string }>> {
+        return brainApi.get<{ pages: number; posts: number; media: number; lastSync?: string }>('/api/brain/cms/stats');
     }
 }
 

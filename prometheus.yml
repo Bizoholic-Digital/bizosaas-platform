@@ -1,30 +1,7 @@
 global:
   scrape_interval: 15s
-  evaluation_interval: 15s
 
 scrape_configs:
-  # Prometheus itself
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
-
-  # Brain Gateway (FastAPI)
-  - job_name: 'brain-gateway'
-    static_configs:
-      - targets: ['bizosaas-brain-gateway-staging:8000']
-    metrics_path: '/metrics'
-
-  # PostgreSQL
-  - job_name: 'postgres'
-    static_configs:
-      - targets: ['bizosaas-postgres-staging:5432']
-
-  # Redis
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['bizosaas-redis-staging:6379']
-
-  # Temporal
-  - job_name: 'temporal'
-    static_configs:
-      - targets: ['bizosaas-temporal-server-staging:7233']

@@ -38,6 +38,40 @@ async def get_active_crm_connector(tenant_id: str) -> CRMPort:
             
     raise HTTPException(status_code=404, detail="No CRM connector configured.")
 
+@router.get("/status")
+async def get_crm_status(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Check connectivity to the active CRM"""
+    tenant_id = user.tenant_id or "default_tenant"
+    try:
+        connector = await get_active_crm_connector(tenant_id)
+        is_valid = await connector.validate_credentials()
+        
+        return {
+            "connected": is_valid,
+            "platform": connector.config.name if hasattr(connector, 'config') else "FluentCRM",
+            "version": "Unknown" 
+        }
+    except HTTPException:
+        return {"connected": False}
+    except Exception as e:
+         return {"connected": False, "error": str(e)}
+
+@router.get("/stats")
+async def get_crm_stats(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get CRM statistics"""
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_crm_connector(tenant_id)
+    
+    try:
+        stats = await connector.get_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stats Error: {str(e)}")
+
 @router.get("/contacts", response_model=List[ContactMessage])
 async def list_contacts(
     user: AuthenticatedUser = Depends(get_current_user)

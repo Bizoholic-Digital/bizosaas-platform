@@ -2,7 +2,7 @@ import httpx
 import base64
 import logging
 from typing import Dict, Any, List, Optional
-from ..ports.crm_port import CRMPort, Contact, Deal
+from ..ports.crm_port import CRMPort, Contact, Deal, CRMStats
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
 
@@ -76,6 +76,31 @@ class FluentCRMConnector(BaseConnector, CRMPort):
             result = await self.create_contact(contact)
             return result.dict()
         return {}
+
+    async def get_stats(self) -> CRMStats:
+        async with httpx.AsyncClient() as client:
+            try:
+                # Fetch one contact to get meta total
+                response = await client.get(
+                    self._get_api_url("contacts"),
+                    headers=self._get_auth_header(),
+                    params={"per_page": 1},
+                    timeout=10.0
+                )
+                if response.status_code == 200:
+                   data = response.json()
+                   # FluentCRM V2 often returns 'meta' with 'total'
+                   total = 0
+                   if "meta" in data and "total" in data["meta"]:
+                       total = data["meta"]["total"]
+                   elif "total" in data:
+                       total = data["total"]
+                   
+                   return CRMStats(contacts=total, leads=0, campaigns=0)
+            except Exception as e:
+                logger.error(f"Stats fetch failed: {e}")
+            
+            return CRMStats(contacts=0, leads=0, campaigns=0)
 
     # --- CRMPort Implementation ---
 

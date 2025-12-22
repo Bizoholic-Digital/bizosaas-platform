@@ -34,6 +34,14 @@ export class CrmApi {
     async deleteContact(id: string): Promise<ApiResponse<boolean>> {
         return brainApi.delete<boolean>(`/api/brain/crm/contacts/${id}`);
     }
+
+    async checkConnection(): Promise<ApiResponse<{ connected: boolean; platform?: string; version?: string }>> {
+        return brainApi.get<{ connected: boolean; platform?: string; version?: string }>('/api/brain/crm/status');
+    }
+
+    async getStats(): Promise<ApiResponse<{ contacts: number; leads: number; campaigns: number; lastSync?: string }>> {
+        return brainApi.get<{ contacts: number; leads: number; campaigns: number; lastSync?: string }>('/api/brain/crm/stats');
+    }
 }
 
 export const crmApi = new CrmApi();

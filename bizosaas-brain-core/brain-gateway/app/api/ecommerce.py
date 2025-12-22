@@ -46,6 +46,42 @@ async def get_active_ecommerce_connector(tenant_id: str) -> ECommercePort:
             
     raise HTTPException(status_code=404, detail="No E-commerce connector configured.")
 
+    raise HTTPException(status_code=404, detail="No E-commerce connector configured.")
+
+@router.get("/status")
+async def get_ecommerce_status(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Check connectivity to the active store"""
+    tenant_id = user.tenant_id or "default_tenant"
+    try:
+        connector = await get_active_ecommerce_connector(tenant_id)
+        is_valid = await connector.validate_credentials()
+        
+        return {
+            "connected": is_valid,
+            "platform": connector.config.name if hasattr(connector, 'config') else "WooCommerce",
+            "version": "Unknown" 
+        }
+    except HTTPException:
+        return {"connected": False}
+    except Exception as e:
+         return {"connected": False, "error": str(e)}
+
+@router.get("/stats")
+async def get_ecommerce_stats(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get E-commerce statistics"""
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_ecommerce_connector(tenant_id)
+    
+    try:
+        stats = await connector.get_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stats Error: {str(e)}")
+
 @router.get("/products", response_model=List[ProductMessage])
 async def list_products(
     user: AuthenticatedUser = Depends(get_current_user)
@@ -59,8 +95,8 @@ async def list_products(
             ProductMessage(
                 id=p.id,
                 name=p.name,
-                description=p.description,
-                price=p.price,
+                description=p.description or "",
+                price=str(p.price),
                 sku=p.sku,
                 stock_quantity=p.stock_quantity,
                 status=p.status,
@@ -82,13 +118,13 @@ async def list_orders(
         return [
             OrderMessage(
                 id=o.id,
-                number=o.number,
+                number=o.id, # Using ID as number for now
                 status=o.status,
-                total=o.total,
+                total=str(o.total_amount),
                 currency=o.currency,
-                customer_id=o.customer_id,
-                created_at=o.created_at,
-                line_items=o.line_items
+                customer_id=int(o.customer_id) if o.customer_id and o.customer_id.isdigit() else 0,
+                created_at=o.created_at or datetime.now(),
+                line_items=o.items
             ) for o in orders
         ]
     except Exception as e:

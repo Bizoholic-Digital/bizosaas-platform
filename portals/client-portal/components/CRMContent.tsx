@@ -21,6 +21,8 @@ interface CRMContentProps {
 
 export const CRMContent: React.FC<CRMContentProps> = ({ activeTab }) => {
   const [contacts, setContacts] = useState<CRMContact[]>([]);
+  const [connection, setConnection] = useState<{ connected: boolean; platform?: string; version?: string } | null>(null);
+  const [stats, setStats] = useState<{ contacts: number; leads: number; campaigns: number; lastSync?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,10 +35,23 @@ export const CRMContent: React.FC<CRMContentProps> = ({ activeTab }) => {
   const [mockTasks] = useState([]);
 
   useEffect(() => {
+    fetchStatus();
     if (activeTab === 'crm-contacts') {
       fetchContacts();
     }
   }, [activeTab]);
+
+  const fetchStatus = async () => {
+    try {
+      const conn = await crmApi.checkConnection();
+      if (conn.data) setConnection(conn.data);
+
+      const st = await crmApi.getStats();
+      if (st.data) setStats(st.data);
+    } catch (e) {
+      console.error("Failed to fetch CRM status", e);
+    }
+  };
 
   const fetchContacts = async () => {
     setIsLoading(true);
@@ -210,15 +225,43 @@ export const CRMContent: React.FC<CRMContentProps> = ({ activeTab }) => {
     </div>
   );
 
+  const renderConnectionStatus = () => {
+    if (!connection) return null;
+    return (
+      <div className={`mb-6 p-4 rounded-lg flex items-center justify-between ${connection.connected ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+        <div className="flex items-center gap-3">
+          {connection.connected ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          <div>
+            <h4 className="font-semibold">{connection.connected ? 'CRM Connected' : 'CRM Disconnected'}</h4>
+            <p className="text-sm opacity-90">
+              {connection.connected
+                ? `Connected to ${connection.platform || 'FluentCRM'} (${connection.version || 'v2.x'})`
+                : 'Please check your integration settings.'}
+            </p>
+          </div>
+        </div>
+        {connection.connected && (
+          <div className="flex gap-4 text-sm font-medium">
+            <div>
+              <span className="block text-2xl font-bold">{stats?.contacts || 0}</span>
+              <span className="opacity-75">Contacts</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Conditional Rendering
-  if (activeTab === 'crm-contacts') return renderContacts();
-  if (activeTab === 'crm-deals') return renderPlaceholder("Deals Pipeline");
-  if (activeTab === 'crm-leads') return renderPlaceholder("Leads Management");
-  if (activeTab === 'crm-tasks') return renderPlaceholder("Tasks");
+  if (activeTab === 'crm-contacts') return <>{renderConnectionStatus()}{renderContacts()}</>;
+  if (activeTab === 'crm-deals') return <>{renderConnectionStatus()}{renderPlaceholder("Deals Pipeline")}</>;
+  if (activeTab === 'crm-leads') return <>{renderConnectionStatus()}{renderPlaceholder("Leads Management")}</>;
+  if (activeTab === 'crm-tasks') return <>{renderConnectionStatus()}{renderPlaceholder("Tasks")}</>;
 
   // Dashboard / Overview
   return (
     <div className="space-y-6">
+      {renderConnectionStatus()}
       <h2 className="text-2xl font-bold text-gray-900 dark:text-white">CRM Overview</h2>
 
       <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
@@ -228,7 +271,7 @@ export const CRMContent: React.FC<CRMContentProps> = ({ activeTab }) => {
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Contacts</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{contacts.length || '-'}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{contacts.length || stats?.contacts || 0}</p>
           </div>
         </div>
         <div className="mt-4">

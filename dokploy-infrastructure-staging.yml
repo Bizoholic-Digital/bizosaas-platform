@@ -23,11 +23,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'
-          memory: 6G
-        reservations:
-          cpus: '1.0'
+          cpus: '0.5'
           memory: 2G
+        reservations:
+          cpus: '0.1'
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas_staging"]
       interval: 30s
@@ -86,11 +86,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.1'
+          cpus: '0.3'
           memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 128M
     healthcheck:
       test: ["CMD", "vault", "status"]
       interval: 30s
@@ -119,20 +119,26 @@ services:
       - POSTGRES_PWD=BizOSaaS2025!StagingDB
       - POSTGRES_SEEDS=bizosaas-postgres-staging
       - POSTGRES_DB=temporal
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      # - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
     networks:
       - dokploy-network
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.25'
+          cpus: '0.5'
           memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
     depends_on:
       - postgres
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # ==========================================
   # TEMPORAL UI
@@ -145,7 +151,7 @@ services:
       - "8083:8080"
     environment:
       - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:8083
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8083,https://temporal.bizoholic.net
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -231,6 +237,17 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=BizOSaaS2025!Grafana
       - GF_USERS_ALLOW_SIGN_UP=false
+      # Grafana SSO Configuration
+      - GF_SERVER_ROOT_URL=https://grafana.bizoholic.net
+      - GF_AUTH_GENERIC_OAUTH_ENABLED=true
+      - GF_AUTH_GENERIC_OAUTH_NAME=BizOSaaS SSO
+      - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=uNeNjOeHpst6Q83o1lmUNCU2S2iZ9vg2hHajSYGF
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=gmupMMr6KkxLyb5kgpRqhAq0yVUIUv0Oj1oa8fk95fCUsyVhhF728KPHpDGwwBQAFObfkIUds4zpCQM4I7wsiGT8NSTGpvpJ63vDiUUwKqcni62U7ceG52ayDgU96xbR
+      - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
+      - GF_AUTH_GENERIC_OAUTH_AUTH_URL=https://sso.bizoholic.net/application/o/authorize/
+      - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=https://sso.bizoholic.net/application/o/token/
+      - GF_AUTH_GENERIC_OAUTH_API_URL=https://sso.bizoholic.net/application/o/userinfo/
     volumes:
       - grafana_staging_data:/var/lib/grafana
     networks:
@@ -255,12 +272,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.bizoholic.net`)"
-      - "traefik.http.routers.grafana.entrypoints=websecure"
-      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
 
 
 volumes:

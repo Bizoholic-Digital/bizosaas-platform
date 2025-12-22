@@ -46,6 +46,25 @@ export interface CampaignGoals {
 export interface ToolIntegration {
     emailMarketing?: 'mailchimp' | 'klaviyo' | 'activecampaign' | 'none';
     adPlatforms: string[];
+    wordpress?: {
+        connected: boolean;
+        siteUrl?: string;
+        adminUrl?: string;
+    };
+    fluentCrm?: {
+        connected: boolean;
+    };
+    wooCommerce?: {
+        connected: boolean;
+        consumerKey?: string;
+        consumerSecret?: string;
+    };
+}
+
+export interface AgentConfig {
+    persona: 'marketing_manager' | 'sales_rep' | 'support_agent' | 'general_assistant';
+    name: string;
+    tone: 'professional' | 'friendly' | 'urgent' | 'witty';
 }
 
 export interface OnboardingState {
@@ -56,6 +75,7 @@ export interface OnboardingState {
     socialMedia: SocialMediaConfig;
     goals: CampaignGoals;
     tools: ToolIntegration;
+    agent: AgentConfig; // New field
     isComplete: boolean;
 }
 
@@ -98,6 +118,11 @@ export const INITIAL_STATE: OnboardingState = {
     },
     tools: {
         adPlatforms: [],
+    },
+    agent: {
+        persona: 'marketing_manager',
+        name: 'Alex',
+        tone: 'professional'
     },
     isComplete: false,
 };

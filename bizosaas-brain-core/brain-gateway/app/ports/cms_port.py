@@ -27,10 +27,20 @@ class Post(BaseModel):
     author_id: Optional[str] = None
     published_at: Optional[datetime] = None
 
+class CMSStats(BaseModel):
+    pages: int
+    posts: int
+    media: int
+    last_sync: Optional[datetime] = None
+
 class CMSPort(ABC):
     """
     Abstract Port for Content Management Systems (WordPress, Webflow, etc).
     """
+
+    @abstractmethod
+    async def get_stats(self) -> CMSStats:
+        pass
     
     @abstractmethod
     async def get_pages(self, limit: int = 100) -> List[Page]:

@@ -2,7 +2,7 @@ import httpx
 import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-from ..ports.ecommerce_port import ECommercePort, Product, Order, OrderItem
+from ..ports.ecommerce_port import ECommercePort, Product, Order, OrderItem, EcommerceStats
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
 
@@ -64,6 +64,51 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         return {}
+
+    # --- ECommercePort Implementation ---
+
+    async def get_stats(self) -> EcommerceStats:
+        async with httpx.AsyncClient() as client:
+            try:
+                # Parallel fetch for headers to get totals
+                auth = self._get_auth()
+                stats = {"products": 0, "orders": 0, "revenue": 0.0}
+                
+                # Check products count
+                try:
+                    resp_prod = await client.head(
+                        self._get_api_url("products"), 
+                        auth=auth, 
+                        params={"per_page": 1}
+                    )
+                    if resp_prod.status_code == 200:
+                        stats["products"] = int(resp_prod.headers.get("X-WP-Total", 0))
+                except Exception:
+                    pass
+
+                # Check orders count
+                try:
+                    resp_ord = await client.head(
+                        self._get_api_url("orders"), 
+                        auth=auth, 
+                        params={"per_page": 1}
+                    )
+                    if resp_ord.status_code == 200:
+                        stats["orders"] = int(resp_ord.headers.get("X-WP-Total", 0))
+                except Exception:
+                    pass
+
+                # Revenue requires /reports/sales which might be permission locked or complex
+                # Skipping real revenue fetch for MVP stability
+
+                return EcommerceStats(
+                    products=stats["products"],
+                    orders=stats["orders"],
+                    revenue=stats["revenue"]
+                )
+            except Exception as e:
+                logger.error(f"Stats fetch failed: {e}")
+                return EcommerceStats(products=0, orders=0, revenue=0.0)
 
     # --- ECommercePort Implementation ---
 
