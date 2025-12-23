@@ -37,37 +37,6 @@ services:
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
     restart: unless-stopped
   # ========================================
-  # Auth Service
-  # ========================================
-  # Commented out - auth-service directory doesn't exist yet
-  # Will implement with Stripe integration
-  # auth-service:
-  #   image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
-  #   build:
-  #     context: ./bizosaas-brain-core/auth-service
-  #     dockerfile: Dockerfile
-  #   container_name: brain-auth
-  #   environment:
-  #     # Use existing Dokploy-managed postgres
-  #     - DATABASE_URL=postgresql+asyncpg://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/bizosaas_staging
-  #     - REDIS_URL=redis://bizosaas-redis-staging:6379/1
-  #     - JWT_SECRET=${JWT_SECRET:-super-secret-key}
-  #   networks:
-  #     - brain-network
-  #     - dokploy-network
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.3'
-  #         memory: 256M
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.brain-auth.rule=Host(`auth-api.bizoholic.net`)"
-  #     - "traefik.http.routers.brain-auth.entrypoints=websecure"
-  #     - "traefik.http.routers.brain-auth.tls.certresolver=letsencrypt"
-  #     - "traefik.http.services.brain-auth.loadbalancer.server.port=8007"
-  #   restart: unless-stopped
-  # ========================================
   # MCP Server (GitHub Integration)
   # ========================================
   # Commented out - image not available
