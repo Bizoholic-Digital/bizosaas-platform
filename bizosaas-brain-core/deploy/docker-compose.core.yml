@@ -13,13 +13,13 @@ services:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: brain-gateway
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
-      - REDIS_URL=redis://redis:6379/0
-      - TEMPORAL_HOST=temporal:7233
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - TEMPORAL_HOST=bizosaas-temporal-server-staging:7233
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - AUTH_URL=http://brain-auth:8007
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -41,11 +41,10 @@ services:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     container_name: brain-auth
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
-      - REDIS_URL=redis://redis:6379/1
-      - JWT_SECRET=${JWT_SECRET:-super-secret-key}
+      - DATABASE_URL=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
+      - JWT_SECRET=${JWT_SECRET:-BizOSaaS2025!JWTSecret}
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -69,7 +68,7 @@ services:
     environment:
       - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
     networks:
-      - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
@@ -81,7 +80,5 @@ services:
 # Networks
 # ═══════════════════════════════════════════════════════════════════════════
 networks:
-  brain-network:
-    external: true
   dokploy-network:
     external: true
