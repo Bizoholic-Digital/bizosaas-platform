@@ -83,8 +83,10 @@ export default function AuthProvider({ children, platform }: AuthProviderProps) 
       // Legacy cleanup
       localStorage.removeItem("auth_token");
     }
-    // Redirect to unified auth instead of local login
-    window.location.href = "http://localhost:3010";
+    // Federated Logout: Redirect to Authentik
+    const authentikUrl = process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.bizoholic.net';
+    const returnUrl = encodeURIComponent(window.location.origin + '/login');
+    window.location.href = `${authentikUrl}/if/session/end/?return_to=${returnUrl}`;
   };
 
   const checkAuth = async (): Promise<boolean> => {

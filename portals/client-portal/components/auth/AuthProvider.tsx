@@ -120,13 +120,21 @@ export default function AuthProvider({
 
   const logout = () => {
     console.log('[AUTH] Logging out...');
-    signOut({ callbackUrl: '/login' });
 
     if (typeof window !== "undefined") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user_data");
     }
+
+    // Federated Logout: Redirect to Authentik to clear the provider session
+    const authentikUrl = process.env.NEXT_PUBLIC_SSO_URL || 'https://sso.bizoholic.net';
+    const returnUrl = encodeURIComponent(window.location.origin + '/login');
+    const authentikLogoutUrl = `${authentikUrl}/if/session/end/?return_to=${returnUrl}`;
+
+    signOut({ redirect: false }).then(() => {
+      window.location.href = authentikLogoutUrl;
+    });
   };
 
   const checkAuth = async (): Promise<boolean> => {
