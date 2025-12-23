@@ -24,9 +24,11 @@ export function ClientLoginForm() {
 
     return (
         <UnifiedLoginForm
-            mode="credentials"
+            mode="both"
             platformName="Client Portal"
             platformSubtitle="Access your projects and services"
+            ssoProviderName="BizOSaaS SSO"
+            ssoProviderId="authentik"
             defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             className="!bg-transparent"
@@ -46,6 +48,11 @@ export function ClientLoginForm() {
                     ok: result?.ok || false,
                     error: result?.error || 'Invalid credentials',
                 }
+            }}
+            onSSOLogin={async () => {
+                await signIn('authentik', {
+                    callbackUrl: '/dashboard',
+                })
             }}
         />
     )

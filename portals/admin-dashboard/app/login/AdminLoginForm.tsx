@@ -20,9 +20,11 @@ function LoginFormContent() {
 
     return (
         <UnifiedLoginForm
-            mode="credentials"
+            mode="both"
             platformName="Admin Dashboard"
             platformSubtitle="Platform Administration & Management"
+            ssoProviderName="BizOSaaS SSO"
+            ssoProviderId="authentik"
             defaultRedirectUrl={callbackUrl}
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             className="!bg-transparent"
@@ -43,6 +45,11 @@ function LoginFormContent() {
                 } catch (error) {
                     return { ok: false, error: "Authentication failed" };
                 }
+            }}
+            onSSOLogin={async () => {
+                await signIn('authentik', {
+                    callbackUrl: callbackUrl,
+                })
             }}
         />
     );
