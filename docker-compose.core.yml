@@ -47,9 +47,9 @@ services:
       dockerfile: Dockerfile
     container_name: brain-auth
     environment:
-      # Fixed: Point to correct postgres container in brain-network
-      - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@brain-postgres:5432/bizosaas
-      - REDIS_URL=redis://brain-redis:6379/1
+      # Use existing Dokploy-managed postgres
+      - DATABASE_URL=postgresql+asyncpg://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
       - JWT_SECRET=${JWT_SECRET:-super-secret-key}
     networks:
       - brain-network
@@ -66,9 +66,6 @@ services:
       - "traefik.http.routers.brain-auth.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-auth.loadbalancer.server.port=8007"
     restart: unless-stopped
-    depends_on:
-      - brain-postgres
-      - brain-redis
   # ========================================
   # MCP Server (GitHub Integration)
   # ========================================
