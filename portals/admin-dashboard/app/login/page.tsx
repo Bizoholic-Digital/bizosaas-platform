@@ -1,5 +1,8 @@
 'use client';
 
+// Prevent static generation of this page
+export const dynamic = 'force-dynamic';
+
 import AdminLoginForm from './AdminLoginForm';
 import { ThemeToggle } from '@/components/theme-toggle';
 
