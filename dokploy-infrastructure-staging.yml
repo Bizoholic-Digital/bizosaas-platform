@@ -170,9 +170,6 @@ services:
       - "traefik.http.services.temporal-ui.loadbalancer.server.port=8080"
 
   # ==========================================
-  # APACHE SUPERSET - DEPRECATED / REMOVED
-  # Analytics and Business Intelligence
-  # ==========================================
   # Service removed to save resources.
   # Use Grafana with Postgres datasource for BI.
   # MONITORING STACK
@@ -242,8 +239,8 @@ services:
       - GF_AUTH_GENERIC_OAUTH_ENABLED=true
       - GF_AUTH_GENERIC_OAUTH_NAME=BizOSaaS SSO
       - GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP=true
-      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=uNeNjOeHpst6Q83o1lmUNCU2S2iZ9vg2hHajSYGF
-      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=gmupMMr6KkxLyb5kgpRqhAq0yVUIUv0Oj1oa8fk95fCUsyVhhF728KPHpDGwwBQAFObfkIUds4zpCQM4I7wsiGT8NSTGpvpJ63vDiUUwKqcni62U7ceG52ayDgU96xbR
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_ID=ZX594SnZx27CyejKG7wetxlpA3MORyv13Q99UhMG
+      - GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET=gH9vETdH5ve79WcyM1mblLIjzu4R51Y2yDTtPyU1ipqRdBx4jCcllRn3MnmCfgz5QLkjKviIB4YHkLKvx5No7rFTamMgVoGNYcaaKu4Q8pL1BrC4cON9mZavPph0y0Hw
       - GF_AUTH_GENERIC_OAUTH_SCOPES=openid profile email
       - GF_AUTH_GENERIC_OAUTH_AUTH_URL=https://sso.bizoholic.net/application/o/authorize/
       - GF_AUTH_GENERIC_OAUTH_TOKEN_URL=https://sso.bizoholic.net/application/o/token/
@@ -273,11 +270,7 @@ services:
       timeout: 10s
       retries: 3
 
-
-
 volumes:
-  superset_home:
-    driver: local
   postgres_staging_data:
     driver: local
   redis_staging_data:
@@ -300,7 +293,7 @@ networks:
 # ==================================================
 # Container Count: 6 (complete infrastructure + analytics)
 # Purpose: Complete infrastructure for staging environment
-# External Access: PostgreSQL (5433), Redis (6380), Vault (8201), Temporal (7234), Temporal UI (8083), Superset (8088)
+# External Access: PostgreSQL (5433), Redis (6380), Vault (8201), Temporal (7234), Temporal UI (8083)
 # Dependencies: None (foundation layer)
 # Services:
 #   - PostgreSQL with pgvector
@@ -308,5 +301,4 @@ networks:
 #   - Vault secrets management
 #   - Temporal Server (workflow orchestration)
 #   - Temporal UI (workflow management interface)
-#   - Apache Superset (analytics and BI dashboards)
 # ==================================================
