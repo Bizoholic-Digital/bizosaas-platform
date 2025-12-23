@@ -1,62 +1,65 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Authentik SSO - Production Deployment with Official Images
+# ═══════════════════════════════════════════════════════════════════════════
+# Official Image: ghcr.io/goauthentik/server
+# Documentation: https://goauthentik.io/docs/installation/docker-compose
+# ═══════════════════════════════════════════════════════════════════════════
+
 services:
+  # PostgreSQL Database for Authentik
   authentik-postgres:
     image: postgres:15-alpine
     container_name: authentik-postgres
     restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 5s
-    volumes:
-      - authentik_postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-authentik_secret}
-      POSTGRES_USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
       POSTGRES_DB: ${AUTHENTIK_POSTGRES_DB:-authentik}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+      POSTGRES_USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
+      POSTGRES_PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-kpP01z2OB1CXUiCafNxe2qkLtLw3HNsQhP8hWsZ+WBU=}
+    volumes:
+      - authentik-postgres-data:/var/lib/postgresql/data
     networks:
       - brain-network
+      - dokploy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${AUTHENTIK_POSTGRES_USER:-authentik}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+  # Redis Cache for Authentik
   authentik-redis:
     image: redis:7-alpine
     container_name: authentik-redis
-    command: --save 60 1 --loglevel warning
     restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
-      start_period: 20s
-      interval: 30s
-      retries: 5
-      timeout: 3s
+    command: --save 60 1 --loglevel warning
     volumes:
-      - authentik_redis_data:/data
+      - authentik-redis-data:/data
     networks:
       - brain-network
+      - dokploy-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
+  # Authentik Server (Official Image)
   authentik-server:
-    image: ghcr.io/goauthentik/server:2025.10.3
+    image: ghcr.io/goauthentik/server:2024.2.0
     container_name: authentik-server
     restart: unless-stopped
     command: server
     environment:
-      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-jX5UPImO4/HltUxICe0f3hOv230NClcvm9kexW9T8Thw/SWE30zy3hP4ob09ioWx0GfmPAYjNNVyy9q8}
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
-      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
       AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-authentik_secret}
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-changeme_in_production_please_1234567890}
-      AUTHENTIK_LOG_LEVEL: info
-      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
-    volumes:
-      - authentik_media:/media
-      - authentik_templates:/templates
-    depends_on:
-      authentik-postgres:
-        condition: service_healthy
-      authentik-redis:
-        condition: service_healthy
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-kpP01z2OB1CXUiCafNxe2qkLtLw3HNsQhP8hWsZ+WBU=}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    ports:
+      - "9000:9000"
+      - "9443:9443"
     networks:
       - brain-network
       - dokploy-network
@@ -65,43 +68,42 @@ services:
       - "traefik.http.routers.authentik.rule=Host(`sso.bizoholic.net`)"
       - "traefik.http.routers.authentik.entrypoints=websecure"
       - "traefik.http.routers.authentik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.authentik.priority=100"
       - "traefik.http.services.authentik.loadbalancer.server.port=9000"
-
-  authentik-worker:
-    image: ghcr.io/goauthentik/server:2025.10.3
-    container_name: authentik-worker
-    restart: unless-stopped
-    command: worker
-    environment:
-      AUTHENTIK_REDIS__HOST: authentik-redis
-      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
-      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
-      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
-      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-authentik_secret}
-      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-changeme_in_production_please_1234567890}
-      AUTHENTIK_LOG_LEVEL: info
-      AUTHENTIK_DISABLE_UPDATE_CHECK: "true"
-    volumes:
-      - authentik_media:/media
-      - authentik_templates:/templates
     depends_on:
       authentik-postgres:
         condition: service_healthy
       authentik-redis:
         condition: service_healthy
+
+  # Authentik Worker (Official Image)
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2024.2.0
+    container_name: authentik-worker
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:-jX5UPImO4/HltUxICe0f3hOv230NClcvm9kexW9T8Thw/SWE30zy3hP4ob09ioWx0GfmPAYjNNVyy9q8}
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgres
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_POSTGRES_DB:-authentik}
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_POSTGRES_PASSWORD:-kpP01z2OB1CXUiCafNxe2qkLtLw3HNsQhP8hWsZ+WBU=}
+      AUTHENTIK_REDIS__HOST: authentik-redis
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
     networks:
       - brain-network
-
-volumes:
-  authentik_postgres_data:
-  authentik_redis_data:
-  authentik_media:
-  authentik_templates:
-
+      - dokploy-network
+    depends_on:
+      authentik-postgres:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
 
 networks:
   brain-network:
     external: true
   dokploy-network:
     external: true
+
+volumes:
+  authentik-postgres-data:
+  authentik-redis-data:
