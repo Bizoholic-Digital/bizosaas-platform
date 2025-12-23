@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  brain-gateway:
+    image: bizosaas-brain-gateway:latest
+    build:
+      context: ./brain-gateway
+      dockerfile: Dockerfile
+    container_name: brain-gateway
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - TEMPORAL_HOST=bizosaas-temporal-server-staging:7233
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AUTH_URL=http://brain-auth:8007
+      - CMS_URL=http://bizosaas-cms:8000
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+
+  brain-auth:
+    image: bizosaas-auth-service:latest
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: brain-auth
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
+      - JWT_SECRET=BizOSaaS2025!JWTSecret
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-auth.rule=Host(`auth-api.bizoholic.net`)"
+      - "traefik.http.routers.brain-auth.entrypoints=websecure"
+      - "traefik.http.routers.brain-auth.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-auth.loadbalancer.server.port=8007"
+
+networks:
+  dokploy-network:
+    external: true

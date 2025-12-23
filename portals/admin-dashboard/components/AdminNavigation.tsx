@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useAuth } from '@/shared/components/AuthProvider';
 
 interface NavigationItem {
   name: string;
@@ -159,6 +160,7 @@ interface AdminNavigationProps {
 export function AdminNavigation({ children }: AdminNavigationProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
   // Hide sidebar/header on login and unauthorized pages
   if (pathname === '/login' || pathname === '/unauthorized') {
@@ -269,8 +271,10 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
               <Users className="w-4 h-4 text-gray-600" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-medium text-gray-900 dark:text-white">Super Admin</div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">Platform Owner</div>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Admin User'}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role?.replace('_', ' ') || 'Administrator'}</div>
+              </div>
             </div>
             <button className="p-1 rounded-md hover:bg-gray-100">
               <LogOut className="w-4 h-4 text-gray-500" />

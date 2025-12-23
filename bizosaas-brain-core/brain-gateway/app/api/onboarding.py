@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Dict
 from enum import Enum
 
-router = APIRouter(prefix="/api/brain/onboarding", tags=["onboarding"])
+router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 
 # --- Enums & Models ---
 
