@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { useAuth } from '@/shared/components/AuthProvider';
+import { useAuth } from '../shared/components/AuthProvider';
 
 interface NavigationItem {
   name: string;
