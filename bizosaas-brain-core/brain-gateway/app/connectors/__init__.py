@@ -17,6 +17,16 @@ from .woocommerce import WooCommerceConnector
 from .trello import TrelloConnector
 from .plane import PlaneConnector
 from .lago import LagoConnector
+from .google_business_profile import GoogleBusinessProfileConnector
+from .microsoft_ads import MicrosoftAdsConnector
+from .yelp import YelpConnector
+from .calendly import CalendlyConnector
+from .mailchimp import MailchimpConnector
+from .google_search_console import GoogleSearchConsoleConnector
+from .twilio import TwilioConnector
+from .gohighlevel import GoHighLevelConnector
+from .hubspot import HubSpotConnector
+from .tiktok_ads import TikTokAdsConnector
 
 __all__ = [
     "BaseConnector",
@@ -40,5 +50,15 @@ __all__ = [
     "WooCommerceConnector",
     "TrelloConnector",
     "PlaneConnector",
-    "LagoConnector"
+    "LagoConnector",
+    "GoogleBusinessProfileConnector",
+    "MicrosoftAdsConnector",
+    "YelpConnector",
+    "CalendlyConnector",
+    "MailchimpConnector",
+    "GoogleSearchConsoleConnector",
+    "TwilioConnector",
+    "GoHighLevelConnector",
+    "HubSpotConnector",
+    "TikTokAdsConnector"
 ]

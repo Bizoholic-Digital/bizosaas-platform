@@ -12,6 +12,16 @@ export function useTenants() {
     });
 }
 
+export function useUsers() {
+    return useQuery({
+        queryKey: ['users'],
+        queryFn: async () => {
+            const { data } = await apiClient.get('/api/admin/users');
+            return data;
+        },
+    });
+}
+
 export function useCreateTenant() {
     const queryClient = useQueryClient();
 
@@ -120,5 +130,29 @@ export function useAuditLogs(filters?: any) {
             });
             return data;
         },
+    });
+}
+
+// Platform Stats Hook
+export function usePlatformStats() {
+    return useQuery({
+        queryKey: ['platform-stats'],
+        queryFn: async () => {
+            const { data } = await apiClient.get('/api/admin/stats');
+            return data;
+        },
+        refetchInterval: 60000, // Refresh every minute
+    });
+}
+
+// API Analytics Hook
+export function useAPIAnalytics() {
+    return useQuery({
+        queryKey: ['api-analytics'],
+        queryFn: async () => {
+            const { data } = await apiClient.get('/api/admin/analytics');
+            return data;
+        },
+        refetchInterval: 10000, // Refresh every 10 seconds
     });
 }

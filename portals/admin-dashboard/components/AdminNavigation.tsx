@@ -39,23 +39,23 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  // Main Dashboard
+  // Platform Overview
   {
-    name: 'Dashboard',
+    name: 'Admin Overview',
     href: '/',
     icon: LayoutDashboard,
-    description: 'Platform overview and key metrics',
+    description: 'Platform status and global metrics',
     category: 'main'
   },
   {
-    name: 'Workflow Management',
-    href: '/workflows',
-    icon: Workflow,
-    description: 'AI workflows and automation control',
+    name: 'System Health',
+    href: '/system-health',
+    icon: Activity,
+    description: 'Infrastructure and performance monitoring',
     category: 'main'
   },
 
-  // Management
+  // Platform Management
   {
     name: 'Tenant Management',
     href: '/tenants',
@@ -64,44 +64,37 @@ const navigation: NavigationItem[] = [
     category: 'management'
   },
   {
-    name: 'User Management',
+    name: 'Global User Management',
     href: '/users',
     icon: Users,
     description: 'Platform-wide user administration',
     category: 'management'
   },
   {
-    name: 'Revenue Analytics',
-    href: '/revenue',
-    icon: DollarSign,
-    description: 'Financial metrics and subscription analytics',
-    category: 'management'
-  },
-  {
-    name: 'CMS Management',
+    name: 'Unified CMS',
     href: '/cms',
     icon: FileText,
     description: 'Global content management system',
     category: 'management'
   },
 
-  // Monitoring
+  // AI & Automation
   {
     name: 'AI Agent Monitor',
     href: '/ai-agents',
-    icon: Activity,
+    icon: Bot,
     description: 'Real-time AI agent execution tracking',
     category: 'monitoring'
   },
   {
-    name: 'System Health',
-    href: '/system-health',
-    icon: Database,
-    description: 'Infrastructure and performance monitoring',
+    name: 'Workflow Orchestration',
+    href: '/workflows',
+    icon: Workflow,
+    description: 'AI workflows and automation control',
     category: 'monitoring'
   },
   {
-    name: 'Integration Status',
+    name: 'Connectivity Hub',
     href: '/integrations',
     icon: Globe,
     description: 'Third-party integration monitoring',

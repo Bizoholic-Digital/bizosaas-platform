@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, auth
+from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, auth, admin
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -26,6 +26,31 @@ from app.seeds.connectors import seed_connectors
 
 @app.on_event("startup")
 async def startup_event():
+    # Vault Integration for API Keys
+    try:
+        import hvac
+        vault_addr = os.getenv('VAULT_ADDR')
+        vault_token = os.getenv('VAULT_TOKEN')
+        
+        if vault_addr and vault_token:
+            client = hvac.Client(url=vault_addr, token=vault_token)
+            if client.is_authenticated():
+                print("Connected to Vault for API keys")
+                secret = client.secrets.kv.v2.read_secret_version(path='platform/brain-gateway', mount_point='bizosaas')
+                data = secret['data']['data']
+                
+                if 'openai_api_key' in data:
+                    os.environ['OPENAI_API_KEY'] = data['openai_api_key']
+                if 'vector_db_url' in data:
+                    os.environ['VECTOR_DB_URL'] = data['vector_db_url']
+                
+                # Re-initialize RAG service with new env vars
+                from app.core import rag
+                rag.rag_service.__init__()
+                print("RAG Service re-initialized with Vault secrets")
+    except Exception as e:
+        print(f"Failed to fetch secrets from Vault: {e}")
+
     seed_connectors()
 
 app.include_router(connectors.router)
@@ -36,9 +61,12 @@ app.include_router(ecommerce.router, prefix="/api/ecommerce", tags=["ecommerce"]
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
 app.include_router(onboarding.router)
 app.include_router(auth.router)
+app.include_router(admin.router)
 
 from app.routers import oauth
+from app.api import rag
 app.include_router(oauth.router)
+app.include_router(rag.router)
 
 from strawberry.fastapi import GraphQLRouter
 from app.graphql.schema import schema
@@ -48,7 +76,7 @@ app.include_router(graphql_app, prefix="/graphql")
 # Configuration
 CMS_URL = os.getenv("CMS_URL", "http://cms:8002")
 CRM_URL = os.getenv("CRM_URL", "http://crm:8003")
-AUTH_URL = os.getenv("AUTH_URL", "http://localhost:8008")
+AUTH_URL = os.getenv("AUTH_URL", "http://auth-service:8006")
 SALEOR_URL = os.getenv("SALEOR_URL", "http://saleor:8000")
 
 
@@ -66,9 +94,51 @@ async def proxy_crm(request: Request, path: str):
     url = f"{CRM_URL}/api/{path}"
     return await proxy_request(request, url)
 
+@app.api_route("/api/brain/integrations/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_integrations(request: Request, path: str = ""):
+    """Proxy for frontend integrations calls"""
+    # Simply forward to the connectors router logic
+    url = f"http://localhost:8000/api/connectors/{path}"
+    return await proxy_request(request, url)
+
 @app.api_route("/api/brain/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_auth(request: Request, path: str):
     url = f"{AUTH_URL}/{path}"
+    return await proxy_request(request, url)
+
+@app.api_route("/api/brain/agents/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_agents(request: Request, path: str):
+    """
+    Proxy agents requests to the ai-agents service.
+    Handles /task, /chat, and general agent info lookups.
+    """
+    # If path ends with /task, it's a direct task execution
+    if path.endswith("/task"):
+        # Transfrom agent_id to agent_type for ai-agents compatibility
+        try:
+            body = await request.json()
+            if "agent_id" in body and "agent_type" not in body:
+                body["agent_type"] = body["agent_id"]
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "http://ai-agents:8000/tasks",
+                    json=body,
+                    headers={k: v for k, v in request.headers.items() if k.lower() not in ('content-length', 'host')},
+                    timeout=60.0
+                )
+                return JSONResponse(content=response.json(), status_code=response.status_code)
+        except Exception as e:
+            return JSONResponse(content={"error": f"Proxy transformation failed: {str(e)}"}, status_code=500)
+    
+    # Otherwise, map directly to ai-agents service
+    url = f"http://ai-agents:8000/{path}"
+    return await proxy_request(request, url)
+
+@app.api_route("/api/brain/tasks/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_tasks(request: Request, path: str):
+    # Mapping to ai-agents service tasks
+    url = f"http://ai-agents:8000/tasks/{path}"
     return await proxy_request(request, url)
 
 @app.post("/api/auth/login")

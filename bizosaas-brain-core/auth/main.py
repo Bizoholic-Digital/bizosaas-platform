@@ -1124,6 +1124,21 @@ async def get_my_tenant(
     """Get current user's tenant information"""
     return TenantRead.model_validate(user.tenant)
 
+@app.get("/auth/admin/counts", tags=["admin"])
+async def get_admin_counts(
+    session: AsyncSession = Depends(get_async_session),
+    admin_user: User = Depends(require_role(UserRole.SUPER_ADMIN))
+):
+    """Get platform-wide counts (Super Admin only)"""
+    tenant_count = await session.scalar(select(func.count()).select_from(Tenant))
+    user_count = await session.scalar(select(func.count()).select_from(User))
+    
+    return {
+        "total_tenants": tenant_count,
+        "total_users": user_count,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
 # Import standalone exchange router
 from auth_exchange import router as exchange_router, get_db_session
 

@@ -13,18 +13,6 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* DEBUG PANEL - REMOVE AFTER FIXING */}
-      <div className="bg-yellow-50 border-2 border-yellow-400 p-4 rounded-lg">
-        <h3 className="font-bold text-yellow-900 mb-2">🔍 DEBUG INFO</h3>
-        <pre className="text-xs bg-white p-2 rounded overflow-auto max-h-40">
-          {JSON.stringify({
-            status,
-            hasSession: !!session,
-            user: session?.user,
-            cookies: typeof document !== 'undefined' ? document.cookie : 'N/A'
-          }, null, 2)}
-        </pre>
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">

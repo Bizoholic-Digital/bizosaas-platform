@@ -1,35 +1,39 @@
 import httpx
-from typing import Dict, Any, Optional
+import os
+from typing import Dict, Any, List, Optional
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
-
 from .oauth_mixin import OAuthMixin
-import os
-import time
 
 @ConnectorRegistry.register
-class GoogleAdsConnector(BaseConnector, OAuthMixin):
+class GoogleSearchConsoleConnector(BaseConnector, OAuthMixin):
     @classmethod
     def get_config(cls) -> ConnectorConfig:
         return ConnectorConfig(
-            id="google-ads",
-            name="Google Ads",
-            type=ConnectorType.MARKETING,
-            description="Manage ad campaigns, track conversions, and optimize spend.",
-            icon="monitor",
-            version="2.0.0",
+            id="google-search-console",
+            name="Google Search Console",
+            type=ConnectorType.ANALYTICS,
+            description="Monitor your organic search performance, indexing status, and site health.",
+            icon="search",
+            version="1.0.0",
             auth_schema={
                 "access_token": {"type": "string", "label": "Access Token", "format": "password"},
                 "refresh_token": {"type": "string", "label": "Refresh Token", "format": "password"},
-                "customer_id": {"type": "string", "label": "Customer ID (Manager)", "placeholder": "123-456-7890"},
-                "client_customer_id": {"type": "string", "label": "Client Customer ID", "placeholder": "123-456-7890"},
-                "developer_token": {"type": "string", "label": "Developer Token", "format": "password"}
+                "site_url": {"type": "string", "label": "Site URL", "placeholder": "https://example.com"}
             }
         )
 
+    def _get_base_url(self) -> str:
+        return "https://www.googleapis.com/webmasters/v3"
+
     async def get_auth_url(self, redirect_uri: str, state: str) -> str:
         client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
-        scopes = ["https://www.googleapis.com/auth/adwords", "openid", "email", "profile"]
+        scopes = [
+            "https://www.googleapis.com/auth/webmasters.readonly",
+            "openid",
+            "email",
+            "profile"
+        ]
         scope_str = "%20".join(scopes)
         return (
             f"https://accounts.google.com/o/oauth2/v2/auth?"
@@ -71,25 +75,15 @@ class GoogleAdsConnector(BaseConnector, OAuthMixin):
             response.raise_for_status()
             return response.json()
 
-    def _get_api_url(self) -> str:
-        return "https://googleads.googleapis.com/v14/customers"
-
     async def validate_credentials(self) -> bool:
         token = self.credentials.get("access_token")
-        dev_token = self.credentials.get("developer_token")
-        customer_id = self.credentials.get("customer_id")
-        
-        if not (token and dev_token and customer_id):
+        if not token:
             return False
             
         async with httpx.AsyncClient() as client:
-            headers = {
-                "Authorization": f"Bearer {token}",
-                "developer-token": dev_token,
-                "login-customer-id": customer_id.replace("-", "")
-            }
-            # Simple ping to list accessible customers
-            response = await client.get("https://googleads.googleapis.com/v14/customers:listAccessibleCustomers", headers=headers)
+            headers = {"Authorization": f"Bearer {token}"}
+            # Test by listing sites
+            response = await client.get(f"{self._get_base_url()}/sites", headers=headers)
             return response.status_code == 200
 
     async def get_status(self) -> ConnectorStatus:
@@ -99,32 +93,44 @@ class GoogleAdsConnector(BaseConnector, OAuthMixin):
 
     async def sync_data(self, resource_type: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Sync data from Google Ads API.
-        Supported resource_types: 'campaigns', 'performance'
+        Sync data from Google Search Console API.
+        Supported resource_types: 'performance', 'sites', 'sitemaps'
         """
         token = self.credentials.get("access_token")
-        dev_token = self.credentials.get("developer_token")
-        customer_id = self.credentials.get("client_customer_id") or self.credentials.get("customer_id")
-        customer_id = customer_id.replace("-", "")
-        
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "developer-token": dev_token,
-            "login-customer-id": self.credentials.get("customer_id", "").replace("-", "")
-        }
+        headers = {"Authorization": f"Bearer {token}"}
         
         async with httpx.AsyncClient() as client:
-            if resource_type == "campaigns":
-                query = "SELECT campaign.id, campaign.name, campaign.status FROM campaign"
-                url = f"{self._get_api_url()}/{customer_id}/googleAds:search"
-                response = await client.post(url, headers=headers, json={"query": query})
+            if resource_type == "sites":
+                response = await client.get(f"{self._get_base_url()}/sites", headers=headers)
                 response.raise_for_status()
                 return response.json()
             
             elif resource_type == "performance":
-                query = "SELECT metrics.clicks, metrics.impressions, metrics.cost_micros FROM campaign"
-                url = f"{self._get_api_url()}/{customer_id}/googleAds:search"
-                response = await client.post(url, headers=headers, json={"query": query})
+                site_url = self.credentials.get("site_url")
+                if not site_url:
+                     return {"error": "site_url is required for performance data"}
+                
+                # Performance query requires POST
+                url = f"{self._get_base_url()}/sites/{site_url.replace('/', '%2F')}/searchAnalytics/query"
+                response = await client.post(
+                    url, 
+                    headers=headers,
+                    json={
+                        "startDate": params.get("startDate", "30daysAgo") if params else "30daysAgo",
+                        "endDate": params.get("endDate", "yesterday") if params else "yesterday",
+                        "dimensions": params.get("dimensions", ["query", "page"]) if params else ["query", "page"]
+                    }
+                )
+                response.raise_for_status()
+                return response.json()
+            
+            elif resource_type == "sitemaps":
+                site_url = self.credentials.get("site_url")
+                if not site_url:
+                     return {"error": "site_url is required for sitemaps"}
+                     
+                url = f"{self._get_base_url()}/sites/{site_url.replace('/', '%2F')}/sitemaps"
+                response = await client.get(url, headers=headers)
                 response.raise_for_status()
                 return response.json()
 

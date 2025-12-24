@@ -81,6 +81,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include Chat API
+if CHAT_API_AVAILABLE:
+    app.mount("/chat", chat_app, name="chat")
+
 # Global variables
 event_bus: EventBus = None
 redis_client = None
@@ -98,6 +102,7 @@ class AgentType(str, Enum):
     ANALYTICS_SPECIALIST = "analytics_specialist"
     SEO_SPECIALIST = "seo_specialist"
     DIGITAL_AUDITOR = "digital_auditor"
+    PERSONAL_ASSISTANT = "personal_assistant"
     ECOMMERCE_SPECIALIST = "ecommerce_specialist"
     SELF_MARKETING = "self_marketing"
     EMAIL_MARKETING_SPECIALIST = "email_marketing_specialist"

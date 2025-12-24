@@ -11,13 +11,15 @@ services:
       - NEXT_PUBLIC_SUPERSET_URL=http://bizosaas-superset-staging:8088
       - NEXT_PUBLIC_TEMPORAL_UI_URL=http://bizosaas-temporal-ui-staging:8080
       - NEXT_TELEMETRY_DISABLED=1
-      - AUTH_SERVICE_URL=https://api.bizoholic.net
+      - AUTH_SERVICE_URL=http://auth-service:8006
       # NextAuth & Authentik SSO Configuration
       - NEXTAUTH_URL=https://admin.bizoholic.net
-      - NEXTAUTH_SECRET=vc+i1safx5PvOaK9gc6PYLwetF4UFFWX/exE+OtzNP0=
-      - AUTHENTIK_ISSUER=https://sso.bizoholic.net/application/o/bizosaas/
-      - AUTHENTIK_CLIENT_ID=Mcaa10L1T1x9LC7uuhRxEzNqnyqUDbp0Nt8rIjT9
-      - AUTHENTIK_CLIENT_SECRET=rMFQhvLUg48taXrMR4je6Iolc0uHUM0PxhkvmAL378GaCAcxn9Qv2J3AGr3deTpdBS8LzhQhx3CgajptozFw01jmFNRwX0x3L8xx5y1yUrDJbcLJhV3cvmCPyDMk6ATQ
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-}
+      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas/}
+      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID:-Mcaa10L1T1x9LC7uuhRxEzNqnyqUDbp0Nt8rIjT9}
+      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET:-}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
     networks:
       - dokploy-network
     restart: unless-stopped

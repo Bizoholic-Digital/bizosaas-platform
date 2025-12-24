@@ -1,24 +1,28 @@
 'use client';
 
 import React from 'react';
-import { 
-  Users, 
-  Building2, 
-  Activity, 
-  DollarSign, 
-  TrendingUp, 
+import {
+  Users,
+  Building2,
+  Activity,
+  DollarSign,
+  TrendingUp,
   AlertTriangle,
   CheckCircle,
   Clock,
-  Server
+  Server,
+  Loader2
 } from 'lucide-react';
 import { PlatformBranding } from '@/components/ui/platform-branding';
+import { usePlatformStats } from '@/lib/hooks/use-api';
 
 export default function AdminDashboard() {
+  const { data: stats, isLoading, error } = usePlatformStats();
+
   const metrics = [
     {
       title: 'Total Tenants',
-      value: '247',
+      value: isLoading ? '...' : stats?.tenants?.total?.toLocaleString() || '0',
       change: '+12%',
       changeType: 'positive' as const,
       icon: Building2,
@@ -26,24 +30,16 @@ export default function AdminDashboard() {
     },
     {
       title: 'Total Users',
-      value: '8,429',
+      value: isLoading ? '...' : stats?.users?.total?.toLocaleString() || '0',
       change: '+18%',
       changeType: 'positive' as const,
       icon: Users,
       description: 'Registered platform users'
     },
     {
-      title: 'Monthly Revenue',
-      value: '$127,543',
-      change: '+23%',
-      changeType: 'positive' as const,
-      icon: DollarSign,
-      description: 'Recurring monthly revenue'
-    },
-    {
       title: 'System Health',
-      value: '99.8%',
-      change: '+0.2%',
+      value: isLoading ? '...' : '99.9%', // Mock health status for now
+      change: '+0.1%',
       changeType: 'positive' as const,
       icon: Activity,
       description: 'Platform uptime'
@@ -66,13 +62,6 @@ export default function AdminDashboard() {
       status: 'warning'
     },
     {
-      id: 3,
-      type: 'payment_received',
-      message: 'Payment received from TechStart LLC',
-      timestamp: '1 hour ago',
-      status: 'success'
-    },
-    {
       id: 4,
       type: 'user_suspended',
       message: 'User account suspended for policy violation',
@@ -89,12 +78,12 @@ export default function AdminDashboard() {
   ];
 
   const systemStats = [
-    { label: 'CPU Usage', value: '32%', status: 'normal' },
-    { label: 'Memory Usage', value: '68%', status: 'normal' },
-    { label: 'Disk Usage', value: '45%', status: 'normal' },
+    { label: 'CPU Usage', value: isLoading ? '...' : `${stats?.system?.cpu_usage || 0}%`, status: (stats?.system?.cpu_usage || 0) > 80 ? 'warning' : 'normal' },
+    { label: 'Memory Usage', value: isLoading ? '...' : `${stats?.system?.memory_usage || 0}%`, status: (stats?.system?.memory_usage || 0) > 80 ? 'warning' : 'normal' },
+    { label: 'Platform Uptime', value: isLoading ? '...' : `${Math.floor((stats?.system?.uptime_seconds || 0) / 3600)}h ${Math.floor(((stats?.system?.uptime_seconds || 0) % 3600) / 60)}m`, status: 'normal' },
     { label: 'API Requests/min', value: '2,847', status: 'normal' },
     { label: 'Active Sessions', value: '1,234', status: 'normal' },
-    { label: 'Database Connections', value: '87/100', status: 'normal' }
+    { label: 'Database Status', value: 'Healthy', status: 'normal' }
   ];
 
   const getActivityIcon = (type: string) => {
@@ -103,8 +92,6 @@ export default function AdminDashboard() {
         return <Building2 className="w-4 h-4" />;
       case 'system_alert':
         return <AlertTriangle className="w-4 h-4" />;
-      case 'payment_received':
-        return <DollarSign className="w-4 h-4" />;
       case 'user_suspended':
         return <Users className="w-4 h-4" />;
       case 'agent_deployed':
@@ -148,6 +135,13 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <main className="p-6">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center text-red-700">
+            <AlertTriangle className="w-5 h-5 mr-3" />
+            <p className="text-sm font-medium">Failed to load platform statistics. Please ensure the Brain Gateway is accessible.</p>
+          </div>
+        )}
+
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {metrics.map((metric, index) => (
@@ -157,20 +151,22 @@ export default function AdminDashboard() {
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                     {metric.title}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {metric.value}
-                  </p>
+                  <div className="flex items-center">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white mr-2">
+                      {metric.value}
+                    </p>
+                    {isLoading && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+                  </div>
                   <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                     {metric.description}
                   </p>
                 </div>
                 <div className="flex flex-col items-end">
                   <metric.icon className="w-8 h-8 text-blue-600 mb-2" />
-                  <span className={`text-sm font-medium ${
-                    metric.changeType === 'positive' 
-                      ? 'text-green-600 dark:text-green-400' 
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
+                  <span className={`text-sm font-medium ${metric.changeType === 'positive'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                    }`}>
                     {metric.change}
                   </span>
                 </div>
@@ -222,7 +218,11 @@ export default function AdminDashboard() {
                       <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {stat.value}
                       </span>
-                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      {stat.status === 'normal' ? (
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                      )}
                     </div>
                   </div>
                 ))}

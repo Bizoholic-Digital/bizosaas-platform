@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Lock, Mail, Shield, Zap, Layout, Server, Gauge } from 'lucide-react';
+import { Lock, Mail, Shield, Zap, Layout, Server, Gauge, Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,7 +34,8 @@ function AdminLoginFormContent() {
             });
 
             if (result?.error) {
-                setError('Invalid admin credentials. Please check your email and password.');
+                console.error("Admin Login Error:", result.error);
+                setError(`Login failed: ${result.error === 'CredentialsSignin' ? 'Invalid admin credentials' : result.error}`);
             } else if (result?.ok) {
                 window.location.href = callbackUrl;
             } else {
@@ -72,16 +73,27 @@ function AdminLoginFormContent() {
                 </CardHeader>
 
                 <CardContent className="space-y-6">
-                    {/* SSO Options */}
-                    <Button
-                        variant="outline"
-                        onClick={handleSSOLogin}
-                        disabled={isLoading}
-                        className="w-full h-12 border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 transition-all flex items-center justify-center gap-3"
-                    >
-                        <Zap className="h-5 w-5 text-amber-500" />
-                        <span className="font-medium">Sign in with SSO</span>
-                    </Button>
+                    {/* Social SSO Options */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => signIn('google', { callbackUrl })}
+                            disabled={isLoading}
+                            className="h-12 border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Chrome className="h-5 w-5 text-red-500" />
+                            <span className="font-medium">Google</span>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={handleSSOLogin}
+                            disabled={isLoading}
+                            className="h-12 border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Shield className="h-5 w-5 text-blue-500" />
+                            <span className="font-medium">BizOSaaS SSO</span>
+                        </Button>
+                    </div>
 
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -105,7 +117,7 @@ function AdminLoginFormContent() {
                                     type="email"
                                     placeholder="admin@bizoholic.com"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                                     className="pl-10 h-11"
                                     required
                                     disabled={isLoading}
@@ -122,7 +134,7 @@ function AdminLoginFormContent() {
                                     type="password"
                                     placeholder="Enter your password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                                     className="pl-10 h-11"
                                     required
                                     disabled={isLoading}
