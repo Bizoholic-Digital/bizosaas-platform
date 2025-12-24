@@ -12,7 +12,7 @@ services:
         NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
         NEXTAUTH_URL: https://admin.bizoholic.net
         NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:latest
+    image: ghcr.io/bizoholic-digital/bizosaas-admin-dashboard:staging
     container_name: bizosaas-admin-dashboard
     restart: unless-stopped
     ports:
