@@ -6,7 +6,8 @@ python-dotenv==1.0.1
 prometheus-fastapi-instrumentator==6.1.0
 strawberry-graphql[fastapi]==0.219.0
 temporalio==1.4.0
-passlib[bcrypt]==1.7.4
+passlib[argon2]==1.7.4
+argon2-cffi==23.1.0
 sqlalchemy==2.0.25
 psycopg2-binary==2.9.9
 email-validator==2.1.0.post1
