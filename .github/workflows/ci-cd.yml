@@ -389,12 +389,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}-v2
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
           tags: |
             type=ref,event=branch
-            type=sha
+            type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
+            type=raw,value=staging-{{sha}},enable=${{ github.ref == 'refs/heads/staging' }}
 
       - name: Determine Context & Dockerfile
         id: context
@@ -421,6 +421,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
+          outputs: type=image,push=true,compression=gzip
 
   # Deploy to Staging
   deploy-staging:
