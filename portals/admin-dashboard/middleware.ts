@@ -2,9 +2,10 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-    function middleware(req: any) {
+    function middleware(req: any) { // Request type can be complex, staying with any for now but adding token check
         const { pathname } = req.nextUrl;
-        const token = req.nextauth.token;
+        const nextauth = (req as any).nextauth;
+        const token = nextauth?.token;
 
         // Check authorization - require admin role
         const roles = (token?.roles as string[]) || [];

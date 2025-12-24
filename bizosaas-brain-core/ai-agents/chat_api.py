@@ -25,6 +25,7 @@ from agents.ecommerce_agents import EcommerceAgent, ProductSourcingAgent, PriceO
 from agents.analytics_agents import DigitalPresenceAuditAgent, PerformanceAnalyticsAgent, PredictiveAnalyticsAgent, ROIAnalysisAgent
 from agents.operations_agents import CustomerSupportAgent, ProcessAutomationAgent, QualityAssuranceAgent, IncidentManagementAgent
 from agents.crm_agents import LeadScoringAgent, SalesAssistantAgent, CustomerSegmentationAgent, ContactIntelligenceAgent
+from agents.personal_assistant_agent import PersonalAssistantAgent
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +163,8 @@ class AgentRegistry:
             *ecommerce_agents, 
             *analytics_agents,
             *operations_agents,
-            *crm_agents
+            *crm_agents,
+            ("personal_assistant", PersonalAssistantAgent, "BizOSaas Assistant", "Your personal AI guide for the platform", ["orchestration", "support", "audit"], "Instant", "🤖", "#6C5CE7"),
         ]
         
         for config in all_agent_configs:
@@ -378,8 +380,8 @@ class ChatManager:
             if any(keyword in message_lower for keyword in keywords):
                 return agent_name
         
-        # Default to customer support for general queries
-        return "customer_support"
+        # Default to personal assistant for all general queries
+        return "personal_assistant"
 
 # Initialize global instances
 agent_registry = AgentRegistry()

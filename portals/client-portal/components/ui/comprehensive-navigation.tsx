@@ -12,7 +12,7 @@ import {
   BookOpen, Image, Video, Newspaper, Tag, Filter,
   PieChart, Activity, LineChart, TrendingDown, AlertCircle,
   ChevronDown, ChevronRight, Menu, X, RefreshCw, Bot,
-  CheckSquare, ListChecks, FolderKanban
+  CheckSquare, ListChecks, FolderKanban, Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -71,42 +71,51 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
   const navigationItems: NavigationItem[] = [
     {
       id: 'dashboard',
-      name: 'Dashboard',
+      name: 'Business Overview',
       href: '/dashboard',
       icon: <Home className="w-5 h-5" />,
       active: pathname === '/dashboard' || pathname === '/'
     },
     {
-      id: 'connectors',
-      name: 'Connectors',
-      href: '/dashboard/connectors',
-      icon: <Zap className="w-5 h-5" />,
-      active: pathname.startsWith('/dashboard/connectors')
+      id: 'ai-assistant',
+      name: 'Personal AI Assistant',
+      href: '/dashboard/ai-assistant',
+      icon: <Sparkles className="w-5 h-5 text-indigo-500" />,
+      badge: 'AI',
+      active: pathname === '/dashboard/ai-assistant'
+    },
+    {
+      id: 'agent-studio',
+      name: 'Agent Studio',
+      href: '/ai-agents',
+      icon: <Bot className="w-5 h-5" />,
+      badge: 'NEW',
+      active: pathname.startsWith('/ai-agents')
     },
     {
       id: 'crm',
-      name: 'CRM Management',
+      name: 'CRM & Growth',
       href: '/crm',
       icon: <Users className="w-5 h-5" />,
       active: pathname.startsWith('/crm'),
       subItems: [
         {
           id: 'crm-contacts',
-          name: 'Contacts',
+          name: 'Lead Management',
           href: '/crm/contacts',
           icon: <Users className="w-4 h-4" />,
           active: pathname === '/crm/contacts'
         },
         {
           id: 'crm-campaigns',
-          name: 'Campaigns',
+          name: 'Marketing Campaigns',
           href: '/crm/campaigns',
           icon: <Target className="w-4 h-4" />,
           active: pathname === '/crm/campaigns'
         },
         {
           id: 'crm-reports',
-          name: 'Reports',
+          name: 'Performance Reports',
           href: '/crm/reports',
           icon: <BarChart3 className="w-4 h-4" />,
           active: pathname === '/crm/reports'
@@ -115,100 +124,46 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
     },
     {
       id: 'content',
-      name: 'Content Management',
+      name: 'Content & CMS',
       href: '/content',
       icon: <FileText className="w-5 h-5" />,
       active: pathname.startsWith('/content'),
-      subItems: [
-        {
-          id: 'content-pages',
-          name: 'Pages',
-          href: '/content/pages',
-          icon: <FileText className="w-4 h-4" />,
-          active: pathname === '/content/pages'
-        },
-        {
-          id: 'content-blog',
-          name: 'Blog Posts',
-          href: '/content/blog',
-          icon: <Newspaper className="w-4 h-4" />,
-          active: pathname === '/content/blog'
-        },
-        {
-          id: 'content-forms',
-          name: 'Forms',
-          href: '/content/forms',
-          icon: <MessageSquare className="w-4 h-4" />,
-          active: pathname === '/content/forms'
-        }
-      ]
     },
     {
       id: 'ecommerce',
-      name: 'E-commerce',
+      name: 'E-commerce Shop',
       href: '/ecommerce',
       icon: <ShoppingCart className="w-5 h-5" />,
       active: pathname.startsWith('/ecommerce')
     },
     {
-      id: 'tools',
-      name: 'Tools',
-      href: '/dashboard/tools',
-      icon: <Bot className="w-5 h-5" />,
-      active: pathname.startsWith('/dashboard/tools')
-    },
-    {
-      id: 'settings',
-      name: 'Settings',
-      href: '/settings',
-      icon: <Settings className="w-5 h-5" />,
-      active: pathname.startsWith('/settings')
-    },
-    {
       id: 'analytics',
-      name: 'Analytics',
+      name: 'Business Intelligence',
       href: '/analytics',
       icon: <BarChart3 className="w-5 h-5" />,
       active: pathname.startsWith('/analytics')
     },
     {
-      id: 'ai-agents',
-      name: 'AI Agents',
-      href: '/ai-agents',
-      icon: <Brain className="w-5 h-5" />,
-      badge: '93',
-      active: pathname.startsWith('/ai-agents'),
-      show: isAdmin
-    },
-    {
       id: 'tasks',
-      name: 'Tasks & Projects',
+      name: 'Projects & Tasks',
       href: '/tasks',
       icon: <CheckSquare className="w-5 h-5" />,
       active: pathname.startsWith('/tasks'),
-      subItems: [
-        {
-          id: 'tasks-my-tasks',
-          name: 'My Tasks',
-          href: '/tasks/my-tasks',
-          icon: <ListChecks className="w-4 h-4" />,
-          active: pathname === '/tasks/my-tasks'
-        },
-        {
-          id: 'tasks-projects',
-          name: 'Projects',
-          href: '/tasks/projects',
-          icon: <FolderKanban className="w-4 h-4" />,
-          active: pathname === '/tasks/projects'
-        },
-        {
-          id: 'tasks-calendar',
-          name: 'Calendar',
-          href: '/tasks/calendar',
-          icon: <Calendar className="w-4 h-4" />,
-          active: pathname === '/tasks/calendar'
-        }
-      ]
+    },
+    {
+      id: 'settings',
+      name: 'Portal Settings',
+      href: '/settings',
+      icon: <Settings className="w-5 h-5" />,
+      active: pathname.startsWith('/settings')
+    },
+    {
+      id: 'admin-dash',
+      name: 'Platform Admin',
+      href: 'https://admin.bizoholic.net',
+      icon: <Shield className="w-5 h-5" />,
+      active: false,
+      show: isAdmin
     }
   ];
 

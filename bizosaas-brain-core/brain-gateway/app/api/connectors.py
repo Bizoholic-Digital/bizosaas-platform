@@ -112,22 +112,35 @@ async def validate_connector(
     
     return {"valid": is_valid}
 
-@router.get("/{connector_id}/status")
-async def get_connector_status(
+@router.post("/{connector_id}/action/{action}")
+async def perform_connector_action(
     connector_id: str,
+    action: str,
+    payload: Dict[str, Any] = Body(...),
     user: AuthenticatedUser = Depends(get_current_user)
 ):
-    """Get connection status"""
+    """Execute an action on a connector"""
     tenant_id = user.tenant_id or "default_tenant"
     key = f"{tenant_id}:{connector_id}"
     
     if key not in active_connectors:
-        return {"status": ConnectorStatus.DISCONNECTED}
+        raise HTTPException(status_code=404, detail="Connector not connected")
         
     data = active_connectors[key]
     connector = ConnectorRegistry.create_connector(connector_id, tenant_id, data["credentials"])
-    status = await connector.get_status()
-    return {"status": status}
+    
+    try:
+        result = await connector.perform_action(action, payload)
+        
+        # If the action updated the credentials (like link_property), save them
+        # (Note: In a real DB, connector.credentials would be persisted)
+        if result.get("status") == "success":
+             active_connectors[key]["credentials"] = connector.credentials
+             
+        return result
+    except Exception as e:
+        logger.error(f"Action {action} failed for {connector_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{connector_id}/sync/{resource}")
 async def sync_resource(
@@ -150,3 +163,12 @@ async def sync_resource(
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{connector_id}/discover/{resource}")
+async def discover_resources(
+    connector_id: str,
+    resource: str,
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Alias for sync_data to discover resources like properties or accounts"""
+    return await sync_resource(connector_id, resource, user)

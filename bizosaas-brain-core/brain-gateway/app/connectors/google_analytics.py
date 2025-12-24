@@ -23,22 +23,32 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
         )
 
     async def _get_access_token(self) -> str:
-        # NOTE: In a production environment, we would use the google-auth library 
-        # to sign the JWT and exchange it for an access token.
-        # For this prototype/MVP, we will assume the user might provide a pre-generated 
-        # access token in the credentials for simplicity, OR we'd implement the full 
-        # JWT flow.
+        """
+        Retrieves a valid access token. 
+        If a refresh_token is present, it will attempt to refresh the access token.
+        """
+        # If we have a valid access_token, use it
+        if self.credentials.get("access_token") and not self.credentials.get("expires_at"):
+             # Simple case: token provided but no expiry info
+             return self.credentials.get("access_token")
+
+        # If we have a refresh_token, try to refresh
+        if self.credentials.get("refresh_token"):
+            try:
+                token_data = await self.refresh_token(self.credentials.get("refresh_token"))
+                # Update credentials for this instance
+                self.credentials["access_token"] = token_data.get("access_token")
+                # Update secure storage would happen here in a real scenario
+                return self.credentials["access_token"]
+            except Exception as e:
+                self.logger.error(f"Failed to refresh Google access token: {e}")
         
-        # To keep dependencies minimal and avoid complex crypto in this snippet,
-        # we'll assume an 'access_token' is provided in credentials for the MVP test,
-        # or mock the behavior if not present but 'mock_mode' is on.
-        
-        if self.credentials.get("access_token"):
-            return self.credentials.get("access_token")
-            
-        # TODO: Implement full Service Account JWT flow using google-auth or pyjwt
-        # For now, raise error if no token
-        raise NotImplementedError("Full Service Account auth flow requires 'google-auth' package. Please provide a temporary 'access_token' in credentials for testing.")
+        # Fallback to Service Account if property_id and keys are present
+        if self.credentials.get("client_email") and self.credentials.get("private_key"):
+            # TODO: Implement full Service Account JWT flow
+            raise NotImplementedError("Service Account JWT flow not fully implemented. Please use OAuth.")
+
+        raise ValueError("No valid access_token or refresh_token found in credentials.")
 
     async def validate_credentials(self) -> bool:
         try:
@@ -65,9 +75,26 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
 
     async def sync_data(self, resource_type: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Fetch reports from GA4.
-        resource_type: 'basic_report'
+        Fetch reports or metadata from GA4.
+        resource_type: 'basic_report', 'properties', 'accounts'
         """
+        token = await self._get_access_token()
+        
+        if resource_type == 'properties':
+            url = "https://analyticsadmin.googleapis.com/v1beta/properties"
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+                resp.raise_for_status()
+                return resp.json()
+
+        if resource_type == 'accounts':
+            url = "https://analyticsadmin.googleapis.com/v1alpha/accountSummaries"
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+                resp.raise_for_status()
+                return resp.json()
+
+        # GA4 Report
         property_id = self.credentials.get("property_id")
         url = f"https://analyticsdata.googleapis.com/v1beta/properties/{property_id}:runReport"
         
@@ -98,12 +125,60 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
             raise
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        raise NotImplementedError("Google Analytics connector is read-only")
+        """
+        Execute actions on Google Analytics.
+        action: 'link_property'
+        """
+        if action == "link_property":
+            property_id = payload.get("property_id")
+            if not property_id:
+                raise ValueError("property_id is required for link_property action")
+            
+            # Update credentials
+            self.credentials["property_id"] = property_id
+            return {
+                "status": "success",
+                "message": f"Successfully linked property {property_id}",
+                "property_id": property_id
+            }
+
+        if action == "auto_link" or action == "sync_and_link":
+            # 1. Discover properties
+            data = await self.sync_data("properties")
+            properties = data.get("properties", [])
+            
+            if not properties:
+                return {"status": "error", "message": "No Google Analytics 4 properties found."}
+                
+            property_id = None
+            if len(properties) == 1:
+                property_id = properties[0]["name"].split("/")[-1]
+                self.credentials["property_id"] = property_id
+                
+                # If sync_and_link, perform an initial sync
+                sync_result = {}
+                if action == "sync_and_link":
+                    sync_result = await self.sync_data("basic_report")
+                
+                return {
+                    "status": "success",
+                    "auto": True,
+                    "message": f"Automatically linked and synced property: {properties[0].get('displayName')}",
+                    "property_id": property_id,
+                    "initial_sync": sync_result
+                }
+            
+            return {
+                "status": "multiple_found",
+                "message": "Multiple properties found. Please select one manually.",
+                "properties": properties
+            }
+            
+        raise NotImplementedError(f"Action {action} not implemented for Google Analytics")
 
     # OAuthMixin Implementation
     async def get_auth_url(self, redirect_uri: str, state: str) -> str:
-        # TODO: Load from env or secure vault
-        client_id = "YOUR_GOOGLE_CLIENT_ID"
+        client_id = os.getenv("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID")
         scope = "https://www.googleapis.com/auth/analytics.readonly"
         return (
             f"https://accounts.google.com/o/oauth2/v2/auth?"
@@ -120,8 +195,8 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
         url = "https://oauth2.googleapis.com/token"
         data = {
             "code": code,
-            "client_id": "YOUR_GOOGLE_CLIENT_ID", # TODO: Load from env
-            "client_secret": "YOUR_GOOGLE_CLIENT_SECRET", # TODO: Load from env
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code"
         }
@@ -134,8 +209,8 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
         url = "https://oauth2.googleapis.com/token"
         data = {
             "refresh_token": refresh_token,
-            "client_id": "YOUR_GOOGLE_CLIENT_ID", # TODO: Load from env
-            "client_secret": "YOUR_GOOGLE_CLIENT_SECRET", # TODO: Load from env
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
             "grant_type": "refresh_token"
         }
         async with httpx.AsyncClient() as client:

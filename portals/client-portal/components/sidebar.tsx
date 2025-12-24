@@ -39,7 +39,6 @@ export function Sidebar() {
             badge: '93'
         }] : []),
         { name: 'Integrations', href: '/dashboard/integrations', icon: Blocks },
-        { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
         { name: 'Team', href: '/dashboard/team', icon: Users },
         { name: 'Support', href: '/dashboard/support', icon: HelpCircle },
         { name: 'Settings', href: '/dashboard/settings', icon: Settings },

@@ -137,6 +137,36 @@ services:
       redis:
         condition: service_healthy
 
+  ai-agents:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
+    build:
+      context: ./ai-agents
+      dockerfile: Dockerfile
+    container_name: brain-ai-agents
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - REDIS_URL=redis://redis:6379/1
+      - BRAIN_GATEWAY_URL=http://brain-gateway:8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+    networks:
+      - brain-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+
   auth-service:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     container_name: brain-auth

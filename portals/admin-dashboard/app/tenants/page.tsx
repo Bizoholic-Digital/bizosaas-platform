@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Building2,
   Search,
@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Users,
   DollarSign,
-  Activity
+  Activity,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,68 +32,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTenants, usePlatformStats } from '@/lib/hooks/use-api';
 
 interface Tenant {
   id: string;
   name: string;
-  domain: string;
-  status: 'active' | 'suspended' | 'trial' | 'pending';
-  plan: string;
-  users_count: number;
+  slug: string;
+  domain: string | null;
+  status: string;
+  subscription_plan: string | null;
+  max_users: number;
   created_at: string;
-  last_activity: string;
-  revenue: number;
-  ai_agents_count: number;
-}
-
-interface TenantStats {
-  total_count: number;
-  active_count: number;
-  trial_count: number;
-  suspended_count: number;
-  total_revenue: number;
-  total_users: number;
-  growth_rate: number;
-  churn_rate: number;
 }
 
 export default function TenantsPage() {
-  const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [stats, setStats] = useState<TenantStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: tenants, isLoading: tenantsLoading } = useTenants();
+  const { data: stats } = usePlatformStats();
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    fetchTenants();
-  }, []);
-
-  const fetchTenants = async () => {
-    try {
-      const response = await fetch('/api/tenants');
-      const data = await response.json();
-      if (data.tenants) {
-        setTenants(data.tenants);
-        setStats({
-          total_count: data.total_count,
-          active_count: data.active_count,
-          trial_count: data.trial_count,
-          suspended_count: data.suspended_count,
-          total_revenue: data.total_revenue,
-          total_users: data.total_users,
-          growth_rate: data.growth_rate,
-          churn_rate: data.churn_rate
-        });
-      }
-    } catch (error) {
-      console.error('Failed to fetch tenants:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredTenants = tenants.filter(tenant =>
+  const filteredTenants = (tenants as Tenant[] || []).filter(tenant =>
     tenant.name.toLowerCase().includes(search.toLowerCase()) ||
-    tenant.domain.toLowerCase().includes(search.toLowerCase())
+    (tenant.domain?.toLowerCase().includes(search.toLowerCase()) || false) ||
+    tenant.slug.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -108,41 +69,38 @@ export default function TenantsPage() {
       </div>
 
       {/* Stats Cards */}
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tenants</div>
-              <Building2 className="h-4 w-4 text-gray-500" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_count}</div>
-            <p className="text-xs text-green-500 flex items-center mt-1">
-              <Activity className="h-3 w-3 mr-1" /> +{stats.growth_rate}% from last month
-            </p>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tenants</div>
+            <Building2 className="h-4 w-4 text-gray-500" />
           </div>
-          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Active Subscriptions</div>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.active_count}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            {stats?.tenants?.total || 0}
           </div>
-          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</div>
-              <Users className="h-4 w-4 text-blue-500" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_users.toLocaleString()}</div>
+          <p className="text-xs text-green-500 flex items-center mt-1">
+            <Activity className="h-3 w-3 mr-1" /> Platform Growth Active
+          </p>
+        </div>
+        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</div>
+            <Users className="h-4 w-4 text-blue-500" />
           </div>
-          <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Monthly Revenue</div>
-              <DollarSign className="h-4 w-4 text-green-500" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">${stats.total_revenue.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            {stats?.users?.total?.toLocaleString() || 0}
           </div>
         </div>
-      )}
+        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-gray-500 dark:text-gray-400">System CPU</div>
+            <Activity className="h-4 w-4 text-green-500" />
+          </div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            {stats?.system?.cpu_usage || 0}%
+          </div>
+        </div>
+      </div>
 
       {/* Filters and Table */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
@@ -168,32 +126,36 @@ export default function TenantsPage() {
               <TableHead>Tenant Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Plan</TableHead>
-              <TableHead>Users</TableHead>
-              <TableHead>AI Agents</TableHead>
-              <TableHead>Revenue</TableHead>
+              <TableHead>Max Users</TableHead>
+              <TableHead>Created At</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {tenantsLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">Loading tenants...</TableCell>
+                <TableCell colSpan={6} className="text-center py-10">
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading tenants...
+                  </div>
+                </TableCell>
               </TableRow>
             ) : filteredTenants.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">No tenants found.</TableCell>
+                <TableCell colSpan={6} className="text-center py-10">No tenants found.</TableCell>
               </TableRow>
             ) : (
               filteredTenants.map((tenant) => (
                 <TableRow key={tenant.id}>
                   <TableCell>
                     <div className="font-medium text-gray-900 dark:text-white">{tenant.name}</div>
-                    <div className="text-sm text-gray-500">{tenant.domain}</div>
+                    <div className="text-sm text-gray-500">{tenant.domain || `slug: ${tenant.slug}`}</div>
                   </TableCell>
                   <TableCell>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${tenant.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                        tenant.status === 'suspended' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      tenant.status === 'suspended' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                       }`}>
                       {tenant.status === 'active' && <CheckCircle className="w-3 h-3 mr-1" />}
                       {tenant.status === 'suspended' && <XCircle className="w-3 h-3 mr-1" />}
@@ -201,10 +163,9 @@ export default function TenantsPage() {
                       {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
                     </span>
                   </TableCell>
-                  <TableCell className="capitalize">{tenant.plan}</TableCell>
-                  <TableCell>{tenant.users_count}</TableCell>
-                  <TableCell>{tenant.ai_agents_count}</TableCell>
-                  <TableCell>${tenant.revenue.toLocaleString()}</TableCell>
+                  <TableCell className="capitalize">{tenant.subscription_plan || 'Free'}</TableCell>
+                  <TableCell>{tenant.max_users}</TableCell>
+                  <TableCell>{new Date(tenant.created_at).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

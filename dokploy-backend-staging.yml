@@ -11,11 +11,14 @@ services:
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - DATABASE_URL=${DATABASE_URL:-postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging}
+      - REDIS_URL=${REDIS_URL:-redis://bizosaas-redis-staging:6379/0}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ENVIRONMENT=staging
+      - AUTH_URL=http://auth-service:8006
       - LOG_LEVEL=INFO
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
     networks:
       - dokploy-network
     restart: unless-stopped

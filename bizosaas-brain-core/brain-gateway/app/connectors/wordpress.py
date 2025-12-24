@@ -42,16 +42,33 @@ class WordPressConnector(BaseConnector, CMSPort):
         return f"{base_url}/wp-json/wp/v2/{path.lstrip('/')}"
 
     async def validate_credentials(self) -> bool:
+        url = self.credentials.get("url", "")
+        if not url:
+            logger.error("WordPress validation failed: Missing site URL")
+            return False
+            
         try:
             async with httpx.AsyncClient() as client:
+                api_url = self._get_api_url("users/me")
+                logger.info(f"Validating WordPress connection to: {api_url}")
+                
                 response = await client.get(
-                    self._get_api_url("users/me"),
+                    api_url,
                     headers=self._get_auth_header(),
-                    timeout=10.0
+                    timeout=15.0
                 )
-                return response.status_code == 200
+                
+                if response.status_code == 200:
+                    logger.info("WordPress connection validated successfully")
+                    return True
+                else:
+                    logger.error(f"WordPress validation failed: HTTP {response.status_code} - {response.text[:100]}")
+                    return False
+        except httpx.ConnectError:
+            logger.error(f"WordPress validation failed: Could not connect to {url}")
+            return False
         except Exception as e:
-            logger.error(f"Validation failed: {e}")
+            logger.error(f"WordPress validation failed: {str(e)}")
             return False
 
     async def get_status(self) -> ConnectorStatus:
