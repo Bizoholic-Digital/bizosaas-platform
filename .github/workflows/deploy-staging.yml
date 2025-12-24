@@ -75,6 +75,10 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
           platforms: linux/amd64
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=https://brain.bizoholic.net
+            NEXTAUTH_URL=${{ matrix.name == 'admin-dashboard' && 'https://admin.bizoholic.net' || 'https://client.bizoholic.net' }}
+            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
 
   notify-dokploy:
     needs: build-and-push

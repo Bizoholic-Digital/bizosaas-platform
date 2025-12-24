@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, Mail, Shield, Zap, Layout, Server, Gauge } from 'lucide-react';
@@ -20,7 +20,7 @@ function AdminLoginFormContent() {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard';
 
-    const handleCredentialsLogin = async (e: React.FormEvent) => {
+    const handleCredentialsLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsLoading(true);
         setError('');
