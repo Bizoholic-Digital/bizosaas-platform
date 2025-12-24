@@ -9,7 +9,9 @@ import re
 import uuid
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Using argon2 to match existing database entries
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -48,17 +50,20 @@ async def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # 3. Hash password
+    # 3. Hash password using Argon2
     hashed_password = get_password_hash(data.password)
     
     # 4. Create or Find Tenant
     tenant_id = None
     if data.company_name:
+        # Create a basic slug
         slug = re.sub(r'[^a-zA-Z0-9]', '-', data.company_name.lower())
-        # Ensure slug is unique
+        # Ensure slug is not empty and unique
+        if not slug:
+            slug = "company-" + str(uuid.uuid4())[:8]
+            
         existing_tenant = db.query(Tenant).filter(Tenant.slug == slug).first()
         if existing_tenant:
-            # Use existing tenant or append random suffix
             tenant_id = existing_tenant.id
         else:
             new_tenant = Tenant(
@@ -70,7 +75,7 @@ async def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
             db.flush() # Get tenant.id
             tenant_id = new_tenant.id
     else:
-        # Require a tenant for users in this system
+        # For this system, we require a tenant
         raise HTTPException(status_code=400, detail="Company name is required for registration")
     
     # 5. Create user in database
