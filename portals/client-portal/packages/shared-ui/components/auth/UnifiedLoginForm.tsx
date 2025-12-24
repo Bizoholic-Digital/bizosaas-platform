@@ -286,10 +286,16 @@ export function UnifiedLoginForm({
                 </div>
 
                 {/* Additional Info */}
-                <div className="mt-6 text-center">
+                <div className="mt-6 text-center space-y-2">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Need access?{' '}
-                        <a href="mailto:admin@bizosaas.com" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+                        Don't have an account?{' '}
+                        <a href="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-semibold">
+                            Create Account
+                        </a>
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                        Need help?{' '}
+                        <a href="mailto:support@bizosaas.com" className="text-gray-600 dark:text-gray-400 hover:underline">
                             Contact Support
                         </a>
                     </p>
