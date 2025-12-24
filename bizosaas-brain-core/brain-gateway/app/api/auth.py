@@ -6,6 +6,7 @@ from app.dependencies import get_db
 from app.models.user import User, Tenant
 import os
 import re
+import uuid
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -50,38 +51,56 @@ async def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
     # 3. Hash password
     hashed_password = get_password_hash(data.password)
     
-    # 4. Create Tenant if company_name provided
+    # 4. Create or Find Tenant
     tenant_id = None
     if data.company_name:
         slug = re.sub(r'[^a-zA-Z0-9]', '-', data.company_name.lower())
         # Ensure slug is unique
         existing_tenant = db.query(Tenant).filter(Tenant.slug == slug).first()
         if existing_tenant:
-            # Append random suffix or handle duplicate
-            slug = f"{slug}-new"
-            
-        new_tenant = Tenant(
-            name=data.company_name,
-            slug=slug
-        )
-        db.add(new_tenant)
-        db.flush() # Get tenant.id
-        tenant_id = new_tenant.id
+            # Use existing tenant or append random suffix
+            tenant_id = existing_tenant.id
+        else:
+            new_tenant = Tenant(
+                name=data.company_name,
+                slug=slug,
+                status="active"
+            )
+            db.add(new_tenant)
+            db.flush() # Get tenant.id
+            tenant_id = new_tenant.id
+    else:
+        # Require a tenant for users in this system
+        raise HTTPException(status_code=400, detail="Company name is required for registration")
     
     # 5. Create user in database
     new_user = User(
         email=data.email,
-        password_hash=hashed_password,
+        hashed_password=hashed_password,
         first_name=data.first_name,
         last_name=data.last_name,
-        tenant_id=tenant_id
+        tenant_id=tenant_id,
+        is_active=True,
+        is_superuser=False,
+        is_verified=False,
+        role="user",
+        login_count=0,
+        failed_login_attempts=0,
+        two_factor_enabled=False,
+        marketing_consent=False
     )
     db.add(new_user)
-    db.commit()
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        
     db.refresh(new_user)
     
     return RegisterResponse(
-        id=new_user.id,
+        id=str(new_user.id),
         email=new_user.email,
         first_name=new_user.first_name,
         last_name=new_user.last_name,
