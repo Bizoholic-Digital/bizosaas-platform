@@ -18,9 +18,13 @@ declare module "next-auth" {
         accessToken?: string;
     }
 
-    interface User extends NextAuthUser {
+    interface User {
+        id: string;
         roles: string[];
         tenant_id: string;
+        email?: string | null;
+        name?: string | null;
+        image?: string | null;
     }
 }
 
@@ -99,6 +103,7 @@ export const authOptions: NextAuthOptions = {
 
                 // Method 2: Fallback to Auth Service
                 try {
+                    console.log(`Admin Login: Falling back to Auth Service at ${AUTH_SERVICE_URL}`);
                     const response = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -112,13 +117,17 @@ export const authOptions: NextAuthOptions = {
 
                     if (response.ok) {
                         const data = await response.json();
+                        console.log("Admin Login: Fallback success for", data.user.email);
                         return {
                             id: data.user.id,
                             name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim(),
                             email: data.user.email,
-                            roles: [data.user?.role],
+                            roles: [data.user?.role || 'admin'],
                             tenant_id: data.tenant?.id || "default",
                         };
+                    } else {
+                        const errText = await response.text();
+                        console.error("Admin Login: Fallback failed with status", response.status, errText);
                     }
                 } catch (e) {
                     console.error('Admin fallback login error:', e);
@@ -205,6 +214,7 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
+    debug: true,
     secret: process.env.NEXTAUTH_SECRET || 'development-secret-change-in-production',
 };
 
