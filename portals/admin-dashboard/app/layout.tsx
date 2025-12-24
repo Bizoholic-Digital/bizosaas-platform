@@ -23,6 +23,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Force dynamic rendering for all pages - prevents static generation errors
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 export default function RootLayout({
   children,
 }: {
