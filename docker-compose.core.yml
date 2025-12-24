@@ -14,7 +14,7 @@ services:
     build:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile
-    container_name: brain-gateway
+    container_name: bizosaas-brain-staging
     environment:
       # Database & Cache
       - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/bizosaas_staging
