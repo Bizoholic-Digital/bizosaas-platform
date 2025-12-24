@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" }
             },
-            async authorize(credentials) {
+            async authorize(credentials: Record<"email" | "password", string> | undefined) {
                 if (!credentials?.email || !credentials?.password) return null;
 
                 try {
@@ -75,7 +75,7 @@ export const authOptions: NextAuthOptions = {
         } as any,
     ],
     callbacks: {
-        async jwt({ token, user, account }) {
+        async jwt({ token, user, account }: { token: any, user?: any, account?: any }): Promise<any> {
             if (user) {
                 token.id = user.id;
                 token.roles = (user as any).roles;
@@ -86,7 +86,7 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        async session({ session, token }) {
+        async session({ session, token }: { session: any, token: any }): Promise<any> {
             if (session.user) {
                 (session.user as any).id = token.id as string;
                 (session.user as any).roles = token.roles as string[];

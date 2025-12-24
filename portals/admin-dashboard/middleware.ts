@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-    function middleware(req) {
+    function middleware(req: any) {
         const { pathname } = req.nextUrl;
         const token = req.nextauth.token;
 
@@ -18,7 +18,7 @@ export default withAuth(
     },
     {
         callbacks: {
-            authorized: ({ token }) => !!token,
+            authorized: ({ token }: { token: any }) => !!token,
         },
         pages: {
             signIn: "/login",
