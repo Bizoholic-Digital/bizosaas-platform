@@ -3,11 +3,7 @@ name: Deploy to Staging
 on:
   push:
     branches: [staging, main]
-    paths:
-      - 'bizosaas-brain-core/**'
-      - 'portals/**'
-      - 'docker-compose*.yml'
-      - '.github/workflows/deploy-staging.yml'
+    # Trigger on any change to core logic or deployment files
   workflow_dispatch:
 
 env:
@@ -19,11 +15,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
 
     strategy:
       fail-fast: false
-      max-parallel: 1 # Sequential builds to avoid blob mounting race conditions 403
+      max-parallel: 1 # Strictly sequential to avoid cross-repo blob mounting 403 errors
       matrix:
         include:
           - name: brain-gateway
@@ -45,8 +40,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Lowercase repo owner
         id: repo_owner
@@ -55,22 +48,25 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
+          # Use a flat structure AND include the source repository as a label
           images: ${{ env.REGISTRY }}/${{ env.OWNER_LOWER }}/bizosaas-${{ matrix.name }}
           tags: |
             type=raw,value=staging
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,prefix=staging-
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -83,9 +79,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # Use local cache to avoid registry blob lookup conflicts (403)
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # COMPLETELY DISABLING GHA CACHE for registry-based builds to solve 403 blob mounting
+          cache-from: ""
+          cache-to: ""
           provenance: false
           platforms: linux/amd64
 
