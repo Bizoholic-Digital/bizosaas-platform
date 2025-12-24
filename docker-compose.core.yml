@@ -17,7 +17,7 @@ services:
     container_name: bizosaas-brain-staging
     environment:
       # Database & Cache
-      - DATABASE_URL=postgresql://admin:QWyfkmjcfbpYnMDkxqzAOJBcPvlZCtkh8R/+DTz+SkA=@bizosaas-postgres-staging:5432/bizosaas_staging
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025@StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
       - REDIS_URL=redis://bizosaas-redis-staging:6379/0
 
       # Authentication
