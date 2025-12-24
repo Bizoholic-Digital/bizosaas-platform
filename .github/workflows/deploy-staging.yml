@@ -3,7 +3,6 @@ name: Deploy to Staging
 on:
   push:
     branches: [staging, main]
-    # Trigger on any change to core logic or deployment files
   workflow_dispatch:
 
 env:
@@ -18,7 +17,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 1 # Strictly sequential to avoid cross-repo blob mounting 403 errors
+      max-parallel: 1 # Sequential to prevent blob mounting race conditions
       matrix:
         include:
           - name: brain-gateway
@@ -41,30 +40,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Lowercase repo owner
-        id: repo_owner
-        run: |
-          echo "OWNER_LOWER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=moby/buildkit:latest
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          # Use repository owner for more reliable permission scope
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          # Use a flat structure AND include the source repository as a label
-          images: ${{ env.REGISTRY }}/${{ env.OWNER_LOWER }}/bizosaas-${{ matrix.name }}
+          # Using nested structure (repo/image) to inherit repo-level permissions
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
           tags: |
             type=raw,value=staging
             type=sha,prefix=staging-
@@ -79,9 +71,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # COMPLETELY DISABLING GHA CACHE for registry-based builds to solve 403 blob mounting
+          # DISABLE ALL CACHE to bypass cross-repo blob mounting 403s
           cache-from: ""
           cache-to: ""
+          no-cache: true
           provenance: false
           platforms: linux/amd64
 

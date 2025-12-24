@@ -10,7 +10,7 @@ services:
   # API Gateway
   # ========================================
   brain-gateway:
-    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: brain-gateway
     environment:
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
@@ -38,7 +38,7 @@ services:
   # Auth Service
   # ========================================
   auth-service:
-    image: ghcr.io/bizoholic-digital/bizosaas-auth-service:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     container_name: brain-auth
     environment:
       - DATABASE_URL=postgresql+asyncpg://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging

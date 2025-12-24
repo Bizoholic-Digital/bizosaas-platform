@@ -7,7 +7,7 @@ services:
   # 1. CLIENT PORTAL (Port 3000)
   # ==========================================
   client-portal:
-    image: ghcr.io/bizoholic-digital/bizosaas-client-portal:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
     container_name: bizosaas-client-portal-staging
     ports:
       - "3004:3000"
@@ -29,7 +29,7 @@ services:
   # 2. BIZOHOLIC FRONTEND (Port 3001)
   # ==========================================
   bizoholic-frontend:
-    image: ghcr.io/bizoholic-digital/bizosaas-bizoholic-frontend:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/bizoholic-frontend:staging
     container_name: bizosaas-bizoholic-frontend-staging
     ports:
       - "3001:3000"
@@ -45,7 +45,7 @@ services:
   # 3. CORELDOVE FRONTEND (Port 3002)
   # ==========================================
   coreldove-frontend:
-    image: ghcr.io/bizoholic-digital/bizosaas-coreldove-frontend:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/coreldove-frontend:staging
     container_name: bizosaas-coreldove-frontend-staging
     ports:
       - "3002:3000"
@@ -61,7 +61,7 @@ services:
   # 4. BUSINESS DIRECTORY FRONTEND (Port 3003)
   # ==========================================
   business-directory-frontend:
-    image: ghcr.io/bizoholic-digital/bizosaas-business-directory:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/business-directory:staging
     container_name: bizosaas-business-directory-frontend-staging
     ports:
       - "3003:3000"
@@ -77,7 +77,7 @@ services:
   # 5. ADMIN DASHBOARD (Port 3009)
   # ==========================================
   admin-dashboard:
-    image: ghcr.io/bizoholic-digital/bizosaas-bizosaas-admin:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/bizosaas-admin:staging
     container_name: bizosaas-admin-dashboard-staging
     ports:
       - "3009:3000"
@@ -99,7 +99,7 @@ services:
   # 6. THRILLRING GAMING (Port 3005)
   # ==========================================
   thrillring-gaming:
-    image: ghcr.io/bizoholic-digital/bizosaas-thrillring-gaming:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/thrillring-gaming:staging
     container_name: bizosaas-thrillring-gaming-staging
     ports:
       - "3005:3000"
