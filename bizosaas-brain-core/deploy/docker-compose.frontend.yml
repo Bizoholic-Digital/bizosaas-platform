@@ -10,7 +10,7 @@ services:
   # Client Portal
   # ========================================
   client-portal:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-client-portal:staging
     container_name: client-portal
     environment:
       - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
