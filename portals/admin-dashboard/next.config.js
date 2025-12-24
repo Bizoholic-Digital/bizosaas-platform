@@ -15,7 +15,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,  // Temporarily ignore ESLint errors
   },
-  // Removed output: 'standalone' - causes static generation issues with client components
+  output: 'standalone',
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
