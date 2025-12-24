@@ -106,7 +106,7 @@ services:
   # Core Services
   # ========================================
   brain-gateway:
-    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     build:
       context: ./brain-gateway
       dockerfile: Dockerfile
@@ -138,7 +138,7 @@ services:
         condition: service_healthy
 
   auth-service:
-    image: ghcr.io/bizoholic-digital/bizosaas-auth-service:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     container_name: brain-auth
     environment:
       - DATABASE_URL=postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
@@ -165,7 +165,7 @@ services:
         condition: service_healthy
 
   client-portal:
-    image: ghcr.io/bizoholic-digital/bizosaas-client-portal:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
     container_name: client-portal
     environment:
       - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql

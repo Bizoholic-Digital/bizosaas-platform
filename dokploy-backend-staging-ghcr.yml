@@ -32,7 +32,7 @@ services:
   # 2. BRAIN API - AI Gateway (Port 8001)
   # ==========================================
   brain-api:
-    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: bizosaas-brain-staging
     ports:
       - "8001:8001"
@@ -55,7 +55,7 @@ services:
   # 2. WAGTAIL CMS (Port 8002)
   # ==========================================
   wagtail-cms:
-    image: ghcr.io/bizoholic-digital/bizosaas-wagtail-cms:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/wagtail-cms:staging
     container_name: bizosaas-wagtail-staging
     ports:
       - "8002:8000"
@@ -99,7 +99,7 @@ services:
   # 4. BUSINESS DIRECTORY BACKEND (Port 8004)
   # ==========================================
   business-directory-backend:
-    image: ghcr.io/bizoholic-digital/bizosaas-business-directory-backend:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/business-directory-backend:staging
     container_name: bizosaas-business-directory-staging
     ports:
       - "8004:8000"

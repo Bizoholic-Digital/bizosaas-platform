@@ -10,7 +10,7 @@ services:
   # API Gateway
   # ========================================
   brain-gateway:
-    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     build:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile

@@ -5,7 +5,7 @@ services:
   # ==========================================
   # FIX: Switch to build on server to ensure latest code from staging branch
   brain-api:
-    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     pull_policy: always
     container_name: bizosaas-brain-staging
     ports:
@@ -38,7 +38,7 @@ services:
   # 2. AUTHENTICATION SERVICE (Port 8006)
   # ==========================================
   auth-service:
-    image: ghcr.io/bizoholic-digital/bizosaas-auth-service:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
     pull_policy: always
     container_name: bizosaas-auth-service-staging
     command: ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8006", "--workers", "1"]
@@ -81,7 +81,7 @@ services:
   # 3. AI AGENTS (Port 8008)
   # ==========================================
   ai-agents:
-    image: ghcr.io/bizoholic-digital/bizosaas-ai-agents:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
     pull_policy: always
     container_name: bizosaas-ai-agents-staging
     ports:
