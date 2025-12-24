@@ -6,13 +6,15 @@ on:
     paths:
       - 'bizosaas-brain-core/**'
       - 'portals/**'
-      - 'dokploy-*-ghcr.yml'
-      - '.github/workflows/**'
-  workflow_dispatch:  # Allow manual triggering
+      - 'docker-compose*.yml'
+      - '.github/workflows/deploy-staging.yml'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  ORG_NAME: bizoholic-digital
+  # Hardcode organization to match GHCR expectations
+  ORG: bizoholic-digital
+  REPO: bizosaas-platform
 
 jobs:
   build-and-push:
@@ -22,9 +24,9 @@ jobs:
       packages: write
 
     strategy:
+      fail-fast: false
       matrix:
         include:
-          # Backend Services
           - name: brain-gateway
             context: ./bizosaas-brain-core/brain-gateway
             dockerfile: Dockerfile
@@ -34,7 +36,6 @@ jobs:
           - name: ai-agents
             context: ./bizosaas-brain-core/ai-agents
             dockerfile: Dockerfile
-          # Frontend Services
           - name: client-portal
             context: ./bizosaas-brain-core/client-portal
             dockerfile: Dockerfile
@@ -44,7 +45,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -55,20 +56,18 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: |
-            ghcr.io/${{ github.repository_owner }}/bizosaas-platform/${{ matrix.name }}
+          images: ${{ env.REGISTRY }}/${{ env.ORG }}/${{ env.REPO }}/${{ matrix.name }}
           tags: |
-            type=ref,event=branch,suffix=-{{sha}}
-            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=staging
             type=sha,prefix=staging-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -83,33 +82,21 @@ jobs:
           provenance: false
           platforms: linux/amd64
 
-  deploy-to-dokploy:
+  notify-dokploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
-
+    if: success()
     steps:
-      - name: Wait for images to be available
-        run: sleep 30
-
-      - name: Deploy Backend to Dokploy
+      - name: Trigger Dokploy Deployment (Backend)
         run: |
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
 
-      - name: Wait for Backend to be healthy
-        run: sleep 60
-
-      - name: Deploy Frontend to Dokploy
+      - name: Trigger Dokploy Deployment (Frontend)
         run: |
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
-
-      - name: Deployment complete
-        run: |
-          echo "✅ Deployment triggered successfully"
-          echo "Monitor at: https://dk.bizoholic.com"
