@@ -67,7 +67,7 @@ function AdminLoginFormContent() {
                     </div>
 
                     <div>
-                        <CardTitle className="text-2xl font-bold tracking-tight">Admin Control Center</CardTitle>
+                        <CardTitle className="text-2xl font-bold tracking-tight">Admin Control Center v4</CardTitle>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Platform-Wide Intelligence & Oversight</p>
                     </div>
                 </CardHeader>
