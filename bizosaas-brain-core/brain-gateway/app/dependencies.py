@@ -4,8 +4,26 @@ import logging
 from domain.ports.identity_port import IdentityPort
 from adapters.identity.authentik_adapter import AuthentikAdapter
 from adapters.identity.mock_adapter import MockIdentityAdapter
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
 
 logger = logging.getLogger(__name__)
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    # Use a default or warn
+    logger.warning("DATABASE_URL not set!")
+    DATABASE_URL = "postgresql://admin:password@localhost:5432/bizosaas_staging"
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @lru_cache()
 def get_identity_port() -> IdentityPort:

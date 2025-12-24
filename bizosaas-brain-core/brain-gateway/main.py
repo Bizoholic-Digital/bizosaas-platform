@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing
+from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, auth
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -35,6 +35,7 @@ app.include_router(crm.router, prefix="/api/crm", tags=["crm"])
 app.include_router(ecommerce.router, prefix="/api/ecommerce", tags=["ecommerce"])
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
 app.include_router(onboarding.router)
+app.include_router(auth.router)
 
 from app.routers import oauth
 app.include_router(oauth.router)
