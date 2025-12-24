@@ -70,10 +70,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          # DISABLE ALL CACHE to bypass cross-repo blob mounting 403s
-          cache-from: ""
-          cache-to: ""
-          no-cache: true
+          # Re-enabled caching now that packages are established
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           provenance: false
           platforms: linux/amd64
 
