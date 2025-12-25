@@ -40,7 +40,8 @@ function AdminLoginFormContent() {
                 console.error("Admin Login Error:", result.error);
                 setError(`Login failed: ${result.error === 'CredentialsSignin' ? 'Invalid admin credentials' : result.error}`);
             } else if (result?.ok) {
-                console.log('🚀 Login successful, letting shared logic redirect');
+                console.log('🚀 Login successful, performing hard redirect to:', callbackUrl);
+                window.location.href = callbackUrl;
             } else {
                 setError('Login failed. Please try again.');
             }
