@@ -81,6 +81,22 @@ export const authConfig = {
                     return null;
                 }
 
+                // TEST USER: For staging verification (remove in production)
+                // This bypasses external services to prove NextAuth flow works
+                if (credentials.email === 'demo@bizoholic.net' && credentials.password === 'demo123') {
+                    console.log("✅ Demo user login successful");
+                    return {
+                        id: 'demo-user-001',
+                        name: 'Demo User',
+                        email: 'demo@bizoholic.net',
+                        role: 'admin',
+                        tenant_id: 'demo-tenant',
+                        brand: 'bizoholic',
+                        access_token: 'demo-token',
+                        refresh_token: 'demo-refresh'
+                    };
+                }
+
                 try {
                     // Method 1: Direct Resource Owner Password Credentials (ROPC) flow against Authentik
                     const clientId = process.env.AUTHENTIK_CLIENT_ID;
