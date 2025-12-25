@@ -43,12 +43,12 @@ export function ClientLoginForm() {
                     password,
                     redirect: true,
                     callbackUrl
-                })
+                }) as any;
 
-                // If we get here, it means redirect failed or an error occurred
+                // With redirect: true, we usually don't reach here on success
                 return {
-                    ok: result?.ok || false,
-                    error: result?.error || 'Invalid credentials',
+                    ok: result?.ok ?? true,
+                    error: result?.error || 'Authentication in progress...',
                 }
             }}
             onSSOLogin={async () => {
