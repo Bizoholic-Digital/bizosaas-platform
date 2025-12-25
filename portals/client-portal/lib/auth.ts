@@ -272,7 +272,7 @@ export const authConfig = {
     },
     */
 
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-must-be-changed-in-production',
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-must-be-changed-in-production-12345',
     trustHost: true,
 };
 
