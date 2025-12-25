@@ -64,6 +64,28 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
     );
   };
 
+  /* Dynamic Sidebar Logic */
+  const [installedMcps, setInstalledMcps] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    import('../../lib/brain-api').then(({ brainApi }) => {
+      brainApi.mcp.getInstalled().then(data => {
+        setInstalledMcps(data);
+        setLoading(false);
+      }).catch(() => setLoading(false));
+    });
+  }, []);
+
+  const hasCategory = (catSlug: string) => {
+    if (loading) return true; // optimistic
+    return installedMcps.some(inst => inst.mcp.category === catSlug);
+  };
+
+  const getLink = (catSlug: string, defaultHref: string) => {
+    return hasCategory(catSlug) ? defaultHref : `/dashboard/connectors?category=${catSlug}`;
+  };
+
   const navigationItems: NavigationItem[] = [
     {
       id: 'dashboard',
@@ -91,10 +113,10 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
     {
       id: 'crm',
       name: isCollapsed ? 'CRM' : 'CRM & Growth',
-      href: '/crm',
-      icon: <Users className="w-5 h-5" />,
+      href: getLink('crm', '/crm'),
+      icon: <Users className={`w-5 h-5 ${hasCategory('crm') ? '' : 'text-gray-400'}`} />,
       active: pathname.startsWith('/crm'),
-      subItems: [
+      subItems: hasCategory('crm') ? [
         {
           id: 'crm-contacts',
           name: 'Lead Management',
@@ -116,27 +138,27 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           icon: <BarChart3 className="w-4 h-4" />,
           active: pathname === '/crm/reports'
         }
-      ]
+      ] : []
     },
     {
       id: 'content',
       name: isCollapsed ? 'Content' : 'Content & CMS',
-      href: '/content',
-      icon: <FileText className="w-5 h-5" />,
+      href: getLink('cms', '/content'),
+      icon: <FileText className={`w-5 h-5 ${hasCategory('cms') ? '' : 'text-gray-400'}`} />,
       active: pathname.startsWith('/content'),
     },
     {
       id: 'ecommerce',
       name: isCollapsed ? 'Shop' : 'E-commerce Shop',
-      href: '/ecommerce',
-      icon: <ShoppingCart className="w-5 h-5" />,
+      href: getLink('ecommerce', '/ecommerce'),
+      icon: <ShoppingCart className={`w-5 h-5 ${hasCategory('ecommerce') ? '' : 'text-gray-400'}`} />,
       active: pathname.startsWith('/ecommerce')
     },
     {
       id: 'analytics',
       name: isCollapsed ? 'Stats' : 'Business Intelligence',
-      href: '/analytics',
-      icon: <BarChart3 className="w-5 h-5" />,
+      href: getLink('analytics', '/analytics'),
+      icon: <BarChart3 className={`w-5 h-5 ${hasCategory('analytics') ? '' : 'text-gray-400'}`} />,
       active: pathname.startsWith('/analytics')
     },
     {
@@ -192,8 +214,8 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
     );
 
     const commonClasses = `flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all duration-200 ${item.active
-        ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-none'
-        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+      ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-none'
+      : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
       } ${paddingClass} ${isCollapsed ? 'justify-center px-2' : ''}`;
 
     return (
