@@ -32,9 +32,11 @@ jobs:
           - name: client-portal
             context: .
             dockerfile: portals/client-portal/Dockerfile
+            service_path: portals/client-portal
           - name: admin-dashboard
             context: .
             dockerfile: portals/admin-dashboard/Dockerfile
+            service_path: portals/admin-dashboard
 
     steps:
       - name: Checkout code
@@ -79,6 +81,7 @@ jobs:
             NEXT_PUBLIC_API_BASE_URL=https://brain.bizoholic.net
             NEXTAUTH_URL=${{ matrix.name == 'admin-dashboard' && 'https://admin.bizoholic.net' || 'https://client.bizoholic.net' }}
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+            SERVICE_PATH=${{ matrix.service_path }}
 
   notify-dokploy:
     needs: build-and-push
