@@ -162,8 +162,6 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         }),
-        // Authentik SSO (disabled - uses background ROPC instead)
-        /*
         {
             id: "authentik",
             name: "BizOSaaS SSO",
@@ -193,7 +191,6 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         } as any,
-        */
     ],
     callbacks: {
         async jwt({ token, user, account }: any) {
@@ -223,6 +220,17 @@ export const authOptions: NextAuthOptions = {
     },
     session: {
         strategy: "jwt",
+    },
+    cookies: {
+        sessionToken: {
+            name: 'bizosaas-admin-dashboard.session-token',
+            options: {
+                httpOnly: true,
+                sameSite: 'lax' as const,
+                path: '/',
+                secure: process.env.NODE_ENV === 'production',
+            },
+        },
     },
     debug: true,
     logger: {

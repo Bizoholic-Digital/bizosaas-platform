@@ -51,7 +51,6 @@ export const authConfig = {
         // Authentik SSO (disabled for Client Portal - uses background ROPC instead)
         // Users login via email/password which authenticates against Authentik in the background
         // To re-enable SSO redirect: uncomment lines below
-        /*
         ...(process.env.AUTHENTIK_CLIENT_ID && process.env.AUTHENTIK_CLIENT_SECRET ? [
             Authentik({
                 name: 'BizOSaaS SSO',
@@ -68,7 +67,6 @@ export const authConfig = {
                 userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
             })
         ] : []),
-        */
         Credentials({
             name: 'Email & Password',
             credentials: {
@@ -251,15 +249,15 @@ export const authConfig = {
         maxAge: 8 * 60 * 60, // 8 hours total session duration
         updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
     },
-    // Simplified cookie config for staging to bypass SSL/Proxy issues
+    // Use unique cookie name to prevent collisions with other subdomains
     cookies: {
         sessionToken: {
-            name: 'next-auth.session-token',
+            name: 'bizosaas-client-portal.session-token',
             options: {
                 httpOnly: true,
                 sameSite: 'lax' as const,
                 path: '/',
-                secure: false, // Set to false to verify if Proxy/SSL is the issue
+                secure: process.env.NODE_ENV === 'production',
             },
         },
     },
