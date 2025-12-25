@@ -37,18 +37,25 @@ export function ClientLoginForm() {
                 // Determine base redirect URL
                 const callbackUrl = '/dashboard';
 
-                // Use standard redirect: true for better session stability in proxied environments
+                console.log('🔄 [Client] Attempting login for:', email);
                 const result = await signIn('credentials', {
                     email,
                     password,
-                    redirect: true,
+                    redirect: false,
                     callbackUrl
-                }) as any;
+                });
 
-                // With redirect: true, we usually don't reach here on success
+                console.log('✅ [Client] Sign-in result:', result);
+
+                if (result?.ok) {
+                    console.log('🚀 [Client] Success, redirecting...');
+                    window.location.href = callbackUrl;
+                    return { ok: true };
+                }
+
                 return {
-                    ok: result?.ok ?? true,
-                    error: result?.error || 'Authentication in progress...',
+                    ok: false,
+                    error: result?.error || 'Invalid credentials',
                 }
             }}
             onSSOLogin={async () => {
