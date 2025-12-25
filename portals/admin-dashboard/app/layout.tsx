@@ -11,7 +11,7 @@ import { Providers } from './providers';
 const inter = { variable: '--font-sans' };
 
 export const metadata: Metadata = {
-  title: 'ADMIN | BizOSaaS Control',
+  title: 'BizOSaaS Admin v5 [LIVE]',
   description: 'Super Admin Dashboard for BizOSaaS Multi-Tenant Platform - Workflow Management & AI Agent Control',
   keywords: ['BizOSaaS', 'Admin', 'Platform', 'Management', 'Multi-tenant', 'AI Workflows', 'Super Admin'],
   authors: [{ name: 'BizOSaaS Team' }],

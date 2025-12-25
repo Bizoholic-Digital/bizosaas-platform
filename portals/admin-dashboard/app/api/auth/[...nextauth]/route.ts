@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions, DefaultSession, User as NextAuthUser } from "next-auth";
+import NextAuth, { NextAuthOptions, DefaultSession, DefaultUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -18,13 +18,10 @@ declare module "next-auth" {
         accessToken?: string;
     }
 
-    interface User {
+    interface User extends DefaultUser {
         id: string;
-        roles: string[];
-        tenant_id: string;
-        email?: string | null;
-        name?: string | null;
-        image?: string | null;
+        roles?: string[];
+        tenant_id?: string;
     }
 }
 

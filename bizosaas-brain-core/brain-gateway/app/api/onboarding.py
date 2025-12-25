@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Dict
 from enum import Enum
+from sqlalchemy.orm import Session
+from app.dependencies import get_db, get_identity_port
+from domain.ports.identity_port import IdentityPort, User
 
 router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 
@@ -68,6 +71,7 @@ class WooCommerceConfig(BaseModel):
     consumerSecret: Optional[str] = None
 
 class ToolIntegration(BaseModel):
+    selectedMcps: List[str] = []
     emailMarketing: Optional[str] = None
     adPlatforms: List[str] = []
     wordpress: Optional[WordPressConfig] = None
@@ -133,15 +137,65 @@ async def save_goals(goals: CampaignGoals):
     return {"status": "success", "message": "Goals saved"}
 
 @router.post("/complete")
-async def complete_onboarding(state: OnboardingState):
-    """Complete onboarding and trigger initial strategy generation"""
-    # Here we would trigger the Temporal workflow to start the "OnboardingCrew"
-    # and "CampaignStrategyCrew" agents.
+async def complete_onboarding(
+    state: OnboardingState,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    identity: IdentityPort = Depends(get_identity_port),
+    current_user: User = Depends(get_identity_port().get_current_user)
+):
+    """
+    Complete onboarding:
+    1. Save profile/preferences (TODO side effect)
+    2. Provision selected MCP tools
+    """
     
+    # Provision Selected MCPs
+    from app.models.mcp import McpRegistry, UserMcpInstallation
+    from app.services.mcp_orchestrator import McpOrchestrator
+    
+    provisioned_count = 0
+    
+    if state.tools.selectedMcps:
+        for mcp_slug in state.tools.selectedMcps:
+            try:
+                # Resolve MCP
+                mcp = db.query(McpRegistry).filter(McpRegistry.slug == mcp_slug).first()
+                if not mcp:
+                    print(f"Skipping unknown MCP: {mcp_slug}")
+                    continue
+                    
+                # Check existence
+                existing = db.query(UserMcpInstallation).filter(
+                    UserMcpInstallation.user_id == current_user.id,
+                    UserMcpInstallation.mcp_id == mcp.id
+                ).first()
+                
+                if existing:
+                    continue
+                
+                # Create Installation
+                installation = UserMcpInstallation(
+                    user_id=current_user.id,
+                    mcp_id=mcp.id,
+                    status="pending",
+                    config={} 
+                )
+                db.add(installation)
+                db.commit()
+                db.refresh(installation)
+                
+                # Trigger Orchestrator
+                background_tasks.add_task(McpOrchestrator.provision_mcp, installation.id)
+                provisioned_count += 1
+                
+            except Exception as e:
+                print(f"Failed to schedule provision for {mcp_slug}: {e}")
+                
     return {
         "status": "success", 
-        "message": "Onboarding completed", 
+        "message": f"Onboarding completed. {provisioned_count} tools provisioning.", 
         "redirect": "/dashboard",
-        "strategyId": "strat_12345" # Mock ID
+        "strategyId": "strat_12345" 
     }
 

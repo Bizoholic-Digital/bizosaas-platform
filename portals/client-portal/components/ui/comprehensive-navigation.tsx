@@ -29,9 +29,10 @@ interface NavigationItem {
 
 interface NavigationProps {
   onNavigate?: (path: string) => void;
+  isCollapsed?: boolean;
 }
 
-const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
+const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isCollapsed }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [expandedSections, setExpandedSections] = useState<string[]>(['dashboard']);
@@ -42,7 +43,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
   // Auto-expand sections based on current path
   useEffect(() => {
     const pathSections = pathname.split('/').filter(Boolean);
-    const newExpanded = ['dashboard']; // Always keep dashboard
+    const newExpanded = ['dashboard'];
 
     if (pathname.startsWith('/crm')) newExpanded.push('crm');
     if (pathname.startsWith('/content')) newExpanded.push('content');
@@ -55,11 +56,6 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
     setExpandedSections(newExpanded);
   }, [pathname]);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('ComprehensiveNavigation rendered:', { pathname, expandedSections, metrics });
-  }, [pathname, expandedSections, metrics]);
-
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev =>
       prev.includes(sectionId)
@@ -71,30 +67,30 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
   const navigationItems: NavigationItem[] = [
     {
       id: 'dashboard',
-      name: 'Business Overview',
+      name: isCollapsed ? 'Home' : 'Business Overview',
       href: '/dashboard',
       icon: <Home className="w-5 h-5" />,
       active: pathname === '/dashboard' || pathname === '/'
     },
     {
       id: 'ai-assistant',
-      name: 'Personal AI Assistant',
+      name: isCollapsed ? 'AI' : 'AI Assistant',
       href: '/dashboard/ai-assistant',
       icon: <Sparkles className="w-5 h-5 text-indigo-500" />,
-      badge: 'AI',
+      badge: isCollapsed ? undefined : 'AI',
       active: pathname === '/dashboard/ai-assistant'
     },
     {
       id: 'agent-studio',
-      name: 'Agent Studio',
+      name: isCollapsed ? 'Studio' : 'Agent Studio',
       href: '/ai-agents',
       icon: <Bot className="w-5 h-5" />,
-      badge: 'NEW',
+      badge: isCollapsed ? undefined : 'NEW',
       active: pathname.startsWith('/ai-agents')
     },
     {
       id: 'crm',
-      name: 'CRM & Growth',
+      name: isCollapsed ? 'CRM' : 'CRM & Growth',
       href: '/crm',
       icon: <Users className="w-5 h-5" />,
       active: pathname.startsWith('/crm'),
@@ -124,44 +120,51 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
     },
     {
       id: 'content',
-      name: 'Content & CMS',
+      name: isCollapsed ? 'Content' : 'Content & CMS',
       href: '/content',
       icon: <FileText className="w-5 h-5" />,
       active: pathname.startsWith('/content'),
     },
     {
       id: 'ecommerce',
-      name: 'E-commerce Shop',
+      name: isCollapsed ? 'Shop' : 'E-commerce Shop',
       href: '/ecommerce',
       icon: <ShoppingCart className="w-5 h-5" />,
       active: pathname.startsWith('/ecommerce')
     },
     {
       id: 'analytics',
-      name: 'Business Intelligence',
+      name: isCollapsed ? 'Stats' : 'Business Intelligence',
       href: '/analytics',
       icon: <BarChart3 className="w-5 h-5" />,
       active: pathname.startsWith('/analytics')
     },
     {
       id: 'tasks',
-      name: 'Projects & Tasks',
+      name: isCollapsed ? 'Tasks' : 'Projects & Tasks',
       href: '/tasks',
       icon: <CheckSquare className="w-5 h-5" />,
       active: pathname.startsWith('/tasks'),
     },
     {
+      id: 'connectors',
+      name: isCollapsed ? 'Connect' : 'Connectors',
+      href: '/dashboard/connectors',
+      icon: <RefreshCw className="w-5 h-5 text-emerald-500" />,
+      active: pathname === '/dashboard/connectors'
+    },
+    {
       id: 'settings',
-      name: 'Portal Settings',
+      name: isCollapsed ? 'Settings' : 'Portal Settings',
       href: '/settings',
       icon: <Settings className="w-5 h-5" />,
       active: pathname.startsWith('/settings')
     },
     {
       id: 'admin-dash',
-      name: 'Platform Admin',
+      name: isCollapsed ? 'Admin' : 'Platform Admin',
       href: 'https://admin.bizoholic.net',
-      icon: <Shield className="w-5 h-5" />,
+      icon: <Shield className="w-5 h-5 text-amber-500" />,
       active: false,
       show: isAdmin
     }
@@ -172,84 +175,56 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
     const isExpanded = expandedSections.includes(item.id);
     const paddingClass = depth === 0 ? 'pl-3' : 'pl-8';
 
+    const itemContent = (
+      <div className={`flex items-center gap-3 flex-1 ${isCollapsed ? 'justify-center' : ''}`}>
+        <div className="flex-shrink-0">{item.icon}</div>
+        {!isCollapsed && (
+          <span className="font-medium text-sm truncate">
+            {item.name}
+          </span>
+        )}
+        {!isCollapsed && item.badge && (
+          <span className="px-1.5 py-0.5 text-[10px] rounded-full font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+            {item.badge}
+          </span>
+        )}
+      </div>
+    );
+
+    const commonClasses = `flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all duration-200 ${item.active
+        ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-none'
+        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+      } ${paddingClass} ${isCollapsed ? 'justify-center px-2' : ''}`;
+
     return (
       <div key={item.id} className="mb-1">
         <div className="flex items-center">
           {hasSubItems ? (
             <button
               onClick={() => toggleSection(item.id)}
-              className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg transition-colors ${item.active
-                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                } ${paddingClass}`}
+              className={commonClasses}
+              title={isCollapsed ? item.name : undefined}
             >
-              <div className="flex items-center gap-3 flex-1">
-                {item.icon}
-                <span className="font-medium">{item.name}</span>
-                {item.badge && (
-                  <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${item.badge === '!'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                    : item.badge === 'NEW'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                      : item.badge === 'HOT'
-                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
-                        : item.badge === 'DUE'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                          : item.badge === 'AI'
-                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
-                            : /^\d+%$/.test(item.badge)
-                              ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300'
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                    }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
+              {itemContent}
+              {!isCollapsed && (
+                <div className="flex-shrink-0">
+                  {isExpanded ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />}
+                </div>
               )}
             </button>
           ) : (
             <Link
               href={item.href}
               onClick={() => onNavigate?.(item.href)}
-              className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg transition-colors ${item.active
-                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                } ${paddingClass}`}
+              className={commonClasses}
+              title={isCollapsed ? item.name : undefined}
             >
-              <div className="flex items-center gap-3 flex-1">
-                {item.icon}
-                <span className="font-medium">{item.name}</span>
-                {item.badge && (
-                  <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${item.badge === '!'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                    : item.badge === 'NEW'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                      : item.badge === 'HOT'
-                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
-                        : item.badge === 'DUE'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                          : item.badge === 'AI'
-                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
-                            : /^\d+%$/.test(item.badge)
-                              ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300'
-                              : /^\d+(\.\d+)?[KMB]?$/.test(item.badge)
-                                ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300'
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                    }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              {itemContent}
             </Link>
           )}
         </div>
 
-        {hasSubItems && isExpanded && (
+        {hasSubItems && isExpanded && !isCollapsed && (
           <div className="mt-1 space-y-1">
             {item.subItems?.map(subItem => renderNavigationItem(subItem, depth + 1))}
           </div>
@@ -259,7 +234,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate }) => {
   };
 
   return (
-    <nav className="space-y-2">
+    <nav className="space-y-1 px-2">
       {navigationItems.filter(item => item.show !== false).map(item => renderNavigationItem(item))}
     </nav>
   );

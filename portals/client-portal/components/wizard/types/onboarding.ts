@@ -44,6 +44,7 @@ export interface CampaignGoals {
 }
 
 export interface ToolIntegration {
+    selectedMcps?: string[]; // Added for MCP Marketplace
     emailMarketing?: 'mailchimp' | 'klaviyo' | 'activecampaign' | 'none';
     adPlatforms: string[];
     wordpress?: {
@@ -53,6 +54,7 @@ export interface ToolIntegration {
     };
     fluentCrm?: {
         connected: boolean;
+        selectedMcps?: string[];
     };
     wooCommerce?: {
         connected: boolean;
@@ -60,6 +62,9 @@ export interface ToolIntegration {
         consumerSecret?: string;
     };
 }
+
+// ... (existing code for AgentConfig) ...
+
 
 export interface AgentConfig {
     persona: 'marketing_manager' | 'sales_rep' | 'support_agent' | 'general_assistant';
@@ -87,6 +92,7 @@ export type StepId =
     | 'goals'
     | 'tools'
     | 'approval';
+
 
 export const INITIAL_STATE: OnboardingState = {
     currentStep: 0,
@@ -117,6 +123,7 @@ export const INITIAL_STATE: OnboardingState = {
         },
     },
     tools: {
+        selectedMcps: [],
         adPlatforms: [],
     },
     agent: {

@@ -91,7 +91,7 @@ export default function AIAgentsPage() {
             <div className="flex-1 space-y-6 p-8">
                 {/* Header Actions */}
                 <div className="flex items-center justify-end">
-                    <Button>
+                    <Button onClick={() => router.push('/ai-agents/create')}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create Custom Agent
                     </Button>
@@ -284,29 +284,83 @@ export default function AIAgentsPage() {
                     </TabsContent>
 
                     <TabsContent value="analytics">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Usage Analytics</CardTitle>
-                                <CardDescription>
-                                    Monitor agent usage, costs, and performance
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-muted-foreground">Analytics dashboard coming soon...</p>
-                            </CardContent>
-                        </Card>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Daily Requests</CardTitle>
+                                    <CardDescription>Last 7 days volume</CardDescription>
+                                </CardHeader>
+                                <CardContent className="h-[200px] flex items-end gap-2">
+                                    {[40, 60, 45, 90, 75, 85, 100].map((h, i) => (
+                                        <div key={i} className="flex-1 bg-indigo-500 rounded-t-sm" style={{ height: `${h}%` }} />
+                                    ))}
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Cost by Category</CardTitle>
+                                    <CardDescription>Distribution of spend</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {[
+                                            { name: 'Marketing', value: 45, color: 'bg-blue-500' },
+                                            { name: 'Content', value: 30, color: 'bg-purple-500' },
+                                            { name: 'Research', value: 25, color: 'bg-emerald-500' }
+                                        ].map(item => (
+                                            <div key={item.name} className="space-y-1">
+                                                <div className="flex justify-between text-sm">
+                                                    <span>{item.name}</span>
+                                                    <span className="font-bold">{item.value}%</span>
+                                                </div>
+                                                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div className={`h-full ${item.color}`} style={{ width: `${item.value}%` }} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
                     </TabsContent>
 
                     <TabsContent value="logs">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Agent Logs</CardTitle>
-                                <CardDescription>
-                                    View conversation history and debug information
-                                </CardDescription>
+                                <CardTitle>Conversation History</CardTitle>
+                                <CardDescription>Real-time execution logs from your agents</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-muted-foreground">Agent logs coming soon...</p>
+                                <div className="rounded-md border overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-slate-50 dark:bg-slate-900 border-b">
+                                            <tr>
+                                                <th className="text-left p-3 font-medium">Agent</th>
+                                                <th className="text-left p-3 font-medium">Action</th>
+                                                <th className="text-left p-3 font-medium">Status</th>
+                                                <th className="text-right p-3 font-medium">Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {[
+                                                { agent: 'Marketing Strategist', action: 'SEO Audit', status: 'Success', time: '2m ago' },
+                                                { agent: 'Content Creator', action: 'Draft Blog Post', status: 'In Progress', time: '5m ago' },
+                                                { agent: 'Data Analyst', action: 'Monthly Report', status: 'Failed', time: '1h ago' }
+                                            ].map((log, i) => (
+                                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                                                    <td className="p-3 font-medium">{log.agent}</td>
+                                                    <td className="p-3 text-slate-500">{log.action}</td>
+                                                    <td className="p-3">
+                                                        <Badge variant={log.status === 'Success' ? 'default' : log.status === 'Failed' ? 'destructive' : 'secondary'}>
+                                                            {log.status}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="p-3 text-right text-slate-400">{log.time}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

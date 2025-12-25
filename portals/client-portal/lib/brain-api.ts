@@ -118,6 +118,30 @@ export const brainApi = {
             return res.json();
         }
     },
+    mcp: {
+        listCategories: async (): Promise<any[]> => {
+            const res = await fetch(`${BRAIN_GATEWAY_URL}/api/mcp/categories`);
+            if (!res.ok) throw new Error('Failed to fetch categories');
+            return res.json();
+        },
+        getRegistry: async (categorySlug?: string): Promise<any[]> => {
+            const url = categorySlug
+                ? `${BRAIN_GATEWAY_URL}/api/mcp/registry?category=${categorySlug}`
+                : `${BRAIN_GATEWAY_URL}/api/mcp/registry`;
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Failed to fetch registry');
+            return res.json();
+        },
+        install: async (mcpSlug: string, config?: any) => {
+            const res = await fetch(`${BRAIN_GATEWAY_URL}/api/mcp/install`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mcp_slug: mcpSlug, config })
+            });
+            if (!res.ok) throw new Error('Installation failed');
+            return res.json();
+        }
+    },
     cms: {
         listPages: async () => {
             const res = await fetch(`${BRAIN_GATEWAY_URL}/api/cms/pages`);

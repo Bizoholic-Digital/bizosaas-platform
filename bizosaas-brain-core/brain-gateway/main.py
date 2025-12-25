@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, auth, admin
+from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, auth, admin, mcp
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -26,6 +26,17 @@ from app.seeds.connectors import seed_connectors
 
 @app.on_event("startup")
 async def startup_event():
+    # Auto-Migration & Seeding
+    try:
+        from init_db import init_db
+        from seed_mcp import seed_mcp_registry
+        print("Running database initialization...")
+        init_db()
+        print("Running MCP registry seeding...")
+        seed_mcp_registry()
+    except Exception as e:
+        print(f"Startup migration failed: {e}")
+
     # Vault Integration for API Keys
     try:
         import hvac
@@ -62,6 +73,7 @@ app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
 app.include_router(onboarding.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 
 from app.routers import oauth
 from app.api import rag

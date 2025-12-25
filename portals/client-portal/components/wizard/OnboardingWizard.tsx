@@ -20,22 +20,20 @@ import { useOnboardingState } from './hooks/useOnboardingState';
 // Step Components
 import { CompanyIdentityStep } from './OnboardingSteps/CompanyIdentityStep';
 import { DigitalPresenceStep } from './OnboardingSteps/DigitalPresenceStep';
-import { ServiceConnectionStep } from './OnboardingSteps/ServiceConnectionStep';
 import { AnalyticsTrackingStep } from './OnboardingSteps/AnalyticsTrackingStep';
 import { SocialMediaStep } from './OnboardingSteps/SocialMediaStep';
 import { CampaignGoalsStep } from './OnboardingSteps/CampaignGoalsStep';
-import { ToolIntegrationStep } from './OnboardingSteps/ToolIntegrationStep';
+import { CategorizedToolSelectionStep } from './OnboardingSteps/CategorizedToolSelectionStep';
 import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
     { id: 'presence', title: 'Presence', icon: Globe },
-    { id: 'connect', title: 'Connect', icon: Plug },
+    { id: 'tools', title: 'Select Tools', icon: Plug }, // New Step
     { id: 'analytics', title: 'Analytics', icon: BarChart3 },
     { id: 'social', title: 'Social', icon: Share2 },
     { id: 'goals', title: 'Goals', icon: Target },
-    { id: 'tools', title: 'Marketing', icon: Megaphone },
     { id: 'agent', title: 'AI Agent', icon: Bot },
     { id: 'approval', title: 'Strategy', icon: Rocket }
 ];
@@ -97,11 +95,11 @@ export function OnboardingWizard() {
             case 1:
                 return <DigitalPresenceStep
                     data={state.digitalPresence}
-                    websiteUrl={state.profile.website} // Pass adaptive data
+                    websiteUrl={state.profile.website}
                     onUpdate={updateDigitalPresence}
                 />;
-            case 2:
-                return <ServiceConnectionStep data={state.tools} onUpdate={updateTools} />;
+            case 2: // New Tools Step
+                return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
             case 3:
                 return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
             case 4:
@@ -109,10 +107,8 @@ export function OnboardingWizard() {
             case 5:
                 return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
             case 6:
-                return <ToolIntegrationStep data={state.tools} onUpdate={updateTools} />;
-            case 7:
                 return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
-            case 8:
+            case 7:
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;
