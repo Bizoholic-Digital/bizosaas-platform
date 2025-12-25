@@ -34,16 +34,18 @@ export function ClientLoginForm() {
             className="!bg-transparent"
             BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
             onCredentialsLogin={async (email, password) => {
+                // Determine base redirect URL
+                const callbackUrl = '/dashboard';
+
+                // Use standard redirect: true for better session stability in proxied environments
                 const result = await signIn('credentials', {
                     email,
                     password,
-                    redirect: false,
+                    redirect: true,
+                    callbackUrl
                 })
 
-                if (result?.ok) {
-                    await handleRoleBasedRedirect();
-                }
-
+                // If we get here, it means redirect failed or an error occurred
                 return {
                     ok: result?.ok || false,
                     error: result?.error || 'Invalid credentials',
