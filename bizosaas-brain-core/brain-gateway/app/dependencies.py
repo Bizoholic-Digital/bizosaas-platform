@@ -46,3 +46,24 @@ def get_identity_port() -> IdentityPort:
         client_id=client_id,
         client_secret=client_secret
     )
+
+@lru_cache()
+def get_secret_service():
+    """Dependency Injection: Returns the configured Secret Service.
+    Uses lru_cache to create a singleton instance.
+    """
+    from adapters.vault_adapter import VaultAdapter
+    from app.domain.services.secret_service import SecretService
+    
+    # Check if Vault is enabled
+    use_vault = os.getenv("USE_VAULT", "true").lower() == "true"
+    
+    if not use_vault:
+        logger.warning("Vault disabled - using mock secret storage")
+        # TODO: Implement MockSecretAdapter for development
+        from adapters.vault_adapter import VaultAdapter
+        vault_adapter = VaultAdapter()
+    else:
+        vault_adapter = VaultAdapter()
+    
+    return SecretService(secret_adapter=vault_adapter)

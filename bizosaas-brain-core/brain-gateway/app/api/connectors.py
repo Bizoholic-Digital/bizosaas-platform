@@ -6,7 +6,8 @@ from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorConfig, ConnectorStatus
 from app.middleware.auth import get_current_user
 from domain.ports.identity_port import AuthenticatedUser
-from app.store import active_connectors
+from app.dependencies import get_secret_service
+from app.domain.services.secret_service import SecretService
 
 logger = logging.getLogger(__name__)
 
@@ -21,21 +22,20 @@ async def list_connector_types(
 
 @router.get("/", response_model=List[Dict[str, Any]])
 async def list_connectors_with_status(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """List all connectors with their status"""
     tenant_id = user.tenant_id or "default_tenant"
     configs = ConnectorRegistry.get_all_configs()
     
+    # Get list of connected connectors from Vault
+    connected_ids = await secret_service.list_tenant_connectors(tenant_id)
+    
     results = []
     for config in configs:
-        key = f"{tenant_id}:{config.id}"
-        status = ConnectorStatus.DISCONNECTED
-        last_sync = None
-        
-        if key in active_connectors:
-             status = active_connectors[key].get("status", ConnectorStatus.DISCONNECTED)
-             last_sync = active_connectors[key].get("last_sync")
+        status = ConnectorStatus.CONNECTED if config.id in connected_ids else ConnectorStatus.DISCONNECTED
+        last_sync = None  # TODO: Store sync metadata in Vault
         
         # Merge status into config
         data = config.dict()
@@ -49,7 +49,8 @@ async def list_connectors_with_status(
 async def connect_connector(
     connector_id: str, 
     credentials: Dict[str, Any] = Body(...),
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Connect a new integration"""
     tenant_id = user.tenant_id or "default_tenant"
@@ -64,12 +65,19 @@ async def connect_connector(
         if not is_valid:
             raise HTTPException(status_code=400, detail="Invalid credentials")
             
-        # Save to mock DB
-        active_connectors[f"{tenant_id}:{connector_id}"] = {
-            "connector_id": connector_id,
-            "credentials": credentials, 
-            "status": ConnectorStatus.CONNECTED
-        }
+        # Store credentials in Vault
+        success = await secret_service.store_connector_credentials(
+            tenant_id=tenant_id,
+            connector_id=connector_id,
+            credentials=credentials,
+            metadata={
+                "created_by": user.email,
+                "connector_name": connector.config.name
+            }
+        )
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to store credentials securely")
         
         return {"status": "connected", "message": f"Successfully connected to {connector.config.name}"}
     except HTTPException:
@@ -83,31 +91,33 @@ async def connect_connector(
 @router.post("/{connector_id}/disconnect")
 async def disconnect_connector(
     connector_id: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Disconnect an integration"""
     tenant_id = user.tenant_id or "default_tenant"
-    key = f"{tenant_id}:{connector_id}"
     
-    if key in active_connectors:
-        del active_connectors[key]
+    success = await secret_service.delete_connector_credentials(tenant_id, connector_id)
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete credentials")
         
     return {"status": "disconnected"}
 
 @router.post("/{connector_id}/validate")
 async def validate_connector(
     connector_id: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Validate existing connection"""
     tenant_id = user.tenant_id or "default_tenant"
-    key = f"{tenant_id}:{connector_id}"
     
-    if key not in active_connectors:
+    credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
+    if not credentials:
         raise HTTPException(status_code=404, detail="Connector not connected")
         
-    data = active_connectors[key]
-    connector = ConnectorRegistry.create_connector(connector_id, tenant_id, data["credentials"])
+    connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
     is_valid = await connector.validate_credentials()
     
     return {"valid": is_valid}
@@ -117,25 +127,28 @@ async def perform_connector_action(
     connector_id: str,
     action: str,
     payload: Dict[str, Any] = Body(...),
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Execute an action on a connector"""
     tenant_id = user.tenant_id or "default_tenant"
-    key = f"{tenant_id}:{connector_id}"
     
-    if key not in active_connectors:
+    credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
+    if not credentials:
         raise HTTPException(status_code=404, detail="Connector not connected")
         
-    data = active_connectors[key]
-    connector = ConnectorRegistry.create_connector(connector_id, tenant_id, data["credentials"])
+    connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
     
     try:
         result = await connector.perform_action(action, payload)
         
-        # If the action updated the credentials (like link_property), save them
-        # (Note: In a real DB, connector.credentials would be persisted)
+        # If the action updated the credentials, save them back to Vault
         if result.get("status") == "success":
-             active_connectors[key]["credentials"] = connector.credentials
+            await secret_service.store_connector_credentials(
+                tenant_id=tenant_id,
+                connector_id=connector_id,
+                credentials=connector.credentials
+            )
              
         return result
     except Exception as e:
@@ -146,17 +159,17 @@ async def perform_connector_action(
 async def sync_resource(
     connector_id: str,
     resource: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Sync data from connector"""
     tenant_id = user.tenant_id or "default_tenant"
-    key = f"{tenant_id}:{connector_id}"
     
-    if key not in active_connectors:
+    credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
+    if not credentials:
         raise HTTPException(status_code=404, detail="Connector not connected")
         
-    data = active_connectors[key]
-    connector = ConnectorRegistry.create_connector(connector_id, tenant_id, data["credentials"])
+    connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
     
     try:
         result = await connector.sync_data(resource)
