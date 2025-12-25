@@ -39,6 +39,18 @@ export const authOptions: NextAuthOptions = {
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
 
+                // TEST USER: For staging verification (remove in production)
+                if (credentials.email === 'admin@bizoholic.net' && credentials.password === 'admin123') {
+                    console.log("✅ Admin demo user login successful");
+                    return {
+                        id: 'admin-demo-001',
+                        name: 'Admin Demo',
+                        email: 'admin@bizoholic.net',
+                        roles: ['super_admin'],
+                        tenant_id: 'demo-tenant',
+                    } as any;
+                }
+
                 const AUTHENTIK_CLIENT_ID = process.env.AUTHENTIK_CLIENT_ID;
                 const AUTHENTIK_CLIENT_SECRET = process.env.AUTHENTIK_CLIENT_SECRET;
 
