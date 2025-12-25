@@ -74,6 +74,9 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+# Re-declare SERVICE_PATH for this stage (ARGs don't persist across stages)
+ARG SERVICE_PATH
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
