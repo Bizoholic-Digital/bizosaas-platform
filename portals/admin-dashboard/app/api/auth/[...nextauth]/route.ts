@@ -227,7 +227,7 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
     },
     debug: true,
-    secret: process.env.NEXTAUTH_SECRET || 'development-secret-change-in-production',
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-must-be-changed-in-production-12345',
 };
 
 const handler = NextAuth(authOptions);
