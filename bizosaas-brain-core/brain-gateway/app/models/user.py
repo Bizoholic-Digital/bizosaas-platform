@@ -41,6 +41,7 @@ class User(Base):
     # Relationships
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     tenant = relationship("Tenant", back_populates="users")
+    mcp_installations = relationship("UserMcpInstallation", back_populates="user", cascade="all, delete-orphan")
 
 class Tenant(Base):
     __tablename__ = "tenants"

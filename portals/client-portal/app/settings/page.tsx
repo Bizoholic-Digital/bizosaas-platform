@@ -1,7 +1,7 @@
 'use client';
 
 import DashboardLayout from '@/components/ui/dashboard-layout';
-import { Settings as SettingsIcon, User, Bell, Lock, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, User, Bell, Lock, Palette, Globe } from 'lucide-react';
 
 export default function SettingsPage() {
   return (
@@ -55,6 +55,18 @@ export default function SettingsPage() {
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">Appearance</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Theme and display options</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                <Globe className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Localization</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Currency and regional settings</p>
               </div>
             </div>
           </div>

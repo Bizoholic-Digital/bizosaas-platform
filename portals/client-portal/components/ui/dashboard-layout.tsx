@@ -32,7 +32,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed on mobile, logic handled by CSS
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [theme, setTheme] = useState("light");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const {
@@ -63,6 +64,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
+  const toggleSidebar = () => {
+    if (window.innerWidth >= 1024) {
+      setIsCollapsed(!isCollapsed);
+    } else {
+      setIsSidebarOpen(!isSidebarOpen);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex h-screen overflow-hidden">
@@ -77,68 +86,65 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Sidebar */}
         <div
           className={`
-            fixed inset-y-0 left-0 z-30 w-80 bg-white dark:bg-gray-800 shadow-lg transition-transform duration-300 transform 
+            fixed inset-y-0 left-0 z-30 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 transform 
             lg:static lg:transform-none flex flex-col
-            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 lg:w-80'}
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            ${isCollapsed ? 'lg:w-20' : 'w-80'}
           `}
         >
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="font-bold text-xl text-gray-900 dark:text-white">BizOSaaS Portal</h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Multi-Service Dashboard</p>
-              </div>
+          <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
+            <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
+              {!isCollapsed && (
+                <div>
+                  <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate">BizOSaaS</h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Portal Control</p>
+                </div>
+              )}
+              {isCollapsed && (
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                  B
+                </div>
+              )}
               <button
-                onClick={() => setIsSidebarOpen(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               >
-                <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                {isSidebarOpen || !isCollapsed ? <X className="w-5 h-5 text-gray-600 dark:text-gray-300 lg:hidden" /> : null}
+                <Menu className={`w-5 h-5 text-gray-600 dark:text-gray-300 ${isSidebarOpen || !isCollapsed ? 'hidden lg:block' : 'block'}`} />
               </button>
             </div>
 
-            <div className="mb-4">
-              <button
-                onClick={() => router.push('/dashboard/system-status')}
-                className="w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors group"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
-                  </div>
-                  <div className={`w-2 h-2 rounded-full ${metrics?.status === 'down' ? 'bg-red-500' :
-                    metrics?.status === 'degraded' ? 'bg-yellow-500' :
-                      'bg-green-500'
-                    }`} />
-                </div>
-                <div className="grid grid-cols-2 gap-1 text-xs text-gray-500 dark:text-gray-400">
-                  {metrics?.services ? Object.entries(metrics.services).map(([service, status]) => (
-                    <div key={service} className="flex items-center gap-1">
-                      <StatusIcon status={status as string} />
-                      <span className="truncate">{service}</span>
+            {!isCollapsed && (
+              <div className="mb-4">
+                <button
+                  onClick={() => router.push('/dashboard/system-status')}
+                  className="w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors group"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
                     </div>
-                  )) : (
-                    <>
-                      <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> Brain Hub</div>
-                      <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> CRM</div>
-                      <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> CMS</div>
-                      <div className="flex items-center gap-1"><Clock className="w-3 h-3" /> E-com</div>
-                    </>
-                  )}
-                </div>
-              </button>
-            </div>
+                    <div className={`w-2 h-2 rounded-full ${metrics?.status === 'down' ? 'bg-red-500' :
+                      metrics?.status === 'degraded' ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`} />
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className={`flex-1 overflow-y-auto p-4 ${isCollapsed ? 'px-2' : 'p-6'}`}>
             <Suspense fallback={
               <div className="animate-pulse space-y-2">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div key={i} className={`h-10 bg-gray-200 dark:bg-gray-700 rounded ${isCollapsed ? 'w-10 mx-auto' : ''}`}></div>
                 ))}
               </div>
             }>
-              <ComprehensiveNavigation />
+              <ComprehensiveNavigation isCollapsed={isCollapsed} />
             </Suspense>
           </div>
 
@@ -156,7 +162,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setIsSidebarOpen(true)}
+                  onClick={toggleSidebar}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
                 >
                   <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
