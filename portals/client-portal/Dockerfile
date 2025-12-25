@@ -57,6 +57,10 @@ COPY . .
 # Switch to the service directory
 WORKDIR /app/${SERVICE_PATH}
 
+# Remove root configuration files to prevent Next.js from detecting workspace root incorrectly
+# and using the wrong tsconfig.json/package-lock.json
+RUN rm -f /app/package-lock.json /app/package.json /app/tsconfig.json
+
 # Install dependencies
 RUN npm ci --legacy-peer-deps
 
