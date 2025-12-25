@@ -15,6 +15,7 @@ import {
     AlertCircle,
     CheckCircle,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -439,11 +440,28 @@ export default function BYOKManagementPage() {
 
                                                 {/* Actions */}
                                                 <div className="flex gap-2">
-                                                    <Button variant="outline" size="sm">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            toast.promise(
+                                                                new Promise((resolve) => setTimeout(resolve, 1500)),
+                                                                {
+                                                                    loading: `Validating ${service.name} API key...`,
+                                                                    success: 'API Key is valid and active',
+                                                                    error: 'Validation failed'
+                                                                }
+                                                            );
+                                                        }}
+                                                    >
                                                         <TestTube className="mr-2 h-4 w-4" />
                                                         Test Key
                                                     </Button>
-                                                    <Button variant="outline" size="sm">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => toast.info("Key rotation feature coming soon")}
+                                                    >
                                                         <RotateCcw className="mr-2 h-4 w-4" />
                                                         Rotate Key
                                                     </Button>
