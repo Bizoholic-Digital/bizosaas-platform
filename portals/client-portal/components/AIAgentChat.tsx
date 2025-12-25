@@ -50,15 +50,21 @@ export const AIAgentChat: React.FC = () => {
 
         try {
             // In a real scenario, we'd use a session ID from the backend
-            const response = await agentsApi.executeTask('personal_assistant', text, {});
+            const apiRes = await agentsApi.executeTask({
+                agent_id: 'personal_assistant',
+                task_description: text,
+                input_data: {}
+            });
+
+            const result = apiRes.data?.result_data || {};
 
             const agentMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'agent',
-                content: response.response || "I've processed your request. How else can I help?",
-                agentName: response.agent_name || 'Assistant',
+                content: result.response || "I've processed your request. How else can I help?",
+                agentName: result.agent_name || 'Assistant',
                 timestamp: new Date(),
-                suggestions: response.suggestions
+                suggestions: result.suggestions
             };
 
             setMessages(prev => [...prev, agentMessage]);
@@ -77,7 +83,7 @@ export const AIAgentChat: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-[600px] bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="flex flex-col h-full w-full bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 shadow-2xl">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/80 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -110,15 +116,15 @@ export const AIAgentChat: React.FC = () => {
                     >
                         <div className={`flex gap-3 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${msg.role === 'user'
-                                    ? 'bg-slate-700 border-slate-600'
-                                    : 'bg-indigo-500/10 border-indigo-500/30'
+                                ? 'bg-slate-700 border-slate-600'
+                                : 'bg-indigo-500/10 border-indigo-500/30'
                                 }`}>
                                 {msg.role === 'user' ? <User className="w-4 h-4 text-slate-300" /> : <Bot className="w-4 h-4 text-indigo-400" />}
                             </div>
                             <div className="space-y-2">
                                 <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-indigo-600 text-white rounded-tr-none'
-                                        : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
+                                    ? 'bg-indigo-600 text-white rounded-tr-none'
+                                    : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none'
                                     }`}>
                                     {msg.content}
                                 </div>
