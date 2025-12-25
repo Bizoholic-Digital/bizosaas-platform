@@ -46,7 +46,7 @@ ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
+# NODE_ENV will be default (development) during build to install devDependencies like TypeScript
 
 # Install global dependencies
 RUN apk add --no-cache libc6-compat
