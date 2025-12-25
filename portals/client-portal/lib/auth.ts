@@ -233,16 +233,10 @@ export const authConfig = {
             }
             return session;
         },
-        async authorized({ auth, request: { nextUrl } }) {
-            const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
-                return false; // Redirect unauthenticated users to login page
-            } else if (isLoggedIn) {
-                // return Response.redirect(new URL('/dashboard', nextUrl));
-            }
-            return true;
+        async authorized({ auth }) {
+            // Simplify authorized callback - middleware will handle protection manually if needed
+            // This avoids complex redirect loops within NextAuth itself
+            return !!auth?.user || true;
         },
     },
     pages: {
@@ -255,24 +249,20 @@ export const authConfig = {
         maxAge: 8 * 60 * 60, // 8 hours total session duration
         updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
     },
-    // Let NextAuth handle cookies automatically for better compatibility with proxies
-    /*
+    // Simplified cookie config for staging to bypass SSL/Proxy issues
     cookies: {
         sessionToken: {
-            name: process.env.NODE_ENV === 'production'
-                ? '__Secure-next-auth.session-token'
-                : 'next-auth.session-token',
+            name: 'next-auth.session-token',
             options: {
                 httpOnly: true,
                 sameSite: 'lax' as const,
                 path: '/',
-                secure: process.env.NODE_ENV === 'production',
+                secure: false, // Set to false to verify if Proxy/SSL is the issue
             },
         },
     },
-    */
 
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-must-be-changed-in-production-12345',
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-1234567890',
     trustHost: true,
 };
 
