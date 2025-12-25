@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Depends
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from datetime import datetime
 import uuid
+from sqlalchemy.orm import Session
+
+from app.dependencies import get_db, get_current_user
+from app.models.agent import Agent
+from domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/agents", tags=["ai-agents"])
 
@@ -151,18 +156,75 @@ AGENTS = [
 # Mock conversation storage
 conversations: Dict[str, List[ChatMessage]] = {}
 
-@router.get("/", response_model=List[AgentConfig])
-async def list_agents():
-    """List all available AI agents"""
-    return AGENTS
+@router.get("/", response_model=List[Dict[str, Any]])
+async def list_agents(
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """List all available AI agents (System + Custom)"""
+    tenant_id = user.tenant_id or "default_tenant"
+    
+    # Get custom agents from DB
+    custom_agents = db.query(Agent).filter(Agent.tenant_id == tenant_id).all()
+    custom_agents_dict = [a.to_dict() for a in custom_agents]
+    
+    # Combine with system agents
+    system_agents_dict = [a.dict() for a in AGENTS]
+    for sa in system_agents_dict:
+        sa["is_system"] = True
+        
+    return system_agents_dict + custom_agents_dict
 
-@router.get("/{agent_id}", response_model=AgentConfig)
-async def get_agent(agent_id: str):
+@router.post("/", response_model=Dict[str, Any])
+async def create_agent(
+    agent_data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Create a new custom AI agent"""
+    tenant_id = user.tenant_id or "default_tenant"
+    
+    new_agent = Agent(
+        tenant_id=tenant_id,
+        name=agent_data.get("name"),
+        description=agent_data.get("description"),
+        role=agent_data.get("role"),
+        category=agent_data.get("category", "general"),
+        capabilities=agent_data.get("capabilities", []),
+        tools=agent_data.get("tools", []),
+        icon=agent_data.get("icon", "🤖"),
+        color=agent_data.get("color", "#4f46e5"),
+        instructions=agent_data.get("instructions"),
+        created_by=user.email
+    )
+    
+    db.add(new_agent)
+    db.commit()
+    db.refresh(new_agent)
+    
+    return new_agent.to_dict()
+
+@router.get("/{agent_id}")
+async def get_agent(
+    agent_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
     """Get specific agent details"""
+    # Check system agents first
     agent = next((a for a in AGENTS if a.id == agent_id), None)
-    if not agent:
+    if agent:
+        data = agent.dict()
+        data["is_system"] = True
+        return data
+        
+    # Check custom agents
+    tenant_id = user.tenant_id or "default_tenant"
+    custom_agent = db.query(Agent).filter(Agent.id == agent_id, Agent.tenant_id == tenant_id).first()
+    if not custom_agent:
         raise HTTPException(status_code=404, detail="Agent not found")
-    return agent
+        
+    return custom_agent.to_dict()
 
 @router.post("/{agent_id}/chat", response_model=ChatResponse)
 async def chat_with_agent(

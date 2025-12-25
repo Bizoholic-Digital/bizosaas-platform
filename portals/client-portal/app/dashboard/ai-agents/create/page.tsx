@@ -9,22 +9,54 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
-import { Bot, Sparkles, Zap, Shield, ArrowLeft, Palette } from 'lucide-react';
+import { Bot, Sparkles, Zap, Shield, ArrowLeft, Palette, Database, Mail, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { agentsApi } from '@/lib/api/agents';
 
 export default function CreateAgentPage() {
     const router = useRouter();
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
 
+    // Form State
+    const [formData, setFormData] = useState({
+        name: '',
+        category: 'marketing',
+        role: '',
+        color: '#4f46e5',
+        instructions: '',
+        tools: ['web_browser'],
+        capabilities: ['general_assistance']
+    });
+
     const handleCreate = async () => {
+        if (!formData.name || !formData.instructions) {
+            toast.error("Please fill in the agent name and instructions.");
+            return;
+        }
+
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            toast.success("AI Agent configured and deployed!");
-            router.push('/ai-agents');
+        try {
+            const res = await agentsApi.createAgent({
+                name: formData.name,
+                category: formData.category,
+                role: formData.role,
+                color: formData.color,
+                instructions: formData.instructions,
+                tools: formData.tools,
+                capabilities: formData.capabilities
+            });
+
+            if (res.data) {
+                toast.success("AI Agent configured and deployed!");
+                router.push('/dashboard/ai-agents'); // Redirect back to library
+            }
+        } catch (error: any) {
+            console.error('Failed to create agent:', error);
+            toast.error(error.message || "Failed to deploy agent engine.");
+        } finally {
             setLoading(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -69,11 +101,19 @@ export default function CreateAgentPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">Agent Name</Label>
-                                        <Input id="name" placeholder="e.g. Sales Optimizer Prime" />
+                                        <Input
+                                            id="name"
+                                            placeholder="e.g. Sales Optimizer Prime"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="category">Specialization</Label>
-                                        <Select defaultValue="marketing">
+                                        <Select
+                                            value={formData.category}
+                                            onValueChange={(val) => setFormData({ ...formData, category: val })}
+                                        >
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select type" />
                                             </SelectTrigger>
@@ -82,19 +122,30 @@ export default function CreateAgentPage() {
                                                 <SelectItem value="sales">Sales Assistant</SelectItem>
                                                 <SelectItem value="ops">Ops Coordinator</SelectItem>
                                                 <SelectItem value="support">Customer Support</SelectItem>
+                                                <SelectItem value="general">General Purpose</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="role">Role Title</Label>
-                                    <Input id="role" placeholder="e.g. Content Strategy Lead" />
+                                    <Input
+                                        id="role"
+                                        placeholder="e.g. Content Strategy Lead"
+                                        value={formData.role}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="color">Brand Color</Label>
                                     <div className="flex gap-4">
                                         {['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'].map(c => (
-                                            <button key={c} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: c }} />
+                                            <button
+                                                key={c}
+                                                className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all ${formData.color === c ? 'border-indigo-600 scale-110' : 'border-white'}`}
+                                                style={{ backgroundColor: c }}
+                                                onClick={() => setFormData({ ...formData, color: c })}
+                                            />
                                         ))}
                                         <Button variant="outline" size="icon" className="w-8 h-8"><Palette className="w-4 h-4" /></Button>
                                     </div>
@@ -110,24 +161,35 @@ export default function CreateAgentPage() {
                                         id="instructions"
                                         placeholder="Explain how this agent should act, its tone, and its specific goals..."
                                         className="min-h-[150px] font-mono text-sm"
+                                        value={formData.instructions}
+                                        onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-4">
                                     <Label>Enabled Toolsets</Label>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {[
-                                            { name: 'Web Browser', icon: <Zap className="w-4 h-4" /> },
-                                            { name: 'Database Connector', icon: <Database className="w-4 h-4" /> },
-                                            { name: 'Email Dispatcher', icon: <Mail className="w-4 h-4" /> },
-                                            { name: 'Task Executor', icon: <CheckSquare className="w-4 h-4" /> }
+                                            { id: 'web_browser', name: 'Web Browser', icon: <Zap className="w-4 h-4" /> },
+                                            { id: 'database', name: 'Database Connector', icon: <Database className="w-4 h-4" /> },
+                                            { id: 'email', name: 'Email Dispatcher', icon: <Mail className="w-4 h-4" /> },
+                                            { id: 'task', name: 'Task Executor', icon: <CheckSquare className="w-4 h-4" /> }
                                         ].map(tool => (
-                                            <div key={tool.name} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                                            <div
+                                                key={tool.id}
+                                                className={`flex items-center justify-between p-3 rounded-xl border transition-colors cursor-pointer ${formData.tools.includes(tool.id) ? 'border-indigo-200 bg-indigo-50/50' : 'border-slate-100 hover:bg-slate-50'}`}
+                                                onClick={() => {
+                                                    const newTools = formData.tools.includes(tool.id)
+                                                        ? formData.tools.filter(t => t !== tool.id)
+                                                        : [...formData.tools, tool.id];
+                                                    setFormData({ ...formData, tools: newTools });
+                                                }}
+                                            >
                                                 <div className="flex items-center gap-2">
                                                     {tool.icon}
                                                     <span className="text-sm font-medium">{tool.name}</span>
                                                 </div>
-                                                <div className="w-10 h-5 bg-indigo-600 rounded-full flex items-center px-1">
-                                                    <div className="w-3 h-3 bg-white rounded-full translate-x-5" />
+                                                <div className={`w-10 h-5 rounded-full flex items-center px-1 transition-colors ${formData.tools.includes(tool.id) ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+                                                    <div className={`w-3 h-3 bg-white rounded-full transition-transform ${formData.tools.includes(tool.id) ? 'translate-x-5' : 'translate-x-0'}`} />
                                                 </div>
                                             </div>
                                         ))}
@@ -154,7 +216,7 @@ export default function CreateAgentPage() {
                                 </div>
                                 <div className="flex items-center gap-2 p-4 bg-amber-50 rounded-xl border border-amber-100 text-amber-800 text-sm">
                                     <Shield className="w-5 h-5 flex-shrink-0" />
-                                    This agent will have access to your connected WordPress and HubSpot data. Ensure prompts are secure.
+                                    This agent will have access to your connected services data based on your BYOK configuration.
                                 </div>
                             </div>
                         )}
@@ -165,11 +227,11 @@ export default function CreateAgentPage() {
                             Previous
                         </Button>
                         {step < 3 ? (
-                            <Button onClick={() => setStep(step + 1)}>
+                            <Button onClick={() => setStep(step + 1)} disabled={step === 1 && !formData.name}>
                                 Continue <Sparkles className="ml-2 h-4 w-4" />
                             </Button>
                         ) : (
-                            <Button className="bg-indigo-600 hover:bg-slate-950" onClick={handleCreate} disabled={loading}>
+                            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={handleCreate} disabled={loading}>
                                 {loading ? "Deploying..." : "Deploy Agent Engine"} <Zap className="ml-2 h-4 w-4" />
                             </Button>
                         )}
@@ -179,6 +241,3 @@ export default function CreateAgentPage() {
         </DashboardLayout>
     );
 }
-
-// Reuse some icons
-import { Database, Mail, CheckSquare } from 'lucide-react';

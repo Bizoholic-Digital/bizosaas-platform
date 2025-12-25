@@ -9,6 +9,7 @@ export interface AgentConfig {
     tools: string[];
     icon: string;
     color: string;
+    category?: string;
 }
 
 export interface AgentTaskRequest {
@@ -27,17 +28,20 @@ export interface AgentTaskResponse {
 
 export const agentsApi = {
     getAgents: (): Promise<ApiResponse<AgentConfig[]>> =>
-        brainApi.get('/api/brain/agents'),
+        brainApi.get('/api/brain/agents/'),
 
     getAgent: (agentId: string): Promise<ApiResponse<AgentConfig>> =>
-        brainApi.get(`/api/brain/agents/${agentId}`),
+        brainApi.get(`/api/brain/agents/${agentId}/`),
+
+    createAgent: (agent: Partial<AgentConfig> & { instructions: string }): Promise<ApiResponse<AgentConfig>> =>
+        brainApi.post('/api/brain/agents/', agent),
 
     executeTask: (request: AgentTaskRequest): Promise<ApiResponse<AgentTaskResponse>> =>
-        brainApi.post(`/api/brain/agents/${request.agent_id}/task`, request),
+        brainApi.post(`/api/brain/agents/${request.agent_id}/task/`, request),
 
     getTaskStatus: (taskId: string): Promise<ApiResponse<AgentTaskResponse>> =>
-        brainApi.get(`/api/brain/tasks/${taskId}`),
+        brainApi.get(`/api/brain/tasks/${taskId}/`),
 
     getAgentHistory: (agentId: string): Promise<ApiResponse<any[]>> =>
-        brainApi.get(`/api/brain/agents/${agentId}/history`)
+        brainApi.get(`/api/brain/agents/${agentId}/history/`)
 };
