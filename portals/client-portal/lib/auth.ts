@@ -15,6 +15,7 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_URL) {
 }
 
 export const authConfig = {
+    trustHost: true,
     providers: [
         // Google OAuth
         ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
@@ -236,7 +237,7 @@ export const authConfig = {
         async authorized({ auth }) {
             // Simplify authorized callback - middleware will handle protection manually if needed
             // This avoids complex redirect loops within NextAuth itself
-            return !!auth?.user || true;
+            return auth;
         },
     },
     pages: {
@@ -265,7 +266,6 @@ export const authConfig = {
     secret: (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length > 8)
         ? process.env.NEXTAUTH_SECRET
         : 'bizosaas-staging-emergency-fallback-secret-2024',
-    trustHost: true,
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
