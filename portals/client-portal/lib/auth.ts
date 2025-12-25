@@ -48,7 +48,10 @@ export const authConfig = {
                 }
             })
         ] : []),
-        // Authentik SSO (optional, for advanced users)
+        // Authentik SSO (disabled for Client Portal - uses background ROPC instead)
+        // Users login via email/password which authenticates against Authentik in the background
+        // To re-enable SSO redirect: uncomment lines below
+        /*
         ...(process.env.AUTHENTIK_CLIENT_ID && process.env.AUTHENTIK_CLIENT_SECRET ? [
             Authentik({
                 name: 'BizOSaaS SSO',
@@ -65,6 +68,7 @@ export const authConfig = {
                 userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
             })
         ] : []),
+        */
         Credentials({
             name: 'Email & Password',
             credentials: {
