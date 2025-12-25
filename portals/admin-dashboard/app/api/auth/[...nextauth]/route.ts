@@ -37,11 +37,12 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                console.log('🔐 [Admin] Authorize called for:', credentials?.email);
                 if (!credentials?.email || !credentials?.password) return null;
 
                 // TEST USER: For staging verification (remove in production)
                 if (credentials.email === 'admin@bizoholic.net' && credentials.password === 'admin123') {
-                    console.log("✅ Admin demo user login successful");
+                    console.log("✅ [Admin] Demo user login success - returning user object");
                     return {
                         id: 'admin-demo-001',
                         name: 'Admin Demo',
@@ -51,8 +52,11 @@ export const authOptions: NextAuthOptions = {
                     } as any;
                 }
 
+                console.log('🔄 [Admin] Env check - AUTHENTIK_URL:', AUTHENTIK_URL);
                 const AUTHENTIK_CLIENT_ID = process.env.AUTHENTIK_CLIENT_ID;
                 const AUTHENTIK_CLIENT_SECRET = process.env.AUTHENTIK_CLIENT_SECRET;
+                console.log('🔄 [Admin] Env check - CLIENT_ID exists:', !!AUTHENTIK_CLIENT_ID);
+                console.log('🔄 [Admin] Env check - CLIENT_SECRET exists:', !!AUTHENTIK_CLIENT_SECRET);
 
                 // Method 1: ROPC flow against Authentik
                 if (AUTHENTIK_CLIENT_ID && AUTHENTIK_CLIENT_SECRET) {
@@ -221,6 +225,17 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
     },
     debug: true,
+    logger: {
+        error(code, metadata) {
+            console.error('❌ [AUTH ERROR]', code, metadata);
+        },
+        warn(code) {
+            console.warn('⚠️ [AUTH WARN]', code);
+        },
+        debug(code, metadata) {
+            console.log('🔍 [AUTH DEBUG]', code, metadata);
+        },
+    },
     secret: (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length > 8)
         ? process.env.NEXTAUTH_SECRET
         : 'bizosaas-staging-emergency-fallback-secret-2024',
