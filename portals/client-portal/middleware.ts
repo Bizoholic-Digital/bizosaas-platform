@@ -25,12 +25,14 @@ export default auth(async (req) => {
 
             if (accessToken) {
                 // Call Brain Gateway API to check onboarding status
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+                const apiUrl = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
+                console.log('🛡️ Middleware: Checking onboarding for', session.user.email, 'at', apiUrl);
                 const response = await fetch(`${apiUrl}/api/brain/users/profile`, {
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
                         'Content-Type': 'application/json',
                     },
+                    cache: 'no-store'
                 });
 
                 if (response.ok) {

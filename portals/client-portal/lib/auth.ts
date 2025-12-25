@@ -255,6 +255,8 @@ export const authConfig = {
         maxAge: 8 * 60 * 60, // 8 hours total session duration
         updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
     },
+    // Let NextAuth handle cookies automatically for better compatibility with proxies
+    /*
     cookies: {
         sessionToken: {
             name: process.env.NODE_ENV === 'production'
@@ -268,8 +270,9 @@ export const authConfig = {
             },
         },
     },
+    */
 
-    secret: process.env.NEXTAUTH_SECRET || 'development-secret-change-in-production',
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-must-be-changed-in-production',
     trustHost: true,
 };
 
