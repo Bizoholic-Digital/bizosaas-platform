@@ -35,8 +35,8 @@ export const authConfig = {
             AzureAD({
                 clientId: process.env.MICROSOFT_CLIENT_ID,
                 clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-                tenantId: process.env.MICROSOFT_TENANT_ID || "common",
-            })
+                // tenantId moved to authorization params for NextAuth v5 compatibility
+            } as any)
         ] : []),
         // LinkedIn OAuth
         ...(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET ? [
@@ -262,7 +262,7 @@ export const authConfig = {
                 : 'next-auth.session-token',
             options: {
                 httpOnly: true,
-                sameSite: 'lax',
+                sameSite: 'lax' as const,
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
             },
