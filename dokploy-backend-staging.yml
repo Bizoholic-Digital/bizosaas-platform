@@ -14,11 +14,16 @@ services:
       - DATABASE_URL=${DATABASE_URL:-postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging}
       - REDIS_URL=${REDIS_URL:-redis://bizosaas-redis-staging:6379/0}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ENVIRONMENT=staging
       - AUTH_URL=http://auth-service:8006
+      - CMS_URL=http://bizosaas-wagtail-staging:8000
+      - CRM_URL=http://bizosaas-django-crm-staging:8000
+      - SALEOR_URL=http://bizosaas-saleor-staging:8000
       - LOG_LEVEL=INFO
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - VAULT_URL=${VAULT_URL:-https://vault-cluster.vault.8200.full.url}
+      - VAULT_TOKEN=${VAULT_TOKEN:-}
+      - VAULT_MOUNT_POINT=${VAULT_MOUNT_POINT:-secret}
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -88,7 +93,7 @@ services:
     pull_policy: always
     container_name: bizosaas-ai-agents-staging
     ports:
-      - "8008:8002"
+      - "8008:8000"
     environment:
       - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
       - REDIS_URL=redis://bizosaas-redis-staging:6379/8
@@ -107,7 +112,7 @@ services:
           cpus: '0.1'
           memory: 256M
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8002/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

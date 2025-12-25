@@ -36,6 +36,11 @@ export default withAuth(
         pages: {
             signIn: "/login",
         },
+        cookies: {
+            sessionToken: {
+                name: 'bizosaas-admin-dashboard.session-token',
+            },
+        },
         secret: secret,
     }
 );

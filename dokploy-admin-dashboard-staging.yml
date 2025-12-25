@@ -20,6 +20,10 @@ services:
       - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - VAULT_ADDR=${VAULT_URL:-https://vault-cluster.vault.8200.full.url}
+      - VAULT_TOKEN=${VAULT_TOKEN:-}
+      - VAULT_SECRET_PATH=${VAULT_SECRET_PATH:-bizosaas/stg/admin-dashboard}
+      - VAULT_MOUNT_POINT=${VAULT_MOUNT_POINT:-secret}
     networks:
       - dokploy-network
     restart: unless-stopped

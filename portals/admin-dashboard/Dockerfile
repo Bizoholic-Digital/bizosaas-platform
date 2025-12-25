@@ -71,6 +71,8 @@ RUN mkdir .next && chown nextjs:nodejs .next
 COPY --from=builder /app/portals/admin-dashboard/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/static ./.next/static
+# Copy vault injector (Note: Copying from context root)
+COPY scripts/vault-injector.js ./scripts/vault-injector.js
 
 USER nextjs
 
@@ -81,4 +83,5 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
-CMD ["node", "server.js"]
+# Start with Vault secret injection
+CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]

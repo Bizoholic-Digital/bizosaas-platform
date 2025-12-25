@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Plus,
     Key,
@@ -41,6 +41,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { SERVICE_CATALOG, maskAPIKey, validateKeyFormat, calculateKeyStrength, type ServiceId } from '@/lib/ai'
+import { byokApi } from '@/lib/api/byok'
 
 export default function BYOKManagementPage() {
     const [selectedCategory, setSelectedCategory] = useState<string>('all')
@@ -50,28 +51,43 @@ export default function BYOKManagementPage() {
     const [keyValue, setKeyValue] = useState('')
     const [showKey, setShowKey] = useState(false)
     const [isValidating, setIsValidating] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
-    // Mock data - would come from API
-    const [configuredKeys, setConfiguredKeys] = useState<Record<string, any>>({
-        openai: {
-            service: 'openai',
-            keyType: 'api_key',
-            value: 'sk-proj-1234567890abcdefghijklmnopqrstuvwxyz1234',
-            isValid: true,
-            lastUsed: '2 hours ago',
-            requests: 1234,
-            cost: 12.45,
-        },
-        stripe: {
-            service: 'stripe',
-            keyType: 'secret_key',
-            value: 'sk_live_placeholder_key_DoNotUse',
-            isValid: true,
-            lastUsed: '1 day ago',
-            requests: 456,
-            cost: 0,
-        },
-    })
+    // State for configured keys from API
+    const [configuredKeys, setConfiguredKeys] = useState<Record<string, any>>({})
+
+    // Fetch keys on mount
+    useEffect(() => {
+        fetchConfiguredKeys()
+    }, [])
+
+    const fetchConfiguredKeys = async () => {
+        setIsLoading(true)
+        try {
+            const res = await byokApi.getConfiguredKeys()
+            if (res.data) {
+                const mapped: Record<string, any> = {}
+                res.data.filter((c: any) => c.status === 'connected').forEach((c: any) => {
+                    mapped[c.id] = {
+                        service: c.id,
+                        keyType: 'api_key', // Default
+                        isValid: true,
+                        lastUsed: c.lastSync || 'Never',
+                        requests: 0,
+                        cost: 0,
+                        name: c.name,
+                        icon: c.icon
+                    }
+                })
+                setConfiguredKeys(mapped)
+            }
+        } catch (error) {
+            console.error('Failed to fetch keys:', error)
+            toast.error('Failed to load configured keys')
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const categories = [
         { value: 'all', label: 'All Services' },
@@ -97,44 +113,66 @@ export default function BYOKManagementPage() {
         selectedCategory === 'all' || service.category === selectedCategory
     )
 
-    const handleValidateKey = () => {
+    const handleValidateKey = async () => {
         if (!selectedService || !selectedKeyType || !keyValue) return
 
         setIsValidating(true)
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            // Test the key before adding
+            // Note: backend connect endpoint also validates
+            const res = await byokApi.testKey(selectedService)
+            if (res.data?.valid) {
+                toast.success('Key validation successful!')
+            } else {
+                toast.error('Key validation failed. Please check your key.')
+            }
+        } catch (error) {
+            toast.error('Error validating key')
+        } finally {
             setIsValidating(false)
-            // Would call actual validation API
-        }, 1500)
+        }
     }
 
-    const handleAddKey = () => {
+    const handleAddKey = async () => {
         if (!selectedService || !selectedKeyType || !keyValue) return
 
-        setConfiguredKeys({
-            ...configuredKeys,
-            [selectedService]: {
-                service: selectedService,
-                keyType: selectedKeyType,
-                value: keyValue,
-                isValid: true,
-                lastUsed: 'Never',
-                requests: 0,
-                cost: 0,
-            },
-        })
+        setIsLoading(true)
+        try {
+            const res = await byokApi.addKey({
+                service_id: selectedService,
+                key_type: selectedKeyType,
+                value: keyValue
+            })
 
-        // Reset form
-        setSelectedService('')
-        setSelectedKeyType('')
-        setKeyValue('')
-        setShowAddDialog(false)
+            if (res.data?.status === 'connected') {
+                toast.success(res.data.message || `Successfully connected ${selectedService}`)
+                await fetchConfiguredKeys() // Refresh list
+
+                // Reset form
+                setSelectedService('')
+                setSelectedKeyType('')
+                setKeyValue('')
+                setShowAddDialog(false)
+            } else {
+                toast.error('Failed to add key')
+            }
+        } catch (error: any) {
+            toast.error(error.message || 'Error adding key')
+        } finally {
+            setIsLoading(false)
+        }
     }
 
-    const handleDeleteKey = (serviceId: string) => {
-        const newKeys = { ...configuredKeys }
-        delete newKeys[serviceId]
-        setConfiguredKeys(newKeys)
+    const handleDeleteKey = async (serviceId: string) => {
+        try {
+            const res = await byokApi.deleteKey(serviceId)
+            if (res.data?.status === 'disconnected') {
+                toast.success(`Successfully disconnected ${serviceId}`)
+                await fetchConfiguredKeys() // Refresh list
+            }
+        } catch (error) {
+            toast.error('Error deleting key')
+        }
     }
 
     const validation = selectedService && selectedKeyType && keyValue
@@ -203,7 +241,7 @@ export default function BYOKManagementPage() {
                                             {SERVICE_CATALOG[selectedService as ServiceId].keyTypes.map((type) => (
                                                 <SelectItem key={type} value={type}>
                                                     {type.replace('_', ' ')}
-                                                    {SERVICE_CATALOG[selectedService as ServiceId].requiredKeys.includes(type) && (
+                                                    {(SERVICE_CATALOG[selectedService as ServiceId].requiredKeys as any).includes(type) && (
                                                         <Badge variant="destructive" className="ml-2">Required</Badge>
                                                     )}
                                                 </SelectItem>
@@ -460,7 +498,10 @@ export default function BYOKManagementPage() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => toast.info("Key rotation feature coming soon")}
+                                                        onClick={() => {
+                                                            setSelectedService(serviceId as ServiceId)
+                                                            setShowAddDialog(true)
+                                                        }}
                                                     >
                                                         <RotateCcw className="mr-2 h-4 w-4" />
                                                         Rotate Key
