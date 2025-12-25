@@ -68,6 +68,7 @@ def get_installed(
         "mcp": {
             "name": inst.mcp.name,
             "slug": inst.mcp.slug,
+            "category": inst.mcp.category.slug,
             "icon": inst.mcp.category.icon
         }
     } for inst in installations]

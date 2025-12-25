@@ -140,6 +140,11 @@ export const brainApi = {
             });
             if (!res.ok) throw new Error('Installation failed');
             return res.json();
+        },
+        getInstalled: async (): Promise<any[]> => {
+            const res = await fetch(`${BRAIN_GATEWAY_URL}/api/mcp/installed`);
+            if (!res.ok) throw new Error('Failed to fetch installed MCPs');
+            return res.json();
         }
     },
     cms: {

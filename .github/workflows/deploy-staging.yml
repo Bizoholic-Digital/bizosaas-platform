@@ -30,8 +30,8 @@ jobs:
             context: ./bizosaas-brain-core/ai-agents
             dockerfile: Dockerfile
           - name: client-portal
-            context: ./bizosaas-brain-core/client-portal
-            dockerfile: Dockerfile
+            context: .
+            dockerfile: portals/client-portal/Dockerfile
           - name: admin-dashboard
             context: .
             dockerfile: portals/admin-dashboard/Dockerfile
