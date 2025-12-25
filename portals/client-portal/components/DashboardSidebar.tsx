@@ -188,7 +188,10 @@ export function DashboardSidebar({
                                 </div>
                             </div>
                             <button
-                                onClick={() => signOut({ callbackUrl: '/login' })}
+                                onClick={async () => {
+                                    await signOut({ redirect: false });
+                                    window.location.href = '/login';
+                                }}
                                 className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 title="Logout"
                             >
@@ -197,7 +200,10 @@ export function DashboardSidebar({
                         </div>
                     ) : (
                         <button
-                            onClick={() => signOut({ callbackUrl: '/login' })}
+                            onClick={async () => {
+                                await signOut({ redirect: false });
+                                window.location.href = '/login';
+                            }}
                             className="w-full p-2 flex justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                             title="Logout"
                         >
