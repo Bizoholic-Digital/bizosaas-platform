@@ -146,6 +146,8 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         }),
+        // Authentik SSO (disabled - uses background ROPC instead)
+        /*
         {
             id: "authentik",
             name: "BizOSaaS SSO",
@@ -175,6 +177,7 @@ export const authOptions: NextAuthOptions = {
                 };
             },
         } as any,
+        */
     ],
     callbacks: {
         async jwt({ token, user, account, profile }: any) {
