@@ -48,8 +48,7 @@ export function ClientLoginForm() {
                 console.log('✅ [Client] Sign-in result:', result);
 
                 if (result?.ok) {
-                    console.log('🚀 [Client] Success, redirecting...');
-                    window.location.href = callbackUrl;
+                    console.log('🚀 [Client] Success, return ok status');
                     return { ok: true };
                 }
 
