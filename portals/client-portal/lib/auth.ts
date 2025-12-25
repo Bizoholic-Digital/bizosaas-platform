@@ -201,8 +201,9 @@ export const authConfig = {
     ],
     callbacks: {
         async jwt({ token, user, account, profile }) {
+            console.log("🛠️ [JWT] Callback triggered. User exists:", !!user, "Account provider:", account?.provider);
             if (user) {
-                console.log("DEBUG: JWT Callback - User:", { id: user.id, hasToken: !!(user as any).access_token });
+                console.log("🛠️ [JWT] Mapping user data to token for:", (user as any).email || 'test-user');
                 token.id = user.id;
                 token.role = (user as any).role;
                 token.tenant_id = (user as any).tenant_id;
@@ -222,7 +223,7 @@ export const authConfig = {
             return token;
         },
         async session({ session, token }) {
-            console.log("DEBUG: Session Callback - Token:", { hasToken: !!token.access_token });
+            console.log("🛠️ [SESSION] Callback triggered. Token sub:", token.sub, "Session user email:", session.user?.email);
             if (token && session.user) {
                 session.user.id = token.id as string;
                 (session.user as any).role = token.role as string;
@@ -230,6 +231,7 @@ export const authConfig = {
                 (session.user as any).brand = token.brand as string;
                 (session as any).access_token = token.access_token as string;
                 (session as any).refresh_token = token.refresh_token as string;
+                console.log("🛠️ [SESSION] Session object populated successfully");
             }
             return session;
         },
@@ -262,7 +264,9 @@ export const authConfig = {
         },
     },
 
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-1234567890',
+    secret: (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length > 8)
+        ? process.env.NEXTAUTH_SECRET
+        : 'bizosaas-staging-emergency-fallback-secret-2024',
     trustHost: true,
 };
 
