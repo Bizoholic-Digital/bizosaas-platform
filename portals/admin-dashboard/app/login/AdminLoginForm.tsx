@@ -26,21 +26,13 @@ function AdminLoginFormContent() {
         setError('');
 
         try {
-            const result = await signIn('credentials', {
+            await signIn('credentials', {
                 email,
                 password,
-                redirect: false,
+                redirect: true,
                 callbackUrl,
             });
-
-            if (result?.error) {
-                console.error("Admin Login Error:", result.error);
-                setError(`Login failed: ${result.error === 'CredentialsSignin' ? 'Invalid admin credentials' : result.error}`);
-            } else if (result?.ok) {
-                window.location.href = callbackUrl;
-            } else {
-                setError('Login failed. Please try again.');
-            }
+            // Redirection happens automatically via NextAuth
         } catch (err) {
             setError('An error occurred during authentication.');
         } finally {
