@@ -83,8 +83,12 @@ export const authConfig = {
 
                 // TEST USER: For staging verification (remove in production)
                 // This bypasses external services to prove NextAuth flow works
+                console.log('🔐 Authorize called with:', credentials.email);
+                console.log('🔐 ENV check - NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+                console.log('🔐 ENV check - NEXTAUTH_SECRET exists:', !!process.env.NEXTAUTH_SECRET);
+
                 if (credentials.email === 'demo@bizoholic.net' && credentials.password === 'demo123') {
-                    console.log("✅ Demo user login successful");
+                    console.log("✅ Demo user login successful - returning user object");
                     return {
                         id: 'demo-user-001',
                         name: 'Demo User',
@@ -245,7 +249,7 @@ export const authConfig = {
         signIn: '/login',
         error: '/login',
     },
-    debug: process.env.NODE_ENV === 'development',
+    debug: true, // Temporarily enabled for troubleshooting
     session: {
         strategy: 'jwt' as const,
         maxAge: 8 * 60 * 60, // 8 hours total session duration
