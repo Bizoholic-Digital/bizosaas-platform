@@ -110,7 +110,7 @@ async def proxy_crm(request: Request, path: str):
 async def proxy_integrations(request: Request, path: str = ""):
     """Proxy for frontend integrations calls"""
     # Simply forward to the connectors router logic
-    url = f"http://localhost:8000/api/connectors/{path}"
+    url = f"http://ai-agents:8000/api/connectors/{path}"
     return await proxy_request(request, url)
 
 @app.api_route("/api/brain/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])

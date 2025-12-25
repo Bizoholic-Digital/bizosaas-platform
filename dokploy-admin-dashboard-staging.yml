@@ -15,7 +15,7 @@ services:
       # NextAuth & Authentik SSO Configuration
       - NEXTAUTH_URL=https://admin.bizoholic.net
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-}
-      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas/}
+      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas-admin/}
       - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID:-Mcaa10L1T1x9LC7uuhRxEzNqnyqUDbp0Nt8rIjT9}
       - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET:-}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
