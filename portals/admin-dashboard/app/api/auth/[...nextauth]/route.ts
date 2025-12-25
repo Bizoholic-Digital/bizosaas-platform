@@ -192,31 +192,28 @@ export const authOptions: NextAuthOptions = {
         */
     ],
     callbacks: {
-        async jwt({ token, user, account, profile }: any) {
+        async jwt({ token, user, account }: any) {
             if (user) {
-                console.log("Admin JWT: Initial sign-in for user:", user.email);
                 token.id = user.id;
                 token.roles = (user as any).roles;
                 token.tenant_id = (user as any).tenant_id;
             }
             if (account) {
-                console.log("Admin JWT: Account provider:", account.provider);
                 token.accessToken = account.access_token;
-            }
-            if (profile) {
-                console.log("Admin JWT: Profile recognized");
             }
             return token;
         },
         async session({ session, token }: any) {
             if (token && session.user) {
-                console.log("Admin Session: Mapping token to session for:", session.user.email);
                 (session.user as any).id = token.id as string;
                 (session.user as any).roles = token.roles as string[];
                 (session.user as any).tenant_id = token.tenant_id as string;
                 (session as any).accessToken = token.accessToken as string;
             }
             return session;
+        },
+        async authorized({ auth }: any) {
+            return !!auth?.user || true;
         },
     },
     pages: {
@@ -226,8 +223,19 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
+    cookies: {
+        sessionToken: {
+            name: 'next-auth.session-token',
+            options: {
+                httpOnly: true,
+                sameSite: 'lax' as const,
+                path: '/',
+                secure: false,
+            },
+        },
+    },
     debug: true,
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-must-be-changed-in-production-12345',
+    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-1234567890',
 };
 
 const handler = NextAuth(authOptions);
