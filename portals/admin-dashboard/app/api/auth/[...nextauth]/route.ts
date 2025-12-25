@@ -166,7 +166,7 @@ export const authOptions: NextAuthOptions = {
             id: "authentik",
             name: "BizOSaaS SSO",
             type: "oauth",
-            wellKnown: `${AUTHENTIK_URL}/application/o/bizosaas-admin/.well-known/openid-configuration`,
+            issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas-admin/`,
             authorization: { params: { scope: "openid profile email groups" } },
             idToken: true,
             clientId: process.env.AUTHENTIK_CLIENT_ID || "",
