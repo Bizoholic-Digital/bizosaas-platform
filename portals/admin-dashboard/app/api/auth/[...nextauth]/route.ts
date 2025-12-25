@@ -212,9 +212,6 @@ export const authOptions: NextAuthOptions = {
             }
             return session;
         },
-        async authorized({ auth }: any) {
-            return !!auth?.user || true;
-        },
     },
     pages: {
         signIn: "/login",
@@ -223,19 +220,10 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
-    cookies: {
-        sessionToken: {
-            name: 'next-auth.session-token',
-            options: {
-                httpOnly: true,
-                sameSite: 'lax' as const,
-                path: '/',
-                secure: false,
-            },
-        },
-    },
     debug: true,
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'bizosaas-staging-secret-1234567890',
+    secret: (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length > 8)
+        ? process.env.NEXTAUTH_SECRET
+        : 'bizosaas-staging-emergency-fallback-secret-2024',
 };
 
 const handler = NextAuth(authOptions);
