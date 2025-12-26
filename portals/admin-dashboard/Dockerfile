@@ -9,8 +9,6 @@ WORKDIR /app
 
 # Copy package files
 COPY portals/admin-dashboard/package.json portals/admin-dashboard/package-lock.json* ./portals/admin-dashboard/
-# Copy shared-ui package.json (if needed for install context, though we use legacy-peer-deps)
-COPY packages/shared-ui/package.json ./packages/shared-ui/
 
 # Install dependencies in the portal directory
 WORKDIR /app/portals/admin-dashboard
@@ -24,9 +22,7 @@ WORKDIR /app
 COPY --from=deps /app/portals/admin-dashboard/node_modules ./portals/admin-dashboard/node_modules
 
 # Copy source code
-COPY portals/admin-dashboard ./portals/admin-dashboard
-# Copy shared-ui INTO the portal directory to match tsconfig paths
-COPY packages/shared-ui ./portals/admin-dashboard/packages/shared-ui
+COPY . .
 
 # Define build arguments
 ARG NEXT_PUBLIC_API_BASE_URL
