@@ -52,11 +52,8 @@ export const authOptions: NextAuthOptions = {
                     } as any;
                 }
 
-                console.log('🔄 [Admin] Env check - AUTHENTIK_URL:', AUTHENTIK_URL);
                 const AUTHENTIK_CLIENT_ID = process.env.AUTHENTIK_CLIENT_ID;
                 const AUTHENTIK_CLIENT_SECRET = process.env.AUTHENTIK_CLIENT_SECRET;
-                console.log('🔄 [Admin] Env check - CLIENT_ID exists:', !!AUTHENTIK_CLIENT_ID);
-                console.log('🔄 [Admin] Env check - CLIENT_SECRET exists:', !!AUTHENTIK_CLIENT_SECRET);
 
                 // Method 1: ROPC flow against Authentik
                 if (AUTHENTIK_CLIENT_ID && AUTHENTIK_CLIENT_SECRET) {
@@ -92,7 +89,6 @@ export const authOptions: NextAuthOptions = {
                                         return [];
                                     });
 
-                                    // Check if user has admin role
                                     if (roles.length === 0) {
                                         console.warn(`User ${profile.email} lacks admin roles for Admin Dashboard`);
                                         return null;
@@ -116,7 +112,6 @@ export const authOptions: NextAuthOptions = {
 
                 // Method 2: Fallback to Auth Service
                 try {
-                    console.log(`Admin Login: Falling back to Auth Service at ${AUTH_SERVICE_URL}`);
                     const response = await fetch(`${AUTH_SERVICE_URL}/auth/sso/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -130,7 +125,6 @@ export const authOptions: NextAuthOptions = {
 
                     if (response.ok) {
                         const data = await response.json();
-                        console.log("Admin Login: Fallback success for", data.user.email);
                         return {
                             id: data.user.id,
                             name: `${data.user.first_name || ''} ${data.user.last_name || ''}`.trim(),
@@ -138,9 +132,6 @@ export const authOptions: NextAuthOptions = {
                             roles: [data.user?.role || 'admin'],
                             tenant_id: data.tenant?.id || "default",
                         };
-                    } else {
-                        const errText = await response.text();
-                        console.error("Admin Login: Fallback failed with status", response.status, errText);
                     }
                 } catch (e) {
                     console.error('Admin fallback login error:', e);
@@ -157,8 +148,8 @@ export const authOptions: NextAuthOptions = {
                     name: profile.name,
                     email: profile.email,
                     image: profile.picture,
-                    roles: ["user"], // Default role for social login
-                    tenant_id: "default", // Default tenant or look up
+                    roles: ["user"],
+                    tenant_id: "default",
                 };
             },
         }),
@@ -173,7 +164,6 @@ export const authOptions: NextAuthOptions = {
             clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || "",
             checks: ["pkce", "state"],
             profile(profile: any) {
-                console.log("Admin SSO Profile Received:", profile.email, "Groups:", profile.groups);
                 const groups = profile.groups || [];
                 const roles = groups.flatMap((g: string) => {
                     if (g === 'authentik Admins') return ['super_admin'];
@@ -213,6 +203,17 @@ export const authOptions: NextAuthOptions = {
             }
             return session;
         },
+        async redirect({ url, baseUrl }: any) {
+            // If we are logging out, redirect to Authentik end-session
+            if (url.includes('api/auth/signout')) {
+                const logoutUrl = new URL(`${AUTHENTIK_URL}/application/o/bizosaas-admin/end-session/`);
+                logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
+                return logoutUrl.toString();
+            }
+            if (url.startsWith("/")) return `${baseUrl}${url}`;
+            else if (new URL(url).origin === baseUrl) return url;
+            return baseUrl;
+        },
     },
     pages: {
         signIn: "/login",
@@ -221,7 +222,6 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
-    // Use unified cookie name for cross-subdomain session sharing
     cookies: {
         sessionToken: {
             name: 'bizosaas-session-token',
@@ -236,15 +236,9 @@ export const authOptions: NextAuthOptions = {
     },
     debug: true,
     logger: {
-        error(code, metadata) {
-            console.error('❌ [AUTH ERROR]', code, metadata);
-        },
-        warn(code) {
-            console.warn('⚠️ [AUTH WARN]', code);
-        },
-        debug(code, metadata) {
-            console.log('🔍 [AUTH DEBUG]', code, metadata);
-        },
+        error(code, metadata) { console.error('❌ [AUTH ERROR]', code, metadata); },
+        warn(code) { console.warn('⚠️ [AUTH WARN]', code); },
+        debug(code, metadata) { console.log('🔍 [AUTH DEBUG]', code, metadata); },
     },
     secret: (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length > 8)
         ? process.env.NEXTAUTH_SECRET

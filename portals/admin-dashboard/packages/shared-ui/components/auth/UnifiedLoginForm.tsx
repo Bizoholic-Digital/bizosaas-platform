@@ -106,7 +106,7 @@ export function UnifiedLoginForm({
     }
 
     return (
-        <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 ${className}`}>
+        <div className={`min-h-screen flex items-center justify-center ${className}`}>
             <div className="max-w-md w-full mx-4">
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-200 dark:border-gray-800">
                     {/* Header */}
@@ -152,7 +152,9 @@ export function UnifiedLoginForm({
                                     Email address
                                 </label>
                                 <div className="relative group">
-                                    <Mail className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    <div className="absolute left-3 top-0 bottom-0 flex items-center justify-center">
+                                        <Mail className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    </div>
                                     <input
                                         id="email"
                                         type="email"
@@ -171,7 +173,9 @@ export function UnifiedLoginForm({
                                     Password
                                 </label>
                                 <div className="relative group">
-                                    <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    <div className="absolute left-3 top-0 bottom-0 flex items-center justify-center">
+                                        <Lock className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    </div>
                                     <input
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
@@ -182,14 +186,16 @@ export function UnifiedLoginForm({
                                         required
                                         disabled={isLoading}
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
-                                        disabled={isLoading}
-                                    >
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </button>
+                                    <div className="absolute right-3 top-0 bottom-0 flex items-center justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                            disabled={isLoading}
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 

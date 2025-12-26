@@ -5,15 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { UnifiedLoginForm } from '@bizosaas/shared-ui'
 import { Shield } from 'lucide-react'
 
-// Simple branding component for admin
-const AdminBranding = () => (
-    <div className="flex flex-col items-center">
-        <div className="p-3 bg-blue-600 rounded-xl shadow-lg mb-2">
-            <Shield className="w-8 h-8 text-white" />
-        </div>
-        <span className="text-sm font-bold tracking-wider text-slate-400 uppercase">System Administration</span>
-    </div>
-)
+// Branding is now unified in the component itself
 
 export default function AdminLoginForm() {
     const router = useRouter()
