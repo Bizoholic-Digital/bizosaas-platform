@@ -35,10 +35,7 @@ export default withAuth(
             },
         },
         pages: {
-            // Redirect unauthenticated users to the central Client Portal login
-            signIn: process.env.NODE_ENV === 'production'
-                ? "https://app.bizoholic.net/login"
-                : "/login",
+            signIn: "/login",
         },
         cookies: {
             sessionToken: {

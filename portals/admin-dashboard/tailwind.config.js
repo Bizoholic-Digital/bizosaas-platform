@@ -8,7 +8,7 @@ module.exports = {
     "./src/**/*.{ts,tsx}",
     "./hooks/**/*.{ts,tsx}",
     "./lib/**/*.{ts,tsx}",
-    "../../packages/shared-ui/**/*.{ts,tsx}",
+    "./packages/shared-ui/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
