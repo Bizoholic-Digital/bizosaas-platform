@@ -135,7 +135,7 @@ export function UnifiedLoginForm({
                                     Email address
                                 </label>
                                 <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-10">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                                         <Mail className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                     </div>
                                     <input
@@ -144,7 +144,7 @@ export function UnifiedLoginForm({
                                         placeholder="Enter your email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-blue-500 rounded-2xl focus:ring-4 focus:ring-blue-500/10 dark:text-white transition-all outline-none text-base font-medium"
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-blue-500 rounded-2xl focus:ring-4 focus:ring-blue-500/10 dark:text-white transition-all outline-none text-base font-medium min-h-[3.5rem]"
                                         required
                                         disabled={isLoading}
                                     />
@@ -156,7 +156,7 @@ export function UnifiedLoginForm({
                                     Password
                                 </label>
                                 <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-10">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                                         <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                     </div>
                                     <input
@@ -165,11 +165,11 @@ export function UnifiedLoginForm({
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-12 pr-14 py-4 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-blue-500 rounded-2xl focus:ring-4 focus:ring-blue-500/10 dark:text-white transition-all outline-none text-base font-medium"
+                                        className="w-full pl-12 pr-14 py-4 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-blue-500 rounded-2xl focus:ring-4 focus:ring-blue-500/10 dark:text-white transition-all outline-none text-base font-medium min-h-[3.5rem]"
                                         required
                                         disabled={isLoading}
                                     />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center z-10">
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center z-10">
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
