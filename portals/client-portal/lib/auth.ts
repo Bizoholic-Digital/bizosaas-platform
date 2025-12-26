@@ -205,6 +205,7 @@ export const authConfig = {
                 console.log("🛠️ [JWT] Mapping user data to token for:", (user as any).email || 'test-user');
                 token.id = user.id;
                 token.role = (user as any).role;
+                token.roles = (user as any).roles || [(user as any).role]; // Store roles array
                 token.tenant_id = (user as any).tenant_id;
                 token.brand = (user as any).brand;
                 token.access_token = (user as any).access_token;
@@ -213,9 +214,17 @@ export const authConfig = {
 
             if (account?.provider === 'authentik' && profile) {
                 const groups = (profile as any).groups || [];
-                const role = groups.includes('authentik Admins') ? 'admin' : 'user';
+                // Standardize roles with admin dashboard
+                const roles = groups.flatMap((g: string) => {
+                    if (g === 'authentik Admins') return ['super_admin'];
+                    if (g === 'admin' || g === 'super_admin' || g === 'platform_admin') return [g];
+                    return [];
+                });
+                const role = roles.length > 0 ? roles[0] : 'user';
+
                 token.id = profile.sub || token.id;
                 token.role = role;
+                token.roles = roles.length > 0 ? roles : ['user'];
                 token.tenant_id = (profile as any).tenant_id || 'default-tenant';
                 token.brand = 'bizoholic';
             }
@@ -226,6 +235,7 @@ export const authConfig = {
             if (token && session.user) {
                 session.user.id = token.id as string;
                 (session.user as any).role = token.role as string;
+                (session.user as any).roles = token.roles as string[];
                 (session.user as any).tenant_id = token.tenant_id as string;
                 (session.user as any).brand = token.brand as string;
                 (session as any).access_token = token.access_token as string;
@@ -239,6 +249,13 @@ export const authConfig = {
             // This avoids complex redirect loops within NextAuth itself
             return auth;
         },
+        async redirect({ url, baseUrl }) {
+            // Allow relative paths and cross-subdomain redirects for bizoholic.net
+            if (url.includes('admin.bizoholic.net')) return url;
+            if (url.startsWith("/")) return `${baseUrl}${url}`;
+            else if (new URL(url).origin === baseUrl) return url;
+            return baseUrl;
+        }
     },
     pages: {
         signIn: '/login',
@@ -250,15 +267,16 @@ export const authConfig = {
         maxAge: 8 * 60 * 60, // 8 hours total session duration
         updateAge: 30 * 60, // Update session every 30 minutes (inactivity timeout)
     },
-    // Use unique cookie name to prevent collisions with other subdomains
+    // Use unified cookie name for cross-subdomain session sharing
     cookies: {
         sessionToken: {
-            name: 'bizosaas-client-portal.session-token',
+            name: 'bizosaas-session-token',
             options: {
                 httpOnly: true,
                 sameSite: 'lax' as const,
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
+                domain: process.env.NODE_ENV === 'production' ? '.bizoholic.net' : undefined,
             },
         },
     },

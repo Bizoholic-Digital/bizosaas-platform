@@ -1,24 +1,29 @@
 'use client'
 
 import { signIn, getSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { UnifiedLoginForm } from '@bizosaas/shared-ui'
 import { PlatformBranding } from '@/components/ui/platform-branding'
 
 export function ClientLoginForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard'
 
     const handleRoleBasedRedirect = async () => {
         const session = await getSession();
         // @ts-ignore
+        const roles = (session?.user as any)?.roles || [];
         const role = (session?.user as any)?.role;
 
-        if (role === 'super_admin' || role === 'platform_admin') {
-            // Redirect to Admin Dashboard
-            window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.bizoholic.net';
+        const isAdmin = roles.includes('super_admin') || roles.includes('platform_admin') || roles.includes('admin') || role === 'admin';
+
+        if (isAdmin && callbackUrl === '/dashboard') {
+            // If they are an admin and didn't specify a callback, send them to admin dash
+            window.location.href = 'https://admin.bizoholic.net/dashboard';
         } else {
             // Use hard redirect to ensure session cookie is picked up
-            window.location.href = '/dashboard';
+            window.location.href = callbackUrl;
         }
     }
 
@@ -34,9 +39,6 @@ export function ClientLoginForm() {
             className="!bg-transparent"
             BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
             onCredentialsLogin={async (email, password) => {
-                // Determine base redirect URL
-                const callbackUrl = '/dashboard';
-
                 console.log('🔄 [Client] Attempting login for:', email);
                 const result = await signIn('credentials', {
                     email,
@@ -48,7 +50,8 @@ export function ClientLoginForm() {
                 console.log('✅ [Client] Sign-in result:', result);
 
                 if (result?.ok) {
-                    console.log('🚀 [Client] Success, return ok status');
+                    console.log('🚀 [Client] Success, performing role-based redirect');
+                    await handleRoleBasedRedirect();
                     return { ok: true };
                 }
 
@@ -58,8 +61,9 @@ export function ClientLoginForm() {
                 }
             }}
             onSSOLogin={async () => {
+                // For SSO, we let NextAuth handle the redirect via callbackUrl
                 await signIn('authentik', {
-                    callbackUrl: '/dashboard',
+                    callbackUrl: callbackUrl,
                 })
             }}
         />
