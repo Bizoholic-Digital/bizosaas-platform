@@ -80,4 +80,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start with Vault secret injection
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]
+CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && if [ -f server.js ]; then node server.js; else node portals/admin-dashboard/server.js; fi"]
