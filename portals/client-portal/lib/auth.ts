@@ -250,6 +250,12 @@ export const authConfig = {
             return auth;
         },
         async redirect({ url, baseUrl }) {
+            // If we are logging out, redirect to Authentik end-session
+            if (url.includes('api/auth/signout')) {
+                const logoutUrl = new URL(`${AUTHENTIK_URL}/application/o/bizosaas/end-session/`);
+                logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
+                return logoutUrl.toString();
+            }
             // Allow relative paths and cross-subdomain redirects for bizoholic.net
             if (url.includes('admin.bizoholic.net')) return url;
             if (url.startsWith("/")) return `${baseUrl}${url}`;
