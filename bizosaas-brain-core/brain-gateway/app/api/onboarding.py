@@ -4,7 +4,8 @@ from typing import List, Optional, Dict
 from enum import Enum
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_identity_port
-from domain.ports.identity_port import IdentityPort, User
+from domain.ports.identity_port import IdentityPort, AuthenticatedUser
+
 
 router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 
