@@ -111,17 +111,26 @@ export function UnifiedLoginForm({
                 <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-200 dark:border-gray-800">
                     {/* Header */}
                     <div className="text-center space-y-4">
-                        {BrandingComponent && (
+                        {BrandingComponent ? (
                             <div className="flex justify-center">
                                 <BrandingComponent />
                             </div>
+                        ) : (
+                            <div className="flex flex-col items-center">
+                                <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-2xl shadow-xl flex items-center justify-center mb-4 transform -rotate-6">
+                                    <span className="text-2xl font-black text-white">BH</span>
+                                </div>
+                                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                    BIZOSaaS Platform
+                                </h1>
+                            </div>
                         )}
                         <div>
-                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                                 {platformName}
                             </h2>
                             {platformSubtitle && (
-                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
                                     {platformSubtitle}
                                 </p>
                             )}
@@ -130,27 +139,27 @@ export function UnifiedLoginForm({
 
                     {/* Error Message */}
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                        <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-r-lg p-4 animate-in fade-in slide-in-from-top-1">
+                            <p className="text-sm text-red-700 dark:text-red-400 font-medium">{error}</p>
                         </div>
                     )}
 
                     {/* Credentials Form */}
                     {(mode === 'credentials' || mode === 'both') && (
-                        <form onSubmit={handleCredentialsSubmit} className="space-y-4">
+                        <form onSubmit={handleCredentialsSubmit} className="space-y-5">
                             <div className="space-y-2">
-                                <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label htmlFor="email" className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
                                     Email address
                                 </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <div className="relative group">
+                                    <Mail className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                                     <input
                                         id="email"
                                         type="email"
                                         placeholder="Enter your email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:bg-gray-800/50 dark:text-white transition-all outline-none"
                                         required
                                         disabled={isLoading}
                                     />
@@ -158,25 +167,25 @@ export function UnifiedLoginForm({
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label htmlFor="password" className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
                                     Password
                                 </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <div className="relative group">
+                                    <Lock className="absolute left-3 top-3.5 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                                     <input
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-12 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                                        className="w-full pl-10 pr-12 py-3 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:bg-gray-800/50 dark:text-white transition-all outline-none"
                                         required
                                         disabled={isLoading}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
                                         disabled={isLoading}
                                     >
                                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -184,29 +193,34 @@ export function UnifiedLoginForm({
                                 </div>
                             </div>
 
-                            <div className="flex items-center">
-                                <input
-                                    id="remember"
-                                    type="checkbox"
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                    disabled={isLoading}
-                                />
-                                <label htmlFor="remember" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    Remember me
-                                </label>
+                            <div className="flex items-center justify-between px-1">
+                                <div className="flex items-center">
+                                    <input
+                                        id="remember"
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-all cursor-pointer"
+                                        disabled={isLoading}
+                                    />
+                                    <label htmlFor="remember" className="ml-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                                    Forgot password?
+                                </a>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
+                                className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center border border-white/10"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
                                     <>
-                                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                                        Signing in...
+                                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                                        Authenticating...
                                     </>
                                 ) : (
                                     <>
@@ -217,9 +231,12 @@ export function UnifiedLoginForm({
                             </button>
 
                             {showDemoCredentials && (
-                                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                                    <p className="text-sm text-blue-700 dark:text-blue-300">
-                                        <strong>Demo Credentials:</strong><br />
+                                <div className="mt-4 p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30 backdrop-blur-sm">
+                                    <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
+                                        <span className="font-bold flex items-center mb-1">
+                                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
+                                            Demo Credentials
+                                        </span>
                                         Email: admin@bizoholic.com<br />
                                         Password: AdminDemo2024!
                                     </p>
@@ -230,12 +247,12 @@ export function UnifiedLoginForm({
 
                     {/* Divider for 'both' mode */}
                     {mode === 'both' && (
-                        <div className="relative">
+                        <div className="relative py-2">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+                                <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
                             </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
+                            <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
+                                <span className="px-4 bg-white dark:bg-gray-900 text-gray-400">Or Secure SSO</span>
                             </div>
                         </div>
                     )}
@@ -243,72 +260,43 @@ export function UnifiedLoginForm({
                     {/* SSO Button */}
                     {(mode === 'sso' || mode === 'both') && (
                         <div className="space-y-4">
-                            {mode === 'sso' && (
-                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                                    <div className="flex items-start space-x-3">
-                                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                                                Secure SSO Authentication
-                                            </p>
-                                            <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
-                                                Sign in with your organization credentials via {ssoProviderName}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
                             <button
                                 type="button"
                                 onClick={handleSSOLogin}
-                                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg flex items-center justify-center"
+                                className="w-full py-3.5 px-4 bg-slate-950 hover:bg-slate-900 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold rounded-xl shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center border border-slate-800 dark:border-slate-200"
                                 disabled={isLoading}
                             >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                </svg>
+                                <Shield className="w-5 h-5 mr-3 text-blue-500" />
                                 Sign in with {ssoProviderName}
                             </button>
                         </div>
                     )}
 
                     {/* Footer */}
-                    <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
-                        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                    <div className="pt-6 border-t border-gray-50 dark:border-gray-801">
+                        <p className="text-[10px] text-center text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold font-sans">
                             {mode === 'sso' || mode === 'both'
-                                ? 'Access restricted to authorized users only'
-                                : 'Secure authentication powered by BizOSaaS'}
+                                ? 'Strictly Restricted Access • BizOSaaS 2024'
+                                : 'Enterprise Grade Security • Powered by BizOSaaS'}
                         </p>
                     </div>
                 </div>
 
-                {/* Signup CTA */}
-                <div className="mt-6 space-y-3">
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
-                        </div>
-                        <div className="relative flex justify-center text-xs">
-                            <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">New to BizOSaaS?</span>
-                        </div>
-                    </div>
-
-                    <a
-                        href="/signup"
-                        className="block w-full py-3 px-4 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 font-semibold rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-all duration-200 text-center"
-                    >
-                        Create New Account
-                    </a>
-
-                    <p className="text-xs text-center text-gray-500 dark:text-gray-500">
-                        Having trouble?{' '}
-                        <a href="mailto:support@bizosaas.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                            Contact Support
+                {/* Bottom Links */}
+                <div className="mt-8 text-center space-y-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Don't have an account?{' '}
+                        <a href="/signup" className="font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                            Get Started
                         </a>
                     </p>
+                    <div className="flex justify-center space-x-4 text-xs font-semibold text-gray-400">
+                        <a href="#" className="hover:text-gray-600">Privacy Policy</a>
+                        <span>•</span>
+                        <a href="#" className="hover:text-gray-600">Terms of Service</a>
+                        <span>•</span>
+                        <a href="mailto:support@bizosaas.com" className="hover:text-gray-600 font-bold text-slate-500">Contact Support</a>
+                    </div>
                 </div>
             </div>
         </div>

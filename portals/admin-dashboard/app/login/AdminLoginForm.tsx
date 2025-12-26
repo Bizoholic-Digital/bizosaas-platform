@@ -24,13 +24,12 @@ export default function AdminLoginForm() {
         <UnifiedLoginForm
             mode="both"
             platformName="Admin Dashboard"
-            platformSubtitle="Platform-Wide Intelligence & Oversight"
+            platformSubtitle="Platform Administration & Management"
             ssoProviderName="BizOSaaS SSO"
             ssoProviderId="authentik"
             defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             className="!bg-transparent"
-            BrandingComponent={AdminBranding}
             onCredentialsLogin={async (email, password) => {
                 console.log('🔄 [Admin] Attempting login for:', email);
                 const result = await signIn('credentials', {
