@@ -156,10 +156,9 @@ export const authOptions: NextAuthOptions = {
         {
             id: "authentik",
             name: "BizOSaaS SSO",
-            type: "oauth",
+            type: "oidc",
             issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas-admin/`,
-            authorization: { params: { scope: "openid profile email groups" } },
-            idToken: true,
+            // Let NextAuth auto-discover endpoints from .well-known/openid-configuration
             clientId: process.env.AUTHENTIK_CLIENT_ID || "",
             clientSecret: process.env.AUTHENTIK_CLIENT_SECRET || "",
             checks: ["pkce", "state"],
@@ -204,12 +203,6 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
         async redirect({ url, baseUrl }: any) {
-            // If we are logging out, redirect to Authentik end-session
-            if (url.includes('api/auth/signout')) {
-                const logoutUrl = new URL(`${AUTHENTIK_URL}/application/o/bizosaas-admin/end-session/`);
-                logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
-                return logoutUrl.toString();
-            }
             if (url.startsWith("/")) return `${baseUrl}${url}`;
             else if (new URL(url).origin === baseUrl) return url;
             return baseUrl;

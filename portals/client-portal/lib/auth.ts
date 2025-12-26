@@ -58,14 +58,8 @@ export const authConfig = {
                 clientId: process.env.AUTHENTIK_CLIENT_ID,
                 clientSecret: process.env.AUTHENTIK_CLIENT_SECRET,
                 issuer: process.env.AUTHENTIK_ISSUER || `${AUTHENTIK_URL}/application/o/bizosaas/`,
-                authorization: {
-                    params: {
-                        scope: "openid profile email",
-                    },
-                    url: `${AUTHENTIK_URL}/application/o/authorize/`,
-                },
-                token: `${AUTHENTIK_URL}/application/o/token/`,
-                userinfo: `${AUTHENTIK_URL}/application/o/userinfo/`,
+                // Let NextAuth auto-discover endpoints from issuer's .well-known/openid-configuration
+                // This prevents "Request Denied" errors from manual endpoint mismatches
             })
         ] : []),
         Credentials({
@@ -250,12 +244,6 @@ export const authConfig = {
             return auth;
         },
         async redirect({ url, baseUrl }) {
-            // If we are logging out, redirect to Authentik end-session
-            if (url.includes('api/auth/signout')) {
-                const logoutUrl = new URL(`${AUTHENTIK_URL}/application/o/bizosaas/end-session/`);
-                logoutUrl.searchParams.append('post_logout_redirect_uri', baseUrl);
-                return logoutUrl.toString();
-            }
             // Allow relative paths and cross-subdomain redirects for bizoholic.net
             if (url.includes('admin.bizoholic.net')) return url;
             if (url.startsWith("/")) return `${baseUrl}${url}`;
