@@ -37,7 +37,6 @@ export function ClientLoginForm() {
             defaultRedirectUrl="/dashboard"
             showDemoCredentials={process.env.NODE_ENV === 'development'}
             className="!bg-transparent"
-            BrandingComponent={() => <PlatformBranding platform="BIZOHOLIC" size="lg" />}
             onCredentialsLogin={async (email, password) => {
                 console.log('🔄 [Client] Attempting login for:', email);
                 const result = await signIn('credentials', {
