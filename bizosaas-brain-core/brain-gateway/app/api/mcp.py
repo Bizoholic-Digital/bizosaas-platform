@@ -79,7 +79,7 @@ async def install_mcp(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     identity: IdentityPort = Depends(get_identity_port),
-    current_user: User = Depends(get_identity_port().get_current_user)
+    current_user: AuthenticatedUser = Depends(get_current_user)
 ):
     mcp = db.query(McpRegistry).filter(McpRegistry.slug == request.mcp_slug).first()
     if not mcp:
@@ -131,7 +131,7 @@ async def preview_migration(req: MigrationRequest, current_user: AuthenticatedUs
 async def execute_migration(
     req: MigrationRequest, 
     background_tasks: BackgroundTasks,
-    current_user: User = Depends(get_identity_port().get_current_user)
+    current_user: AuthenticatedUser = Depends(get_current_user)
 ):
     from app.services.migration_engine import MigrationService
     try:
