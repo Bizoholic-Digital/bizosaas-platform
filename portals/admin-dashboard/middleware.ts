@@ -27,18 +27,22 @@ export default withAuth(
     },
     {
         callbacks: {
-            authorized: ({ token }) => {
+            authorized: ({ token, req }) => {
                 // Return true to allow the middleware function to handle specific logic
                 // But ensure token is valid for protected routes
+                console.log("🛡️ [Admin Middleware] Authorized check. Token roles:", token?.roles);
                 return !!token;
             },
         },
         pages: {
-            signIn: "/login",
+            // Redirect unauthenticated users to the central Client Portal login
+            signIn: process.env.NODE_ENV === 'production'
+                ? "https://app.bizoholic.net/login"
+                : "/login",
         },
         cookies: {
             sessionToken: {
-                name: 'bizosaas-admin-dashboard.session-token',
+                name: 'bizosaas-session-token',
             },
         },
         secret: secret,

@@ -2,7 +2,15 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export default auth(async (req) => {
-    // TEMPORARILY DISABLED FOR DEBUGGING
+    const isLoginPage = req.nextUrl.pathname === "/login";
+    const isAuthenticated = !!req.auth;
+
+    if (!isAuthenticated && !isLoginPage) {
+        const loginUrl = new URL("/login", req.url);
+        loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+        return NextResponse.redirect(loginUrl);
+    }
+
     return NextResponse.next();
 });
 

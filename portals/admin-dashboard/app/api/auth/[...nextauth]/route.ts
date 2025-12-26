@@ -221,14 +221,16 @@ export const authOptions: NextAuthOptions = {
     session: {
         strategy: "jwt",
     },
+    // Use unified cookie name for cross-subdomain session sharing
     cookies: {
         sessionToken: {
-            name: 'bizosaas-admin-dashboard.session-token',
+            name: 'bizosaas-session-token',
             options: {
                 httpOnly: true,
                 sameSite: 'lax' as const,
                 path: '/',
                 secure: process.env.NODE_ENV === 'production',
+                domain: process.env.NODE_ENV === 'production' ? '.bizoholic.net' : undefined,
             },
         },
     },
