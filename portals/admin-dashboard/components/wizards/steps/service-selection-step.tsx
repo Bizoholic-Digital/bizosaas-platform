@@ -2,21 +2,21 @@
 
 import React, { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
 } from '../../ui/card'
 import { Button } from '../../ui/button'
 import { Badge } from '../../ui/badge'
 import { Input } from '../../ui/input'
-import { 
-  CreditCard, 
-  Target, 
-  Brain, 
-  BarChart3, 
+import {
+  CreditCard,
+  Target,
+  Brain,
+  BarChart3,
   Server,
   Search,
   Filter,
@@ -26,7 +26,8 @@ import {
   Shield,
   Zap,
   Globe,
-  DollarSign
+  DollarSign,
+  Key
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 import { APIService } from '../api-key-management-wizard'
@@ -311,7 +312,7 @@ interface ServiceSelectionStepProps {
   setConfigurations: React.Dispatch<React.SetStateAction<any[]>>
 }
 
-export function ServiceSelectionStep({ 
+export function ServiceSelectionStep({
   form,
   configurations,
   setConfigurations
@@ -325,7 +326,7 @@ export function ServiceSelectionStep({
 
   const filteredServices = SERVICE_CATALOG.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         service.description.toLowerCase().includes(searchTerm.toLowerCase())
+      service.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = !selectedCategory || service.category === selectedCategory
     return matchesSearch && matchesCategory
   })
@@ -343,11 +344,11 @@ export function ServiceSelectionStep({
 
   const handleBulkSelectCategory = (category: string) => {
     if (!bulkMode) return
-    
+
     const categoryServices = SERVICE_CATALOG
       .filter(service => service.category === category)
       .map(service => service.id)
-    
+
     const newSelected = new Set([...selectedServices, ...categoryServices])
     setSelectedServices(newSelected)
     form.setValue('selectedServices', Array.from(newSelected))
@@ -357,9 +358,9 @@ export function ServiceSelectionStep({
 
   const getRecommendations = () => {
     if (selectedServices.size === 0) return []
-    
+
     const recommendations = []
-    
+
     // If payment service selected, recommend analytics
     if (Array.from(selectedServices).some(id => getServiceById(id)?.category === 'payment')) {
       recommendations.push({
@@ -367,7 +368,7 @@ export function ServiceSelectionStep({
         message: 'Consider adding Google Analytics to track payment conversions'
       })
     }
-    
+
     // If marketing service selected, recommend AI
     if (Array.from(selectedServices).some(id => getServiceById(id)?.category === 'marketing')) {
       recommendations.push({
@@ -375,7 +376,7 @@ export function ServiceSelectionStep({
         message: 'AI services can help optimize your advertising campaigns'
       })
     }
-    
+
     return recommendations
   }
 
@@ -480,7 +481,7 @@ export function ServiceSelectionStep({
 
           return (
             <Card key={categoryKey}>
-              <CardHeader 
+              <CardHeader
                 className={cn(
                   "cursor-pointer transition-colors",
                   bulkMode && "hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -520,8 +521,8 @@ export function ServiceSelectionStep({
                         key={service.id}
                         className={cn(
                           "cursor-pointer transition-all duration-200 hover:shadow-md",
-                          isSelected 
-                            ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950" 
+                          isSelected
+                            ? "ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-950"
                             : "hover:ring-1 hover:ring-gray-300"
                         )}
                         onClick={() => handleServiceToggle(service.id)}
@@ -540,11 +541,11 @@ export function ServiceSelectionStep({
                                   {service.description}
                                 </p>
                                 <div className="flex flex-wrap gap-1 mt-2">
-                                  <Badge 
-                                    variant="outline" 
+                                  <Badge
+                                    variant="outline"
                                     className={cn(
                                       "text-xs",
-                                      service.securityLevel === 'enterprise' 
+                                      service.securityLevel === 'enterprise'
                                         ? 'border-green-300 text-green-700'
                                         : 'border-blue-300 text-blue-700'
                                     )}
@@ -616,7 +617,7 @@ export function ServiceSelectionStep({
               {Array.from(selectedServices).map(serviceId => {
                 const service = getServiceById(serviceId)
                 if (!service) return null
-                
+
                 return (
                   <div key={serviceId} className="border rounded-lg p-4">
                     <div className="flex items-center space-x-3 mb-3">
