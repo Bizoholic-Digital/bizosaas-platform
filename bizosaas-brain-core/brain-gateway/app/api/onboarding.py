@@ -143,7 +143,7 @@ async def complete_onboarding(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     identity: IdentityPort = Depends(get_identity_port),
-    current_user: User = Depends(get_identity_port().get_current_user)
+    current_user: AuthenticatedUser = Depends(get_current_user)
 ):
     """
     Complete onboarding:

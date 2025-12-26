@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_identity_port
 from app.models.mcp import McpRegistry, McpCategory, UserMcpInstallation
-from domain.ports.identity_port import IdentityPort, User
+from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from typing import List, Optional
 from pydantic import BaseModel
 from uuid import UUID
@@ -54,7 +54,7 @@ def get_registry(category: Optional[str] = None, db: Session = Depends(get_db)):
 def get_installed(
     db: Session = Depends(get_db),
     identity: IdentityPort = Depends(get_identity_port),
-    current_user: User = Depends(get_identity_port().get_current_user)
+    current_user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Get processed list of installed MCPs for the current user."""
     installations = db.query(UserMcpInstallation).filter(
@@ -119,7 +119,7 @@ class MigrationRequest(BaseModel):
     target_slug: str
 
 @router.post("/migrate/preview")
-async def preview_migration(req: MigrationRequest, current_user: User = Depends(get_identity_port().get_current_user)):
+async def preview_migration(req: MigrationRequest, current_user: AuthenticatedUser = Depends(get_current_user)):
     from app.services.migration_engine import MigrationService
     try:
         plan = await MigrationService.create_plan(req.source_slug, req.target_slug)
