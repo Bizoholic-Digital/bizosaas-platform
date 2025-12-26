@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from app.dependencies import get_db, get_identity_port
+from app.dependencies import get_db, get_identity_port, get_current_user
 from app.models.mcp import McpRegistry, McpCategory, UserMcpInstallation
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from typing import List, Optional
