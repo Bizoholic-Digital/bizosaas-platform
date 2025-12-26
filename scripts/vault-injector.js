@@ -13,8 +13,9 @@ const secretPath = process.env.VAULT_SECRET_PATH; // e.g., 'bizosaas/stg/client-
 const mountPoint = process.env.VAULT_MOUNT_POINT || 'secret';
 
 if (!vaultToken || !secretPath) {
-    console.error('Error: VAULT_TOKEN and VAULT_SECRET_PATH must be set');
-    process.exit(0); // Exit gracefully to not break standard builds if Vault is optional
+    // Vault not configured - exit silently without error message
+    // This allows the app to start normally without Vault
+    process.exit(0);
 }
 
 const url = new URL(`${vaultAddr}/v1/${mountPoint}/data/${secretPath}`);

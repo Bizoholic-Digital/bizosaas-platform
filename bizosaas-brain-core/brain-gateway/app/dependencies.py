@@ -67,3 +67,20 @@ def get_secret_service():
         vault_adapter = VaultAdapter()
     
     return SecretService(secret_adapter=vault_adapter)
+
+def get_current_user():
+    """Dependency Injection: Returns the current authenticated user.
+    In production, this would validate JWT tokens and extract user info.
+    For now, returns a default user for development/staging.
+    """
+    from domain.ports.identity_port import AuthenticatedUser
+    
+    # TODO: Implement proper JWT validation from request headers
+    # For now, return a mock authenticated user for development
+    return AuthenticatedUser(
+        id="system-user",
+        email="system@bizosaas.local",
+        name="System User",
+        roles=["admin"],
+        tenant_id="default"
+    )
