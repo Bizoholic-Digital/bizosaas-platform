@@ -20,7 +20,7 @@ async def list_connector_types(
     """List all available connector types"""
     return ConnectorRegistry.get_all_configs()
 
-@router.get("/", response_model=List[Dict[str, Any]])
+@router.get("", response_model=List[Dict[str, Any]])
 async def list_connectors_with_status(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
