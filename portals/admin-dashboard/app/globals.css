@@ -6,6 +6,12 @@
   --primary-color: #0066cc;
   --secondary-color: #4d79a4;
   --accent-color: #ff6b35;
+  --radius: 0.75rem;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 215 20.2% 65.1%;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
 }
 
 @layer base {

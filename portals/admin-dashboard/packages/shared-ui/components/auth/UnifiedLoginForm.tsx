@@ -23,14 +23,11 @@ export interface UnifiedLoginFormProps {
     /** Default redirect URL after login */
     defaultRedirectUrl?: string
 
-    /** Custom branding component */
-    BrandingComponent?: React.ComponentType<any>
+    /** Custom CSS classes */
+    className?: string
 
     /** Show demo credentials (for development) */
     showDemoCredentials?: boolean
-
-    /** Custom CSS classes */
-    className?: string
 
     /** Callback for credentials login */
     onCredentialsLogin?: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
@@ -46,14 +43,13 @@ export function UnifiedLoginForm({
     ssoProviderName = 'SSO',
     ssoProviderId = 'authentik',
     defaultRedirectUrl = '/',
-    BrandingComponent,
-    showDemoCredentials = false,
     className = '',
+    showDemoCredentials = false,
     onCredentialsLogin,
     onSSOLogin,
 }: UnifiedLoginFormProps) {
-    const [email, setEmail] = useState(showDemoCredentials ? 'admin@bizoholic.com' : '')
-    const [password, setPassword] = useState(showDemoCredentials ? 'AdminDemo2024!' : '')
+    const [email, setEmail] = useState(showDemoCredentials ? 'admin@bizoholic.net' : '')
+    const [password, setPassword] = useState(showDemoCredentials ? 'admin123' : '')
     const [showPassword, setShowPassword] = useState(false)
     const [rememberMe, setRememberMe] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -66,20 +62,16 @@ export function UnifiedLoginForm({
     const handleCredentialsSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
-
         if (!email || !password) {
             setError('Please enter both email and password.')
             return
         }
-
         setIsLoading(true)
-
         try {
             if (onCredentialsLogin) {
                 const result = await onCredentialsLogin(email, password)
                 if (result.ok) {
-                    router.push(callbackUrl)
-                    router.refresh()
+                    window.location.href = callbackUrl
                 } else {
                     setError(result.error || 'Invalid credentials')
                 }
@@ -94,7 +86,6 @@ export function UnifiedLoginForm({
     const handleSSOLogin = async () => {
         setIsLoading(true)
         setError(null)
-
         try {
             if (onSSOLogin) {
                 await onSSOLogin()
@@ -106,31 +97,23 @@ export function UnifiedLoginForm({
     }
 
     return (
-        <div className={`min-h-screen flex items-center justify-center ${className}`}>
-            <div className="max-w-md w-full mx-4">
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 space-y-8 border border-gray-200 dark:border-gray-800">
+        <div className={`min-h-screen flex items-center justify-center p-4 ${className}`}>
+            <div className="max-w-md w-full">
+                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl p-8 md:p-12 space-y-8 border border-slate-100 dark:border-slate-800">
                     {/* Header */}
-                    <div className="text-center space-y-4">
-                        {BrandingComponent ? (
-                            <div className="flex justify-center">
-                                <BrandingComponent />
+                    <div className="text-center space-y-6">
+                        <div className="flex flex-col items-center">
+                            <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl shadow-xl flex items-center justify-center mb-6 transform -rotate-12 hover:rotate-0 transition-transform duration-300">
+                                <span className="text-2xl font-black text-white tracking-tighter">BH</span>
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center">
-                                <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-2xl shadow-xl flex items-center justify-center mb-4 transform -rotate-6">
-                                    <span className="text-2xl font-black text-white">BH</span>
-                                </div>
-                                <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                                    BIZOSaaS Platform
-                                </h1>
-                            </div>
-                        )}
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
+                            <h1 className="text-xs font-black uppercase tracking-[0.35em] text-blue-600 dark:text-blue-400 mb-2">
+                                BIZOSaaS Platform
+                            </h1>
+                            <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter leading-none">
                                 {platformName}
                             </h2>
                             {platformSubtitle && (
-                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                <p className="mt-4 text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                                     {platformSubtitle}
                                 </p>
                             )}
@@ -139,21 +122,21 @@ export function UnifiedLoginForm({
 
                     {/* Error Message */}
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-r-lg p-4 animate-in fade-in slide-in-from-top-1">
-                            <p className="text-sm text-red-700 dark:text-red-400 font-medium">{error}</p>
+                        <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-r-xl p-4 animate-in fade-in slide-in-from-top-1">
+                            <p className="text-sm text-red-700 dark:text-red-300 font-bold">{error}</p>
                         </div>
                     )}
 
-                    {/* Credentials Form */}
+                    {/* Form */}
                     {(mode === 'credentials' || mode === 'both') && (
-                        <form onSubmit={handleCredentialsSubmit} className="space-y-5">
+                        <form onSubmit={handleCredentialsSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <label htmlFor="email" className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+                                <label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">
                                     Email address
                                 </label>
                                 <div className="relative group">
-                                    <div className="absolute left-3 top-0 bottom-0 flex items-center justify-center">
-                                        <Mail className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-10">
+                                        <Mail className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                     </div>
                                     <input
                                         id="email"
@@ -161,7 +144,7 @@ export function UnifiedLoginForm({
                                         placeholder="Enter your email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:bg-gray-800/50 dark:text-white transition-all outline-none"
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-blue-500 rounded-2xl focus:ring-4 focus:ring-blue-500/10 dark:text-white transition-all outline-none text-base font-medium"
                                         required
                                         disabled={isLoading}
                                     />
@@ -169,12 +152,12 @@ export function UnifiedLoginForm({
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="password" className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+                                <label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ml-1">
                                     Password
                                 </label>
                                 <div className="relative group">
-                                    <div className="absolute left-3 top-0 bottom-0 flex items-center justify-center">
-                                        <Lock className="h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none z-10">
+                                        <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                                     </div>
                                     <input
                                         id="password"
@@ -182,18 +165,18 @@ export function UnifiedLoginForm({
                                         placeholder="Enter your password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-12 py-3 border border-gray-200 dark:border-gray-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:bg-gray-800/50 dark:text-white transition-all outline-none"
+                                        className="w-full pl-12 pr-14 py-4 bg-slate-50 dark:bg-slate-800/50 border border-transparent focus:border-blue-500 rounded-2xl focus:ring-4 focus:ring-blue-500/10 dark:text-white transition-all outline-none text-base font-medium"
                                         required
                                         disabled={isLoading}
                                     />
-                                    <div className="absolute right-3 top-0 bottom-0 flex items-center justify-center">
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center z-10">
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-lg hover:bg-white dark:hover:bg-slate-700 shadow-sm border border-transparent hover:border-slate-100 dark:hover:border-slate-600"
                                             disabled={isLoading}
                                         >
-                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                         </button>
                                     </div>
                                 </div>
@@ -206,82 +189,64 @@ export function UnifiedLoginForm({
                                         type="checkbox"
                                         checked={rememberMe}
                                         onChange={(e) => setRememberMe(e.target.checked)}
-                                        className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-all cursor-pointer"
+                                        className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 transition-all cursor-pointer"
                                         disabled={isLoading}
                                     />
-                                    <label htmlFor="remember" className="ml-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+                                    <label htmlFor="remember" className="ml-2 text-sm text-slate-600 dark:text-slate-400 font-bold cursor-pointer">
                                         Remember me
                                     </label>
                                 </div>
-                                <a href="#" className="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                                <a href="#" className="text-sm font-black text-blue-600 hover:text-blue-700 dark:text-blue-400">
                                     Forgot password?
                                 </a>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center border border-white/10"
+                                className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/30 transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center text-lg active:scale-[0.98]"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
-                                    <>
-                                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                                        Authenticating...
-                                    </>
+                                    <div className="h-6 w-6 animate-spin rounded-full border-3 border-white border-t-transparent" />
                                 ) : (
                                     <>
                                         Sign In
-                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                        <ArrowRight className="ml-2 h-5 w-5" />
                                     </>
                                 )}
                             </button>
-
-                            {showDemoCredentials && (
-                                <div className="mt-4 p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900/30 backdrop-blur-sm">
-                                    <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
-                                        <span className="font-bold flex items-center mb-1">
-                                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>
-                                            Demo Credentials
-                                        </span>
-                                        Email: admin@bizoholic.com<br />
-                                        Password: AdminDemo2024!
-                                    </p>
-                                </div>
-                            )}
                         </form>
                     )}
 
-                    {/* Divider for 'both' mode */}
+                    {/* Divider */}
                     {mode === 'both' && (
-                        <div className="relative py-2">
+                        <div className="relative py-4">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
+                                <div className="w-full border-t border-slate-100 dark:border-slate-800"></div>
                             </div>
-                            <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
-                                <span className="px-4 bg-white dark:bg-gray-900 text-gray-400">Or Secure SSO</span>
+                            <div className="relative flex justify-center text-[10px] uppercase tracking-[0.4em] font-black">
+                                <span className="px-6 bg-white dark:bg-slate-900 text-slate-400">OR SECURE SSO</span>
                             </div>
                         </div>
                     )}
 
                     {/* SSO Button */}
                     {(mode === 'sso' || mode === 'both') && (
-                        <div className="space-y-4">
-                            <button
-                                type="button"
-                                onClick={handleSSOLogin}
-                                className="w-full py-3.5 px-4 bg-slate-950 hover:bg-slate-900 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold rounded-xl shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center border border-slate-800 dark:border-slate-200"
-                                disabled={isLoading}
-                            >
-                                <Shield className="w-5 h-5 mr-3 text-blue-500" />
-                                Sign in with {ssoProviderName}
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={handleSSOLogin}
+                            className="w-full py-4 px-6 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-black rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center group active:scale-[0.98]"
+                            disabled={isLoading}
+                        >
+                            <Shield className="w-6 h-6 mr-3 text-blue-500 group-hover:scale-110 transition-transform" />
+                            Sign in with {ssoProviderName}
+                        </button>
                     )}
 
                     {/* Footer */}
-                    <div className="pt-6 border-t border-gray-50 dark:border-gray-801">
-                        <p className="text-[10px] text-center text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold font-sans">
-                            {mode === 'sso' || mode === 'both'
+                    <div className="pt-8 border-t border-slate-50 dark:border-slate-800">
+                        <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 uppercase tracking-[0.25em] font-black leading-relaxed">
+                            {mode === 'both' || mode === 'sso'
                                 ? 'Strictly Restricted Access • BizOSaaS 2024'
                                 : 'Enterprise Grade Security • Powered by BizOSaaS'}
                         </p>
@@ -289,19 +254,17 @@ export function UnifiedLoginForm({
                 </div>
 
                 {/* Bottom Links */}
-                <div className="mt-8 text-center space-y-4">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                <div className="mt-10 text-center space-y-6">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">
                         Don't have an account?{' '}
-                        <a href="/signup" className="font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400">
+                        <a href="#" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 underline decoration-2 underline-offset-4">
                             Get Started
                         </a>
                     </p>
-                    <div className="flex justify-center space-x-4 text-xs font-semibold text-gray-400">
-                        <a href="#" className="hover:text-gray-600">Privacy Policy</a>
-                        <span>•</span>
-                        <a href="#" className="hover:text-gray-600">Terms of Service</a>
-                        <span>•</span>
-                        <a href="mailto:support@bizosaas.com" className="hover:text-gray-600 font-bold text-slate-500">Contact Support</a>
+                    <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <a href="#" className="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Privacy</a>
+                        <a href="#" className="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Terms</a>
+                        <a href="#" className="hover:text-slate-600 dark:hover:text-slate-200 transition-colors">Support</a>
                     </div>
                 </div>
             </div>
