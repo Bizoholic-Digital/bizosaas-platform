@@ -195,6 +195,15 @@ export const authConfig = {
     callbacks: {
         async jwt({ token, user, account, profile }) {
             console.log("🛠️ [JWT] Callback triggered. User exists:", !!user, "Account provider:", account?.provider);
+
+            // 1. Initial Sign In (Credentials or OAuth)
+            if (account) {
+                // Save access/refresh tokens from the provider (Authentik OAuth or custom ROPC)
+                if (account.access_token) token.access_token = account.access_token;
+                if (account.refresh_token) token.refresh_token = account.refresh_token;
+                if (account.id_token) token.id_token = account.id_token;
+            }
+
             if (user) {
                 console.log("🛠️ [JWT] Mapping user data to token for:", (user as any).email || 'test-user');
                 token.id = user.id;
@@ -202,8 +211,14 @@ export const authConfig = {
                 token.roles = (user as any).roles || [(user as any).role]; // Store roles array
                 token.tenant_id = (user as any).tenant_id;
                 token.brand = (user as any).brand;
-                token.access_token = (user as any).access_token;
-                token.refresh_token = (user as any).refresh_token;
+
+                // Fallback: If using credentials provider, token might be on user object
+                if (!token.access_token && (user as any).access_token) {
+                    token.access_token = (user as any).access_token;
+                }
+                if (!token.refresh_token && (user as any).refresh_token) {
+                    token.refresh_token = (user as any).refresh_token;
+                }
             }
 
             if (account?.provider === 'authentik' && profile) {
