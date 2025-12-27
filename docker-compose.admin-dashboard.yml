@@ -2,7 +2,8 @@
 version: '3.9'
 
 services:
-  client-portal:
+services:
+  admin-dashboard:
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
@@ -22,7 +23,7 @@ services:
       AUTHENTIK_URL: ${AUTHENTIK_URL:-https://sso.bizoholic.net}
       NEXT_PUBLIC_SSO_URL: ${NEXT_PUBLIC_SSO_URL:-https://sso.bizoholic.net}
       AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas-admin/}
-      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
+      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID:-bizosaas-admin-dashboard}
       AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET}
       AUTH_SECRET: ${AUTH_SECRET}
 
@@ -46,7 +47,7 @@ services:
       - bizosaas-network
       - dokploy-network
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/api/health" ]
+      test: [ "CMD", "curl", "-s", "--retry 1", "-f", "http://localhost:3004/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3

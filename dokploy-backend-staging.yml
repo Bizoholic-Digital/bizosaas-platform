@@ -21,8 +21,8 @@ services:
       - LOG_LEVEL=INFO
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
-      - VAULT_URL=${VAULT_URL:-https://vault-cluster.vault.8200.full.url}
-      - VAULT_TOKEN=${VAULT_TOKEN:-}
+      - VAULT_URL=${VAULT_URL:-http://bizosaas-vault-staging:8200}
+      - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
       - VAULT_MOUNT_POINT=${VAULT_MOUNT_POINT:-secret}
     networks:
       - dokploy-network
