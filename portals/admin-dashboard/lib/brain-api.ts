@@ -55,8 +55,7 @@ const apiFetch = async (endpoint: string, options: any = {}, token?: string) => 
 
     const baseUrl = typeof window !== 'undefined' ? '/api/brain' : BRAIN_GATEWAY_URL;
 
-    // If endpoint starts with /api and we are using the proxied baseUrl (/api/brain),
-    // strip the /api prefix from the endpoint to avoid double /api/api/...
+    // Strip /api prefix if using proxied baseUrl to avoid double prefixing
     const sanitizedEndpoint = (typeof window !== 'undefined' && endpoint.startsWith('/api'))
         ? endpoint.substring(4)
         : endpoint;
@@ -125,7 +124,7 @@ export const brainApi = {
     },
     agents: {
         list: async (token?: string): Promise<Agent[]> => {
-            const data = await apiFetch('/api/agents/', {}, token);
+            const data = await apiFetch('/api/agents', {}, token);
             return data.map((agent: any) => ({
                 ...agent,
                 status: 'active',
@@ -149,7 +148,6 @@ export const brainApi = {
             }, token);
         },
         updateConfig: async (agentId: string, config: any, token?: string) => {
-            console.log(`[Mock] Updating config for agent ${agentId}`, config);
             return { success: true };
         },
         getHistory: async (agentId: string, token?: string) => {
@@ -178,40 +176,6 @@ export const brainApi = {
         },
         getInstalled: async (token?: string): Promise<any[]> => {
             return apiFetch('/api/mcp/installed', {}, token);
-        }
-    },
-    cms: {
-        listPages: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/pages', {}, token);
-            } catch (e) {
-                return [];
-            }
-        },
-        listPosts: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/posts', {}, token);
-            } catch (e) {
-                return [];
-            }
-        },
-        listMedia: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/media', {}, token);
-            } catch (e) {
-                return [];
-            }
-        }
-    },
-    crm: {
-        listContacts: async (token?: string) => {
-            return apiFetch('/api/crm/contacts', {}, token);
-        },
-        createContact: async (contact: any, token?: string) => {
-            return apiFetch('/api/crm/contacts', {
-                method: 'POST',
-                body: JSON.stringify(contact)
-            }, token);
         }
     }
 };
