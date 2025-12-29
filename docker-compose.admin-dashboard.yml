@@ -1,7 +1,7 @@
 # Docker Compose for Production VPS
 version: '3.9'
 services:
-  client-portal:
+  admin-dashboard:
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
@@ -12,7 +12,7 @@ services:
         NEXTAUTH_URL: https://admin.bizoholic.net
         NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
-    container_name: bizosaas-admin-dashboard
+    # container_name: bizosaas-admin-dashboard
     restart: unless-stopped
     ports:
       - "3004:3004"
