@@ -1,14 +1,15 @@
 import { NextRequest } from 'next/server';
-import { proxyRequest } from '../../proxy';
+import { proxyRequest } from '@/app/api/brain/proxy';
 
 // Handler for all methods
 async function handler(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
     const resolvedParams = await params;
     const pathSegments = resolvedParams.path || [];
     const path = pathSegments.join('/');
-    // Forward to /api/cms/...
-    // Note: the Gateway has app.include_router(cms.router, prefix="/api/cms")
-    return proxyRequest(request, `api/cms/${path}`);
+
+    // Forward to /api/connectors/...
+    // The Brain Gateway handles /api/connectors directly
+    return proxyRequest(request, `api/connectors/${path}`);
 }
 
 export const GET = handler;

@@ -55,18 +55,20 @@ export function useSystemStatus(): SystemStatus {
           if (response.ok) {
             const connectors = await response.json();
 
-            // Map connectors to services
-            // Example: if type 'cms' is connected -> CMS healthy
-            const cms = connectors.find((c: any) => c.type === 'cms' && c.status === 'connected');
-            const crm = connectors.find((c: any) => c.type === 'crm' && c.status === 'connected');
-            const ecommerce = connectors.find((c: any) => c.type === 'ecommerce' && c.status === 'connected');
+            if (Array.isArray(connectors)) {
+              // Map connectors to services
+              // Example: if type 'cms' is connected -> CMS healthy
+              const cms = connectors.find((c: any) => c.type === 'cms' && c.status === 'connected');
+              const crm = connectors.find((c: any) => c.type === 'crm' && c.status === 'connected');
+              const ecommerce = connectors.find((c: any) => c.type === 'ecommerce' && c.status === 'connected');
 
-            servicesStatus = {
-              'Brain Hub': 'healthy',
-              'CRM': crm ? 'healthy' : 'down',
-              'CMS': cms ? 'healthy' : 'down',
-              'E-commerce': ecommerce ? 'healthy' : 'down'
-            };
+              servicesStatus = {
+                'Brain Hub': 'healthy',
+                'CRM': crm ? 'healthy' : 'down',
+                'CMS': cms ? 'healthy' : 'down',
+                'E-commerce': ecommerce ? 'healthy' : 'down'
+              };
+            }
           }
         } catch (e) {
           console.error("Failed to fetch connectors for status", e);

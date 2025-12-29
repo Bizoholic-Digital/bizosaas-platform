@@ -26,27 +26,27 @@ export interface ConnectorCredentials {
 
 export class ConnectorsApi {
     async getConnectors(): Promise<ApiResponse<ConnectorConfig[]>> {
-        return brainApi.get<ConnectorConfig[]>('/api/brain/connectors/');
+        return brainApi.get<ConnectorConfig[]>('/connectors');
     }
 
     async getConnector(connectorId: string): Promise<ApiResponse<ConnectorConfig>> {
-        return brainApi.get<ConnectorConfig>(`/api/brain/connectors/${connectorId}/`);
+        return brainApi.get<ConnectorConfig>(`/connectors/${connectorId}`);
     }
 
     async connectService(connectorId: string, credentials: ConnectorCredentials): Promise<ApiResponse<{ status: string; message: string }>> {
-        return brainApi.post<{ status: string; message: string }>(`/api/brain/connectors/${connectorId}/connect/`, credentials);
+        return brainApi.post<{ status: string; message: string }>(`/connectors/${connectorId}/connect`, credentials);
     }
 
     async disconnectService(connectorId: string): Promise<ApiResponse<{ status: string; message: string }>> {
-        return brainApi.post<{ status: string; message: string }>(`/api/brain/connectors/${connectorId}/disconnect/`, {});
+        return brainApi.post<{ status: string; message: string }>(`/connectors/${connectorId}/disconnect`, {});
     }
 
     async validateConnection(connectorId: string): Promise<ApiResponse<{ valid: boolean; message: string }>> {
-        return brainApi.post<{ valid: boolean; message: string }>(`/api/brain/connectors/${connectorId}/validate/`, {});
+        return brainApi.post<{ valid: boolean; message: string }>(`/connectors/${connectorId}/validate`, {});
     }
 
     async syncConnector(connectorId: string, resource?: string): Promise<ApiResponse<{ jobId: string; status: string }>> {
-        return brainApi.post<{ jobId: string; status: string }>(`/api/brain/connectors/${connectorId}/sync/`, { resource });
+        return brainApi.post<{ jobId: string; status: string }>(`/connectors/${connectorId}/sync`, { resource });
     }
 }
 

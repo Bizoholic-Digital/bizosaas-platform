@@ -39,32 +39,21 @@ export function useAuth() {
   return context;
 }
 
-export default function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  let clerkData: any = { user: null, isLoaded: true, isSignedIn: false };
-  let clerkMethods: any = { signOut: () => { }, openSignIn: () => { } };
+function ClerkAuthProvider({ children }: { children: React.ReactNode }) {
+  const userHook = useUser();
+  const clerkHook = useClerk();
 
-  try {
-    // Clerk hooks can throw if ClerkProvider is not found in the tree
-    const userHook = useUser();
-    const clerkHook = useClerk();
-    if (userHook) clerkData = userHook;
-    if (clerkHook) clerkMethods = clerkHook;
-  } catch (error) {
-    console.warn("AuthProvider: Clerk hooks failed, likely due to missing ClerkProvider.", error);
-  }
+  const clerkUser = userHook?.user;
+  const isLoaded = userHook?.isLoaded ?? false;
+  const isSignedIn = userHook?.isSignedIn ?? false;
+  const signOut = clerkHook?.signOut;
+  const openSignIn = clerkHook?.openSignIn;
 
-  const { user: clerkUser, isLoaded, isSignedIn } = clerkData;
-  const { signOut, openSignIn } = clerkMethods;
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     if (isLoaded && clerkUser) {
-      // Map Clerk user to internal User interface
       const primaryEmail = clerkUser.primaryEmailAddress?.emailAddress || "";
       const role = (clerkUser.publicMetadata?.role as string) || "user";
       const tenant = (clerkUser.publicMetadata?.tenant_id as string) || "default";
@@ -78,19 +67,17 @@ export default function AuthProvider({
       };
 
       setUser(userData);
-
-      // Store token for legacy API calls if needed
-      // Clerk handles tokens automatically via middleware, but for client-side fetches:
-      // useAuth().getToken() is better, but here we just set user state.
     } else if (isLoaded && !clerkUser) {
       setUser(null);
     }
   }, [isLoaded, clerkUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Redirect to Clerk login
-    openSignIn();
-    return true;
+    if (openSignIn) {
+      openSignIn();
+      return true;
+    }
+    return false;
   };
 
   const logout = () => {
@@ -114,4 +101,40 @@ export default function AuthProvider({
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+function DefaultAuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    console.warn("Login called but Clerk is not configured.");
+    return false;
+  };
+
+  const logout = () => {
+    router.push("/");
+  };
+
+  const checkAuth = async (): Promise<boolean> => false;
+
+  const value = {
+    user,
+    isLoading: false,
+    login,
+    logout,
+    checkAuth,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export default function AuthProvider(props: { children: React.ReactNode }) {
+  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (clerkKey) {
+    return <ClerkAuthProvider {...props} />;
+  }
+
+  return <DefaultAuthProvider {...props} />;
 }
