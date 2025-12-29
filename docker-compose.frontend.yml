@@ -46,7 +46,7 @@ services:
 
       # Environment
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=3003
     networks:
       - brain-network
       - dokploy-network
