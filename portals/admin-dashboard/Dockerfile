@@ -1,37 +1,19 @@
-# BizOSaaS Admin Dashboard - Standardized Dockerfile
-# Build Cache Bust: 2025-12-24T15:20:00Z
+# ═══════════════════════════════════════════════════════════════════════════
+# BizOSaaS Admin Dashboard - Optimized Multi-Stage Dockerfile
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Stage 1: Dependencies
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
-WORKDIR /app
-
-# Copy package files
-COPY portals/admin-dashboard/package.json portals/admin-dashboard/package-lock.json* ./portals/admin-dashboard/
-
-# Install dependencies in the portal directory
-WORKDIR /app/portals/admin-dashboard
-RUN npm install --legacy-peer-deps
-
-# Stage 2: Builder
+# Stage 1: Builder
 FROM node:20-alpine AS builder
+
 WORKDIR /app
-
-# Copy node_modules from deps
-COPY --from=deps /app/portals/admin-dashboard/node_modules ./portals/admin-dashboard/node_modules
-
-# Copy source code
-COPY . .
 
 # Define build arguments
+ARG SERVICE_PATH=portals/admin-dashboard
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
 ARG NEXT_PUBLIC_GRAPHQL_URL
 ARG NEXTAUTH_URL
 ARG NEXTAUTH_SECRET
-ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ARG CLERK_SECRET_KEY
 
 # Set environment variables
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
@@ -39,19 +21,33 @@ ENV NEXT_PUBLIC_BRAIN_GATEWAY_URL=$NEXT_PUBLIC_BRAIN_GATEWAY_URL
 ENV NEXT_PUBLIC_GRAPHQL_URL=$NEXT_PUBLIC_GRAPHQL_URL
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
-
 ENV NEXT_TELEMETRY_DISABLED=1
-# NODE_ENV will be default (development) during build to install devDependencies like TypeScript
+
+# Install global dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy source code
+COPY . .
+
+# Switch to the service directory
+WORKDIR /app/${SERVICE_PATH}
+
+# Remove root configuration files to prevent Next.js from detecting workspace root incorrectly
+RUN rm -f /app/package-lock.json /app/package.json /app/tsconfig.json
+
+# Install dependencies
+RUN npm install --legacy-peer-deps
 
 # Build Next.js
-WORKDIR /app/portals/admin-dashboard
 RUN npm run build
 
-# Stage 3: Runner
+# Stage 2: Production Runner
 FROM node:20-alpine AS runner
+
 WORKDIR /app
+
+# Re-declare SERVICE_PATH for this stage
+ARG SERVICE_PATH=portals/admin-dashboard
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -68,11 +64,11 @@ RUN apk add --no-cache curl
 RUN mkdir .next && chown nextjs:nodejs .next
 
 # Copy built application
-COPY --from=builder /app/portals/admin-dashboard/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/static ./.next/static
-# Copy vault injector (Note: Copying from context root)
-COPY scripts/vault-injector.js ./scripts/vault-injector.js
+COPY --from=builder /app/${SERVICE_PATH}/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
+# Copy vault injector
+COPY --from=builder /app/scripts/vault-injector.js ./scripts/vault-injector.js
 
 USER nextjs
 
@@ -84,4 +80,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start with Vault secret injection
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && if [ -f server.js ]; then node server.js; else cd portals/admin-dashboard && node server.js; fi"]
+CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]
