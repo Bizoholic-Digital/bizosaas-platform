@@ -60,7 +60,7 @@ services:
       - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
       - "traefik.http.routers.client-portal.entrypoints=websecure"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
-      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3003"
     restart: unless-stopped
 
 # ═══════════════════════════════════════════════════════════════════════════
