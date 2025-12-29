@@ -148,7 +148,12 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
 
         return {"error": "Unsupported resource type"}
 
-        elif action == "auto_link":
+    async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute actions on Google Business Profile.
+        Supported actions: 'auto_link'
+        """
+        if action == "auto_link":
             # 1. Discover accounts
             data = await self.sync_data("accounts")
             accounts = data.get("accounts", [])
