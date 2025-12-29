@@ -11,6 +11,8 @@ services:
         NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
         NEXTAUTH_URL: https://admin.bizoholic.net
         NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
     # container_name: bizosaas-admin-dashboard
     restart: unless-stopped

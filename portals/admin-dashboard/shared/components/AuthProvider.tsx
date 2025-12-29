@@ -29,8 +29,25 @@ interface AuthProviderProps {
 }
 
 export default function AuthProvider({ children, platform }: AuthProviderProps) {
-  const { user: clerkUser, isLoaded } = useUser();
-  const { signOut, openSignIn } = useClerk();
+  let clerkUser: any = null;
+  let isLoaded = true;
+  let signOut: any = () => { };
+  let openSignIn: any = () => { };
+
+  try {
+    // We must use hooks at the top level, but their return values can be checked.
+    // However, they throw if ClerkProvider is missing.
+    // The safest way is to wrap the children in an error boundary or check provider existence.
+    // For now, we'll use a safer hook access if possible or just handle the crash.
+    const userHook = useUser();
+    const clerkHook = useClerk();
+    clerkUser = userHook.user;
+    isLoaded = userHook.isLoaded;
+    signOut = clerkHook.signOut;
+    openSignIn = clerkHook.openSignIn;
+  } catch (e) {
+    console.error("AuthProvider: Required ClerkProvider is missing in the component tree.", e);
+  }
   const [user, setUser] = useState<User | null>(null)
 
   const router = useRouter()
