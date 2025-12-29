@@ -11,7 +11,15 @@ import { useClerk } from "@clerk/nextjs"
 export default function AdminLoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
-    const { openSignIn } = useClerk()
+
+    let openSignIn: any = () => { console.error("Clerk not loaded") };
+    try {
+        const clerk = useClerk();
+        openSignIn = clerk.openSignIn;
+    } catch (e) {
+        console.error("AdminLoginForm: Clerk context missing", e);
+    }
+
     const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard'
 
     return (
