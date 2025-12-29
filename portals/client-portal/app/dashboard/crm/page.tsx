@@ -8,8 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Users, Briefcase, Building2, Search, Plus, Loader2 } from 'lucide-react';
+import { Users, Briefcase, Building2, Search, Plus, Loader2, Edit, Trash2, MoreVertical, Phone, Mail } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface Contact {
     id: string;
@@ -30,11 +34,33 @@ interface Deal {
 }
 
 export default function CRMPage() {
-    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('hubspot');
+    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('hubspot', 'crm');
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [deals, setDeals] = useState<Deal[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+
+    const [activeTab, setActiveTab] = useState('contacts');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+    const [formData, setFormData] = useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        company: ''
+    });
+
+    const [dealFormData, setDealFormData] = useState({
+        title: '',
+        value: '',
+        stage: 'appointmentsched',
+        pipeline: 'default',
+        close_date: ''
+    });
+
+    const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
     useEffect(() => {
         if (isConnected) {
@@ -45,9 +71,8 @@ export default function CRMPage() {
     const loadData = async () => {
         setIsLoadingData(true);
         try {
-            // Load contacts and deals from HubSpot
             const [contactsData, dealsData] = await Promise.all([
-                brainApi.crm.listContacts(),
+                brainApi.crm.getContacts(),
                 brainApi.crm.getDeals()
             ]);
 
@@ -55,9 +80,101 @@ export default function CRMPage() {
             setDeals(dealsData.data || dealsData || []);
         } catch (error) {
             console.error('Failed to load CRM data:', error);
+            toast.error('Failed to load CRM data');
         } finally {
             setIsLoadingData(false);
         }
+    };
+
+    const handleCreate = async () => {
+        try {
+            if (activeTab === 'contacts') {
+                await brainApi.crm.createContact(formData);
+                toast.success('Contact created successfully');
+            } else {
+                await brainApi.crm.createDeal({
+                    ...dealFormData,
+                    value: parseFloat(dealFormData.value)
+                });
+                toast.success('Deal created successfully');
+            }
+            setIsDialogOpen(false);
+            resetForm();
+            loadData();
+        } catch (error) {
+            toast.error(`Failed to create ${activeTab === 'contacts' ? 'contact' : 'deal'}`);
+        }
+    };
+
+    const handleUpdate = async () => {
+        try {
+            if (activeTab === 'contacts') {
+                if (!selectedContact) return;
+                await brainApi.crm.updateContact(selectedContact.id, formData);
+                toast.success('Contact updated successfully');
+            } else {
+                if (!selectedDeal) return;
+                await brainApi.crm.updateDeal(selectedDeal.id, {
+                    ...dealFormData,
+                    value: parseFloat(dealFormData.value)
+                });
+                toast.success('Deal updated successfully');
+            }
+            setIsDialogOpen(false);
+            resetForm();
+            loadData();
+        } catch (error) {
+            toast.error(`Failed to update ${activeTab === 'contacts' ? 'contact' : 'deal'}`);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm(`Are you sure you want to delete this ${activeTab === 'contacts' ? 'contact' : 'deal'}?`)) return;
+        try {
+            if (activeTab === 'contacts') {
+                await brainApi.crm.deleteContact(id);
+            } else {
+                await brainApi.crm.deleteDeal(id);
+            }
+            toast.success(`${activeTab === 'contacts' ? 'Contact' : 'Deal'} deleted successfully`);
+            loadData();
+        } catch (error) {
+            toast.error(`Failed to delete ${activeTab === 'contacts' ? 'contact' : 'deal'}`);
+        }
+    };
+
+    const openEditDeal = (deal: Deal) => {
+        setSelectedDeal(deal);
+        setDealFormData({
+            title: deal.title,
+            value: deal.value.toString(),
+            stage: deal.stage,
+            pipeline: deal.pipeline || 'default',
+            close_date: deal.close_date || ''
+        });
+        setIsEditing(true);
+        setIsDialogOpen(true);
+    };
+
+    const openEdit = (contact: Contact) => {
+        setSelectedContact(contact);
+        setFormData({
+            first_name: contact.first_name || '',
+            last_name: contact.last_name || '',
+            email: contact.email,
+            phone: contact.phone || '',
+            company: contact.company || ''
+        });
+        setIsEditing(true);
+        setIsDialogOpen(true);
+    };
+
+    const resetForm = () => {
+        setFormData({ first_name: '', last_name: '', email: '', phone: '', company: '' });
+        setDealFormData({ title: '', value: '', stage: 'appointmentsched', pipeline: 'default', close_date: '' });
+        setIsEditing(false);
+        setSelectedContact(null);
+        setSelectedDeal(null);
     };
 
     if (statusLoading) {
@@ -143,14 +260,120 @@ export default function CRMPage() {
                             <CardTitle>CRM Data</CardTitle>
                             <CardDescription>View and manage your contacts and deals</CardDescription>
                         </div>
-                        <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Contact
-                        </Button>
+                        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                            setIsDialogOpen(open);
+                            if (!open) resetForm();
+                        }}>
+                            <DialogTrigger asChild>
+                                <Button>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add {activeTab === 'contacts' ? 'Contact' : 'Deal'}
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>{isEditing ? 'Edit' : 'Add New'} {activeTab === 'contacts' ? 'Contact' : 'Deal'}</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    {activeTab === 'contacts' ? (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="firstName">First Name</Label>
+                                                    <Input
+                                                        id="firstName"
+                                                        value={formData.first_name}
+                                                        onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="lastName">Last Name</Label>
+                                                    <Input
+                                                        id="lastName"
+                                                        value={formData.last_name}
+                                                        onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="email">Email</Label>
+                                                <Input
+                                                    id="email"
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="phone">Phone</Label>
+                                                <Input
+                                                    id="phone"
+                                                    value={formData.phone}
+                                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="company">Company</Label>
+                                                <Input
+                                                    id="company"
+                                                    value={formData.company}
+                                                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="title">Deal Title</Label>
+                                                <Input
+                                                    id="title"
+                                                    value={dealFormData.title}
+                                                    onChange={(e) => setDealFormData({ ...dealFormData, title: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="value">Value ($)</Label>
+                                                    <Input
+                                                        id="value"
+                                                        type="number"
+                                                        value={dealFormData.value}
+                                                        onChange={(e) => setDealFormData({ ...dealFormData, value: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="closeDate">Close Date</Label>
+                                                    <Input
+                                                        id="closeDate"
+                                                        type="date"
+                                                        value={dealFormData.close_date}
+                                                        onChange={(e) => setDealFormData({ ...dealFormData, close_date: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="stage">Stage</Label>
+                                                <Input
+                                                    id="stage"
+                                                    value={dealFormData.stage}
+                                                    onChange={(e) => setDealFormData({ ...dealFormData, stage: e.target.value })}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                                    <Button onClick={isEditing ? handleUpdate : handleCreate}>
+                                        {isEditing ? 'Save Changes' : `Add ${activeTab === 'contacts' ? 'Contact' : 'Deal'}`}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Tabs defaultValue="contacts" className="w-full">
+                    <Tabs defaultValue="contacts" className="w-full" onValueChange={setActiveTab}>
                         <TabsList className="grid w-full grid-cols-2 mb-4">
                             <TabsTrigger value="contacts">
                                 <Users className="w-4 h-4 mr-2" />
@@ -201,13 +424,30 @@ export default function CRMPage() {
                                                     <p className="text-sm text-muted-foreground">{contact.email}</p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                {contact.company && (
-                                                    <p className="text-sm text-muted-foreground">{contact.company}</p>
-                                                )}
-                                                {contact.phone && (
-                                                    <p className="text-sm text-muted-foreground">{contact.phone}</p>
-                                                )}
+                                            <div className="flex items-center gap-6">
+                                                <div className="hidden md:block text-right">
+                                                    {contact.company && (
+                                                        <p className="text-sm font-medium text-slate-900 dark:text-white">{contact.company}</p>
+                                                    )}
+                                                    {contact.phone && (
+                                                        <p className="text-sm text-muted-foreground">{contact.phone}</p>
+                                                    )}
+                                                </div>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => openEdit(contact)}>
+                                                            <Edit className="w-4 h-4 mr-2" /> Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(contact.id)}>
+                                                            <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </div>
                                     ))}
@@ -240,15 +480,32 @@ export default function CRMPage() {
                                                     <p className="text-sm text-muted-foreground">Stage: {deal.stage}</p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="font-semibold text-slate-900 dark:text-white">
-                                                    ${deal.value.toLocaleString()}
-                                                </p>
-                                                {deal.close_date && (
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Close: {new Date(deal.close_date).toLocaleDateString()}
+                                            <div className="flex items-center gap-6">
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-slate-900 dark:text-white">
+                                                        ${deal.value.toLocaleString()}
                                                     </p>
-                                                )}
+                                                    {deal.close_date && (
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Close: {new Date(deal.close_date).toLocaleDateString()}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <MoreVertical className="w-4 h-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => openEditDeal(deal)}>
+                                                            <Edit className="w-4 h-4 mr-2" /> Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(deal.id)}>
+                                                            <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </div>
                                     ))}

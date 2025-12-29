@@ -1,14 +1,22 @@
 'use client';
 
 import React from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from "@clerk/nextjs";
 import { Plug, Sparkles, BarChart3, TrendingUp } from 'lucide-react';
 import { getUserDisplayInfoFromSession } from '@/utils/rbac';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
-  const userInfo = getUserDisplayInfoFromSession(session?.user);
+  const { user } = useUser();
+
+  const sessionUser = user ? {
+    role: user.publicMetadata?.role || 'user',
+    tenant_id: user.publicMetadata?.tenant_id,
+    name: user.fullName,
+    email: user.primaryEmailAddress?.emailAddress
+  } : null;
+
+  const userInfo = getUserDisplayInfoFromSession(sessionUser);
   const { tenantId } = userInfo;
 
   return (

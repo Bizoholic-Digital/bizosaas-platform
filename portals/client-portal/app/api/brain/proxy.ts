@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { BRAIN_GATEWAY_URL } from './config';
-import { auth } from '@/lib/auth';
+import { auth } from '@clerk/nextjs/server';
 
 export async function proxyRequest(request: NextRequest, targetPath: string) {
     const url = `${BRAIN_GATEWAY_URL}/${targetPath.replace(/^\//, '')}`;
@@ -10,18 +10,16 @@ export async function proxyRequest(request: NextRequest, targetPath: string) {
         headers.delete('host');
         headers.delete('connection');
 
-        // 1. Get Session Token (Server-Side) with Error Handling
-        let sessionToken: string | undefined;
+        // 1. Get Clerk Token (Server-Side)
+        let sessionToken: string | null = null;
         try {
-            const session = await auth();
-            // @ts-ignore
-            sessionToken = session?.access_token;
+            const { getToken } = await auth();
+            sessionToken = await getToken();
         } catch (authError) {
-            console.warn("Proxy: Failed to retrieve auth session", authError);
-            // Continue without session token
+            console.warn("Proxy: Failed to retrieve Clerk token", authError);
         }
 
-        // 2. Pass auth token (Session priority, fallback to header)
+        // 2. Pass auth token (Priority to server session)
         if (sessionToken) {
             headers.set('Authorization', `Bearer ${sessionToken}`);
         } else {

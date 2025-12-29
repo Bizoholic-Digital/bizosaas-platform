@@ -78,6 +78,11 @@ class MarketingPort(ABC):
     async def create_list(self, email_list: EmailList) -> EmailList:
         """Create a new email list"""
         pass
+
+    @abstractmethod
+    async def delete_list(self, list_id: str) -> bool:
+        """Delete an email list"""
+        pass
     
     # Subscriber methods
     @abstractmethod
@@ -129,6 +134,11 @@ class MarketingPort(ABC):
     @abstractmethod
     async def send_campaign(self, campaign_id: str) -> bool:
         """Send a campaign"""
+        pass
+
+    @abstractmethod
+    async def delete_campaign(self, campaign_id: str) -> bool:
+        """Delete a campaign"""
         pass
     
     @abstractmethod

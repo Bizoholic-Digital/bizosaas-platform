@@ -9,6 +9,8 @@ from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType, ConnectorStatus
 from app.ports.cms_port import CMSPort, Page as PortPage, Post as PortPost
+from app.dependencies import get_secret_service
+from app.domain.services.secret_service import SecretService
 
 router = APIRouter()
 
@@ -39,30 +41,39 @@ class MediaMessage(BaseModel):
     title: Optional[str] = ""
     mime_type: Optional[str] = ""
 
-async def get_active_cms_connector(tenant_id: str) -> CMSPort:
+async def get_active_cms_connector(tenant_id: str, secret_service: SecretService) -> CMSPort:
     # Find any connected CMS connector for this tenant
     # 1. Get all CMS connector types
     cms_configs = [c for c in ConnectorRegistry.get_all_configs() if c.type == ConnectorType.CMS]
     
-    # 2. Check if any is connected
+    # 2. Check in-memory store first
     for config in cms_configs:
         key = f"{tenant_id}:{config.id}"
         if key in active_connectors:
             data = active_connectors[key]
             connector = ConnectorRegistry.create_connector(config.id, tenant_id, data["credentials"])
-            # Validate it's reachable? Maybe rely on connection status.
-            return connector # Type: BaseConnector + CMSPort
+            return connector
+            
+    # 3. Check secret service (persistent)
+    for config in cms_configs:
+        credentials = await secret_service.get_connector_credentials(tenant_id, config.id)
+        if credentials:
+            # Re-verify and cache in memory
+            connector = ConnectorRegistry.create_connector(config.id, tenant_id, credentials)
+            active_connectors[f"{tenant_id}:{config.id}"] = {"credentials": credentials}
+            return connector
             
     raise HTTPException(status_code=404, detail="No CMS connector configured. Please connect a CMS (e.g. WordPress) in Connectors settings.")
 
 @router.get("/status")
 async def get_cms_status(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Check connectivity to the active CMS"""
     tenant_id = user.tenant_id or "default_tenant"
     try:
-        connector = await get_active_cms_connector(tenant_id)
+        connector = await get_active_cms_connector(tenant_id, secret_service)
         # Verify deeper connectivity if possible
         # For now, if we got the connector, it's configured
         is_valid = await connector.validate_credentials()
@@ -79,11 +90,12 @@ async def get_cms_status(
 
 @router.get("/stats")
 async def get_cms_stats(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Get content statistics"""
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
         stats = await connector.get_stats()
@@ -93,10 +105,11 @@ async def get_cms_stats(
 
 @router.get("/pages", response_model=List[PageMessage])
 async def list_pages(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
         pages = await connector.get_pages() # Returns List[PortPage]
@@ -120,10 +133,11 @@ async def list_pages(
 @router.post("/pages", response_model=PageMessage)
 async def create_page(
     page: PageMessage,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
         # Convert to dict, excluding auto-fields if needed
@@ -148,10 +162,11 @@ async def create_page(
 @router.delete("/pages/{page_id}")
 async def delete_page(
     page_id: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
         await connector.delete_page(page_id)
@@ -163,10 +178,11 @@ async def delete_page(
 async def update_page(
     page_id: str,
     page: PageMessage,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
         payload = page.dict(exclude={"id", "published_at", "updated_at"})
@@ -187,10 +203,11 @@ async def update_page(
 
 @router.get("/posts", response_model=List[PostMessage])
 async def list_posts(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
         posts = await connector.get_posts()
@@ -215,10 +232,11 @@ async def list_posts(
 @router.post("/posts", response_model=PostMessage)
 async def create_post(
     post: PostMessage,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
         payload = post.dict(exclude={"id", "published_at", "updated_at"})
         result = await connector.create_post(payload)
@@ -238,10 +256,11 @@ async def create_post(
 async def update_post(
     post_id: str,
     post: PostMessage,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
         payload = post.dict(exclude={"id", "published_at", "updated_at"})
         result = await connector.update_post(post_id, payload)
@@ -260,10 +279,11 @@ async def update_post(
 @router.delete("/posts/{post_id}")
 async def delete_post(
     post_id: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_cms_connector(tenant_id)
+    connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
         await connector.delete_post(post_id)
         return {"status": "success", "id": post_id}

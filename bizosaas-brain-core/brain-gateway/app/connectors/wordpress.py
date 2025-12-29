@@ -192,8 +192,23 @@ class WordPressConnector(BaseConnector, CMSPort):
                 json=updates
             )
             response.raise_for_status()
-            # return updated page logic
-            return await self.get_page(page_id)
+            p = response.json()
+            return Page(
+                id=str(p["id"]),
+                title=p["title"]["rendered"],
+                slug=p["slug"],
+                content=p["content"]["rendered"],
+                status=p["status"]
+            )
+
+    async def delete_page(self, page_id: str) -> bool:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                self._get_api_url(f"pages/{page_id}"),
+                headers=self._get_auth_header(),
+                params={"force": "true"}
+            )
+            return response.status_code in [200, 204]
 
     async def get_posts(self, limit: int = 100) -> List[Post]:
         async with httpx.AsyncClient() as client:
@@ -216,20 +231,66 @@ class WordPressConnector(BaseConnector, CMSPort):
             ]
 
     async def get_post(self, post_id: str) -> Optional[Post]:
-        # Implementation similar to get_page
-        return None
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    self._get_api_url(f"posts/{post_id}"),
+                    headers=self._get_auth_header()
+                )
+                if response.status_code == 404: return None
+                p = response.json()
+                return Post(
+                    id=str(p["id"]),
+                    title=p["title"]["rendered"],
+                    slug=p["slug"],
+                    content=p["content"]["rendered"],
+                    status=p["status"],
+                    excerpt=p["excerpt"]["rendered"]
+                )
+            except Exception:
+                return None
 
     async def create_post(self, post: Post) -> Post:
-        # Implementation similar to create_page
-        return post
+        payload = {
+            "title": post.title,
+            "content": post.content,
+            "status": post.status or "publish",
+            "slug": post.slug
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self._get_api_url("posts"),
+                headers=self._get_auth_header(),
+                json=payload
+            )
+            response.raise_for_status()
+            p = response.json()
+            post.id = str(p["id"])
+            return post
 
     async def update_post(self, post_id: str, updates: Dict[str, Any]) -> Post:
-        return Post(title="Updated", slug="updated", content="") # Mock
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                self._get_api_url(f"posts/{post_id}"),
+                headers=self._get_auth_header(),
+                json=updates
+            )
+            response.raise_for_status()
+            p = response.json()
+            return Post(
+                id=str(p["id"]),
+                title=p["title"]["rendered"],
+                slug=p["slug"],
+                content=p["content"]["rendered"],
+                status=p["status"],
+                excerpt=p["excerpt"]["rendered"]
+            )
 
     async def delete_post(self, post_id: str) -> bool:
         async with httpx.AsyncClient() as client:
             response = await client.delete(
                 self._get_api_url(f"posts/{post_id}"),
-                headers=self._get_auth_header()
+                headers=self._get_auth_header(),
+                params={"force": "true"}
             )
-            return response.status_code == 200
+            return response.status_code in [200, 204]

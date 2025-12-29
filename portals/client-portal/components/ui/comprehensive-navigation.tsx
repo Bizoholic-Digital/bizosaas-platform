@@ -12,8 +12,9 @@ import {
   BookOpen, Image, Video, Newspaper, Tag, Filter,
   PieChart, Activity, LineChart, TrendingDown, AlertCircle,
   ChevronDown, ChevronRight, Menu, X, RefreshCw, Bot,
-  CheckSquare, ListChecks, FolderKanban, Sparkles
+  CheckSquare, ListChecks, FolderKanban, Sparkles, Layers
 } from 'lucide-react';
+import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import { useAuth } from '@/components/auth/AuthProvider';
 
 interface NavigationItem {
@@ -42,16 +43,20 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
 
   // Auto-expand sections based on current path
   useEffect(() => {
-    const pathSections = pathname.split('/').filter(Boolean);
-    const newExpanded = ['dashboard'];
+    const newExpanded = ['workspace'];
 
-    if (pathname.startsWith('/crm')) newExpanded.push('crm');
-    if (pathname.startsWith('/content')) newExpanded.push('content');
-    if (pathname.startsWith('/ecommerce')) newExpanded.push('ecommerce');
-    if (pathname.startsWith('/directory')) newExpanded.push('directory');
-    if (pathname.startsWith('/analytics')) newExpanded.push('analytics');
-    if (pathname.startsWith('/users')) newExpanded.push('users');
-    if (pathname.startsWith('/settings')) newExpanded.push('settings');
+    if (pathname.startsWith('/crm') || pathname.startsWith('/content') || pathname.startsWith('/ecommerce') || pathname.startsWith('/directory')) {
+      newExpanded.push('business-suite');
+    }
+    if (pathname.startsWith('/ai-agents') || pathname.startsWith('/analytics')) {
+      newExpanded.push('automation');
+    }
+    if (pathname.startsWith('/tasks') || pathname.includes('/connectors')) {
+      newExpanded.push('operations');
+    }
+    if (pathname.startsWith('/settings')) {
+      newExpanded.push('platform');
+    }
 
     setExpandedSections(newExpanded);
   }, [pathname]);
@@ -65,17 +70,26 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
   };
 
   /* Dynamic Sidebar Logic */
+  const { getToken } = useClerkAuth();
   const [installedMcps, setInstalledMcps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    import('../../lib/brain-api').then(({ brainApi }) => {
-      brainApi.mcp.getInstalled().then(data => {
+    const fetchInstalled = async () => {
+      try {
+        const { brainApi } = await import('../../lib/brain-api');
+        const token = await getToken();
+        const data = await brainApi.mcp.getInstalled(token || undefined);
         setInstalledMcps(data);
+      } catch (err) {
+        console.error('Failed to fetch installed MCPs:', err);
+      } finally {
         setLoading(false);
-      }).catch(() => setLoading(false));
-    });
-  }, []);
+      }
+    };
+
+    fetchInstalled();
+  }, [getToken]);
 
   const hasCategory = (catSlug: string) => {
     if (loading) return true; // optimistic
@@ -88,107 +102,131 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
 
   const navigationItems: NavigationItem[] = [
     {
-      id: 'dashboard',
-      name: isCollapsed ? 'Home' : 'Business Overview',
-      href: '/dashboard',
-      icon: <Home className="w-5 h-5" />,
-      active: pathname === '/dashboard' || pathname === '/'
-    },
-    {
-      id: 'ai-assistant',
-      name: isCollapsed ? 'AI' : 'AI Assistant',
-      href: '/dashboard/ai-assistant',
-      icon: <Sparkles className="w-5 h-5 text-indigo-500" />,
-      badge: isCollapsed ? undefined : 'AI',
-      active: pathname === '/dashboard/ai-assistant'
-    },
-    {
-      id: 'agent-studio',
-      name: isCollapsed ? 'Studio' : 'Agent Studio',
-      href: '/ai-agents',
-      icon: <Bot className="w-5 h-5" />,
-      badge: isCollapsed ? undefined : 'NEW',
-      active: pathname.startsWith('/ai-agents')
-    },
-    {
-      id: 'crm',
-      name: isCollapsed ? 'CRM' : 'CRM & Growth',
-      href: getLink('crm', '/crm'),
-      icon: <Users className={`w-5 h-5 ${hasCategory('crm') ? '' : 'text-gray-400'}`} />,
-      active: pathname.startsWith('/crm'),
-      subItems: hasCategory('crm') ? [
+      id: 'workspace',
+      name: isCollapsed ? 'Home' : 'Workspace',
+      href: '#',
+      icon: <Home className="w-5 h-5 text-gray-500" />,
+      subItems: [
         {
-          id: 'crm-contacts',
-          name: 'Lead Management',
-          href: '/crm/contacts',
-          icon: <Users className="w-4 h-4" />,
-          active: pathname === '/crm/contacts'
+          id: 'dashboard',
+          name: 'Business Overview',
+          href: '/dashboard',
+          icon: <Home className="w-4 h-4" />,
+          active: pathname === '/dashboard' || pathname === '/'
         },
         {
-          id: 'crm-campaigns',
-          name: 'Marketing Campaigns',
-          href: '/crm/campaigns',
-          icon: <Target className="w-4 h-4" />,
-          active: pathname === '/crm/campaigns'
-        },
-        {
-          id: 'crm-reports',
-          name: 'Performance Reports',
-          href: '/crm/reports',
-          icon: <BarChart3 className="w-4 h-4" />,
-          active: pathname === '/crm/reports'
+          id: 'ai-assistant',
+          name: 'AI Assistant',
+          href: '/dashboard/ai-assistant',
+          icon: <Sparkles className="w-4 h-4 text-indigo-500" />,
+          badge: isCollapsed ? undefined : 'AI',
+          active: pathname === '/dashboard/ai-assistant'
         }
-      ] : []
+      ]
     },
     {
-      id: 'content',
-      name: isCollapsed ? 'Content' : 'Content & CMS',
-      href: getLink('cms', '/content'),
-      icon: <FileText className={`w-5 h-5 ${hasCategory('cms') ? '' : 'text-gray-400'}`} />,
-      active: pathname.startsWith('/content'),
+      id: 'business-suite',
+      name: isCollapsed ? 'Suite' : 'Business Suite',
+      href: '#',
+      icon: <Layers className="w-5 h-5 text-gray-500" />,
+      subItems: [
+        {
+          id: 'crm',
+          name: 'CRM & Contacts',
+          href: '/dashboard/crm',
+          icon: <Users className="w-4 h-4" />,
+          active: pathname.startsWith('/dashboard/crm'),
+        },
+        {
+          id: 'cms',
+          name: 'Content & CMS',
+          href: '/dashboard/cms',
+          icon: <FileText className="w-4 h-4" />,
+          active: pathname.startsWith('/dashboard/cms'),
+        },
+        {
+          id: 'ecommerce',
+          name: 'E-commerce',
+          href: '/dashboard/ecommerce',
+          icon: <ShoppingCart className="w-4 h-4" />,
+          active: pathname.startsWith('/dashboard/ecommerce')
+        },
+        {
+          id: 'marketing',
+          name: 'Marketing',
+          href: '/dashboard/marketing',
+          icon: <Mail className="w-4 h-4" />,
+          active: pathname.startsWith('/dashboard/marketing')
+        }
+      ]
     },
     {
-      id: 'ecommerce',
-      name: isCollapsed ? 'Shop' : 'E-commerce Shop',
-      href: getLink('ecommerce', '/ecommerce'),
-      icon: <ShoppingCart className={`w-5 h-5 ${hasCategory('ecommerce') ? '' : 'text-gray-400'}`} />,
-      active: pathname.startsWith('/ecommerce')
+      id: 'automation',
+      name: isCollapsed ? 'Auto' : 'Automation & Intel',
+      href: '#',
+      icon: <Zap className="w-5 h-5 text-gray-500" />,
+      subItems: [
+        {
+          id: 'agent-studio',
+          name: 'Agent Studio',
+          href: '/dashboard/ai-agents',
+          icon: <Bot className="w-4 h-4" />,
+          badge: isCollapsed ? undefined : 'NEW',
+          active: pathname.startsWith('/ai-agents')
+        },
+        {
+          id: 'analytics',
+          name: 'Business Intelligence',
+          href: getLink('analytics', '/analytics'),
+          icon: <BarChart3 className={`w-4 h-4 ${hasCategory('analytics') ? '' : 'text-gray-400'}`} />,
+          active: pathname.startsWith('/analytics')
+        }
+      ]
     },
     {
-      id: 'analytics',
-      name: isCollapsed ? 'Stats' : 'Business Intelligence',
-      href: getLink('analytics', '/analytics'),
-      icon: <BarChart3 className={`w-5 h-5 ${hasCategory('analytics') ? '' : 'text-gray-400'}`} />,
-      active: pathname.startsWith('/analytics')
+      id: 'operations',
+      name: isCollapsed ? 'Ops' : 'Operations',
+      href: '#',
+      icon: <Activity className="w-5 h-5 text-gray-500" />,
+      subItems: [
+        {
+          id: 'tasks',
+          name: 'Projects & Tasks',
+          href: '/tasks',
+          icon: <CheckSquare className="w-4 h-4" />,
+          active: pathname.startsWith('/tasks'),
+        },
+        {
+          id: 'connectors',
+          name: 'Connectivity Hub',
+          href: '/dashboard/connectors',
+          icon: <RefreshCw className="w-4 h-4 text-emerald-500" />,
+          active: pathname === '/dashboard/connectors'
+        }
+      ]
     },
     {
-      id: 'tasks',
-      name: isCollapsed ? 'Tasks' : 'Projects & Tasks',
-      href: '/tasks',
-      icon: <CheckSquare className="w-5 h-5" />,
-      active: pathname.startsWith('/tasks'),
-    },
-    {
-      id: 'connectors',
-      name: isCollapsed ? 'Connect' : 'Connectors',
-      href: '/dashboard/connectors',
-      icon: <RefreshCw className="w-5 h-5 text-emerald-500" />,
-      active: pathname === '/dashboard/connectors'
-    },
-    {
-      id: 'settings',
-      name: isCollapsed ? 'Settings' : 'Portal Settings',
-      href: '/settings',
-      icon: <Settings className="w-5 h-5" />,
-      active: pathname.startsWith('/settings')
-    },
-    {
-      id: 'admin-dash',
-      name: isCollapsed ? 'Admin' : 'Platform Admin',
-      href: 'https://admin.bizoholic.net',
-      icon: <Shield className="w-5 h-5 text-amber-500" />,
-      active: false,
-      show: isAdmin
+      id: 'platform',
+      name: isCollapsed ? 'System' : 'Settings & Admin',
+      href: '#',
+      icon: <Settings className="w-5 h-5 text-gray-500" />,
+      subItems: [
+        {
+          id: 'settings',
+          name: 'Portal Settings',
+          href: '/settings',
+          icon: <Settings className="w-4 h-4" />,
+          active: pathname.startsWith('/settings')
+        },
+        {
+          id: 'admin-dash',
+          name: 'Platform Admin',
+          href: 'https://admin.bizoholic.net',
+          icon: <Shield className="w-4 h-4 text-amber-500" />,
+          active: false,
+          show: isAdmin
+        }
+      ]
     }
   ];
 

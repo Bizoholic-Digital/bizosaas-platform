@@ -44,7 +44,7 @@ class VaultAdapter(SecretPort):
         path: str,
         secret_data: Dict[str, Any],
         metadata: Optional[Dict[str, Any]] = None
-    ) -&gt; bool:
+    ) -> bool:
         """
         Store a secret in Vault KV v2.
         
@@ -73,7 +73,7 @@ class VaultAdapter(SecretPort):
             logger.error(f"Failed to store secret at {path}: {e}")
             return False
     
-    async def get_secret(self, path: str) -&gt; Optional[Dict[str, Any]]:
+    async def get_secret(self, path: str) -> Optional[Dict[str, Any]]:
         """
         Retrieve a secret from Vault.
         
@@ -100,7 +100,7 @@ class VaultAdapter(SecretPort):
             logger.error(f"Failed to retrieve secret from {path}: {e}")
             return None
     
-    async def delete_secret(self, path: str) -&gt; bool:
+    async def delete_secret(self, path: str) -> bool:
         """
         Delete a secret from Vault.
         
@@ -125,7 +125,7 @@ class VaultAdapter(SecretPort):
             logger.error(f"Failed to delete secret at {path}: {e}")
             return False
     
-    async def list_secrets(self, path_prefix: str) -&gt; List[str]:
+    async def list_secrets(self, path_prefix: str) -> List[str]:
         """
         List all secrets under a path prefix.
         
@@ -157,7 +157,7 @@ class VaultAdapter(SecretPort):
         self,
         path: str,
         new_secret_data: Dict[str, Any]
-    ) -&gt; bool:
+    ) -> bool:
         """
         Rotate a secret (create new version).
         

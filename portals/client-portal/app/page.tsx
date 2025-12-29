@@ -2,23 +2,23 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useUser } from "@clerk/nextjs";
 
 export default function RootPage() {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { isSignedIn, isLoaded } = useUser();
 
     useEffect(() => {
-        if (status === 'loading') return; // Wait for session to load
+        if (!isLoaded) return; // Wait for session to load
 
-        if (session) {
+        if (isSignedIn) {
             // User is authenticated, redirect to dashboard
             router.replace('/dashboard');
         } else {
             // User is not authenticated, redirect to login
             router.replace('/login');
         }
-    }, [session, status, router]);
+    }, [isSignedIn, isLoaded, router]);
 
     // Show loading state while redirecting
     return (

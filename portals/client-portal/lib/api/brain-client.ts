@@ -24,20 +24,12 @@ class BrainApiClient {
             // Only running on client-side
             if (typeof window !== 'undefined') {
                 try {
-                    // Dynamically import to avoid server-side issues
-                    const { getSession } = await import('next-auth/react');
-                    const session: any = await getSession();
-                    console.log("[BrainSDK] Interceptor Session Check:", {
-                        hasSession: !!session,
-                        hasToken: !!session?.access_token,
-                        tokenPreview: session?.access_token ? session.access_token.substring(0, 10) + '...' : 'N/A'
-                    });
+                    // Use Clerk's global object to get the token if available
+                    // @ts-ignore - Clerk is available on window when using @clerk/nextjs
+                    const token = await window.Clerk?.session?.getToken();
 
-                    if (session?.access_token) {
-                        config.headers.Authorization = `Bearer ${session.access_token}`;
-                        console.log("[BrainSDK] Attached Authorization Header");
-                    } else {
-                        console.warn("[BrainSDK] No access token found in session");
+                    if (token) {
+                        config.headers.Authorization = `Bearer ${token}`;
                     }
                 } catch (e) {
                     console.warn('[BrainSDK] Failed to attach auth token', e);

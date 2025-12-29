@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Cloud, Database, ShoppingCart, Layout, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag } from 'lucide-react';
+import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Cloud, Database, ShoppingCart, Layout, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag, Eye, EyeOff } from 'lucide-react';
 import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/connectors';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
@@ -44,6 +44,7 @@ export function ConnectorsContent() {
     const [isConnecting, setIsConnecting] = useState(false);
     const [isValidating, setIsValidating] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
 
     // Mock data for initial development - Replace with API call later
@@ -296,11 +297,14 @@ export function ConnectorsContent() {
         try {
             // Attempt API call
             const res = await connectorsApi.getConnectors();
-            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-                setConnectors(res.data);
+            if (res.data && Array.isArray(res.data)) {
+                // Merge real status into mock definitions to maintain the full list of available connectors
+                const merged = MOCK_CONNECTORS.map(mock => {
+                    const real = (res.data as any[]).find(r => r.id === mock.id);
+                    return real ? { ...mock, ...real } : mock;
+                });
+                setConnectors(merged);
             } else {
-                // Fallback to mock data if API is empty or not ready
-                console.log("Using mock connectors due to empty API response");
                 setConnectors(MOCK_CONNECTORS);
             }
         } catch (error) {
@@ -493,13 +497,25 @@ export function ConnectorsContent() {
                                     {field.label}
                                     {field.required && <span className="text-red-500 ml-1">*</span>}
                                 </Label>
-                                <Input
-                                    id={key}
-                                    type={field.type}
-                                    placeholder={field.placeholder}
-                                    value={credentials[key] as string || ''}
-                                    onChange={(e) => handleCredentialChange(key, e.target.value)}
-                                />
+                                <div className="relative">
+                                    <Input
+                                        id={key}
+                                        type={field.type === 'password' && showPasswords[key] ? 'text' : field.type}
+                                        placeholder={field.placeholder}
+                                        value={credentials[key] as string || ''}
+                                        onChange={(e) => handleCredentialChange(key, e.target.value)}
+                                        className={field.type === 'password' ? 'pr-10' : ''}
+                                    />
+                                    {field.type === 'password' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswords(prev => ({ ...prev, [key]: !prev[key] }))}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                        >
+                                            {showPasswords[key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    )}
+                                </div>
                                 {field.help && <p className="text-xs text-muted-foreground">{field.help}</p>}
                             </div>
                         ))}

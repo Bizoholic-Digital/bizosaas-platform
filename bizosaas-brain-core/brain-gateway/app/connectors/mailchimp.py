@@ -170,6 +170,19 @@ class MailchimpConnector(BaseConnector, MarketingPort):
             logger.error(f"Failed to create Mailchimp list: {e}")
             raise
 
+    async def delete_list(self, list_id: str) -> bool:
+        """Delete an email list"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    f"{self._get_base_url()}/lists/{list_id}",
+                    auth=self._get_auth()
+                )
+                return response.status_code == 204
+        except Exception as e:
+            logger.error(f"Failed to delete Mailchimp list {list_id}: {e}")
+            return False
+
     async def get_subscribers(self, list_id: str, limit: int = 100) -> List[Subscriber]:
         """Get subscribers from a list"""
         try:
@@ -392,6 +405,19 @@ class MailchimpConnector(BaseConnector, MarketingPort):
                 return response.status_code == 204
         except Exception as e:
             logger.error(f"Failed to send Mailchimp campaign: {e}")
+            return False
+
+    async def delete_campaign(self, campaign_id: str) -> bool:
+        """Delete a campaign"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    f"{self._get_base_url()}/campaigns/{campaign_id}",
+                    auth=self._get_auth()
+                )
+                return response.status_code == 204
+        except Exception as e:
+            logger.error(f"Failed to delete Mailchimp campaign {campaign_id}: {e}")
             return False
 
     async def get_campaign_stats(self, campaign_id: str) -> CampaignStats:

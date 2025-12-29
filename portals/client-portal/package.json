@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Multi-Tenant Client Portal - Self-Service Dashboard",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3003",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -18,6 +18,7 @@
     "test:comprehensive": "node comprehensive-test-suite.js"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.36.5",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",

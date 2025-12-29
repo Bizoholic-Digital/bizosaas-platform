@@ -12,9 +12,12 @@ class ConnectorType(str, Enum):
     ECOMMERCE = "ecommerce"
     ANALYTICS = "analytics"
     MARKETING = "marketing"
+    COMMUNICATION = "communication"
+    BILLING = "billing"
     TASK_MANAGEMENT = "task_management"
     PROJECT_MANAGEMENT = "project_management"
     OTHER = "other"
+
 
 class ConnectorStatus(str, Enum):
     CONNECTED = "connected"

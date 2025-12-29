@@ -18,12 +18,13 @@ services:
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-}
       - NEXT_TELEMETRY_DISABLED=1
       - AUTH_SERVICE_URL=http://auth-service:8006
-      # Authentik SSO Configuration
-      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas/}
-      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID:-boemWale3ZtGCAbYxCiMhFOP7s6mUTPTEIZMn82W}
-      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET:-}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      # Clerk Authentication
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - NEXT_PUBLIC_CLERK_SIGN_IN_URL=/login
+      - NEXT_PUBLIC_CLERK_SIGN_UP_URL=/signup
+      - NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+      - NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
       - VAULT_ADDR=${VAULT_URL:-https://vault-cluster.vault.8200.full.url}
       - VAULT_TOKEN=${VAULT_TOKEN:-}
       - VAULT_SECRET_PATH=${VAULT_SECRET_PATH:-bizosaas/stg/client-portal}

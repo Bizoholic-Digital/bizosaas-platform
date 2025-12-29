@@ -64,6 +64,11 @@ class CRMPort(ABC):
     async def update_contact(self, contact_id: str, updates: Dict[str, Any]) -> Contact:
         """Update an existing contact."""
         pass
+
+    @abstractmethod
+    async def delete_contact(self, contact_id: str) -> bool:
+        """Delete an existing contact."""
+        pass
         
     @abstractmethod
     async def get_deals(self, limit: int = 100) -> List[Deal]:
@@ -73,4 +78,14 @@ class CRMPort(ABC):
     @abstractmethod
     async def create_deal(self, deal: Deal) -> Deal:
         """Create a new deal."""
+        pass
+
+    @abstractmethod
+    async def update_deal(self, deal_id: str, updates: Dict[str, Any]) -> Deal:
+        """Update an existing deal."""
+        pass
+
+    @abstractmethod
+    async def delete_deal(self, deal_id: str) -> bool:
+        """Delete an existing deal."""
         pass

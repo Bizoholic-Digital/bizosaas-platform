@@ -183,6 +183,33 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
             product.id = str(item.get("id"))
             return product
 
+    async def update_product(self, product_id: str, updates: Dict[str, Any]) -> Product:
+        async with httpx.AsyncClient() as client:
+            response = await client.put(
+                self._get_api_url(f"products/{product_id}"),
+                auth=self._get_auth(),
+                json=updates
+            )
+            response.raise_for_status()
+            item = response.json()
+            return Product(
+                id=str(item.get("id")),
+                name=item.get("name"),
+                price=float(item.get("price") or 0),
+                stock_quantity=item.get("stock_quantity") or 0,
+                sku=item.get("sku"),
+                status=item.get("status")
+            )
+
+    async def delete_product(self, product_id: str) -> bool:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                self._get_api_url(f"products/{product_id}"),
+                auth=self._get_auth(),
+                params={"force": "true"}
+            )
+            return response.status_code in [200, 204]
+
     async def update_inventory(self, product_id: str, quantity: int) -> bool:
         async with httpx.AsyncClient() as client:
             response = await client.put(

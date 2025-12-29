@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Cloud, Database, ShoppingCart, Layout, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag } from 'lucide-react';
+import { Plug, Check, RefreshCw, X, Layout, Database, ShoppingCart, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag } from 'lucide-react';
 import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/connectors';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
@@ -95,7 +95,7 @@ export function ConnectorsContent() {
     // Filtered list for display
     const filteredConnectors = connectors.filter(c => {
         if (!activeCategory || activeCategory === 'all') return true;
-        return c.type === activeCategory;
+        return c.type === (activeCategory as any);
     });
 
     const categoryTitles: Record<string, string> = {
@@ -128,8 +128,13 @@ export function ConnectorsContent() {
         setLoading(true);
         try {
             const res = await connectorsApi.getConnectors();
-            if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-                setConnectors(res.data);
+            if (res.data && Array.isArray(res.data)) {
+                // Merge real status into mock definitions to maintain the full list of available connectors
+                const merged = MOCK_CONNECTORS.map(mock => {
+                    const real = (res.data as any[]).find(r => r.id === mock.id);
+                    return real ? { ...mock, ...real } : mock;
+                });
+                setConnectors(merged);
             } else {
                 setConnectors(MOCK_CONNECTORS);
             }
