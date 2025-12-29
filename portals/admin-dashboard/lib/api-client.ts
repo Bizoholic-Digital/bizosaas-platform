@@ -13,14 +13,14 @@ apiClient.interceptors.request.use(
         // Get session on client side
         if (typeof window !== 'undefined') {
             try {
-                const response = await fetch('/api/auth/session');
-                const session = await response.json();
+                // @ts-ignore - Clerk global is available
+                const token = await window.Clerk?.session?.getToken();
 
-                if (session?.accessToken) {
-                    config.headers.Authorization = `Bearer ${session.accessToken}`;
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
                 }
             } catch (error) {
-                console.error('Failed to get session:', error);
+                console.error('Failed to get token:', error);
             }
         }
 

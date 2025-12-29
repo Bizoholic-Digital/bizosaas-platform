@@ -39,7 +39,7 @@ async def list_connectors_with_status(
         
         # Merge status into config
         data = config.dict()
-        data["status"] = status
+        data["status"] = status.value
         data["lastSync"] = last_sync
         results.append(data)
         
