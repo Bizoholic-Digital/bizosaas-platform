@@ -1,6 +1,6 @@
 'use client';
 
-import { SignIn } from "@clerk/nextjs";
+import { AdminLoginForm } from "./AdminLoginForm";
 import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function AdminLoginPage() {
@@ -18,7 +18,7 @@ export default function AdminLoginPage() {
       </div>
 
       <div className="z-10">
-        <SignIn redirectUrl="/dashboard" />
+        <AdminLoginForm />
       </div>
 
       <style jsx global>{`

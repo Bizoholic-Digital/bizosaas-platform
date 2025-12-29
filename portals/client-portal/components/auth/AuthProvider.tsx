@@ -44,8 +44,21 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const { user: clerkUser, isLoaded, isSignedIn } = useUser();
-  const { signOut, openSignIn } = useClerk();
+  let clerkData: any = { user: null, isLoaded: true, isSignedIn: false };
+  let clerkMethods: any = { signOut: () => { }, openSignIn: () => { } };
+
+  try {
+    // Clerk hooks can throw if ClerkProvider is not found in the tree
+    const userHook = useUser();
+    const clerkHook = useClerk();
+    if (userHook) clerkData = userHook;
+    if (clerkHook) clerkMethods = clerkHook;
+  } catch (error) {
+    console.warn("AuthProvider: Clerk hooks failed, likely due to missing ClerkProvider.", error);
+  }
+
+  const { user: clerkUser, isLoaded, isSignedIn } = clerkData;
+  const { signOut, openSignIn } = clerkMethods;
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
@@ -81,7 +94,11 @@ export default function AuthProvider({
   };
 
   const logout = () => {
-    signOut(() => router.push("/"));
+    if (signOut) {
+      signOut(() => router.push("/"));
+    } else {
+      router.push("/");
+    }
   };
 
   const checkAuth = async (): Promise<boolean> => {
