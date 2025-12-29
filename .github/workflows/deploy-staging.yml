@@ -78,6 +78,8 @@ jobs:
           platforms: linux/amd64
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+            NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
             NEXTAUTH_URL=${{ matrix.name == 'admin-dashboard' && 'https://admin.bizoholic.net' || 'https://app.bizoholic.net' }}
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
             SERVICE_PATH=${{ matrix.service_path }}
