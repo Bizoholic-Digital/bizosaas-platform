@@ -23,9 +23,6 @@ jobs:
           - name: brain-gateway
             context: ./bizosaas-brain-core/brain-gateway
             dockerfile: Dockerfile
-          - name: auth-service
-            context: ./bizosaas-brain-core/auth
-            dockerfile: Dockerfile
           - name: ai-agents
             context: ./bizosaas-brain-core/ai-agents
             dockerfile: Dockerfile
@@ -90,14 +87,14 @@ jobs:
     steps:
       - name: Trigger Dokploy Deployment (Backend)
         run: |
-          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
 
       - name: Trigger Dokploy Deployment (Frontend)
         run: |
-          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
