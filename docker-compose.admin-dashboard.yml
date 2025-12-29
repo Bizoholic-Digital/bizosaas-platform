@@ -1,7 +1,7 @@
 # Docker Compose for Production VPS
 version: '3.9'
 services:
-  client-portal:
+  admin-dashboard:
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
@@ -17,7 +17,7 @@ services:
     # container_name: bizosaas-admin-dashboard
     restart: unless-stopped
     ports:
-      - "3004:3004"
+      - "3004:3000"
     environment:
       # Clerk Authentication
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
@@ -38,12 +38,12 @@ services:
 
       # Environment
       NODE_ENV: production
-      PORT: 3004
+      PORT: 3000
     networks:
       - brain-network
       - dokploy-network
     healthcheck:
-      test: [ "CMD", "curl", "-s", "--retry 1", "-f", "http://localhost:3004/api/health" ]
+      test: [ "CMD", "curl", "-s", "--retry 1", "-f", "http://localhost:3000/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -55,7 +55,7 @@ services:
       - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
       - "traefik.http.routers.admin-dashboard.tls=true"
       - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
-      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3004"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
       - "traefik.docker.network=dokploy-network"
 
 networks:
