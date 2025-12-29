@@ -14,7 +14,7 @@ services:
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
         CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
-    # container_name: bizosaas-admin-dashboard
+    container_name: bizosaas-admin-dashboard-staging
     restart: unless-stopped
     ports:
       - "3004:3000"
