@@ -1,6 +1,6 @@
 'use client';
 
-import { SessionProvider, Session } from 'next-auth/react';
+import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
 
@@ -8,9 +8,9 @@ import { GraphQLProvider } from '@/components/providers/GraphQLProvider';
 import { MobileSidebarProvider } from '@/components/MobileSidebarContext';
 import AuthProvider from '@/components/auth/AuthProvider';
 
-export function Providers({ children, session }: { children: React.ReactNode; session?: Session | null }) {
+export function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <SessionProvider session={session}>
+        <ClerkProvider>
             <AuthProvider>
                 <GraphQLProvider>
                     <ThemeProvider
@@ -26,6 +26,6 @@ export function Providers({ children, session }: { children: React.ReactNode; se
                     </ThemeProvider>
                 </GraphQLProvider>
             </AuthProvider>
-        </SessionProvider>
+        </ClerkProvider>
     );
 }

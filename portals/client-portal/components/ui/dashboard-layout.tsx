@@ -3,13 +3,15 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Menu, X, Bell, Moon, Search,
+  Menu, X, Bell, Moon, Sun, Search,
   Wifi, AlertCircle, CheckCircle, Clock,
   Settings, LogOut, Activity
 } from 'lucide-react';
 import ComprehensiveNavigation from './comprehensive-navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
 import { useAuth } from '../auth/AuthProvider';
+import { useTheme } from 'next-themes';
+
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,19 +36,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { user, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [theme, setTheme] = useState("light");
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+
   const {
     metrics,
   } = useSystemStatus();
 
   // Initialize theme on client side
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme") || "light";
-      setTheme(saved);
-      document.documentElement.classList.toggle("dark", saved === "dark");
-    }
+    setMounted(true);
     // Set sidebar open by default on desktop
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
       setIsSidebarOpen(true);
@@ -54,15 +54,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    try {
-      localStorage.setItem('theme', newTheme);
-      document.documentElement.classList.toggle('dark', newTheme === 'dark');
-    } catch (e) {
-      console.warn('localStorage not available');
-    }
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
+
 
   const toggleSidebar = () => {
     if (window.innerWidth >= 1024) {
@@ -189,8 +183,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   onClick={toggleTheme}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  {mounted && theme === 'dark' ? (
+                    <Sun className="w-5 h-5 text-gray-300" />
+                  ) : (
+                    <Moon className="w-5 h-5 text-gray-600" />
+                  )}
                 </button>
+
 
                 <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
                   <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />

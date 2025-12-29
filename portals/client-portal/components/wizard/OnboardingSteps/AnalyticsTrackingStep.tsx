@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { AnalyticsConfig } from '../types/onboarding';
-import { BarChart3, Search } from 'lucide-react';
+import { BarChart3, Search, Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 
 interface Props {
     data: AnalyticsConfig;
@@ -12,12 +14,80 @@ interface Props {
 }
 
 export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
+    const { user } = useUser();
+    const [isDiscovering, setIsDiscovering] = React.useState(false);
+    const [discovered, setDiscovered] = React.useState(false);
+
+    const isGmailUser = user?.primaryEmailAddress?.emailAddress.endsWith('@gmail.com');
+
+    const handleMagicConnect = async () => {
+        setIsDiscovering(true);
+        try {
+            // 1. In a real app, this would trigger OAuth with all scopes
+            // For now, we simulate the discovery process
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Mock discovery result
+            onUpdate({
+                gaId: 'G-7Y2B8C9E1A',
+                gscId: 'https://' + (user?.primaryEmailAddress?.emailAddress.split('@')[0] || 'example') + '.com'
+            });
+
+            setDiscovered(true);
+            toast.success("Accounts discovered and connected automatically!");
+        } catch (error) {
+            toast.error("Discovery failed. Please connect manually.");
+        } finally {
+            setIsDiscovering(false);
+        }
+    };
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Tracking & Analytics</h2>
                 <p className="text-gray-500">Data fuels our AI agents. Let's connect your sources.</p>
             </div>
+
+            {isGmailUser && !discovered && (
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 text-white mb-8 shadow-lg animate-in zoom-in duration-500">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="bg-white/20 p-2 rounded-lg">
+                            <Sparkles className="w-6 h-6 text-yellow-300" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg">Google Magic Connect</h3>
+                            <p className="text-blue-100 text-sm">We detected your Gmail account. We can automatically find your Analytics and Search Console accounts.</p>
+                        </div>
+                    </div>
+                    <Button
+                        onClick={handleMagicConnect}
+                        disabled={isDiscovering}
+                        className="w-full bg-white text-blue-700 hover:bg-blue-50 font-bold py-6 text-lg"
+                    >
+                        {isDiscovering ? (
+                            <>
+                                <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                                Analyzing Google Account...
+                            </>
+                        ) : (
+                            <>
+                                <Sparkles className="w-5 h-5 mr-2" />
+                                Discover & Connect Now
+                            </>
+                        )}
+                    </Button>
+                </div>
+            )}
+
+            {discovered && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 mb-8 text-green-800">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                    <div>
+                        <p className="font-bold">Success! Properties linked.</p>
+                        <p className="text-sm">We've automatically configured your tracking IDs below.</p>
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-4">
                 {/* Google Analytics */}

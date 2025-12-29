@@ -34,6 +34,9 @@
       "@/lib/*": [
         "./lib/*"
       ],
+      "@/shared/*": [
+        "./shared/*"
+      ],
       "@bizosaas/shared-ui": [
         "./packages/shared-ui"
       ],

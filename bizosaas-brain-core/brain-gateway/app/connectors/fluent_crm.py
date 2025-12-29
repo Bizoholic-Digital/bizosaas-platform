@@ -202,9 +202,23 @@ class FluentCRMConnector(BaseConnector, CRMPort):
             # Ideally fetch updated contact properly
             return await self.get_contact(contact_id)
 
+    async def delete_contact(self, contact_id: str) -> bool:
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(
+                self._get_api_url(f"contacts/{contact_id}"),
+                headers=self._get_auth_header()
+            )
+            return response.status_code in [200, 204]
+
     async def get_deals(self, limit: int = 100) -> List[Deal]:
         # FluentCRM core doesn't have deals. Return empty list.
         return []
 
     async def create_deal(self, deal: Deal) -> Deal:
+        raise NotImplementedError("Deals are not supported in FluentCRM Connector currently.")
+
+    async def update_deal(self, deal_id: str, updates: Dict[str, Any]) -> Deal:
+        raise NotImplementedError("Deals are not supported in FluentCRM Connector currently.")
+
+    async def delete_deal(self, deal_id: str) -> bool:
         raise NotImplementedError("Deals are not supported in FluentCRM Connector currently.")

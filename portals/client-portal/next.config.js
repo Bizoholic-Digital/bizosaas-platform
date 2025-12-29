@@ -23,7 +23,7 @@ const nextConfig = {
   // Environment variables
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001',
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000',
     PORT: process.env.PORT || '3000',
   },
 
@@ -32,11 +32,11 @@ const nextConfig = {
     return [
       {
         source: '/api/brain/health',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/health`,
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/health`,
       },
       {
         source: '/api/brain/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001'}/api/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/:path*`,
       },
     ];
   },

@@ -36,11 +36,17 @@ async def get_current_user(
         parts = request.headers.get("Authorization").split(" ")
         if len(parts) == 2 and parts[0].lower() == "bearer":
             token_str = parts[1]
+    elif request.headers.get("x-clerk-auth-token"):
+        # Support Clerk-injected token
+        token_str = request.headers.get("x-clerk-auth-token")
             
     if not token_str:
         import logging
+        auth_status = request.headers.get("x-clerk-auth-status", "unknown")
         logging.error(f"DEBUG AUTH FAILURE: Headers received: {request.headers}")
+        logging.error(f"DEBUG AUTH FAILURE: Clerk Auth Status: {auth_status}")
         raise HTTPException(status_code=401, detail="Missing authentication credentials")
+
     
     # 1. Validate Token (Introspection)
     try:
@@ -61,12 +67,36 @@ async def get_current_user(
         logging.error(f"DEBUG AUTH FAILURE: Could not retrieve user profile for token: {token_str[:10]}...")
         raise HTTPException(status_code=401, detail="Could not retrieve user profile")
     
+    import logging
+    logging.info(f"DEBUG AUTH SUCCESS: User {user.id} authenticated with roles: {user.roles}")
     return user
 
+
 def require_role(role: str):
-    """Dependency factory for checking specific roles."""
+    """Dependency factory for checking specific roles.
+    Matches the requested role or any super-admin level role.
+    """
     async def role_checker(user: AuthenticatedUser = Depends(get_current_user)):
-        if role not in user.roles and "Super Admin" not in user.roles:
-            raise HTTPException(status_code=403, detail=f"Missing required role: {role}")
-        return user
+        # Normalize requested role and user roles
+        req_role_lower = role.lower()
+        user_roles_lower = [r.lower() for r in user.roles]
+        
+        # Super-admin level roles that bypass any specific role check
+        admin_roles = ["super admin", "super_admin", "platform administrator", "platform_administrator", "admin"]
+        
+        # Check for direct match
+        if req_role_lower in user_roles_lower:
+            return user
+            
+        # Check if user has any of the admin roles
+        has_admin_privilege = any(admin_role in user_roles_lower for admin_role in admin_roles)
+        
+        if has_admin_privilege:
+            return user
+            
+        raise HTTPException(
+            status_code=403, 
+            detail=f"Missing required role: {role}. User roles: {user.roles}"
+        )
     return role_checker
+

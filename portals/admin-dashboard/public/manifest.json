@@ -6,7 +6,7 @@
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#6366f1",
+  "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
   "categories": [
     "business",
@@ -16,51 +16,51 @@
   "lang": "en-US",
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/icon-72x72.svg",
       "sizes": "72x72",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icons/icon-96x96.svg",
       "sizes": "96x96",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icons/icon-128x128.svg",
       "sizes": "128x128",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/icon-144x144.svg",
       "sizes": "144x144",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icons/icon-152x152.svg",
       "sizes": "152x152",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icons/icon-384x384.svg",
       "sizes": "384x384",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
     }
   ],
@@ -69,34 +69,34 @@
       "name": "User Management",
       "short_name": "Users",
       "description": "Manage platform users",
-      "url": "/users",
+      "url": "/dashboard/users",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/icons/icon-96x96.svg",
           "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "Analytics",
-      "short_name": "Analytics",
-      "description": "View platform analytics",
-      "url": "/analytics",
-      "icons": [
-        {
-          "src": "/icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "System Monitor",
-      "short_name": "Monitor",
+      "name": "System Health",
+      "short_name": "Health",
       "description": "Monitor system health",
-      "url": "/monitor",
+      "url": "/dashboard/system-status",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/icons/icon-96x96.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Connectors",
+      "short_name": "Connectors",
+      "description": "Manage connectivity hub",
+      "url": "/dashboard/connectors",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.svg",
           "sizes": "96x96"
         }
       ]

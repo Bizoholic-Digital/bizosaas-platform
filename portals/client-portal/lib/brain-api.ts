@@ -102,7 +102,7 @@ export const brainApi = {
     },
     connectors: {
         getConnectors: async (token?: string): Promise<Connector[]> => {
-            return apiFetch('/api/connectors/types', {}, token);
+            return apiFetch('/api/connectors', {}, token);
         },
         listTypes: async (token?: string): Promise<Connector[]> => {
             return apiFetch('/api/connectors/types', {}, token);
@@ -189,39 +189,47 @@ export const brainApi = {
     },
     cms: {
         getPages: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/pages', {}, token);
-            } catch (e) {
-                return [];
-            }
+            return apiFetch('/api/cms/pages', {}, token);
+        },
+        createPage: async (page: any, token?: string) => {
+            return apiFetch('/api/cms/pages', {
+                method: 'POST',
+                body: JSON.stringify(page)
+            }, token);
+        },
+        updatePage: async (id: string, page: any, token?: string) => {
+            return apiFetch(`/api/cms/pages/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(page)
+            }, token);
+        },
+        deletePage: async (id: string, token?: string) => {
+            return apiFetch(`/api/cms/pages/${id}`, {
+                method: 'DELETE'
+            }, token);
         },
         getPosts: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/posts', {}, token);
-            } catch (e) {
-                return [];
-            }
+            return apiFetch('/api/cms/posts', {}, token);
         },
-        listPages: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/pages', {}, token);
-            } catch (e) {
-                return [];
-            }
+        createPost: async (post: any, token?: string) => {
+            return apiFetch('/api/cms/posts', {
+                method: 'POST',
+                body: JSON.stringify(post)
+            }, token);
         },
-        listPosts: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/posts', {}, token);
-            } catch (e) {
-                return [];
-            }
+        updatePost: async (id: string, post: any, token?: string) => {
+            return apiFetch(`/api/cms/posts/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(post)
+            }, token);
+        },
+        deletePost: async (id: string, token?: string) => {
+            return apiFetch(`/api/cms/posts/${id}`, {
+                method: 'DELETE'
+            }, token);
         },
         listMedia: async (token?: string) => {
-            try {
-                return await apiFetch('/api/cms/media', {}, token);
-            } catch (e) {
-                return [];
-            }
+            return apiFetch('/api/cms/media', {}, token);
         }
     },
     crm: {
@@ -231,19 +239,61 @@ export const brainApi = {
         getDeals: async (limit: number = 100, token?: string) => {
             return apiFetch(`/api/crm/deals?limit=${limit}`, {}, token);
         },
-        listContacts: async (token?: string) => {
-            return apiFetch('/api/crm/contacts', {}, token);
-        },
         createContact: async (contact: any, token?: string) => {
             return apiFetch('/api/crm/contacts', {
                 method: 'POST',
                 body: JSON.stringify(contact)
+            }, token);
+        },
+        updateContact: async (id: string, contact: any, token?: string) => {
+            return apiFetch(`/api/crm/contacts/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(contact)
+            }, token);
+        },
+        deleteContact: async (id: string, token?: string) => {
+            return apiFetch(`/api/crm/contacts/${id}`, {
+                method: 'DELETE'
+            }, token);
+        },
+        createDeal: async (deal: any, token?: string) => {
+            return apiFetch('/api/crm/deals', {
+                method: 'POST',
+                body: JSON.stringify(deal)
+            }, token);
+        },
+        updateDeal: async (id: string, deal: any, token?: string) => {
+            return apiFetch(`/api/crm/deals/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(deal)
+            }, token);
+        },
+        deleteDeal: async (id: string, token?: string) => {
+            return apiFetch(`/api/crm/deals/${id}`, {
+                method: 'DELETE'
             }, token);
         }
     },
     ecommerce: {
         getProducts: async (limit: number = 100, token?: string) => {
             return apiFetch(`/api/ecommerce/products?limit=${limit}`, {}, token);
+        },
+        createProduct: async (product: any, token?: string) => {
+            return apiFetch('/api/ecommerce/products', {
+                method: 'POST',
+                body: JSON.stringify(product)
+            }, token);
+        },
+        updateProduct: async (id: string, product: any, token?: string) => {
+            return apiFetch(`/api/ecommerce/products/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(product)
+            }, token);
+        },
+        deleteProduct: async (id: string, token?: string) => {
+            return apiFetch(`/api/ecommerce/products/${id}`, {
+                method: 'DELETE'
+            }, token);
         },
         getOrders: async (limit: number = 100, token?: string) => {
             return apiFetch(`/api/ecommerce/orders?limit=${limit}`, {}, token);
@@ -255,6 +305,28 @@ export const brainApi = {
         },
         getCampaigns: async (token?: string) => {
             return apiFetch('/api/marketing/campaigns', {}, token);
+        },
+        createList: async (name: string, token?: string) => {
+            return apiFetch('/api/marketing/lists', {
+                method: 'POST',
+                body: JSON.stringify({ name })
+            }, token);
+        },
+        deleteList: async (id: string, token?: string) => {
+            return apiFetch(`/api/marketing/lists/${id}`, {
+                method: 'DELETE'
+            }, token);
+        },
+        createCampaign: async (campaign: any, token?: string) => {
+            return apiFetch('/api/marketing/campaigns', {
+                method: 'POST',
+                body: JSON.stringify(campaign)
+            }, token);
+        },
+        deleteCampaign: async (id: string, token?: string) => {
+            return apiFetch(`/api/marketing/campaigns/${id}`, {
+                method: 'DELETE'
+            }, token);
         }
     },
     campaigns: {

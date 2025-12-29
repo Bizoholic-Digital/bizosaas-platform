@@ -9,7 +9,7 @@ export interface ConnectorStatus {
     icon?: string;
 }
 
-export function useConnectorStatus(connectorId: string) {
+export function useConnectorStatus(connectorId: string, type?: string) {
     const [connector, setConnector] = useState<ConnectorStatus | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -22,8 +22,15 @@ export function useConnectorStatus(connectorId: string) {
             // Get all connectors with status
             const response = await brainApi.connectors.getConnectors();
 
-            // Find the specific connector
-            const found = response.find((c: any) => c.id === connectorId);
+            // Find by ID first, then by type if provided and status is connected
+            let found = response.find((c: any) => c.id === connectorId);
+
+            if (!found && type) {
+                found = response.find((c: any) =>
+                    c.type === type &&
+                    (c.status?.toUpperCase() === 'CONNECTED' || c.status === 'connected')
+                );
+            }
 
             if (found) {
                 setConnector({
@@ -37,7 +44,7 @@ export function useConnectorStatus(connectorId: string) {
                 setConnector(null);
             }
         } catch (err: any) {
-            console.error(`Failed to check connector status for ${connectorId}:`, err);
+            console.error(`Failed to check connector status for ${connectorId}${type ? ' (' + type + ')' : ''}:`, err);
             setError(err.message || 'Failed to check connection status');
             setConnector(null);
         } finally {
@@ -47,7 +54,7 @@ export function useConnectorStatus(connectorId: string) {
 
     useEffect(() => {
         checkStatus();
-    }, [connectorId]);
+    }, [connectorId, type]);
 
     // Normalize status comparison (backend may return lowercase or uppercase)
     const isConnected = connector?.status?.toUpperCase() === 'CONNECTED' ||

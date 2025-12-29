@@ -2,10 +2,19 @@ import os
 import httpx
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(levelname)s:%(name)s:%(message)s'
+)
+logger = logging.getLogger(__name__)
+
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, auth, admin, mcp
+from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, admin, mcp, marketing, campaigns
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -47,20 +56,35 @@ async def startup_event():
             client = hvac.Client(url=vault_addr, token=vault_token)
             if client.is_authenticated():
                 print("Connected to Vault for API keys")
-                secret = client.secrets.kv.v2.read_secret_version(path='platform/brain-gateway', mount_point='bizosaas')
-                data = secret['data']['data']
                 
-                if 'openai_api_key' in data:
-                    os.environ['OPENAI_API_KEY'] = data['openai_api_key']
-                if 'vector_db_url' in data:
-                    os.environ['VECTOR_DB_URL'] = data['vector_db_url']
-                
+                # Fetch Platform Secrets
+                try:
+                    secret = client.secrets.kv.v2.read_secret_version(path='platform/brain-gateway', mount_point='bizosaas')
+                    data = secret['data']['data']
+                    
+                    if 'openai_api_key' in data:
+                        os.environ['OPENAI_API_KEY'] = data['openai_api_key']
+                    if 'vector_db_url' in data:
+                        os.environ['VECTOR_DB_URL'] = data['vector_db_url']
+                except Exception as e:
+                    print(f"Failed to fetch platform secrets: {e}")
+
+                # Fetch Clerk Secrets
+                try:
+                    clerk_secret = client.secrets.kv.v2.read_secret_version(path='clerk', mount_point='bizosaas')
+                    clerk_data = clerk_secret['data']['data']
+                    if 'secret_key' in clerk_data:
+                        os.environ['CLERK_SECRET_KEY'] = clerk_data['secret_key']
+                        print("Clerk Secret Key loaded from Vault")
+                except Exception as e:
+                    print(f"Failed to fetch Clerk secrets (Key might not be stored yet): {e}")
+
                 # Re-initialize RAG service with new env vars
                 from app.core import rag
                 rag.rag_service.__init__()
                 print("RAG Service re-initialized with Vault secrets")
     except Exception as e:
-        print(f"Failed to fetch secrets from Vault: {e}")
+        print(f"Failed to connect to Vault: {e}")
 
     seed_connectors()
 
@@ -69,9 +93,11 @@ app.include_router(agents.router)
 app.include_router(cms.router, prefix="/api/cms", tags=["cms"])
 app.include_router(crm.router, prefix="/api/crm", tags=["crm"])
 app.include_router(ecommerce.router, prefix="/api/ecommerce", tags=["ecommerce"])
+app.include_router(marketing.router, prefix="/api/marketing", tags=["marketing"])
+app.include_router(campaigns.router, prefix="/api/campaigns", tags=["campaigns"])
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
 app.include_router(onboarding.router)
-app.include_router(auth.router)
+# app.include_router(auth.router) # Deprecated
 app.include_router(admin.router)
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 
@@ -88,7 +114,7 @@ app.include_router(graphql_app, prefix="/graphql")
 # Configuration
 CMS_URL = os.getenv("CMS_URL", "http://cms:8002")
 CRM_URL = os.getenv("CRM_URL", "http://crm:8003")
-AUTH_URL = os.getenv("AUTH_URL", "http://auth-service:8006")
+# AUTH_URL = os.getenv("AUTH_URL", "http://auth-service:8006") # Deprecated
 SALEOR_URL = os.getenv("SALEOR_URL", "http://saleor:8000")
 
 
@@ -113,10 +139,10 @@ async def proxy_integrations(request: Request, path: str = ""):
     url = f"http://ai-agents:8000/api/connectors/{path}"
     return await proxy_request(request, url)
 
-@app.api_route("/api/brain/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def proxy_auth(request: Request, path: str):
-    url = f"{AUTH_URL}/{path}"
-    return await proxy_request(request, url)
+# @app.api_route("/api/brain/auth/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+# async def proxy_auth(request: Request, path: str):
+#     url = f"{AUTH_URL}/{path}"
+#     return await proxy_request(request, url)
 
 @app.api_route("/api/brain/agents/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_agents(request: Request, path: str):
@@ -153,17 +179,17 @@ async def proxy_tasks(request: Request, path: str):
     url = f"http://ai-agents:8000/tasks/{path}"
     return await proxy_request(request, url)
 
-@app.post("/api/auth/login")
-async def auth_login(request: Request):
-    """Proxy login to Auth Service SSO"""
-    url = f"{AUTH_URL}/auth/sso/login"
-    return await proxy_request(request, url)
+# @app.post("/api/auth/login")
+# async def auth_login(request: Request):
+#     """Proxy login to Auth Service SSO"""
+#     url = f"{AUTH_URL}/auth/sso/login"
+#     return await proxy_request(request, url)
 
-@app.post("/api/auth/social-login")
-async def auth_social_login(request: Request):
-    """Proxy social login to Auth Service Token Exchange"""
-    url = f"{AUTH_URL}/auth/token/exchange"
-    return await proxy_request(request, url)
+# @app.post("/api/auth/social-login")
+# async def auth_social_login(request: Request):
+#     """Proxy social login to Auth Service Token Exchange"""
+#     url = f"{AUTH_URL}/auth/token/exchange"
+#     return await proxy_request(request, url)
 
 async def proxy_request(request: Request, url: str):
     async with httpx.AsyncClient() as client:

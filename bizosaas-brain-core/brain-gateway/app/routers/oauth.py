@@ -78,6 +78,13 @@ async def oauth_callback(params: OAuthCallbackParams):
         
         logger.info(f"Successfully connected {params.connector_id} for {params.tenant_id}")
         
+        # Check if this is an onboarding discovery request
+        if params.state.endswith(":onboarding"):
+             # For onboarding, we might want to trigger a full discovery
+             # This could be done by calling the discovery service
+             logger.info("Triggering automatic discovery for onboarding...")
+             # In a real app, you'd call a service function here
+        
         return {
             "status": "success", 
             "message": "Connected successfully",

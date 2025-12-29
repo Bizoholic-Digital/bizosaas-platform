@@ -1,8 +1,8 @@
 "use client";
 
 import { useAuth } from './AuthProvider';
-import { useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useClerk } from "@clerk/nextjs";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -15,39 +15,9 @@ export default function AuthGuard({
   requireAuth = true,
   allowedRoles = []
 }: AuthGuardProps) {
-  const { user, isLoading, checkAuth } = useAuth();
+  const { user, isLoading } = useAuth();
+  const { openSignIn } = useClerk();
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Handle authentication token from URL (from unified auth redirect)
-    const handleAuthToken = async () => {
-      const token = searchParams.get('token');
-      const userData = searchParams.get('user');
-
-      if (token && userData) {
-        try {
-          // Store the authentication data
-          const decodedUser = JSON.parse(decodeURIComponent(userData));
-          localStorage.setItem('access_token', token);
-          localStorage.setItem('user_data', JSON.stringify(decodedUser));
-
-          // Refresh auth state
-          await checkAuth();
-
-          // Clean up URL
-          const url = new URL(window.location.href);
-          url.searchParams.delete('token');
-          url.searchParams.delete('user');
-          router.replace(url.pathname + url.search);
-        } catch (error) {
-          console.error('Error handling auth token:', error);
-        }
-      }
-    };
-
-    handleAuthToken();
-  }, [searchParams, checkAuth, router]);
 
   // Show loading state
   if (isLoading) {
@@ -63,11 +33,13 @@ export default function AuthGuard({
 
   // Check if authentication is required
   if (requireAuth && !user) {
-    // Redirect to unified auth portal
-    if (typeof window !== 'undefined') {
-      const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
-      window.location.href = `http://localhost:3010?return_url=${returnUrl}`;
-    }
+    // Redirect to Clerk Login
+    // We use openSignIn for client-side redirection or let middleware handle it.
+    // However, if we are here, middleware might have let us through (e.g. public page that uses AuthGuard locally)
+    // or we are in a transition state.
+
+    // safe to trigger sign-in
+    openSignIn();
     return null;
   }
 

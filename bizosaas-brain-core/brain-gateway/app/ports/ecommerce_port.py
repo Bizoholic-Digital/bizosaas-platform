@@ -72,6 +72,14 @@ class ECommercePort(ABC):
         pass
 
     @abstractmethod
+    async def update_product(self, product_id: str, updates: Dict[str, Any]) -> Product:
+        pass
+
+    @abstractmethod
+    async def delete_product(self, product_id: str) -> bool:
+        pass
+
+    @abstractmethod
     async def update_inventory(self, product_id: str, quantity: int) -> bool:
         pass
 

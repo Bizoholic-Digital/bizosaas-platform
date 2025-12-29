@@ -131,4 +131,47 @@ class GoogleAdsConnector(BaseConnector, OAuthMixin):
         return {"error": "Unsupported resource type"}
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Execute actions on Google Ads.
+        action: 'auto_link'
+        """
+        if action == "auto_link":
+            token = self.credentials.get("access_token")
+            dev_token = self.credentials.get("developer_token")
+            
+            if not token or not dev_token:
+                return {"status": "error", "message": "Missing access_token or developer_token"}
+            
+            headers = {
+                "Authorization": f"Bearer {token}",
+                "developer-token": dev_token,
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get("https://googleads.googleapis.com/v14/customers:listAccessibleCustomers", headers=headers)
+                response.raise_for_status()
+                data = response.json()
+                
+                customers = data.get("resourceNames", [])
+                if not customers:
+                    return {"status": "error", "message": "No Google Ads accounts found."}
+                
+                if len(customers) == 1:
+                    customer_resource = customers[0]
+                    customer_id = customer_resource.split("/")[-1]
+                    self.credentials["customer_id"] = customer_id
+                    self.credentials["client_customer_id"] = customer_id
+                    return {
+                        "status": "success",
+                        "auto": True,
+                        "message": f"Automatically linked Ads account: {customer_id}",
+                        "customer_id": customer_id
+                    }
+                
+                return {
+                    "status": "multiple_found",
+                    "message": "Multiple Google Ads accounts found.",
+                    "accounts": customers
+                }
+
         raise ValueError(f"Unsupported action: {action}")

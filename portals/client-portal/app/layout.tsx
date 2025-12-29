@@ -3,7 +3,6 @@ import './globals.css';
 import { Providers } from './providers';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OfflineBanner } from '@/components/OfflineBanner';
-import { auth } from '@/lib/auth';
 
 // Simple font mock to avoid build issues, ensures Tailwind finds 'font-sans'
 const inter = { className: 'font-sans' };
@@ -24,22 +23,15 @@ export const viewport: Viewport = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  console.log('[SERVER-LAYOUT] Session fetch result:', {
-    hasSession: !!session,
-    user: session?.user?.email,
-    id: session?.user?.id
-  });
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Providers session={session}>
+        <Providers>
           <OfflineBanner />
           {/* Main Content Area */}
           <div className="flex flex-1 flex-col overflow-hidden h-screen">

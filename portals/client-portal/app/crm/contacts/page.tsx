@@ -1,14 +1,18 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, Plus, Search, Filter, Download, RefreshCw, 
+import {
+  Users, Plus, Search, Filter, Download, RefreshCw,
   Phone, Mail, Calendar, MapPin, Building2, Star,
   Eye, Edit, Trash2, MoreHorizontal, Tag, Activity
 } from 'lucide-react';
 import DashboardLayout from '../../../components/ui/dashboard-layout';
 
+import { useAuth } from '@clerk/nextjs';
+import { brainApi } from '../../../lib/brain-api';
+
 const ContactsPage = () => {
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,88 +22,33 @@ const ContactsPage = () => {
     const fetchContacts = async () => {
       try {
         setLoading(true);
-        // Mock API call - replace with actual Brain Hub API calls
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setContacts([
-          {
-            id: '1',
-            name: 'Alice Johnson',
-            email: 'alice@designstudio.com',
-            phone: '+1-555-0126',
-            company: 'Design Studio',
-            position: 'Creative Director',
-            location: 'New York, NY',
-            type: 'customer',
-            status: 'active',
-            tags: ['VIP', 'Design', 'Long-term'],
-            lastContact: '2024-09-24T12:00:00Z',
-            totalOrders: 12,
-            totalValue: 45000,
-            rating: 5,
-            source: 'Website'
-          },
-          {
-            id: '2',
-            name: 'Bob Wilson',
-            email: 'bob@techcorp.com',
-            phone: '+1-555-0127',
-            company: 'Tech Corp',
-            position: 'CTO',
-            location: 'San Francisco, CA',
-            type: 'prospect',
-            status: 'active',
-            tags: ['Tech', 'Enterprise'],
-            lastContact: '2024-09-23T15:30:00Z',
-            totalOrders: 0,
-            totalValue: 0,
-            rating: 4,
-            source: 'Referral'
-          },
-          {
-            id: '3',
-            name: 'Carol Davis',
-            email: 'carol@startup.io',
-            phone: '+1-555-0128',
-            company: 'Startup Inc',
-            position: 'CEO',
-            location: 'Austin, TX',
-            type: 'lead',
-            status: 'pending',
-            tags: ['Startup', 'Growth'],
-            lastContact: '2024-09-22T10:15:00Z',
-            totalOrders: 3,
-            totalValue: 15000,
-            rating: 4,
-            source: 'Social Media'
-          },
-          {
-            id: '4',
-            name: 'David Miller',
-            email: 'david@consulting.com',
-            phone: '+1-555-0129',
-            company: 'Miller Consulting',
-            position: 'Principal Consultant',
-            location: 'Chicago, IL',
-            type: 'customer',
-            status: 'inactive',
-            tags: ['Consulting', 'B2B'],
-            lastContact: '2024-08-15T14:20:00Z',
-            totalOrders: 8,
-            totalValue: 32000,
-            rating: 3,
-            source: 'Google Ads'
-          }
-        ]);
+        const token = await getToken();
+        // @ts-ignore
+        const data = await brainApi.crm.listContacts(token);
+
+        // Map API response to UI model if needed, or use as is
+        // The API returns { id, first_name, last_name, email, ... }
+        // UI expects { id, name, email, ... }
+        const mapped = data.map((c: any) => ({
+          ...c,
+          name: `${c.first_name} ${c.last_name}`.trim() || c.email,
+          type: 'lead', // Default or map from c.status/tags
+          totalValue: 0, // Not in API yet
+          totalOrders: 0
+        }));
+
+        setContacts(mapped);
       } catch (error) {
         console.error('Failed to fetch contacts:', error);
+        // Fallback to empty or handled error state, don't use mock data to avoid confusion
+        setContacts([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchContacts();
-  }, []);
+  }, [getToken]);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -110,7 +59,7 @@ const ContactsPage = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.active;
-    
+
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
         {config.label}
@@ -127,7 +76,7 @@ const ContactsPage = () => {
     };
 
     const config = typeConfig[type as keyof typeof typeConfig] || typeConfig.lead;
-    
+
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
         {config.label}
@@ -137,8 +86,8 @@ const ContactsPage = () => {
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.company.toLowerCase().includes(searchTerm.toLowerCase());
+      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.company.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = selectedFilter === 'all' || contact.type === selectedFilter;
     return matchesSearch && matchesFilter;
   });

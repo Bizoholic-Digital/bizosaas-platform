@@ -148,33 +148,55 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
 
         return {"error": "Unsupported resource type"}
 
-    async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Perform actions.
-        Supported actions: 'link_location', 'reply_review'
-        """
-        if action == "link_location":
-            location_id = payload.get("location_id")
-            if not location_id:
-                return {"status": "error", "message": "location_id is required"}
-            self.credentials["location_id"] = location_id
-            return {"status": "success", "location_id": location_id}
+        elif action == "auto_link":
+            # 1. Discover accounts
+            data = await self.sync_data("accounts")
+            accounts = data.get("accounts", [])
             
-        elif action == "reply_review":
-             review_id = payload.get("review_id")
-             comment = payload.get("comment")
-             location_id = self.credentials.get("location_id")
-             
-             if not (review_id and comment and location_id):
-                  return {"status": "error", "message": "review_id, comment, and location_id are required"}
-             
-             token = await self._get_access_token()
-             headers = {"Authorization": f"Bearer {token}"}
-             url = f"https://mybusiness.googleapis.com/v4/{location_id}/reviews/{review_id}/reply"
-             
-             async with httpx.AsyncClient() as client:
-                  response = await client.put(url, headers=headers, json={"comment": comment})
-                  response.raise_for_status()
-                  return response.json()
+            if not accounts:
+                return {"status": "error", "message": "No Google Business accounts found."}
+                
+            # If multiple accounts, we might need to iterate. For auto-link, we try the first one or target name.
+            account_id = accounts[0]["name"]
+            self.credentials["account_id"] = account_id
+            
+            # 2. Discover locations for this account
+            loc_data = await self.sync_data("locations")
+            locations = loc_data.get("locations", [])
+            
+            if not locations:
+                 return {"status": "partial_success", "message": f"Linked account {account_id} but no locations found.", "account_id": account_id}
+            
+            if len(locations) == 1:
+                location_id = locations[0]["name"]
+                self.credentials["location_id"] = location_id
+                return {
+                    "status": "success",
+                    "auto": True,
+                    "message": f"Automatically linked location: {locations[0].get('title')}",
+                    "account_id": account_id,
+                    "location_id": location_id
+                }
+            
+            # Match by title if provided
+            target_name = payload.get("target_name")
+            if target_name:
+                for loc in locations:
+                    if target_name.lower() in loc.get("title", "").lower():
+                        self.credentials["location_id"] = loc["name"]
+                        return {
+                            "status": "success",
+                            "auto": True,
+                            "message": f"Linked matching location: {loc.get('title')}",
+                            "account_id": account_id,
+                            "location_id": loc["name"]
+                        }
+
+            return {
+                "status": "multiple_found",
+                "message": "Multiple locations found. Please select one manually.",
+                "account_id": account_id,
+                "locations": locations
+            }
 
         raise ValueError(f"Unsupported action: {action}")

@@ -3,7 +3,8 @@ from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Dict
 from enum import Enum
 from sqlalchemy.orm import Session
-from app.dependencies import get_db, get_identity_port, get_current_user
+from app.dependencies import get_db, get_identity_port, get_current_user, get_secret_service
+from app.domain.services.secret_service import SecretService
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 
 
@@ -136,6 +137,98 @@ async def save_integrations(analytics: AnalyticsConfig, social: SocialMediaConfi
 async def save_goals(goals: CampaignGoals):
     """Save campaign goals"""
     return {"status": "success", "message": "Goals saved"}
+
+@router.post("/google/discover")
+async def discover_google_services(
+    payload: Dict[str, Any], 
+    background_tasks: BackgroundTasks,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service),
+    db: Session = Depends(get_db)
+):
+    """
+    Magic Discovery:
+    1. Receive Google Access Token
+    2. Attempt auto-linking for Analytics, Search Console, and Ads
+    3. Save credentials and provision MCPs automatically
+    """
+    token = payload.get("access_token")
+    if not token:
+        raise HTTPException(status_code=400, detail="access_token is required")
+    
+    tenant_id = current_user.tenant_id or current_user.id
+    results = {}
+    
+    connectors_to_process = [
+        ("google-analytics", "app.connectors.google_analytics.GoogleAnalyticsConnector"),
+        ("google-search-console", "app.connectors.google_search_console.GoogleSearchConsoleConnector"),
+        ("google-ads", "app.connectors.google_ads.GoogleAdsConnector"),
+        ("google-business-profile", "app.connectors.google_business_profile.GoogleBusinessProfileConnector")
+    ]
+    
+    import importlib
+    
+    for connector_id, class_path in connectors_to_process:
+        try:
+            # Dynamic import
+            module_path, class_name = class_path.rsplit(".", 1)
+            module = importlib.import_module(module_path)
+            connector_cls = getattr(module, class_name)
+            
+            # Prepare credentials
+            creds = {"access_token": token}
+            if connector_id == "google-ads":
+                creds["developer_token"] = os.environ.get("GOOGLE_ADS_DEVELOPER_TOKEN", "DEVELOPER_TOKEN_HERE")
+            
+            connector = connector_cls(tenant_id=tenant_id, credentials=creds)
+            
+            # Perform discovery
+            discovery_result = await connector.perform_action("auto_link", {})
+            results[connector_id] = discovery_result
+            
+            if discovery_result.get("status") == "success":
+                # Save to Vault
+                await secret_service.store_connector_credentials(
+                    tenant_id=tenant_id,
+                    connector_id=connector_id,
+                    credentials=connector.credentials
+                )
+                
+                # Provision MCP
+                try:
+                    from app.models.mcp import McpRegistry, UserMcpInstallation
+                    from app.services.mcp_orchestrator import McpOrchestrator
+                    
+                    mcp = db.query(McpRegistry).filter(McpRegistry.slug == connector_id).first()
+                    if mcp:
+                        existing = db.query(UserMcpInstallation).filter(
+                            UserMcpInstallation.user_id == current_user.id,
+                            UserMcpInstallation.mcp_id == mcp.id
+                        ).first()
+                        
+                        if not existing:
+                            installation = UserMcpInstallation(
+                                user_id=current_user.id,
+                                mcp_id=mcp.id,
+                                status="pending",
+                                config={"connector_id": connector_id} 
+                            )
+                            db.add(installation)
+                            db.commit()
+                            db.refresh(installation)
+                            background_tasks.add_task(McpOrchestrator.provision_mcp, installation.id)
+                            discovery_result["mcp_provisioned"] = True
+                except ImportError:
+                    print("MCP models not available, skipping provisioning")
+
+        except Exception as e:
+            print(f"Discovery failed for {connector_id}: {e}")
+            results[connector_id] = {"status": "error", "message": str(e)}
+
+    return {
+        "status": "success",
+        "discovered": results
+    }
 
 @router.post("/complete")
 async def complete_onboarding(

@@ -17,13 +17,13 @@ services:
     ports:
       - "3004:3000"
     environment:
-      # Authentik SSO Configuration (Production)
-      AUTHENTIK_URL: ${AUTHENTIK_URL:-https://sso.bizoholic.net}
-      NEXT_PUBLIC_SSO_URL: ${NEXT_PUBLIC_SSO_URL:-https://sso.bizoholic.net}
-      AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER:-https://sso.bizoholic.net/application/o/bizosaas-admin/}
-      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID:-bizosaas-admin-dashboard}
-      AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET}
-      AUTH_SECRET: ${AUTH_SECRET}
+      # Clerk Authentication
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
+      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
+      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
 
       # Brain Gateway
       NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL:-https://api.bizoholic.net}
@@ -33,10 +33,6 @@ services:
 
       # Vault UI
       NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL:-https://vault.bizoholic.net}
-
-      # NextAuth
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://admin.bizoholic.net}
-      NEXTAUTH_URL_INTERNAL: ${NEXTAUTH_URL_INTERNAL:-http://localhost:3000}
 
       # Environment
       NODE_ENV: production

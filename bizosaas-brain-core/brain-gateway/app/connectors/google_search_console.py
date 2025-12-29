@@ -137,4 +137,58 @@ class GoogleSearchConsoleConnector(BaseConnector, OAuthMixin):
         return {"error": "Unsupported resource type"}
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        raise ValueError(f"Unsupported action: {action}")
+        """
+        Execute actions on Google Search Console.
+        action: 'link_site', 'auto_link'
+        """
+        if action == "link_site":
+            site_url = payload.get("site_url")
+            if not site_url:
+                raise ValueError("site_url is required for link_site action")
+            
+            # Update credentials
+            self.credentials["site_url"] = site_url
+            return {
+                "status": "success",
+                "message": f"Successfully linked site {site_url}",
+                "site_url": site_url
+            }
+
+        if action == "auto_link":
+            # 1. Discover sites
+            data = await self.sync_data("sites")
+            sites = data.get("siteEntry", [])
+            
+            if not sites:
+                return {"status": "error", "message": "No sites found in Google Search Console."}
+                
+            if len(sites) == 1:
+                site_url = sites[0]["siteUrl"]
+                self.credentials["site_url"] = site_url
+                return {
+                    "status": "success",
+                    "auto": True,
+                    "message": f"Automatically linked site: {site_url}",
+                    "site_url": site_url
+                }
+            
+            # Filter for site_url if provided in payload (e.g. from onboarding website profile)
+            target_url = payload.get("target_url")
+            if target_url:
+                for site in sites:
+                    if target_url in site["siteUrl"]:
+                        self.credentials["site_url"] = site["siteUrl"]
+                        return {
+                            "status": "success",
+                            "auto": True,
+                            "message": f"Linked matching site: {site['siteUrl']}",
+                            "site_url": site["siteUrl"]
+                        }
+
+            return {
+                "status": "multiple_found",
+                "message": "Multiple sites found. Please select one manually.",
+                "sites": sites
+            }
+            
+        raise NotImplementedError(f"Action {action} not implemented for Google Search Console")

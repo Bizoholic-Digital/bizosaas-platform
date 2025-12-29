@@ -1,3 +1,4 @@
+'use client';
 import { TrendingUp, Activity, Clock, AlertCircle, Loader2 } from 'lucide-react'
 import { useAPIAnalytics } from '@/lib/hooks/use-api'
 

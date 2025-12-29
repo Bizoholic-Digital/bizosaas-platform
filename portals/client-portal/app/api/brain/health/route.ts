@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { BRAIN_GATEWAY_URL } from '../config';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: NextRequest) {
     try {
-        const backendUrl = process.env.BRAIN_GATEWAY_URL || 'http://localhost:8001';
-        const response = await fetch(`${backendUrl}/health`, {
+        const { getToken } = await auth();
+        const token = await getToken();
+
+        const response = await fetch(`${BRAIN_GATEWAY_URL}/health`, {
             next: { revalidate: 30 }
         });
 

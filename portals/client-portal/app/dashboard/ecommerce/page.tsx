@@ -7,8 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Package, Users as UsersIcon, Loader2, Plus } from 'lucide-react';
+import { ShoppingCart, Package, Users as UsersIcon, Loader2, Plus, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface Product {
     id: string;
@@ -27,10 +33,21 @@ interface Order {
 }
 
 export default function EcommercePage() {
-    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('woocommerce');
+    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('woocommerce', 'ecommerce');
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
+
+    const [activeTab, setActiveTab] = useState('products');
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        price: '',
+        stock_quantity: '',
+        status: 'publish'
+    });
 
     useEffect(() => {
         if (isConnected) {
@@ -50,9 +67,72 @@ export default function EcommercePage() {
             setOrders(ordersData.data || []);
         } catch (error) {
             console.error('Failed to load e-commerce data:', error);
+            toast.error('Failed to load store data');
         } finally {
             setIsLoadingData(false);
         }
+    };
+
+    const handleCreate = async () => {
+        try {
+            await brainApi.ecommerce.createProduct({
+                ...formData,
+                price: parseFloat(formData.price),
+                stock_quantity: parseInt(formData.stock_quantity)
+            });
+            toast.success('Product created successfully');
+            setIsDialogOpen(false);
+            resetForm();
+            loadData();
+        } catch (error) {
+            toast.error('Failed to create product');
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!selectedProduct) return;
+        try {
+            await brainApi.ecommerce.updateProduct(selectedProduct.id, {
+                ...formData,
+                price: parseFloat(formData.price),
+                stock_quantity: parseInt(formData.stock_quantity)
+            });
+            toast.success('Product updated successfully');
+            setIsDialogOpen(false);
+            resetForm();
+            loadData();
+        } catch (error) {
+            toast.error('Failed to update product');
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        try {
+            await brainApi.ecommerce.deleteProduct(id);
+            toast.success('Product deleted successfully');
+            loadData();
+        } catch (error) {
+            toast.error('Failed to delete product');
+        }
+    };
+
+    const openEdit = (product: Product) => {
+        setSelectedProduct(product);
+        setFormData({
+            name: product.name,
+            price: product.price.toString(),
+            stock_quantity: product.stock_quantity.toString(),
+            status: product.status
+        });
+        setIsEditing(true);
+        setIsDialogOpen(true);
+    };
+
+    const resetForm = () => {
+        setFormData({ name: '', price: '', stock_quantity: '', status: 'publish' });
+        setIsEditing(false);
+        setSelectedProduct(null);
     };
 
     if (statusLoading) {
@@ -124,14 +204,79 @@ export default function EcommercePage() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle>Store Data</CardTitle>
-                        <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Product
-                        </Button>
+                        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                            setIsDialogOpen(open);
+                            if (!open) resetForm();
+                        }}>
+                            <DialogTrigger asChild>
+                                <Button>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Product
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                    <DialogTitle>{isEditing ? 'Edit' : 'Add New'} Product</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Product Name</Label>
+                                        <Input
+                                            id="name"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="price">Price</Label>
+                                            <Input
+                                                id="price"
+                                                type="number"
+                                                step="0.01"
+                                                value={formData.price}
+                                                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="stock">Stock</Label>
+                                            <Input
+                                                id="stock"
+                                                type="number"
+                                                value={formData.stock_quantity}
+                                                onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="status">Status</Label>
+                                        <Select
+                                            value={formData.status}
+                                            onValueChange={(val) => setFormData({ ...formData, status: val })}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="publish">Published</SelectItem>
+                                                <SelectItem value="draft">Draft</SelectItem>
+                                                <SelectItem value="private">Private</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                                    <Button onClick={isEditing ? handleUpdate : handleCreate}>
+                                        {isEditing ? 'Save Changes' : 'Add Product'}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Tabs defaultValue="products" className="w-full">
+                    <Tabs defaultValue="products" className="w-full" onValueChange={setActiveTab}>
                         <TabsList className="grid w-full grid-cols-2 mb-4">
                             <TabsTrigger value="products">
                                 <Package className="w-4 h-4 mr-2" />
@@ -160,11 +305,28 @@ export default function EcommercePage() {
                                                 <p className="text-sm text-muted-foreground">Stock: {product.stock_quantity}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="font-semibold text-slate-900 dark:text-white">${product.price}</p>
-                                            <Badge variant={product.status === 'publish' ? 'default' : 'secondary'}>
-                                                {product.status}
-                                            </Badge>
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-right">
+                                                <p className="font-semibold text-slate-900 dark:text-white">${product.price}</p>
+                                                <Badge variant={product.status === 'publish' ? 'default' : 'secondary'}>
+                                                    {product.status}
+                                                </Badge>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => openEdit(product)}>
+                                                        <Edit className="w-4 h-4 mr-2" /> Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(product.id)}>
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
                                     </div>
                                 ))

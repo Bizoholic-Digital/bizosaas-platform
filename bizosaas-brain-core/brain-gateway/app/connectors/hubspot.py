@@ -250,6 +250,19 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
             logger.error(f"Failed to update HubSpot contact {contact_id}: {e}")
             raise
 
+    async def delete_contact(self, contact_id: str) -> bool:
+        """Delete an existing contact"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    f"{self._get_base_url()}/crm/v3/objects/contacts/{contact_id}",
+                    headers=self._get_headers()
+                )
+                return response.status_code in [204, 200]
+        except Exception as e:
+            logger.error(f"Failed to delete HubSpot contact {contact_id}: {e}")
+            return False
+
     async def get_deals(self, limit: int = 100) -> List[Deal]:
         """Get deals from HubSpot"""
         try:
@@ -303,6 +316,46 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
         except Exception as e:
             logger.error(f"Failed to create HubSpot deal: {e}")
             raise
+
+    async def update_deal(self, deal_id: str, updates: Dict[str, Any]) -> Deal:
+        """Update an existing deal"""
+        try:
+            async with httpx.AsyncClient() as client:
+                # Map titles to HubSpot properties if present
+                if "title" in updates:
+                    updates["dealname"] = updates.pop("title")
+                if "value" in updates:
+                    updates["amount"] = str(updates.pop("value"))
+                
+                response = await client.patch(
+                    f"{self._get_base_url()}/crm/v3/objects/deals/{deal_id}",
+                    headers=self._get_headers(),
+                    json={"properties": updates}
+                )
+                response.raise_for_status()
+                
+                # Refresh and return
+                deals = await self.get_deals() # Simplified, could get single deal
+                for d in deals:
+                    if d.id == deal_id:
+                        return d
+                return Deal(id=deal_id, title="Updated Deal", value=0, stage="")
+        except Exception as e:
+            logger.error(f"Failed to update HubSpot deal {deal_id}: {e}")
+            raise
+
+    async def delete_deal(self, deal_id: str) -> bool:
+        """Delete an existing deal"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    f"{self._get_base_url()}/crm/v3/objects/deals/{deal_id}",
+                    headers=self._get_headers()
+                )
+                return response.status_code in [204, 200]
+        except Exception as e:
+            logger.error(f"Failed to delete HubSpot deal {deal_id}: {e}")
+            return False
 
     # Legacy methods for backward compatibility
     async def sync_data(self, resource_type: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
