@@ -8,18 +8,9 @@ import { useClerk } from "@clerk/nextjs"
 
 // Branding is now unified in the component itself
 
-export default function AdminLoginForm() {
-    const router = useRouter()
+function ClerkAdminLoginForm() {
     const searchParams = useSearchParams()
-
-    let openSignIn: any = () => { console.error("Clerk not loaded") };
-    try {
-        const clerk = useClerk();
-        openSignIn = clerk.openSignIn;
-    } catch (e) {
-        console.error("AdminLoginForm: Clerk context missing", e);
-    }
-
+    const { openSignIn } = useClerk()
     const callbackUrl = searchParams?.get('callbackUrl') || '/dashboard'
 
     return (
@@ -34,8 +25,6 @@ export default function AdminLoginForm() {
             className="!bg-transparent"
             onCredentialsLogin={async (email: string, password: string) => {
                 console.log('🔄 [Admin] Attempting login for:', email);
-                // For now, credentials login is handled via Clerk's openSignIn
-                // since standard credentials flow via next-auth is being phased out.
                 openSignIn({
                     initialValues: { emailAddress: email },
                 });
@@ -50,4 +39,22 @@ export default function AdminLoginForm() {
             }}
         />
     )
+}
+
+function DefaultAdminLoginForm() {
+    return (
+        <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-red-100 dark:border-red-900/30">
+            <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Configuration Error</h2>
+            <p className="text-slate-600 dark:text-slate-400">
+                Clerk authentication is not configured. Please set <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 rounded">NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</code>.
+            </p>
+        </div>
+    )
+}
+
+export default function AdminLoginForm() {
+    const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    if (clerkKey) return <ClerkAdminLoginForm />;
+    return <DefaultAdminLoginForm />;
 }

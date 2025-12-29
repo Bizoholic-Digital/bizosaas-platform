@@ -28,30 +28,17 @@ interface AuthProviderProps {
   platform: string
 }
 
-export default function AuthProvider({ children, platform }: AuthProviderProps) {
-  let clerkUser: any = null;
-  let isLoaded = true;
-  let signOut: any = () => { };
-  let openSignIn: any = () => { };
+function ClerkAuthProvider({ children, platform }: AuthProviderProps) {
+  const userHook = useUser();
+  const clerkHook = useClerk();
 
-  try {
-    // We must use hooks at the top level, but their return values can be checked.
-    // However, they throw if ClerkProvider is missing.
-    // The safest way is to wrap the children in an error boundary or check provider existence.
-    // For now, we'll use a safer hook access if possible or just handle the crash.
-    const userHook = useUser();
-    const clerkHook = useClerk();
-    clerkUser = userHook.user;
-    isLoaded = userHook.isLoaded;
-    signOut = clerkHook.signOut;
-    openSignIn = clerkHook.openSignIn;
-  } catch (e) {
-    console.error("AuthProvider: Required ClerkProvider is missing in the component tree.", e);
-  }
+  const clerkUser = userHook?.user;
+  const isLoaded = userHook?.isLoaded ?? false;
+  const signOut = clerkHook?.signOut;
+  const openSignIn = clerkHook?.openSignIn;
+
   const [user, setUser] = useState<User | null>(null)
-
   const router = useRouter()
-  const pathname = usePathname()
 
   useEffect(() => {
     if (isLoaded && clerkUser) {
@@ -72,12 +59,19 @@ export default function AuthProvider({ children, platform }: AuthProviderProps) 
   }, [isLoaded, clerkUser]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    openSignIn();
-    return true;
+    if (openSignIn) {
+      openSignIn();
+      return true;
+    }
+    return false;
   };
 
   const logout = () => {
-    signOut(() => router.push('/login'));
+    if (signOut) {
+      signOut(() => router.push('/login'));
+    } else {
+      router.push('/login');
+    }
   };
 
   const checkAuth = async (): Promise<boolean> => {
@@ -98,6 +92,47 @@ export default function AuthProvider({ children, platform }: AuthProviderProps) 
       {children}
     </AuthContext.Provider>
   )
+}
+
+function DefaultAuthProvider({ children, platform }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    console.warn("Login called but Clerk is not configured.");
+    return false;
+  };
+
+  const logout = () => {
+    router.push('/login');
+  };
+
+  const checkAuth = async (): Promise<boolean> => false;
+
+  const value: AuthContextType = {
+    user,
+    loading: false,
+    login,
+    logout,
+    checkAuth,
+    platform
+  }
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export default function AuthProvider(props: AuthProviderProps) {
+  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (clerkKey) {
+    return <ClerkAuthProvider {...props} />;
+  }
+
+  return <DefaultAuthProvider {...props} />;
 }
 
 export const useAuth = () => {

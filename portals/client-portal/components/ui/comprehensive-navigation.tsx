@@ -80,7 +80,12 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
         const { brainApi } = await import('../../lib/brain-api');
         const token = await getToken();
         const data = await brainApi.mcp.getInstalled(token || undefined);
-        setInstalledMcps(data);
+        if (Array.isArray(data)) {
+          setInstalledMcps(data);
+        } else {
+          console.warn('getInstalled returned non-array:', data);
+          setInstalledMcps([]);
+        }
       } catch (err) {
         console.error('Failed to fetch installed MCPs:', err);
       } finally {
@@ -92,8 +97,8 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
   }, [getToken]);
 
   const hasCategory = (catSlug: string) => {
-    if (loading) return true; // optimistic
-    return installedMcps.some(inst => inst.mcp.category === catSlug);
+    if (loading || !Array.isArray(installedMcps)) return true; // optimistic
+    return installedMcps.some(inst => inst?.mcp?.category === catSlug);
   };
 
   const getLink = (catSlug: string, defaultHref: string) => {
