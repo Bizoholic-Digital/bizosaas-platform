@@ -83,3 +83,7 @@ credentials.md
 
 credentials*.md
 migrate_to_kvm8.py
+
+# Antigravity Tools
+antigravity-tools.*
+!antigravity-tools.py
