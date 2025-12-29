@@ -69,7 +69,6 @@ services:
 # ═══════════════════════════════════════════════════════════════════════════
 networks:
   brain-network:
-    driver: bridge
-    name: brain-network
+    external: true
   dokploy-network:
     external: true
