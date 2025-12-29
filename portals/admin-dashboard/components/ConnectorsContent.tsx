@@ -89,173 +89,6 @@ export function ConnectorsContent() {
                 consumer_key: { type: 'string', label: 'Consumer Key (CK)', required: true },
                 consumer_secret: { type: 'password', label: 'Consumer Secret (CS)', required: true }
             }
-        },
-        {
-            id: 'google-business-profile',
-            name: 'Google Business Profile',
-            type: 'marketing',
-            description: 'Manage reviews and location info for US local business discovery.',
-            icon: 'map-pin',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                account_id: { type: 'string', label: 'Account ID', placeholder: 'accounts/123...', required: true },
-                location_id: { type: 'string', label: 'Location ID', placeholder: 'locations/123...', required: true }
-            }
-        },
-        {
-            id: 'microsoft-ads',
-            name: 'Microsoft Advertising',
-            type: 'marketing',
-            description: 'Bing search ads management with high-ROI potential for US SMBs.',
-            icon: 'bing',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                customer_id: { type: 'string', label: 'Customer ID', placeholder: '1234567', required: true },
-                developer_token: { type: 'password', label: 'Developer Token', required: true }
-            }
-        },
-        {
-            id: 'facebook-ads',
-            name: 'Meta Ads & CAPI',
-            type: 'marketing',
-            description: 'Advanced Meta Ads with Conversion API tracking support.',
-            icon: 'facebook',
-            version: '2.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true },
-                pixel_id: { type: 'string', label: 'Meta Pixel ID', required: true }
-            }
-        },
-        {
-            id: 'google-tag-manager',
-            name: 'Google Tag Manager',
-            type: 'marketing',
-            description: 'Centralized tag management with auto-injection for SMB tools.',
-            icon: 'tag',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                container_id: { type: 'string', label: 'Container ID', placeholder: 'GTM-XXXXXX', required: true }
-            }
-        },
-        {
-            id: 'yelp',
-            name: 'Yelp Fusion',
-            type: 'marketing',
-            description: 'Monitor local reputation and reviews for US service businesses.',
-            icon: 'yelp',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                api_key: { type: 'password', label: 'Yelp API Key', required: true },
-                business_id: { type: 'string', label: 'Business ID', required: true }
-            }
-        },
-        {
-            id: 'calendly',
-            name: 'Calendly',
-            type: 'marketing',
-            description: 'Automated appointment scheduling for high-conversion flow.',
-            icon: 'calendly',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Personal Access Token', required: true },
-                organization_uri: { type: 'string', label: 'Organization URI', required: true }
-            }
-        },
-        {
-            id: 'mailchimp',
-            name: 'Mailchimp',
-            type: 'marketing',
-            description: 'Powerful email marketing and audience management (36x ROI).',
-            icon: 'mailchimp',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                api_key: { type: 'password', label: 'API Key', required: true },
-                server_prefix: { type: 'string', label: 'Server Prefix (e.g. us20)', required: true },
-                list_id: { type: 'string', label: 'Audience ID', required: false }
-            }
-        },
-        {
-            id: 'google-search-console',
-            name: 'Google Search Console',
-            type: 'analytics',
-            description: 'SEO intelligence and site performance monitoring for agents.',
-            icon: 'search-console',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true },
-                site_url: { type: 'string', label: 'Site URL (https://...)', required: true }
-            }
-        },
-        {
-            id: 'google-ads',
-            name: 'Google Ads',
-            type: 'marketing',
-            description: 'Hyper-targeted search ads management for US high-intent keywords.',
-            icon: 'google-ads',
-            version: '2.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                customer_id: { type: 'string', label: 'Account ID', placeholder: '123-456-7890', required: true },
-                developer_token: { type: 'password', label: 'Developer Token', required: true }
-            }
-        },
-        {
-            id: 'twilio',
-            name: 'Twilio SMS',
-            type: 'marketing',
-            description: 'Direct SMS/WhatsApp lead outreach for US local service conversion.',
-            icon: 'twilio',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                account_sid: { type: 'string', label: 'Account SID', placeholder: 'AC...', required: true },
-                auth_token: { type: 'password', label: 'Auth Token', required: true },
-                from_number: { type: 'string', label: 'Twilio Number', placeholder: '+1...', required: true }
-            }
-        },
-        {
-            id: 'gohighlevel',
-            name: 'GoHighLevel (GHL)',
-            type: 'marketing',
-            description: 'Agency-level CRM & lead retention specifically for US SMBs.',
-            icon: 'gohighlevel',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                location_id: { type: 'string', label: 'Location ID', required: true }
-            }
-        },
-        {
-            id: 'hubspot',
-            name: 'HubSpot',
-            type: 'marketing',
-            description: 'Scalable CRM deals and contact management for growing businesses.',
-            icon: 'hubspot',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true }
-            }
-        },
-        {
-            id: 'tiktok-ads',
-            name: 'TikTok Ads',
-            type: 'marketing',
-            description: 'Mobile-first short-form video ads for the 2025 growth market.',
-            icon: 'tiktok-ads',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                advertiser_id: { type: 'string', label: 'Advertiser ID', required: true }
-            }
         }
     ];
 
@@ -294,18 +127,14 @@ export function ConnectorsContent() {
     const loadConnectors = async () => {
         setLoading(true);
         try {
-            // Attempt API call
             const res = await connectorsApi.getConnectors();
             if (res.data && Array.isArray(res.data) && res.data.length > 0) {
                 setConnectors(res.data);
             } else {
-                // Fallback to mock data if API is empty or not ready
-                console.log("Using mock connectors due to empty API response");
                 setConnectors(MOCK_CONNECTORS);
             }
         } catch (error) {
             console.error("Failed to load connectors", error);
-            // Fallback to mock data on error (for dev)
             setConnectors(MOCK_CONNECTORS);
         } finally {
             setLoading(false);
@@ -330,10 +159,6 @@ export function ConnectorsContent() {
 
         setIsValidating(true);
         try {
-            // 1. Validate (simulated for now if API not ready, or real call)
-            // const validRes = await connectorsApi.validateConnection(selectedConnector.id);
-            // if (!validRes.data?.valid) throw new Error(validRes.data?.message || "Validation failed");
-
             setIsConnecting(true);
             const res = await connectorsApi.connectService(selectedConnector.id, credentials);
 
@@ -342,7 +167,6 @@ export function ConnectorsContent() {
             toast.success(`Successfully connected to ${selectedConnector.name}`);
             setDialogOpen(false);
 
-            // Update local state
             setConnectors(prev => prev.map(c =>
                 c.id === selectedConnector.id ? { ...c, status: 'connected', lastSync: new Date().toISOString() } : c
             ));
@@ -371,12 +195,10 @@ export function ConnectorsContent() {
     const handleSync = async (connector: ConnectorConfig) => {
         try {
             toast.info(`Syncing ${connector.name}...`);
-            // await connectorsApi.syncConnector(connector.id);
             setConnectors(prev => prev.map(c =>
                 c.id === connector.id ? { ...c, status: 'syncing' } : c
             ));
 
-            // Simulate sync finish
             setTimeout(() => {
                 setConnectors(prev => prev.map(c =>
                     c.id === connector.id ? { ...c, status: 'connected', lastSync: new Date().toISOString() } : c
@@ -409,9 +231,8 @@ export function ConnectorsContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredConnectors.map(c => {
-
                     const Icon = ICONS[c.icon] || ICONS.default;
-                    const isConnected = c.status === 'connected' || c.status === 'syncing';
+                    const isConnected = c.status?.toUpperCase() === 'CONNECTED' || c.status?.toUpperCase() === 'SYNCING';
 
                     return (
                         <Card key={c.id} className={`relative overflow-hidden transition-all ${isConnected ? 'border-primary/50 bg-primary/5' : ''}`}>
@@ -517,3 +338,5 @@ export function ConnectorsContent() {
         </div>
     );
 }
+
+export default ConnectorsContent;

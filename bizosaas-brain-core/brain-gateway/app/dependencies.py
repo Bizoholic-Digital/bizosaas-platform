@@ -13,7 +13,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     # Use a default or warn
     logger.warning("DATABASE_URL not set!")
-    DATABASE_URL = "postgresql://admin:password@localhost:5432/bizosaas_staging"
+    DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/bizosaas"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -85,9 +85,9 @@ def get_current_user():
     # TODO: Implement proper JWT validation from request headers
     # For now, return a mock authenticated user for development
     return AuthenticatedUser(
-        id="system-user",
+        id="00000000-0000-0000-0000-000000000001",  # Valid UUID
         email="system@bizosaas.local",
         name="System User",
         roles=["admin"],
-        tenant_id="default"
+        tenant_id="00000000-0000-0000-0000-000000000001"  # Valid UUID
     )

@@ -96,7 +96,14 @@ const apiFetch = async (endpoint: string, options: any = {}, token?: string) => 
 };
 
 export const brainApi = {
+    // Generic helper for direct URL access if needed
+    get: async (endpoint: string, token?: string) => {
+        return apiFetch(endpoint, {}, token);
+    },
     connectors: {
+        getConnectors: async (token?: string): Promise<Connector[]> => {
+            return apiFetch('/api/connectors/types', {}, token);
+        },
         listTypes: async (token?: string): Promise<Connector[]> => {
             return apiFetch('/api/connectors/types', {}, token);
         },
@@ -181,6 +188,20 @@ export const brainApi = {
         }
     },
     cms: {
+        getPages: async (token?: string) => {
+            try {
+                return await apiFetch('/api/cms/pages', {}, token);
+            } catch (e) {
+                return [];
+            }
+        },
+        getPosts: async (token?: string) => {
+            try {
+                return await apiFetch('/api/cms/posts', {}, token);
+            } catch (e) {
+                return [];
+            }
+        },
         listPages: async (token?: string) => {
             try {
                 return await apiFetch('/api/cms/pages', {}, token);
@@ -204,6 +225,12 @@ export const brainApi = {
         }
     },
     crm: {
+        getContacts: async (limit: number = 100, token?: string) => {
+            return apiFetch(`/api/crm/contacts?limit=${limit}`, {}, token);
+        },
+        getDeals: async (limit: number = 100, token?: string) => {
+            return apiFetch(`/api/crm/deals?limit=${limit}`, {}, token);
+        },
         listContacts: async (token?: string) => {
             return apiFetch('/api/crm/contacts', {}, token);
         },
@@ -211,6 +238,41 @@ export const brainApi = {
             return apiFetch('/api/crm/contacts', {
                 method: 'POST',
                 body: JSON.stringify(contact)
+            }, token);
+        }
+    },
+    ecommerce: {
+        getProducts: async (limit: number = 100, token?: string) => {
+            return apiFetch(`/api/ecommerce/products?limit=${limit}`, {}, token);
+        },
+        getOrders: async (limit: number = 100, token?: string) => {
+            return apiFetch(`/api/ecommerce/orders?limit=${limit}`, {}, token);
+        }
+    },
+    marketing: {
+        getLists: async (token?: string) => {
+            return apiFetch('/api/marketing/lists', {}, token);
+        },
+        getCampaigns: async (token?: string) => {
+            return apiFetch('/api/marketing/campaigns', {}, token);
+        }
+    },
+    campaigns: {
+        create: async (data: any, token?: string) => {
+            return apiFetch('/api/campaigns/', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }, token);
+        },
+        list: async (token?: string) => {
+            return apiFetch('/api/campaigns/', {}, token);
+        },
+        get: async (id: string, token?: string) => {
+            return apiFetch(`/api/campaigns/${id}`, {}, token);
+        },
+        publish: async (id: string, token?: string) => {
+            return apiFetch(`/api/campaigns/${id}/publish`, {
+                method: 'POST'
             }, token);
         }
     }
