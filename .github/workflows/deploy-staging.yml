@@ -23,9 +23,6 @@ jobs:
           - name: brain-gateway
             context: ./bizosaas-brain-core/brain-gateway
             dockerfile: Dockerfile
-          - name: auth-service
-            context: ./bizosaas-brain-core/auth
-            dockerfile: Dockerfile
           - name: ai-agents
             context: ./bizosaas-brain-core/ai-agents
             dockerfile: Dockerfile
@@ -78,8 +75,8 @@ jobs:
           provenance: false
           platforms: linux/amd64
           build-args: |
-            NEXT_PUBLIC_API_BASE_URL=https://brain.bizoholic.net
-            NEXTAUTH_URL=${{ matrix.name == 'admin-dashboard' && 'https://admin.bizoholic.net' || 'https://client.bizoholic.net' }}
+            NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+            NEXTAUTH_URL=${{ matrix.name == 'admin-dashboard' && 'https://admin.bizoholic.net' || 'https://app.bizoholic.net' }}
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
             SERVICE_PATH=${{ matrix.service_path }}
 
@@ -90,14 +87,14 @@ jobs:
     steps:
       - name: Trigger Dokploy Deployment (Backend)
         run: |
-          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
 
       - name: Trigger Dokploy Deployment (Frontend)
         run: |
-          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
