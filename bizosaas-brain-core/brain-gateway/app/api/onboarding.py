@@ -167,8 +167,9 @@ async def discover_google_services(
     ]
     
     import importlib
+    import asyncio
     
-    for connector_id, class_path in connectors_to_process:
+    async def process_connector(connector_id, class_path):
         try:
             # Dynamic import
             module_path, class_name = class_path.rsplit(".", 1)
@@ -184,7 +185,6 @@ async def discover_google_services(
             
             # Perform discovery
             discovery_result = await connector.perform_action("auto_link", {})
-            results[connector_id] = discovery_result
             
             if discovery_result.get("status") == "success":
                 # Save to Vault
@@ -220,10 +220,17 @@ async def discover_google_services(
                             discovery_result["mcp_provisioned"] = True
                 except ImportError:
                     print("MCP models not available, skipping provisioning")
-
+            return connector_id, discovery_result
         except Exception as e:
             print(f"Discovery failed for {connector_id}: {e}")
-            results[connector_id] = {"status": "error", "message": str(e)}
+            return connector_id, {"status": "error", "message": str(e)}
+
+    # Run discovery in parallel
+    tasks = [process_connector(cid, path) for cid, path in connectors_to_process]
+    discovery_results = await asyncio.gather(*tasks)
+    
+    for connector_id, result in discovery_results:
+        results[connector_id] = result
 
     return {
         "status": "success",

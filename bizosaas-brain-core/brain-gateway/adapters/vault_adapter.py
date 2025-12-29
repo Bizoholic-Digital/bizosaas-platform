@@ -31,6 +31,11 @@ class VaultAdapter(SecretPort):
                 token=self.vault_token
             )
             
+            # Set a default timeout for all requests
+            # hvac uses requests.Session internally via RequestAdapter
+            if hasattr(self.client, 'adapter'):
+                self.client.adapter.timeout = 5.0
+            
             if self.client.is_authenticated():
                 logger.info(f"Successfully authenticated with Vault at {self.vault_url}")
             else:
