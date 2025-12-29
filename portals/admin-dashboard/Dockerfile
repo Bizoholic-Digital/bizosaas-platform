@@ -65,8 +65,10 @@ RUN mkdir .next && chown nextjs:nodejs .next
 
 # Copy built application
 COPY --from=builder /app/${SERVICE_PATH}/public ./public
+COPY --from=builder /app/${SERVICE_PATH}/public ./${SERVICE_PATH}/public
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./${SERVICE_PATH}/.next/static
 # Copy vault injector
 COPY --from=builder /app/scripts/vault-injector.js ./scripts/vault-injector.js
 
