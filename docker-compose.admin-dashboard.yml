@@ -1,6 +1,69 @@
-# Docker Compose for Production VPS
+# Docker Compose for Frontend Services (Admin Dashboard & Client Portal)
 version: '3.9'
 services:
+  client-portal:
+    build:
+      context: .
+      dockerfile: ./portals/client-portal/Dockerfile.prod
+      args:
+        SERVICE_PATH: portals/client-portal
+        NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
+        NEXT_PUBLIC_GRAPHQL_URL: https://api.bizoholic.net/graphql
+        NEXTAUTH_URL: https://app.bizoholic.net
+        NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    container_name: bizosaas-client-portal-staging
+    restart: unless-stopped
+    ports:
+      - "3003:3000"
+    environment:
+      # Clerk Authentication
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
+      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
+      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
+      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
+
+      # API Endpoints
+      NEXT_PUBLIC_API_URL: https://api.bizoholic.net
+      NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
+      NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
+      NEXT_PUBLIC_BRAIN_API_URL: https://api.bizoholic.net
+
+      # NextAuth
+      NEXTAUTH_URL: https://app.bizoholic.net
+      NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
+
+      # Environment
+      NODE_ENV: production
+      PORT: 3000
+    networks:
+      - brain-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-s", "--retry 1", "-f", "http://localhost:3000/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls=true"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+      - "traefik.docker.network=dokploy-network"
+
   admin-dashboard:
     build:
       context: .
