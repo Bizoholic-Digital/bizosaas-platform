@@ -25,6 +25,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Define build arguments
+ARG SERVICE_PATH
+ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
 ARG NEXT_PUBLIC_GRAPHQL_URL
 ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -53,10 +55,6 @@ COPY . .
 
 # Switch to the service directory
 WORKDIR /app/${SERVICE_PATH}
-
-# Remove root configuration files to prevent Next.js from detecting workspace root incorrectly
-# and using the wrong tsconfig.json/package-lock.json
-RUN rm -f /app/package-lock.json /app/package.json /app/tsconfig.json
 
 # Install dependencies
 RUN npm ci --legacy-peer-deps
