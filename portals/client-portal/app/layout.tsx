@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 import { Providers } from './providers';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
@@ -31,16 +32,18 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Providers>
-          <OfflineBanner />
-          {/* Main Content Area */}
-          <div className="flex flex-1 flex-col overflow-hidden h-screen">
-            <main className="flex-1 overflow-y-auto p-0">
-              {children}
-            </main>
-          </div>
-          <PWAInstallPrompt />
-        </Providers>
+        <ClerkProvider>
+          <Providers>
+            <OfflineBanner />
+            {/* Main Content Area */}
+            <div className="flex flex-1 flex-col overflow-hidden h-screen">
+              <main className="flex-1 overflow-y-auto p-0">
+                {children}
+              </main>
+            </div>
+            <PWAInstallPrompt />
+          </Providers>
+        </ClerkProvider>
       </body>
     </html>
   );
