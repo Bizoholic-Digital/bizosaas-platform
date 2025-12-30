@@ -8,7 +8,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Define build arguments
-ARG SERVICE_PATH=portals/admin-dashboard
+ARG SERVICE_PATH
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
 ARG NEXT_PUBLIC_GRAPHQL_URL
@@ -64,10 +64,8 @@ RUN mkdir .next && chown nextjs:nodejs .next
 
 # Copy built application
 COPY --from=builder /app/${SERVICE_PATH}/public ./public
-COPY --from=builder /app/${SERVICE_PATH}/public ./${SERVICE_PATH}/public
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./${SERVICE_PATH}/.next/static
 # Copy vault injector
 COPY --from=builder /app/scripts/vault-injector.js ./scripts/vault-injector.js
 
