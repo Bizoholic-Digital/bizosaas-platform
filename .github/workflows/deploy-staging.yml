@@ -92,7 +92,7 @@ jobs:
       - name: Trigger Dokploy Deployment (Backend)
         # IMPORTANT: Disable "Autodeploy" in Dokploy UI to ensure this is the only trigger
         run: |
-          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
@@ -100,7 +100,7 @@ jobs:
       - name: Trigger Dokploy Deployment (Frontend)
         # IMPORTANT: Disable "Autodeploy" in Dokploy UI to ensure this is the only trigger
         run: |
-          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
