@@ -52,27 +52,23 @@ ENV SERVICE_PATH=$SERVICE_PATH
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Create .next directory
+# Create .next directory for cache/permissions
 RUN mkdir .next && chown nextjs:nodejs .next
 
-# Install curl early in the runner stage
+# Install curl for healthchecks
 RUN apk add --no-cache curl
 
-# Copy built application
-# Standalone output in monorepos can be tricky - we copy contents to /app
+# Copy necessary files from builder
+# Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
-
-# Ensure static files and public assets are available where server.js expects them
-# We copy them to both root and the service-specific path to be safe
-COPY --from=builder /app/${SERVICE_PATH}/public ./public
-COPY --from=builder /app/${SERVICE_PATH}/public ./${SERVICE_PATH}/public
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./${SERVICE_PATH}/.next/static
+COPY --from=builder /app/${SERVICE_PATH}/public ./public
 
 # Copy vault injector
 COPY --from=builder /app/scripts/vault-injector.js ./scripts/vault-injector.js
@@ -81,11 +77,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV HOSTNAME="0.0.0.0"
-
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://127.0.0.1:3000/api/health || exit 1
 
-# Start application
-WORKDIR /app/${SERVICE_PATH}
+# Start application from the root server.js
 CMD ["node", "server.js"]
