@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from 'sonner';
 

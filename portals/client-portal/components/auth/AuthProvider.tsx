@@ -130,7 +130,8 @@ function DefaultAuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export default function AuthProvider(props: { children: React.ReactNode }) {
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  // Hardcoded key to match layout.tsx and middleware.ts
+  const clerkKey = "pk_test_Yml6b3NhYXMtY29yZS0xNy5jbGVyay5hY2NvdW50cy5kZXYk";
 
   if (clerkKey) {
     return <ClerkAuthProvider {...props} />;
