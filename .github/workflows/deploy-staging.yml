@@ -95,21 +95,21 @@ jobs:
         # IMPORTANT: Disable "Autodeploy" in Dokploy UI to ensure this is the only trigger
         run: |
           echo "Triggering Backend deployment..."
-          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
-            --fail --retry 3 --retry-delay 5 \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+          curl -i -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
+            --retry 3 --retry-delay 10 --max-time 120 \
+            -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
           
-          echo "Waiting 10 seconds before triggering Frontend..."
-          sleep 10
+          echo "Waiting 15 seconds before triggering Frontend..."
+          sleep 15
 
       - name: Trigger Dokploy Deployment (Frontend)
         # IMPORTANT: Disable "Autodeploy" in Dokploy UI to ensure this is the only trigger
         run: |
           echo "Triggering Frontend deployment..."
-          curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
-            --fail --retry 3 --retry-delay 5 \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+          curl -i -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
+            --retry 3 --retry-delay 10 --max-time 120 \
+            -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
