@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased h-screen overflow-hidden">
-        <ClerkProvider publishableKey="pk_test_Yml6b3NhYXMtY29yZS0xNy5jbGVyay5hY2NvdW50cy5kZXYk">
+        <ClerkProvider publishableKey="pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA">
           <Providers>
             <OfflineBanner />
             <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
