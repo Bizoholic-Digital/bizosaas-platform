@@ -38,6 +38,11 @@ WORKDIR /app/${SERVICE_PATH}
 RUN npm install --legacy-peer-deps
 
 # Build Next.js
+# Explicitly bake variables into .env.production for Next.js build
+RUN echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}" > .env.production && \
+    echo "NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}" >> .env.production && \
+    echo "NEXT_PUBLIC_BRAIN_GATEWAY_URL=${NEXT_PUBLIC_BRAIN_GATEWAY_URL}" >> .env.production
+
 RUN npm run build
 
 # Stage 2: Production Runner
