@@ -81,11 +81,11 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Install curl for healthchecks
-RUN apk add --no-cache curl
-
 # Create .next directory
 RUN mkdir .next && chown nextjs:nodejs .next
+
+# Install curl early in the runner stage
+RUN apk add --no-cache curl
 
 # Copy built application from builder stage
 # Standalone output puts everything in .next/standalone
@@ -111,4 +111,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start with Vault secret injection
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]
+# We prefer using the service-specific server.js if it exists, otherwise the root one
+CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && if [ -f server.js ]; then node server.js; else node ${SERVICE_PATH}/server.js; fi"]
