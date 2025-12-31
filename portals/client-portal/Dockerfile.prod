@@ -61,26 +61,34 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-
-# Copy necessary files
-COPY --from=builder /app/portals/client-portal/public ./public
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
+# Install curl for healthchecks
+RUN apk add --no-cache curl
+
 # Automatically leverage output traces to reduce image size
 COPY --from=builder --chown=nextjs:nodejs /app/portals/client-portal/.next/standalone ./
+
+# Copy static assets to the correct location within the standalone structure
+COPY --from=builder --chown=nextjs:nodejs /app/portals/client-portal/.next/static ./portals/client-portal/.next/static
+COPY --from=builder /app/portals/client-portal/public ./portals/client-portal/public
+
+# Also copy to root for redundancy
 COPY --from=builder --chown=nextjs:nodejs /app/portals/client-portal/.next/static ./.next/static
+COPY --from=builder /app/portals/client-portal/public ./public
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
+# Start application from the app subdirectory where server.js is located
+WORKDIR /app/portals/client-portal
 CMD ["node", "server.js"]

@@ -64,9 +64,16 @@ RUN mkdir .next && chown nextjs:nodejs .next
 # Install curl for healthchecks
 RUN apk add --no-cache curl
 
-# Copy necessary files from builder
-# Automatically leverage output traces to reduce image size
+# Copy standalone output
+# Next.js standalone in monorepos includes the root node_modules and the app subdirectory
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
+
+# Copy static assets to the correct location within the standalone structure
+# server.js expects these at the process.cwd() or relative to the entry point
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./${SERVICE_PATH}/.next/static
+COPY --from=builder /app/${SERVICE_PATH}/public ./${SERVICE_PATH}/public
+
+# Also copy assets to the root just in case process.cwd() is used at /app
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
 COPY --from=builder /app/${SERVICE_PATH}/public ./public
 
@@ -80,5 +87,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://127.0.0.1:3000/api/health || exit 1
 
-# Start application from the root server.js
+# Start application from the app subdirectory where server.js is located
+WORKDIR /app/${SERVICE_PATH}
 CMD ["node", "server.js"]
