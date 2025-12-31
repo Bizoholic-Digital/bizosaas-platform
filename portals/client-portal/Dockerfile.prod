@@ -18,6 +18,18 @@ RUN npm ci --legacy-peer-deps
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install global dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy node_modules from deps stage for speed
+COPY --from=deps /app/portals/client-portal/node_modules ./portals/client-portal/node_modules
+
+# Copy source code specifically to avoid context issues
+COPY portals/client-portal ./portals/client-portal
+COPY shared ./shared
+COPY tsconfig.json ./tsconfig.json
+COPY package.json ./package.json
+
 # Define build arguments
 ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
@@ -39,15 +51,8 @@ ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Install global dependencies
-RUN apk add --no-cache libc6-compat
-
-# Copy full source code to maintain monorepo context
-COPY . .
-
 # Build Next.js
 WORKDIR /app/portals/client-portal
-RUN npm install --legacy-peer-deps
 RUN npm run build
 
 # Stage 3: Runner
