@@ -5,6 +5,7 @@ on:
     branches: [staging, main]
     paths:
       - 'portals/client-portal/**'
+      - 'shared/**'
       - '.github/workflows/deploy-portal.yml'
   workflow_dispatch:
 
