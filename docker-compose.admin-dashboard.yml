@@ -1,5 +1,4 @@
 # Docker Compose for Frontend Services (Admin Dashboard & Client Portal)
-version: '3.9'
 services:
   client-portal:
     build:
