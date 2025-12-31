@@ -13,6 +13,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   container-security:
     name: Container Security Scan
@@ -49,8 +54,8 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: main
-          head: HEAD
+          base: ${{ github.event_name == 'push' && github.event.before || '' }}
+          head: ${{ github.sha }}
           extra_args: --debug --only-verified
 
   dependency-security:
@@ -92,7 +97,7 @@ jobs:
           safety check --json --output safety-report.json || true
 
       - name: Upload safety report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: safety-report
@@ -149,7 +154,7 @@ jobs:
           license-checker --production --failOn 'GPL;AGPL;LGPL;UNLICENSED'
 
       - name: Upload license report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license-report
           path: license-report.json
