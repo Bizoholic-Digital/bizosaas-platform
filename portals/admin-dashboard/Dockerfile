@@ -47,6 +47,7 @@ WORKDIR /app
 
 # Re-declare SERVICE_PATH for this stage
 ARG SERVICE_PATH=portals/admin-dashboard
+ENV SERVICE_PATH=$SERVICE_PATH
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -86,5 +87,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start with Vault secret injection
-# We prefer using the service-specific server.js if it exists, otherwise the root one
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && if [ -f ${SERVICE_PATH}/server.js ]; then node ${SERVICE_PATH}/server.js; else node server.js; fi"]
+CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]
