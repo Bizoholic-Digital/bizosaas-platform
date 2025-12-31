@@ -13,6 +13,8 @@ export default clerkMiddleware(async (auth, req) => {
     if (isProtectedRoute(req)) {
         await auth.protect();
     }
+}, {
+    publishableKey: 'pk_test_Yml6b3NhYXMtY29yZS0xNy5jbGVyay5hY2NvdW50cy5kZXYk'
 });
 
 matcher: [
