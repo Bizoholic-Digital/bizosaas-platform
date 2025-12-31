@@ -2,23 +2,13 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from "@clerk/nextjs";
-
 export default function RootPage() {
     const router = useRouter();
-    const { isSignedIn, isLoaded } = useUser();
 
     useEffect(() => {
-        if (!isLoaded) return; // Wait for session to load
-
-        if (isSignedIn) {
-            // User is authenticated, redirect to dashboard
-            router.replace('/dashboard');
-        } else {
-            // User is not authenticated, redirect to login
-            router.replace('/login');
-        }
-    }, [isSignedIn, isLoaded, router]);
+        // Always redirect to login for the root page as requested
+        router.replace('/login');
+    }, [router]);
 
     // Show loading state while redirecting
     return (

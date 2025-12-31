@@ -54,7 +54,8 @@ function DefaultAdminLoginForm() {
 }
 
 export default function AdminLoginForm() {
-    const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    // Hardcoded key to match middleware and layout
+    const clerkKey = "pk_test_Yml6b3NhYXMtY29yZS0xNy5jbGVyay5hY2NvdW50cy5kZXYk";
     if (clerkKey) return <ClerkAdminLoginForm />;
     return <DefaultAdminLoginForm />;
 }
