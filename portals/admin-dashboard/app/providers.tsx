@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
