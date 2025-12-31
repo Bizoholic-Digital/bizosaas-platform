@@ -63,9 +63,16 @@ RUN apk add --no-cache curl
 RUN mkdir .next && chown nextjs:nodejs .next
 
 # Copy built application
-COPY --from=builder /app/${SERVICE_PATH}/public ./public
+# Standalone output in monorepos can be tricky - we copy contents to /app
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/standalone ./
+
+# Ensure static files and public assets are available where server.js expects them
+# We copy them to both root and the service-specific path to be safe
+COPY --from=builder /app/${SERVICE_PATH}/public ./public
+COPY --from=builder /app/${SERVICE_PATH}/public ./${SERVICE_PATH}/public
 COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/${SERVICE_PATH}/.next/static ./${SERVICE_PATH}/.next/static
+
 # Copy vault injector
 COPY --from=builder /app/scripts/vault-injector.js ./scripts/vault-injector.js
 
@@ -79,4 +86,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start with Vault secret injection
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]
+# We prefer using the service-specific server.js if it exists, otherwise the root one
+CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && if [ -f ${SERVICE_PATH}/server.js ]; then node ${SERVICE_PATH}/server.js; else node server.js; fi"]
