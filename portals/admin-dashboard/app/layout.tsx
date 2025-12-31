@@ -4,6 +4,7 @@ import './globals.css';
 import { AdminNavigation } from '@/components/AdminNavigation';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { ClerkProvider } from '@clerk/nextjs';
 
 import { Providers } from './providers';
 
@@ -35,15 +36,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased h-screen overflow-hidden">
-        <Providers>
-          <OfflineBanner />
-          <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="flex-1 overflow-y-auto p-0">
-              {children}
-            </main>
-          </div>
-          <PWAInstallPrompt />
-        </Providers>
+        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+          <Providers>
+            <OfflineBanner />
+            <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
+              <main className="flex-1 overflow-y-auto p-0">
+                {children}
+              </main>
+            </div>
+            <PWAInstallPrompt />
+          </Providers>
+        </ClerkProvider>
       </body>
     </html>
   );

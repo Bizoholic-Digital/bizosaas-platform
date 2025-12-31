@@ -24,6 +24,7 @@ const nextConfig = {
     NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:8008',
     NEXT_PUBLIC_TEMPORAL_UI_URL: process.env.NEXT_PUBLIC_TEMPORAL_UI_URL || 'http://localhost:8233',
     NEXT_PUBLIC_VAULT_UI_URL: process.env.NEXT_PUBLIC_VAULT_UI_URL || 'http://localhost:8200',
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },
   async rewrites() {
     return [
