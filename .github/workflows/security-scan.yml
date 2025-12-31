@@ -25,22 +25,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build CrewAI image for scanning
+      - name: Build AI Agents image for scanning
         run: |
-          docker build -t local/crewai:scan ./n8n/crewai
+          docker build -t local/ai-agents:scan ./bizosaas-brain-core/ai-agents
 
       - name: Run Trivy container scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'local/crewai:scan'
+          image-ref: 'local/ai-agents:scan'
           format: 'sarif'
-          output: 'trivy-container-results.sarif'
+          output: './trivy-container-results.sarif'
 
       - name: Upload container scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v3 # Using latest v3 which is currently recommended, v4 is v3-compatible
         if: always()
         with:
-          sarif_file: 'trivy-container-results.sarif'
+          sarif_file: './trivy-container-results.sarif'
 
   secrets-scan:
     name: Secrets Detection
@@ -87,13 +87,13 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/ai-agents
           pip install -r requirements.txt
           pip install safety
 
       - name: Run Safety check
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/ai-agents
           safety check --json --output safety-report.json || true
 
       - name: Upload safety report
@@ -101,7 +101,7 @@ jobs:
         if: always()
         with:
           name: safety-report
-          path: n8n/crewai/safety-report.json
+          path: bizosaas-brain-core/ai-agents/safety-report.json
 
   infrastructure-security:
     name: Infrastructure Security
