@@ -21,8 +21,7 @@ export const config = {
     matcher: [
         // Skip Next.js internals and all static files
         '/((?!api/health|_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-        // Match other API routes but keep health check excluded
-        '/api/(?!health)(.*)',
-        '/trpc/(.*)'
+        // Always run for API routes
+        '/(api|trpc)(.*)',
     ],
 };
