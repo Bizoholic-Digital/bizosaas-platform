@@ -89,6 +89,6 @@ USER nextjs
 
 EXPOSE 3000
 
-# Start application from the app subdirectory where server.js is located
-WORKDIR /app/portals/client-portal
+# Start application from the root directory where server.js is located
+WORKDIR /app
 CMD ["node", "server.js"]
