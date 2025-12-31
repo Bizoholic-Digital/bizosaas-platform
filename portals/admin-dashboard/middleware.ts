@@ -14,7 +14,7 @@ export default clerkMiddleware(async (auth, req) => {
         await auth.protect();
     }
 }, {
-    publishableKey: 'pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA'
+    publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 });
 
 export const config = {

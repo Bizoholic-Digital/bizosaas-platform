@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ClerkProvider publishableKey="pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA">
+        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
           <Providers>
             <OfflineBanner />
             {/* Main Content Area */}
