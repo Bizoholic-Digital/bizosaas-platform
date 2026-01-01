@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BRAIN_API_URL = process.env.NEXT_PUBLIC_BRAIN_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://brain-gateway:8000";
+const BRAIN_API_URL = process.env.BRAIN_GATEWAY_URL || process.env.NEXT_PUBLIC_BRAIN_API_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://brain-gateway:8000";
 
 export async function GET(request: NextRequest) {
   try {

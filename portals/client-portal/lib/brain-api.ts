@@ -1,7 +1,7 @@
 // Brain API Client
 // Handles communication with the Brain Gateway Service
 
-const BRAIN_GATEWAY_URL = process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8000';
+const BRAIN_GATEWAY_URL = process.env.BRAIN_GATEWAY_URL || process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL || 'http://localhost:8000';
 
 export interface Connector {
     id: string;
