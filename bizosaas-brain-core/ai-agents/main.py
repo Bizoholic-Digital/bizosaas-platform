@@ -59,11 +59,13 @@ except ImportError:
     get_redis_client = MockDatabase.get_redis_client
     init_database = MockDatabase.init_database
     EventBus = MockEventBus
-    class DynamicEventType(type):
-        def __getattr__(cls, name):
-            return name.lower().replace('_', ':')
-    class EventType(metaclass=DynamicEventType):
-        pass
+    class EventType:
+        TASK_STARTED = "task:started"
+        CAMPAIGN_STARTED = "campaign:started"
+        CAMPAIGN_COMPLETED = "campaign:completed"
+        USER_CREATED = "user:created"
+        TASK_COMPLETED = "task:completed"
+        TASK_FAILED = "task:failed"
     def event_handler(*args, **kwargs): return lambda x: x
     # EventFactory, UserContext, etc.
     from enum import Enum
