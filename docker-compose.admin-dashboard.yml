@@ -81,9 +81,6 @@ services:
     restart: unless-stopped
     ports:
       - "3004:3000"
-    volumes:
-      - ./portals/admin-dashboard:/app/portals/admin-dashboard:ro
-      - ./scripts:/app/scripts:ro
     environment:
       # Clerk Authentication
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
