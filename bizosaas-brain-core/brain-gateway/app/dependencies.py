@@ -91,3 +91,45 @@ def get_current_user():
         roles=["admin"],
         tenant_id="default"  # Consistent with seeding
     )
+
+_temporal_adapter = None
+
+async def get_workflow_service():
+    """Dependency Injection: Returns the configured Temporal Workflow Adapter.
+    Initializes connection on first use (Singleton).
+    """
+    global _temporal_adapter
+    if _temporal_adapter:
+        return _temporal_adapter
+        
+    from app.adapters.temporal_adapter import TemporalAdapter
+    
+    host = os.getenv("TEMPORAL_HOST", "temporal:7233")
+    namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
+    
+    # Check for mTLS certs (Required for Cloud)
+    cert_content = os.getenv("TEMPORAL_MTLS_CERT")
+    key_content = os.getenv("TEMPORAL_MTLS_KEY")
+    
+    cert_bytes = None
+    key_bytes = None
+    
+    if cert_content and key_content:
+        # If content is base64 encoded, decode it? 
+        # For simplicity, assume raw PEM string for now, or handle newlines if passed via env
+        # Docker env vars with newlines can be tricky.
+        # Let's assume they are passed as standard strings.
+        cert_bytes = cert_content.encode('utf-8')
+        key_bytes = key_content.encode('utf-8')
+    
+    try:
+        _temporal_adapter = await TemporalAdapter.connect(
+            host=host, 
+            namespace=namespace,
+            tls_cert=cert_bytes, 
+            tls_key=key_bytes
+        )
+        return _temporal_adapter
+    except Exception as e:
+        logger.error(f"Failed to connect to Temporal: {e}")
+        return None

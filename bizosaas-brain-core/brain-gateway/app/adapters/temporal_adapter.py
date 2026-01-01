@@ -14,13 +14,31 @@ class TemporalAdapter(WorkflowPort):
         self.client = client
         
     @classmethod
-    async def connect(cls, host: str, namespace: str = "default") -> "TemporalAdapter":
+    async def connect(
+        cls, 
+        host: str, 
+        namespace: str = "default",
+        tls_cert: bytes = None,
+        tls_key: bytes = None
+    ) -> "TemporalAdapter":
         """Factory method to create connected adapter"""
         try:
+            # Configure TLS if certs provided (Required for Temporal Cloud)
+            tls_config = None
+            if tls_cert and tls_key:
+                from temporalio.service import TLSConfig
+                tls_config = TLSConfig(
+                    client_cert=tls_cert,
+                    client_private_key=tls_key,
+                )
+
             # Connect to Temporal server
-            # Note: In production, TLS certs might be needed
-            client = await Client.connect(host, namespace=namespace)
-            logger.info(f"Connected to Temporal at {host}")
+            client = await Client.connect(
+                host, 
+                namespace=namespace,
+                tls=tls_config
+            )
+            logger.info(f"Connected to Temporal at {host} (Namespace: {namespace})")
             return cls(client)
         except Exception as e:
             logger.error(f"Failed to connect to Temporal at {host}: {e}")

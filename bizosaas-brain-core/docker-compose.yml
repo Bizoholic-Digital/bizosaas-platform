@@ -64,43 +64,43 @@ services:
           cpus: '0.1'
           memory: 128M
 
-  temporal:
-    image: temporalio/auto-setup:latest
-    container_name: brain-temporal
-    environment:
-      - DB=postgres12_pgx
-      - DB_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_SEEDS=postgres
-      - POSTGRES_SEEDS=postgres
-    ports:
-      - "7233:7233"
-    networks:
-      - brain-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.3'
-          memory: 384M
+  #   temporal:
+  #     image: temporalio/auto-setup:latest
+  #     container_name: brain-temporal
+  #     environment:
+  #       - DB=postgres12_pgx
+  #       - DB_PORT=5432
+  #       - POSTGRES_USER=postgres
+  #       - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
+  #       - POSTGRES_SEEDS=postgres
+  #       - POSTGRES_SEEDS=postgres
+  #     ports:
+  #       - "7233:7233"
+  #     networks:
+  #       - brain-network
+  #     deploy:
+  #       resources:
+  #         limits:
+  #           cpus: '0.3'
+  #           memory: 384M
 
-  temporal-ui:
-    image: temporalio/ui:latest
-    container_name: brain-temporal-ui
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:3003
-    ports:
-      - "8082:8080"
-    networks:
-      - brain-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
-    depends_on:
-      - temporal
+  #   temporal-ui:
+  #     image: temporalio/ui:latest
+  #     container_name: brain-temporal-ui
+  #     environment:
+  #       - TEMPORAL_ADDRESS=temporal:7233
+  #       - TEMPORAL_CORS_ORIGINS=http://localhost:3003
+  #     ports:
+  #       - "8082:8080"
+  #     networks:
+  #       - brain-network
+  #     deploy:
+  #       resources:
+  #         limits:
+  #           cpus: '0.2'
+  #           memory: 256M
+  #     depends_on:
+  #       - temporal
 
   # ========================================
   # Core Services
@@ -114,7 +114,10 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/0
-      - TEMPORAL_HOST=temporal:7233
+      - TEMPORAL_HOST=${TEMPORAL_HOST:-temporal.default.connect.tmprl.cloud:7233}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-default}
+      - TEMPORAL_MTLS_CERT=${TEMPORAL_MTLS_CERT:-}
+      - TEMPORAL_MTLS_KEY=${TEMPORAL_MTLS_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - VECTOR_DB_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
