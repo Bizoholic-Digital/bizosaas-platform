@@ -138,6 +138,8 @@ services:
       - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+    volumes:
+      - ./brain-gateway:/app
     depends_on:
       - redis
       - vault
@@ -164,6 +166,8 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    volumes:
+      - ./ai-agents:/app
     depends_on:
       - redis
       - vault
