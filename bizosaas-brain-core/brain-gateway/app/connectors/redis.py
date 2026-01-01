@@ -19,17 +19,13 @@ class RedisConnector(BaseConnector):
             }
         )
 
-    def __init__(self, config: Optional[ConnectorConfig] = None):
-        super().__init__(config)
-        self.type = ConnectorType.INFRASTRUCTURE
-
-    async def validate_credentials(self, credentials: Dict[str, Any]) -> bool:
+    async def validate_credentials(self) -> bool:
         """
         Validates Redis connection strings.
         Supports url format: redis://[:password]@host:port/db
         """
         try:
-            url = credentials.get("url")
+            url = self.credentials.get("url")
             if not url:
                 return False
             
@@ -39,16 +35,16 @@ class RedisConnector(BaseConnector):
             return False
 
     async def get_status(self) -> ConnectorStatus:
-        if not self.config or not self.config.credentials:
+        if not self.credentials:
             return ConnectorStatus.DISCONNECTED
         
-        is_valid = await self.validate_credentials(self.config.credentials)
+        is_valid = await self.validate_credentials()
         return ConnectorStatus.CONNECTED if is_valid else ConnectorStatus.ERROR
 
-    async def sync_data(self) -> Dict[str, Any]:
+    async def sync_data(self, resource_type: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Check Redis info for stats"""
         try:
-            url = self.config.credentials.get("url")
+            url = self.credentials.get("url")
             client = redis.from_url(url)
             info = client.info()
             return {
@@ -60,8 +56,7 @@ class RedisConnector(BaseConnector):
         except Exception as e:
             return {"error": str(e)}
 
-    async def perform_action(self, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         if action == "flushall":
-            # Dangerous action, but just as an example
             return {"status": "skipped", "message": "Flushall disabled for safety"}
         return {"error": f"Unknown action: {action}"}
