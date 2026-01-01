@@ -18,47 +18,36 @@ from enum import Enum
 # Shared imports
 import sys
 import os
-sys.path.append('/home/alagiri/projects/bizoholic/bizosaas')
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Set logging
 logger = logging.getLogger(__name__)
 
-# Shared imports fallbacks
-class MockDatabase:
-    @staticmethod
-    async def init_database(): logger.info("Using mock database")
-    @staticmethod
-    def get_postgres_session(name): logger.info(f"Using mock session for {name}"); return None
-    @staticmethod
-    async def get_redis_client(): logger.info("Using mock redis"); return None
-class MockEventBus:
-    def __init__(self, *args, **kwargs): pass
-    async def initialize(self): pass
-    async def start(self): pass
-    async def stop(self): pass
-    async def publish(self, *args): pass
-
-class EventFactory:
-    @staticmethod
-    def agent_task_started(**kwargs): return {}
-
-class MockAuth:
-    @staticmethod
-    async def get_current_user(): return UserContext(user_id="mock", tenant_id="mock", email="mock@example.com")
-    @staticmethod
-    def require_permission(p): return lambda: None
-
+# Shared library imports
 try:
     from shared.database.connection import get_postgres_session, get_redis_client, init_database
     from shared.events.event_bus import EventBus, EventFactory, EventType, event_handler
     from shared.auth.jwt_auth import get_current_user, UserContext, require_permission, Permission
-except ImportError:
-    logger.warning("Shared library not found, using mock implementations.")
-    get_postgres_session = MockDatabase.get_postgres_session
-    get_redis_client = MockDatabase.get_redis_client
-    init_database = MockDatabase.init_database
-    EventBus = MockEventBus
+    SHARED_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Shared library not found: {e}. Using minimal mock implementations.")
+    SHARED_AVAILABLE = False
+    
+    # Minimal mocks for service to start
+    async def init_database(): pass
+    def get_postgres_session(*args): return None
+    async def get_redis_client(): 
+        # Since we have REDIS_URL, we should try to return a real client even in mock mode
+        import redis.asyncio as redis
+        url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        return redis.from_url(url)
+    
+    class EventBus:
+        def __init__(self, *args, **kwargs): pass
+        async def initialize(self): pass
+        async def start(self): pass
+        async def stop(self): pass
+        async def publish(self, *args, **kwargs): pass
+    
     class EventType:
         TASK_STARTED = "task:started"
         CAMPAIGN_STARTED = "campaign:started"
@@ -66,17 +55,22 @@ except ImportError:
         USER_CREATED = "user:created"
         TASK_COMPLETED = "task:completed"
         TASK_FAILED = "task:failed"
+        
     def event_handler(*args, **kwargs): return lambda x: x
-    # EventFactory, UserContext, etc.
-    from enum import Enum
-    class Permission(str, Enum):
-        AGENT_EXECUTE = "agent:execute"
+    class EventFactory:
+        @staticmethod
+        def agent_task_started(**kwargs): return {}
+    
     class UserContext(BaseModel):
         user_id: str
         tenant_id: str
         email: str
-    get_current_user = MockAuth.get_current_user
-    require_permission = MockAuth.require_permission
+    
+    class Permission(str, Enum):
+        AGENT_EXECUTE = "agent:execute"
+        
+    async def get_current_user(): return UserContext(user_id="mock", tenant_id="mock", email="mock@example.com")
+    def require_permission(p): return lambda: (lambda x: x)
 
 # Import chat API
 try:

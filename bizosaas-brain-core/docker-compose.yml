@@ -124,6 +124,7 @@ services:
       - USE_VAULT=true
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
+      - PYTHONPATH=/app
     networks:
       - brain-network
       - dokploy-network
@@ -140,6 +141,7 @@ services:
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
     volumes:
       - ./brain-gateway:/app
+      - ../shared:/app/shared
     depends_on:
       - vault
 
@@ -157,6 +159,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-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}
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
+      - PYTHONPATH=/app
     networks:
       - brain-network
       - dokploy-network
@@ -167,6 +170,7 @@ services:
           memory: 512M
     volumes:
       - ./ai-agents:/app
+      - ../shared:/app/shared
     depends_on:
       - vault
 
