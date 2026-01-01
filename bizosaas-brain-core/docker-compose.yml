@@ -201,6 +201,7 @@ services:
     environment:
       - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
       - NEXTAUTH_URL=https://app.bizoholic.net
+      - BRAIN_GATEWAY_URL=http://brain-gateway:8000
       - NEXTAUTH_SECRET=super-secret-key
       - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
       - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
