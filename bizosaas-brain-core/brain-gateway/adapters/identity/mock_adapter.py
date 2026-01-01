@@ -22,3 +22,7 @@ class MockIdentityAdapter(IdentityPort):
 
     async def exchange_code(self, code: str) -> Dict:
         return {"access_token": "mock-token", "id_token": "mock-id-token"}
+
+    async def has_permission(self, user: AuthenticatedUser, permission: str) -> bool:
+        """Mock permission check - allow everything"""
+        return True
