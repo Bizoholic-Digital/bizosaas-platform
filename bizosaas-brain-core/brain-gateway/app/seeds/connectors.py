@@ -31,8 +31,8 @@ def seed_connectors():
         }
 
         logger.info("📝 Seeding Bizoholic FluentCRM connection...")
-        active_connectors["default:fluent_crm"] = {
-            "connector_id": "fluent_crm",
+        active_connectors["default:fluentcrm"] = {
+            "connector_id": "fluentcrm",
             "credentials": {
                 "url": "https://www.bizoholic.com",
                 "username": "bizoholic.digital@gmail.com",
