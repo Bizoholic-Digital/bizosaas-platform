@@ -35,16 +35,23 @@ interface NavigationItem {
   href: string;
   icon: React.ComponentType<any>;
   description: string;
-  category: 'main' | 'management' | 'monitoring' | 'system';
+  category: 'main' | 'management' | 'automation' | 'integrations' | 'system';
 }
 
 const navigation: NavigationItem[] = [
-  // Platform Overview
+  // Main Dashboard
   {
     name: 'Admin Overview',
     href: '/',
     icon: LayoutDashboard,
     description: 'Platform status and global metrics',
+    category: 'main'
+  },
+  {
+    name: 'AI Monitor',
+    href: '/ai-agents',
+    icon: Bot,
+    description: 'Cross-tenant AI agent activity & health',
     category: 'main'
   },
   {
@@ -57,17 +64,24 @@ const navigation: NavigationItem[] = [
 
   // Platform Management
   {
-    name: 'Tenant Management',
+    name: 'Tenants',
     href: '/tenants',
     icon: Building2,
     description: 'Manage all tenant organizations',
     category: 'management'
   },
   {
-    name: 'Global User Management',
+    name: 'Users',
     href: '/users',
     icon: Users,
     description: 'Platform-wide user administration',
+    category: 'management'
+  },
+  {
+    name: 'Subscriptions',
+    href: '/revenue',
+    icon: DollarSign,
+    description: 'Billing and subscription plans (Lago)',
     category: 'management'
   },
   {
@@ -80,35 +94,44 @@ const navigation: NavigationItem[] = [
 
   // AI & Automation
   {
-    name: 'AI Agent Monitor',
-    href: '/ai-agents',
-    icon: Bot,
-    description: 'Real-time AI agent execution tracking',
-    category: 'monitoring'
-  },
-  {
-    name: 'Workflow Orchestration',
+    name: 'Orchestration',
     href: '/workflows',
     icon: Workflow,
-    description: 'AI workflows and automation control',
-    category: 'monitoring'
+    description: 'Temporal workflow and automation control',
+    category: 'automation'
   },
   {
-    name: 'Connectivity Hub',
+    name: 'Model Management',
+    href: '/agents',
+    icon: Bot,
+    description: 'LLM configuration and specialized agents',
+    category: 'automation'
+  },
+
+  // Intelligence & Integrations
+  {
+    name: 'Platform Integrations',
     href: '/integrations',
     icon: Globe,
     description: 'Third-party integration monitoring',
-    category: 'monitoring'
+    category: 'integrations'
   },
   {
     name: 'API Analytics',
     href: '/api-analytics',
     icon: TrendingUp,
     description: 'API usage and rate limiting dashboard',
-    category: 'monitoring'
+    category: 'integrations'
   },
 
-  // System
+  // System Administration
+  {
+    name: 'Infrastructure',
+    href: '/integrations?category=infrastructure',
+    icon: Database,
+    description: 'Redis, Temporal, and Database connections',
+    category: 'system'
+  },
   {
     name: 'Security & Audit',
     href: '/security',
@@ -124,13 +147,6 @@ const navigation: NavigationItem[] = [
     category: 'system'
   },
   {
-    name: 'AI Assistant',
-    href: '/chat',
-    icon: Bot,
-    description: 'AI-powered platform assistance and automation',
-    category: 'main'
-  },
-  {
     name: 'System Settings',
     href: '/settings',
     icon: Settings,
@@ -140,9 +156,10 @@ const navigation: NavigationItem[] = [
 ];
 
 const categoryLabels = {
-  main: 'Main Dashboard',
-  management: 'Management',
-  monitoring: 'Monitoring',
+  main: 'Dashboard',
+  management: 'Platform Management',
+  automation: 'AI & Automation',
+  integrations: 'Intelligence & Integrations',
   system: 'System Administration'
 };
 

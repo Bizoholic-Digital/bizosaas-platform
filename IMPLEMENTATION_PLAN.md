@@ -14,7 +14,7 @@
 | **Brain Gateway** | Port 8000, AI Orchestrator | ✅ Running | ✅ Vault integrated |
 | **Client Portal** | Port 3003, Control Plane | ✅ Running | ✅ API Proxy Ready |
 | **Auth Service** | Port 8009, SSO with fastapi-sso | ✅ Running | ⚠️ SSO upgrade needed |
-| **Redis** | Caching, Message Broker | ✅ Running | ✅ Complete |
+| **Redis** | Caching, Message Broker | ✅ Redis Cloud | ✅ MCP & Connector ready |
 | **PostgreSQL** | User/Tenant/Config storage | ✅ Offloaded to Neon | ✅ Initialized |
 | **HashiCorp Vault** | Secrets management (SOC2) | ✅ Running | ✅ Integrated |
 | **Temporal** | Workflow orchestration | ✅ Cloud Integrated | ✅ Service Ready |

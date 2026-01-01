@@ -261,7 +261,7 @@ export function ConnectorsContent() {
             id: 'lago',
             name: 'Lago Billing',
             type: 'analytics',
-            description: 'Automated billing and revenue analytics.',
+            description: 'Automated billing and revenue analytics (Platform Revenue).',
             icon: 'zap',
             version: '1.0.0',
             status: 'disconnected',
@@ -281,11 +281,27 @@ export function ConnectorsContent() {
             auth_schema: {
                 url: { type: 'string', label: 'Redis URL', placeholder: 'redis://:password@host:port/db', required: true }
             }
+        },
+        {
+            id: 'temporal',
+            name: 'Temporal Cloud',
+            type: 'infrastructure',
+            description: 'Mission-critical workflow orchestration service.',
+            icon: 'zap',
+            version: '1.0.0',
+            status: 'disconnected',
+            auth_schema: {
+                namespace: { type: 'string', label: 'Namespace', required: true },
+                address: { type: 'string', label: 'Address', placeholder: 'namespace.tmprl.cloud:7233', required: true }
+            }
         }
     ];
 
-    // Filtered list for display
+    // Filtered list for display - Admin only shows infrastructure and platform-level tools
     const filteredConnectors = connectors.filter(c => {
+        const adminTypes = ['infrastructure', 'analytics', 'cms'];
+        if (!adminTypes.includes(c.type)) return false;
+
         if (!activeCategory || activeCategory === 'all') return true;
         return c.type === (activeCategory as any);
     });

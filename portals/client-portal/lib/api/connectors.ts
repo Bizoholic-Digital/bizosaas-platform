@@ -3,7 +3,7 @@ import { brainApi, ApiResponse } from './brain-client';
 export interface ConnectorConfig {
     id: string;
     name: string;
-    type: 'crm' | 'cms' | 'ecommerce' | 'marketing' | 'analytics' | 'billing';
+    type: 'crm' | 'cms' | 'ecommerce' | 'marketing' | 'analytics' | 'billing' | 'infrastructure';
     description: string;
     icon: string;
     version: string;

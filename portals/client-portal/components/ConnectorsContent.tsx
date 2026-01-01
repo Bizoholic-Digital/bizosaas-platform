@@ -260,8 +260,10 @@ export function ConnectorsContent() {
         }
     ];
 
-    // Filtered list for display
+    // Filtered list for display - Client Portal only shows business-level tools
     const filteredConnectors = connectors.filter(c => {
+        if (c.type === 'infrastructure') return false;
+
         if (!activeCategory || activeCategory === 'all') return true;
         return c.type === activeCategory;
     });
