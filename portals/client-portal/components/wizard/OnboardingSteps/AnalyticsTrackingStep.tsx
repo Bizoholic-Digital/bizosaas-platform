@@ -17,29 +17,54 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
     const { user } = useUser();
     const [isDiscovering, setIsDiscovering] = React.useState(false);
     const [discovered, setDiscovered] = React.useState(false);
+    const [discoveredProperties, setDiscoveredProperties] = React.useState<{ ga: string, gsc: string, name: string }[]>([]);
+    const [selectedPropertyIndex, setSelectedPropertyIndex] = React.useState<number | null>(null);
 
     const isGmailUser = user?.primaryEmailAddress?.emailAddress.endsWith('@gmail.com');
 
     const handleMagicConnect = async () => {
         setIsDiscovering(true);
         try {
-            // 1. In a real app, this would trigger OAuth with all scopes
-            // For now, we simulate the discovery process
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Simulate deep discovery process
+            await new Promise(resolve => setTimeout(resolve, 2500));
 
-            // Mock discovery result
-            onUpdate({
-                gaId: 'G-7Y2B8C9E1A',
-                gscId: 'https://' + (user?.primaryEmailAddress?.emailAddress.split('@')[0] || 'example') + '.com'
-            });
+            // Multiple accounts found for selection
+            const mockProperties = [
+                {
+                    ga: 'G-7Y2B8C9E1A',
+                    gsc: 'https://' + (user?.primaryEmailAddress?.emailAddress.split('@')[0] || 'primary') + '.com',
+                    name: 'Primary Business Site'
+                },
+                {
+                    ga: 'G-9X3D2F5K8L',
+                    gsc: 'https://shop.' + (user?.primaryEmailAddress?.emailAddress.split('@')[0] || 'shop') + '.com',
+                    name: 'E-commerce Store'
+                },
+                {
+                    ga: 'G-1A4B7C3D0E',
+                    gsc: 'https://blog.' + (user?.primaryEmailAddress?.emailAddress.split('@')[0] || 'blog') + '.com',
+                    name: 'Company Blog'
+                }
+            ];
 
+            setDiscoveredProperties(mockProperties);
             setDiscovered(true);
-            toast.success("Accounts discovered and connected automatically!");
+            toast.success("Multiple properties detected! Please select the ones to link.");
         } catch (error) {
             toast.error("Discovery failed. Please connect manually.");
         } finally {
             setIsDiscovering(false);
         }
+    };
+
+    const handleSelectProperty = (index: number) => {
+        setSelectedPropertyIndex(index);
+        const prop = discoveredProperties[index];
+        onUpdate({
+            gaId: prop.ga,
+            gscId: prop.gsc
+        });
+        toast.info(`Selected ${prop.name}`);
     };
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -80,11 +105,39 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
             )}
 
             {discovered && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 mb-8 text-green-800">
-                    <CheckCircle2 className="w-6 h-6 text-green-600" />
-                    <div>
-                        <p className="font-bold">Success! Properties linked.</p>
-                        <p className="text-sm">We've automatically configured your tracking IDs below.</p>
+                <div className="space-y-4 mb-8">
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-800">
+                        <CheckCircle2 className="w-6 h-6 text-green-600" />
+                        <div>
+                            <p className="font-bold">Magic Discovery Complete!</p>
+                            <p className="text-sm">Select the property you want our AI agents to manage.</p>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-3">
+                        {discoveredProperties.map((prop, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => handleSelectProperty(idx)}
+                                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${selectedPropertyIndex === idx
+                                        ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-600/20'
+                                        : 'border-gray-200 hover:border-blue-300 bg-white'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${selectedPropertyIndex === idx ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        <Sparkles className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-gray-900">{prop.name}</p>
+                                        <p className="text-xs text-gray-500 font-mono">{prop.ga} • {prop.gsc}</p>
+                                    </div>
+                                </div>
+                                {selectedPropertyIndex === idx && (
+                                    <CheckCircle2 className="w-6 h-6 text-blue-600 animate-in zoom-in" />
+                                )}
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}

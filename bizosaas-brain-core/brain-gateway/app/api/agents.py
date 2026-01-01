@@ -150,6 +150,37 @@ AGENTS = [
         tools=["zapier", "make", "n8n", "temporal"],
         icon="⚙️",
         color="#B4A7D6"
+    ),
+    AgentConfig(
+        id="ai-admin-assistant",
+        name="AI Admin Assistant",
+        description="Coordinates discovery and management across the 93+ specialized scalable agents",
+        role="Platform Operations Orchestrator",
+        capabilities=[
+            "Cross-agent coordination",
+            "Agent marketplace discovery",
+            "Tenant health management",
+            "Incident response",
+            "Resource optimization"
+        ],
+        tools=["internal-registry", "mcp-gateway", "temporal"],
+        icon="🛡️",
+        color="#3B82F6"
+    ),
+    AgentConfig(
+        id="personal-assistant",
+        name="Personal AI Assistant",
+        description="Helpful co-pilot for daily business operations and agent collaboration",
+        role="Executive Support",
+        capabilities=[
+            "Task summarization",
+            "Inter-agent communication",
+            "Smart notification triage",
+            "Workflow suggestion"
+        ],
+        tools=["slack", "gmail", "notion"],
+        icon="✨",
+        color="#A855F7"
     )
 ]
 

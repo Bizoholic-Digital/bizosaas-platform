@@ -1,149 +1,118 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
-  Settings,
-  Workflow,
   Users,
-  Building2,
-  Activity,
-  DollarSign,
-  Shield,
+  Settings,
   Database,
-  Globe,
-  TrendingUp,
-  AlertCircle,
-  Bell,
-  Search,
-  LogOut,
+  Shield,
+  Zap,
+  Activity,
+  BarChart3,
   Menu,
   X,
-  Bot,
+  Search,
+  Bell,
+  AlertCircle,
+  LogOut,
+  ChevronRight,
+  Globe,
+  Cpu,
+  History,
   MessageCircle,
   FileText
 } from 'lucide-react';
-import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useAuth } from '../shared/components/AuthProvider';
 
 interface NavigationItem {
   name: string;
   href: string;
-  icon: React.ComponentType<any>;
+  icon: any;
   description: string;
   category: 'main' | 'management' | 'automation' | 'integrations' | 'system';
 }
 
 const navigation: NavigationItem[] = [
-  // Main Dashboard
   {
     name: 'Admin Overview',
     href: '/',
     icon: LayoutDashboard,
-    description: 'Platform status and global metrics',
+    description: 'Platform key performance indicators',
     category: 'main'
   },
   {
     name: 'AI Monitor',
-    href: '/ai-agents',
-    icon: Bot,
+    href: '/monitor',
+    icon: Activity,
     description: 'Cross-tenant AI agent activity & health',
     category: 'main'
   },
   {
-    name: 'System Health',
-    href: '/system-health',
-    icon: Activity,
-    description: 'Infrastructure and performance monitoring',
-    category: 'main'
-  },
-
-  // Platform Management
-  {
     name: 'Tenants',
     href: '/tenants',
-    icon: Building2,
-    description: 'Manage all tenant organizations',
+    icon: Globe,
+    description: 'Organization and subscription management',
     category: 'management'
   },
   {
-    name: 'Users',
+    name: 'Users & Roles',
     href: '/users',
     icon: Users,
-    description: 'Platform-wide user administration',
+    description: 'Administrative and tenant user control',
     category: 'management'
   },
   {
     name: 'Subscriptions',
     href: '/revenue',
-    icon: DollarSign,
-    description: 'Billing and subscription plans (Lago)',
+    icon: BarChart3,
+    description: 'Platform MRR and billing analytics',
     category: 'management'
   },
-  {
-    name: 'Unified CMS',
-    href: '/cms',
-    icon: FileText,
-    description: 'Global content management system',
-    category: 'management'
-  },
-
-  // AI & Automation
   {
     name: 'Orchestration',
     href: '/workflows',
-    icon: Workflow,
-    description: 'Temporal workflow and automation control',
+    icon: Zap,
+    description: 'Temporal workflow monitoring',
     category: 'automation'
   },
   {
     name: 'Model Management',
     href: '/agents',
-    icon: Bot,
-    description: 'LLM configuration and specialized agents',
+    icon: Cpu,
+    description: 'LLM performance & routing control',
     category: 'automation'
   },
-
-  // Intelligence & Integrations
   {
     name: 'Platform Integrations',
-    href: '/integrations',
-    icon: Globe,
-    description: 'Third-party integration monitoring',
+    href: '/connectors',
+    icon: Database,
+    description: 'Infrastructure & platform connectors',
     category: 'integrations'
   },
   {
     name: 'API Analytics',
-    href: '/api-analytics',
-    icon: TrendingUp,
-    description: 'API usage and rate limiting dashboard',
+    href: '/integrations',
+    icon: Activity,
+    description: 'Third-party API health & usage',
     category: 'integrations'
   },
-
-  // System Administration
   {
-    name: 'Infrastructure',
-    href: '/integrations?category=infrastructure',
+    name: 'Infrastructure Hub',
+    href: '/system',
     icon: Database,
-    description: 'Redis, Temporal, and Database connections',
+    description: 'Server & core service configuration',
     category: 'system'
   },
   {
     name: 'Security & Audit',
     href: '/security',
     icon: Shield,
-    description: 'Security monitoring and audit logs',
-    category: 'system'
-  },
-  {
-    name: 'SQL Admin',
-    href: 'http://localhost:3009/admin',
-    icon: Database,
-    description: 'Direct database administration interface',
+    description: 'Access logs and security oversight',
     category: 'system'
   },
   {
@@ -163,6 +132,8 @@ const categoryLabels = {
   system: 'System Administration'
 };
 
+const PLATFORM_VERSION = 'v5.0.3-PREMIUM';
+
 interface AdminNavigationProps {
   children: React.ReactNode;
 }
@@ -170,7 +141,12 @@ interface AdminNavigationProps {
 export function AdminNavigation({ children }: AdminNavigationProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+
+  // Auto-close sidebar on mobile when navigating
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
 
   // Hide sidebar/header on login and unauthorized pages
   if (pathname === '/login' || pathname === '/unauthorized') {
@@ -191,7 +167,7 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
   }, {} as Record<string, NavigationItem[]>);
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-950">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-950 overflow-hidden w-full">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -202,50 +178,52 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
 
       {/* Sidebar */}
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 dark:border-gray-800",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 border-r border-gray-200 dark:border-gray-800 flex flex-col",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <div className="flex items-center">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
               <Database className="w-5 h-5 text-white" />
             </div>
-            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">BizOSaaS</span>
+            <div className="ml-3 flex flex-col">
+              <span className="text-sm font-black text-gray-900 dark:text-white leading-none tracking-tight underline decoration-blue-500 decoration-2">BizOSaaS</span>
+              <span className="text-[9px] text-blue-600 dark:text-blue-400 font-bold mt-1 uppercase tracking-widest">{PLATFORM_VERSION}</span>
+            </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1 rounded-md hover:bg-gray-100"
+            className="lg:hidden p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+        {/* Navigation Section */}
+        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto scrollbar-hide">
           {Object.entries(groupedNavigation).map(([category, items]) => (
             <div key={category}>
-              <h3 className="px-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <h3 className="px-2 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[2px]">
                 {categoryLabels[category as keyof typeof categoryLabels]}
               </h3>
-              <div className="mt-2 space-y-1">
+              <div className="mt-4 space-y-1">
                 {items.map((item) => {
                   const isActive = isActiveLink(item.href);
                   const isExternal = item.href.startsWith('http');
 
                   const linkContent = (
                     <div className={cn(
-                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-200",
+                      "group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
                       isActive
-                        ? "bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100 border-r-2 border-blue-600"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-100 shadow-sm border border-blue-100 dark:border-blue-800/50"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white"
                     )}>
                       <item.icon className={cn(
-                        "mr-3 h-5 w-5 flex-shrink-0",
-                        isActive ? "text-blue-600" : "text-gray-400 group-hover:text-gray-500"
+                        "mr-3 h-4 w-4 flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
+                        isActive ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500"
                       )} />
-                      <div className="flex-1">
-                        <div>{item.name}</div>
-                      </div>
+                      <div className="flex-1 truncate">{item.name}</div>
+                      {isActive && <ChevronRight className="w-3 h-3 text-blue-400 animate-in slide-in-from-left-2" />}
                     </div>
                   );
 
@@ -274,68 +252,88 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
           ))}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-gray-200 dark:border-gray-800 p-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center">
-              <Users className="w-4 h-4 text-gray-600" />
+        {/* Improved Premium Footer */}
+        <div className="border-t border-gray-200 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-900/50">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center border border-white dark:border-gray-800 shadow-md">
+                <span className="text-white font-bold text-sm">{user?.name?.[0] || 'A'}</span>
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full"></span>
             </div>
-            <div className="flex-1">
-              <div className="flex-1">
-                <div className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Admin User'}</div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role?.replace('_', ' ') || 'Administrator'}</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name || 'Admin User'}</div>
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold truncate leading-tight mt-0.5">
+                {user?.role?.replace('_', ' ') || 'Super Admin'}
               </div>
             </div>
-            <button className="p-1 rounded-md hover:bg-gray-100">
-              <LogOut className="w-4 h-4 text-gray-500" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => logout()}
+              className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30 transition-all hover:shadow-sm active:scale-95"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Sign Out
             </button>
+            <Link
+              href="/settings"
+              className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all shadow-sm active:scale-95"
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Setup
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Top navigation */}
-        <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
+        <header className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800 z-10">
           <div className="flex items-center justify-between h-16 px-6">
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-1 rounded-md hover:bg-gray-100"
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Toggle Sidebar"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-6 h-6 text-gray-600 dark:text-gray-400" />
               </button>
               <div className="hidden lg:block">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Platform Administration
+                <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center">
+                  <span className="text-blue-500 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded inline-flex items-center justify-center mr-3 scale-90">/</span>
+                  PLATFORM CORE
+                  <span className="mx-3 h-4 w-px bg-gray-200 dark:bg-gray-700"></span>
+                  <span className="text-gray-400 dark:text-gray-500 font-medium text-sm">Administration</span>
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="flex items-center space-x-3">
+              <div className="relative hidden md:block group">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder="Global Search..."
+                  className="pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white transition-all w-64"
                 />
               </div>
               <ThemeToggle />
-              <button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 relative">
-                <Bell className="w-5 h-5 text-gray-600" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-              <button className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-                <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <button className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 relative transition-colors">
+                <Bell className="w-5 h-5 text-gray-500" />
+                <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
-          {children}
+        <main className="flex-1 overflow-y-auto bg-[#F9FAFB] dark:bg-[#0B0E14] scroll-smooth p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>

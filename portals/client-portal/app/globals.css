@@ -12,22 +12,40 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  html {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold;
   }
-  
+
   .portal-gradient {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   }
-  
+
   .client-gradient {
     background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
   }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -55,6 +73,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -87,63 +106,63 @@
   .portal-header {
     @apply sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-800;
   }
-  
+
   .portal-sidebar {
     @apply fixed left-0 top-0 z-40 h-screen w-64 bg-white shadow-lg border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800;
   }
-  
+
   .portal-main {
     @apply ml-64 min-h-screen bg-gray-50 dark:bg-gray-950;
   }
-  
+
   .service-card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200 dark:bg-gray-900 dark:border-gray-800;
   }
-  
+
   .billing-card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200 dark:bg-gray-900 dark:border-gray-800;
   }
-  
+
   .metric-card {
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 dark:bg-gray-900 dark:border-gray-800;
   }
-  
+
   .status-badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
-  
+
   .status-badge.active {
     @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300;
   }
-  
+
   .status-badge.inactive {
     @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300;
   }
-  
+
   .status-badge.pending {
     @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
   }
-  
+
   .status-badge.overdue {
     @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
   }
-  
+
   .usage-bar {
     @apply w-full h-2 bg-gray-200 rounded-full dark:bg-gray-700;
   }
-  
+
   .usage-fill {
     @apply h-2 rounded-full transition-all duration-300;
   }
-  
+
   .usage-fill.low {
     @apply bg-green-500;
   }
-  
+
   .usage-fill.medium {
     @apply bg-yellow-500;
   }
-  
+
   .usage-fill.high {
     @apply bg-red-500;
   }
@@ -153,11 +172,11 @@
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .portal-blur {
     backdrop-filter: blur(8px);
   }
-  
+
   /* Ensure interactive elements are clickable */
   .interactive {
     cursor: pointer;
@@ -166,45 +185,45 @@
     -moz-user-select: none;
     -ms-user-select: none;
   }
-  
+
   .interactive:hover {
     opacity: 0.9;
   }
-  
+
   .interactive:active {
     transform: scale(0.98);
   }
-  
+
   /* Sidebar navigation styles */
   .sidebar-nav {
     @apply transition-all duration-200 ease-in-out;
   }
-  
+
   .sidebar-nav button {
     @apply cursor-pointer select-none;
     pointer-events: auto;
   }
-  
+
   .sidebar-nav button:hover {
     @apply scale-105;
     transform-origin: left center;
   }
-  
+
   /* Theme toggle button */
   .theme-toggle {
     @apply transition-transform duration-200;
   }
-  
+
   .theme-toggle:hover {
     @apply scale-110;
   }
-  
+
   /* Focus styles for accessibility */
   button:focus-visible,
   [role="button"]:focus-visible {
     @apply outline-none ring-2 ring-purple-500 ring-opacity-50;
   }
-  
+
   /* Animation for section expansion */
   @keyframes expand {
     from {
@@ -212,13 +231,14 @@
       max-height: 0;
       transform: translateY(-10px);
     }
+
     to {
       opacity: 1;
       max-height: 500px;
       transform: translateY(0);
     }
   }
-  
+
   .expand-animation {
     animation: expand 0.3s ease-out;
   }

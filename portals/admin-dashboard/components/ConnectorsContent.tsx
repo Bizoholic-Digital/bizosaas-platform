@@ -299,7 +299,7 @@ export function ConnectorsContent() {
 
     // Filtered list for display - Admin only shows infrastructure and platform-level tools
     const filteredConnectors = connectors.filter(c => {
-        const adminTypes = ['infrastructure', 'analytics', 'cms'];
+        const adminTypes = ['infrastructure', 'analytics'];
         if (!adminTypes.includes(c.type)) return false;
 
         if (!activeCategory || activeCategory === 'all') return true;

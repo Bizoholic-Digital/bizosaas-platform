@@ -57,6 +57,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  // Auto-close sidebar on mobile when navigating
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  }, [pathname]);
+
 
   const toggleSidebar = () => {
     if (window.innerWidth >= 1024) {
@@ -90,8 +97,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
                 <div>
-                  <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate">BizOSaaS</h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Portal Control</p>
+                  <h1 className="font-black text-xl text-gray-900 dark:text-white truncate tracking-tight underline decoration-purple-500 decoration-2">BizOSaaS</h1>
+                  <p className="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 uppercase tracking-widest leading-none">V5.0.3-PREMIUM</p>
                 </div>
               )}
               {isCollapsed && (
@@ -142,11 +149,51 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </Suspense>
           </div>
 
-          <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <Wifi className="w-3 h-3 text-green-500" />
-              <span>Online</span>
-            </div>
+          {/* Sidebar Footer with User Profile & Logout */}
+          <div className={`p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 ${isCollapsed ? 'flex flex-col items-center' : ''}`}>
+            {!isCollapsed ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold border border-blue-400">
+                    {user?.name?.[0] || 'G'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name || "Guest User"}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || "Not signed in"}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => router.push('/settings')}
+                    className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-700 transition-colors"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => logout()}
+                    className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-md border border-red-100 dark:border-red-900/10 transition-colors"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsCollapsed(false)}
+                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold border border-blue-400 hover:scale-105 transition-transform"
+              >
+                {user?.name?.[0] || 'G'}
+              </button>
+            )}
+
+            {!isCollapsed && (
+              <div className="mt-4 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                <Wifi className="w-3 h-3 text-green-500" />
+                <span>System Online</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -195,49 +242,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
 
-                <div className="relative" data-user-menu>
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <div className="text-right hidden sm:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user?.name || "Guest User"}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user?.email || "Not signed in"}
-                      </p>
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {user?.name?.[0] || "G"}
-                    </div>
-                  </button>
-
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700 z-50">
-                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Guest User'}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || 'Not signed in'}</p>
-                      </div>
-                      <button
-                        onClick={() => router.push('/settings')}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </button>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setShowUserMenu(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
+                {/* Action Buttons */}
+                <div className="flex items-center gap-4">
+                  <div className="hidden md:flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Live API</span>
+                  </div>
                 </div>
               </div>
             </div>
