@@ -55,7 +55,7 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
     networks:
-      - brain-network
+      - dokploy-network
     cap_add:
       - IPC_LOCK
     deploy:
@@ -126,7 +126,6 @@ services:
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
       - PYTHONPATH=/app
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -161,7 +160,6 @@ services:
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
       - PYTHONPATH=/app
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -214,7 +212,6 @@ services:
       - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
       - AUTHENTIK_URL=${AUTHENTIK_URL:-http://localhost:9000}
     networks:
-      - brain-network
       - dokploy-network
     labels:
       - "traefik.enable=true"
