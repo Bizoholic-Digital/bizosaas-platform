@@ -69,6 +69,17 @@ def seed_connectors():
             "status": ConnectorStatus.CONNECTED
         }
 
+        # Redis Cloud
+        logger.info("📝 Seeding Redis Cloud connection...")
+        active_connectors["default:redis"] = {
+            "connector_id": "redis",
+            "credentials": {
+                "url": "redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0",
+                "force_connect": True
+            },
+            "status": ConnectorStatus.CONNECTED
+        }
+
         logger.info("=" * 50)
         logger.info(f"✅ Seeding Complete! Registered {len(active_connectors)} connectors")
         logger.info("=" * 50)

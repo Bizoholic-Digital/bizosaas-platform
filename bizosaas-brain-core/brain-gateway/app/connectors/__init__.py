@@ -28,6 +28,7 @@ from .gohighlevel import GoHighLevelConnector
 from .hubspot import HubSpotConnector
 from .tiktok_ads import TikTokAdsConnector
 from .temporal import TemporalConnector
+from .redis import RedisConnector
 
 __all__ = [
     "BaseConnector",
@@ -62,5 +63,6 @@ __all__ = [
     "GoHighLevelConnector",
     "HubSpotConnector",
     "TikTokAdsConnector",
-    "TemporalConnector"
+    "TemporalConnector",
+    "RedisConnector"
 ]

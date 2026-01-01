@@ -269,6 +269,18 @@ export function ConnectorsContent() {
                 api_url: { type: 'string', label: 'API URL', placeholder: 'http://lago-api:3000', required: true },
                 api_key: { type: 'password', label: 'API Key', required: true }
             }
+        },
+        {
+            id: 'redis',
+            name: 'Redis Cloud',
+            type: 'infrastructure',
+            description: 'Redis Cloud instance for caching and task queues.',
+            icon: 'database',
+            version: '1.0.0',
+            status: 'disconnected',
+            auth_schema: {
+                url: { type: 'string', label: 'Redis URL', placeholder: 'redis://:password@host:port/db', required: true }
+            }
         }
     ];
 
@@ -284,6 +296,7 @@ export function ConnectorsContent() {
         ecommerce: 'E-commerce Platforms',
         analytics: 'Analytics & Search Console',
         marketing: 'Digital Marketing & Ads',
+        infrastructure: 'Infrastructure & Database',
         all: 'All Data Connectors'
     };
 
@@ -293,6 +306,7 @@ export function ConnectorsContent() {
         ecommerce: 'Sync products, orders, and customers from your online stores.',
         analytics: 'Monitor your website performance and SEO intelligence.',
         marketing: 'Manage your ad campaigns and social media presence.',
+        infrastructure: 'Monitor and manage your core platform infrastructure.',
         all: 'Manage your integrations with external CMS, CRM, and E-commerce platforms.'
     };
 

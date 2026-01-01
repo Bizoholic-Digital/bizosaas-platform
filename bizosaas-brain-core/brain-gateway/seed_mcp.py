@@ -23,6 +23,7 @@ def seed_mcp_registry():
             {"name": "Analytics", "slug": "analytics", "description": "Web & product analytics", "icon": "BarChart", "sort_order": 6},
             {"name": "Advertising", "slug": "advertising", "description": "Ad platforms", "icon": "Megaphone", "sort_order": 7},
             {"name": "Communication", "slug": "communication", "description": "Messaging & chat", "icon": "MessageCircle", "sort_order": 8},
+            {"name": "Infrastructure", "slug": "infrastructure", "description": "Core platform services", "icon": "Database", "sort_order": 9},
         ]
         
         categories = {}
@@ -100,6 +101,14 @@ def seed_mcp_registry():
                 "description": "Web traffic and user behavior analytics.",
                 "capabilities": ["traffic", "events", "conversions"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-analytics:latest"},
+                "is_official": True
+            },
+            # Infrastructure
+            {
+                "name": "Redis Cloud MCP", "slug": "redis-mcp", "category_slug": "infrastructure",
+                "description": "Control and monitor Redis Cloud instances.",
+                "capabilities": ["keys", "flush", "metrics", "monitor"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-redis:latest"},
                 "is_official": True
             }, 
         ]
