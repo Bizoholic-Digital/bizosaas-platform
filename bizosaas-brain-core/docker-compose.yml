@@ -2,29 +2,29 @@ services:
   # ========================================
   # Infrastructure
   # ========================================
-  postgres:
-    image: ankane/pgvector:v0.5.1
-    container_name: brain-postgres
-    environment:
-      POSTGRES_DB: bizosaas
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - brain-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: 256M
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+  # postgres:
+  #   image: ankane/pgvector:v0.5.1
+  #   container_name: brain-postgres
+  #   environment:
+  #     POSTGRES_DB: bizosaas
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - brain-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.25'
+  #         memory: 256M
+  #   healthcheck:
+  #     test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
 
   redis:
     image: redis:7-alpine
@@ -112,7 +112,7 @@ services:
       dockerfile: Dockerfile
     container_name: brain-gateway
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
       - REDIS_URL=redis://redis:6379/0
       - TEMPORAL_HOST=${TEMPORAL_HOST:-ap-south-2.aws.api.temporal.io:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-default}
@@ -120,7 +120,7 @@ services:
       - TEMPORAL_MTLS_KEY=${TEMPORAL_MTLS_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - VECTOR_DB_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - VECTOR_DB_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
       - USE_VAULT=true
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
@@ -139,8 +139,6 @@ services:
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
 
@@ -151,7 +149,7 @@ services:
       dockerfile: Dockerfile
     container_name: brain-ai-agents
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
       - REDIS_URL=redis://redis:6379/1
       - BRAIN_GATEWAY_URL=http://brain-gateway:8000
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -167,12 +165,8 @@ services:
           cpus: '0.5'
           memory: 512M
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      vault:
-        condition: service_healthy
+      - redis
+      - vault
 
   # auth-service:
   #   image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging
