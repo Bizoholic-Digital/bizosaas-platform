@@ -168,7 +168,6 @@ services:
     volumes:
       - ./ai-agents:/app
     depends_on:
-      - redis
       - vault
 
   # auth-service:
