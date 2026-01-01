@@ -139,8 +139,8 @@ services:
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
     depends_on:
-      redis:
-        condition: service_healthy
+      - redis
+      - vault
 
   ai-agents:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
@@ -217,19 +217,18 @@ services:
       - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
     depends_on:
       - brain-gateway
-
-  github-mcp:
-    image: ghcr.io/modelcontextprotocol/servers/github:latest
-    container_name: brain-mcp-github
-    environment:
-      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
-    networks:
-      - brain-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.1'
-          memory: 128M
+  # github-mcp:
+  #   image: ghcr.io/modelcontextprotocol/servers/github:latest
+  #   container_name: brain-mcp-github
+  #   environment:
+  #     - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
+  #   networks:
+  #     - brain-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.1'
+  #         memory: 128M
 
 networks:
   brain-network:
