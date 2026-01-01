@@ -32,6 +32,7 @@ services:
       NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
       NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
       NEXT_PUBLIC_BRAIN_API_URL: https://api.bizoholic.net
+      BRAIN_GATEWAY_URL: http://brain-gateway:8000
 
       # NextAuth
       NEXTAUTH_URL: https://app.bizoholic.net
@@ -91,6 +92,7 @@ services:
 
       # Brain Gateway
       NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL:-https://api.bizoholic.net}
+      BRAIN_GATEWAY_URL: http://brain-gateway:8000
 
       # Temporal UI
       NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal.bizoholic.net}
