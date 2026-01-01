@@ -23,7 +23,7 @@ async def get_current_user(
         return AuthenticatedUser(
             id="dev-user-id",
             email="dev@bizoholic.net",
-            username="dev_admin",
+            name="dev_admin",
             roles=["Super Admin"],
             tenant_id="default"
         )

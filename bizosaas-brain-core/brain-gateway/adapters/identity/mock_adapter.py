@@ -12,7 +12,7 @@ class MockIdentityAdapter(IdentityPort):
         return AuthenticatedUser(
             id="dev-user-id",
             email="dev@bizoholic.net",
-            username="dev_admin",
+            name="dev_admin",
             roles=["Super Admin", "Admin"],
             tenant_id="default"
         )
