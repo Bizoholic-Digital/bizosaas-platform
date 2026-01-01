@@ -64,7 +64,7 @@ async def get_crm_status(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Check connectivity to the active CRM"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     try:
         connector = await get_active_crm_connector(tenant_id, secret_service)
         is_valid = await connector.validate_credentials()
@@ -85,7 +85,7 @@ async def get_crm_stats(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Get CRM statistics"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -99,7 +99,7 @@ async def list_contacts(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -125,7 +125,7 @@ async def create_contact(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -153,7 +153,7 @@ async def update_contact(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -179,7 +179,7 @@ async def delete_contact(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -193,7 +193,7 @@ async def list_deals(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -219,7 +219,7 @@ async def create_deal(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -236,7 +236,7 @@ async def update_deal(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:
@@ -252,7 +252,7 @@ async def delete_deal(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_crm_connector(tenant_id, secret_service)
     
     try:

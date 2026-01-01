@@ -71,7 +71,7 @@ async def get_cms_status(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Check connectivity to the active CMS"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     try:
         connector = await get_active_cms_connector(tenant_id, secret_service)
         # Verify deeper connectivity if possible
@@ -94,7 +94,7 @@ async def get_cms_stats(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Get content statistics"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
@@ -108,7 +108,7 @@ async def list_pages(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
@@ -136,7 +136,7 @@ async def create_page(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
@@ -165,7 +165,7 @@ async def delete_page(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
@@ -181,7 +181,7 @@ async def update_page(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
@@ -206,7 +206,7 @@ async def list_posts(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
@@ -235,7 +235,7 @@ async def create_post(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
         payload = post.dict(exclude={"id", "published_at", "updated_at"})
@@ -259,7 +259,7 @@ async def update_post(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
         payload = post.dict(exclude={"id", "published_at", "updated_at"})
@@ -282,7 +282,7 @@ async def delete_post(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
         await connector.delete_post(post_id)

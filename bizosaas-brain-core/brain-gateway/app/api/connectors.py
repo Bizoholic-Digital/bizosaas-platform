@@ -26,15 +26,22 @@ async def list_connectors_with_status(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """List all connectors with their status"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     configs = ConnectorRegistry.get_all_configs()
     
     # Get list of connected connectors from Vault
     connected_ids = await secret_service.list_tenant_connectors(tenant_id)
     
+    # Also check in-memory store (for seeded connectors)
+    from app.store import active_connectors
+    in_memory_keys = [k for k in active_connectors.keys() if k.startswith(f"{tenant_id}:")]
+    in_memory_ids = [k.split(":")[1] for k in in_memory_keys]
+    
+    all_connected_ids = list(set(connected_ids) | set(in_memory_ids))
+    
     results = []
     for config in configs:
-        status = ConnectorStatus.CONNECTED if config.id in connected_ids else ConnectorStatus.DISCONNECTED
+        status = ConnectorStatus.CONNECTED if config.id in all_connected_ids else ConnectorStatus.DISCONNECTED
         last_sync = None  # TODO: Store sync metadata in Vault
         
         # Merge status into config
@@ -53,7 +60,7 @@ async def connect_connector(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Connect a new integration"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     try:
         connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
@@ -95,7 +102,7 @@ async def disconnect_connector(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Disconnect an integration"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     success = await secret_service.delete_connector_credentials(tenant_id, connector_id)
     
@@ -111,7 +118,7 @@ async def validate_connector(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Validate existing connection"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
     if not credentials:
@@ -131,7 +138,7 @@ async def perform_connector_action(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Execute an action on a connector"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
     if not credentials:
@@ -163,7 +170,7 @@ async def sync_resource(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Sync data from connector"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
     if not credentials:

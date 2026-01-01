@@ -162,7 +162,7 @@ async def list_agents(
     user: AuthenticatedUser = Depends(get_current_user)
 ):
     """List all available AI agents (System + Custom)"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     # Get custom agents from DB
     custom_agents = db.query(Agent).filter(Agent.tenant_id == tenant_id).all()
@@ -182,7 +182,7 @@ async def create_agent(
     user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Create a new custom AI agent"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     
     new_agent = Agent(
         tenant_id=tenant_id,
@@ -219,7 +219,7 @@ async def get_agent(
         return data
         
     # Check custom agents
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     custom_agent = db.query(Agent).filter(Agent.id == agent_id, Agent.tenant_id == tenant_id).first()
     if not custom_agent:
         raise HTTPException(status_code=404, detail="Agent not found")

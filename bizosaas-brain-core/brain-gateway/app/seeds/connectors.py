@@ -15,10 +15,10 @@ def seed_connectors():
         logger.info("=" * 50)
         
         # Bizoholic - WordPress & FluentCRM
-        # Using 'default_tenant' as the target for the demo
+        # Using 'default' as the target for the demo
         
         logger.info("📝 Seeding Bizoholic WordPress connection...")
-        active_connectors["default_tenant:wordpress"] = {
+        active_connectors["default:wordpress"] = {
             "connector_id": "wordpress",
             "credentials": {
                 "url": "https://www.bizoholic.com",
@@ -31,7 +31,7 @@ def seed_connectors():
         }
 
         logger.info("📝 Seeding Bizoholic FluentCRM connection...")
-        active_connectors["default_tenant:fluent_crm"] = {
+        active_connectors["default:fluent_crm"] = {
             "connector_id": "fluent_crm",
             "credentials": {
                 "url": "https://www.bizoholic.com",
@@ -45,7 +45,7 @@ def seed_connectors():
 
         # Coreldove - WooCommerce
         logger.info("📝 Seeding Coreldove WooCommerce connection...")
-        active_connectors["default_tenant:woocommerce"] = {
+        active_connectors["default:woocommerce"] = {
             "connector_id": "woocommerce",
             "credentials": {
                 "url": "https://www.coreldove.com",
@@ -59,7 +59,7 @@ def seed_connectors():
         
         # Lago for Billing
         logger.info("📝 Seeding Lago Billing connection...")
-        active_connectors["default_tenant:lago"] = {
+        active_connectors["default:lago"] = {
             "connector_id": "lago",
             "credentials": {
                  "api_url": "http://lago-api:3000",

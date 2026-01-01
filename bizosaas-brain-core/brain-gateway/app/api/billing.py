@@ -71,7 +71,7 @@ async def get_billing_status(
     user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Check connectivity to billing provider"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     try:
         connector = await get_active_billing_connector(tenant_id)
         # We can implement validate_credentials or similar on connector base
@@ -89,7 +89,7 @@ async def get_billing_status(
 async def list_plans(
     user: AuthenticatedUser = Depends(get_current_user)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_billing_connector(tenant_id)
     
     try:
@@ -113,7 +113,7 @@ async def create_customer(
     customer: CustomerMessage,
     user: AuthenticatedUser = Depends(get_current_user)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_billing_connector(tenant_id)
     
     try:
@@ -140,7 +140,7 @@ async def create_subscription(
     plan_code: str,
     user: AuthenticatedUser = Depends(get_current_user)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_billing_connector(tenant_id)
     
     try:
@@ -159,7 +159,7 @@ async def create_subscription(
 async def list_subscriptions(
      user: AuthenticatedUser = Depends(get_current_user)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_billing_connector(tenant_id)
     
     try:
@@ -179,7 +179,7 @@ async def list_subscriptions(
 async def list_invoices(
     user: AuthenticatedUser = Depends(get_current_user)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_billing_connector(tenant_id)
     
     try:

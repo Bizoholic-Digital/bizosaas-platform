@@ -89,5 +89,5 @@ def get_current_user():
         email="system@bizosaas.local",
         name="System User",
         roles=["admin"],
-        tenant_id="00000000-0000-0000-0000-000000000001"  # Valid UUID
+        tenant_id="default"  # Consistent with seeding
     )

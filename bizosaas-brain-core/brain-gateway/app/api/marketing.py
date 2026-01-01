@@ -54,7 +54,7 @@ async def get_marketing_status(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Check connectivity to the active marketing platform"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     try:
         connector = await get_active_marketing_connector(tenant_id, secret_service)
         is_valid = await connector.validate_credentials()
@@ -75,7 +75,7 @@ async def get_marketing_stats(
     secret_service: SecretService = Depends(get_secret_service)
 ):
     """Get Marketing statistics"""
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     
     try:
@@ -88,7 +88,7 @@ async def list_email_lists(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     
     try:
@@ -108,7 +108,7 @@ async def list_campaigns(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     
     try:
@@ -131,7 +131,7 @@ async def create_list(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     try:
         result = await connector.create_list({"name": name})
@@ -145,7 +145,7 @@ async def delete_list(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     try:
         await connector.delete_list(list_id)
@@ -159,7 +159,7 @@ async def create_campaign(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     try:
         result = await connector.create_campaign(campaign)
@@ -179,7 +179,7 @@ async def delete_campaign(
     user: AuthenticatedUser = Depends(get_current_user),
     secret_service: SecretService = Depends(get_secret_service)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
+    tenant_id = user.tenant_id or "default"
     connector = await get_active_marketing_connector(tenant_id, secret_service)
     try:
         await connector.delete_campaign(campaign_id)

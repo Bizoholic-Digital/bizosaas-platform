@@ -41,7 +41,7 @@ async def create_campaign(
     db: Session = Depends(get_db)
 ):
     service = CampaignService(db)
-    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default_tenant" else UUID("00000000-0000-0000-0000-000000000000") # Mock UUID for default
+    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default" else UUID("00000000-0000-0000-0000-000000000000") # Mock UUID for default
     
     # Create Campaign
     campaign = service.create_campaign(
@@ -68,7 +68,7 @@ def list_campaigns(
     db: Session = Depends(get_db)
 ):
     service = CampaignService(db)
-    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default_tenant" else UUID("00000000-0000-0000-0000-000000000000")
+    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default" else UUID("00000000-0000-0000-0000-000000000000")
     return service.list_campaigns(tenant_id)
 
 @router.get("/{campaign_id}", response_model=CampaignResponse)
@@ -78,7 +78,7 @@ def get_campaign(
     db: Session = Depends(get_db)
 ):
     service = CampaignService(db)
-    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default_tenant" else UUID("00000000-0000-0000-0000-000000000000")
+    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default" else UUID("00000000-0000-0000-0000-000000000000")
     
     campaign = service.get_campaign(campaign_id, tenant_id)
     if not campaign:
@@ -92,7 +92,7 @@ async def publish_campaign(
     db: Session = Depends(get_db)
 ):
     service = CampaignService(db)
-    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default_tenant" else UUID("00000000-0000-0000-0000-000000000000")
+    tenant_id = UUID(user.tenant_id) if user.tenant_id != "default" else UUID("00000000-0000-0000-0000-000000000000")
     
     try:
         results = await service.publish_campaign(campaign_id, tenant_id)

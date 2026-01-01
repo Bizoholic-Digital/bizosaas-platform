@@ -25,7 +25,7 @@ async def get_current_user(
             email="dev@bizoholic.net",
             username="dev_admin",
             roles=["Super Admin"],
-            tenant_id="default_tenant"
+            tenant_id="default"
         )
 
     token_str = None

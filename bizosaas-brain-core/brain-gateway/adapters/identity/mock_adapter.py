@@ -14,7 +14,7 @@ class MockIdentityAdapter(IdentityPort):
             email="dev@bizoholic.net",
             username="dev_admin",
             roles=["Super Admin", "Admin"],
-            tenant_id="default_tenant"
+            tenant_id="default"
         )
 
     async def get_login_url(self, state: str) -> str:
