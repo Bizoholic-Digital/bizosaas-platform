@@ -20,6 +20,10 @@ import sys
 import os
 sys.path.append('/home/alagiri/projects/bizoholic/bizosaas')
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Shared imports fallbacks
 class MockDatabase:
     @staticmethod
@@ -28,7 +32,6 @@ class MockDatabase:
     def get_postgres_session(name): logger.info(f"Using mock session for {name}"); return None
     @staticmethod
     async def get_redis_client(): logger.info("Using mock redis"); return None
-
 class MockEventBus:
     def __init__(self, *args, **kwargs): pass
     async def initialize(self): pass
@@ -106,10 +109,7 @@ except ImportError as e:
     logger.warning(f"Cross-client learning import failed: {e}. Learning functionality disabled.")
     CROSS_CLIENT_LEARNING_AVAILABLE = False
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
+# Configure FastAPI application
 app = FastAPI(
     title="BizoSaaS AI Agents",
     description="CrewAI orchestration and AI-powered workflows with Universal Chat Interface for BizoholicSaaS",
