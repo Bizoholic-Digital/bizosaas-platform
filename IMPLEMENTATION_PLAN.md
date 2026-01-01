@@ -16,7 +16,7 @@
 | **Auth Service** | Port 8009, SSO with fastapi-sso | ✅ Running | ⚠️ SSO upgrade needed |
 | **Redis** | Caching, Message Broker | ✅ Running | ✅ Complete |
 | **PostgreSQL** | User/Tenant/Config storage | ✅ Running | ⚠️ Schema migrations needed |
-| **HashiCorp Vault** | Secrets management (SOC2) | ✅ Running | ❌ Not integrated |
+| **HashiCorp Vault** | Secrets management (SOC2) | ✅ Running | ✅ Integrated |
 | **Temporal** | Workflow orchestration | ✅ Cloud Integrated | ⚠️ Creds needed in Env |
 | **Observability** | Grafana + Loki + Prometheus | ✅ Running | ✅ Complete |
 | **Connectors** | 13 connectors | ✅ Implemented | ⚠️ UI wiring incomplete |

@@ -123,7 +123,7 @@ services:
       - VECTOR_DB_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - USE_VAULT=true
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
     networks:
       - brain-network
       - dokploy-network
@@ -157,7 +157,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
     networks:
       - brain-network
       - dokploy-network
