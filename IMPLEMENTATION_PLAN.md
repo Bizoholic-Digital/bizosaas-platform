@@ -17,7 +17,7 @@
 | **Redis** | Caching, Message Broker | ✅ Running | ✅ Complete |
 | **PostgreSQL** | User/Tenant/Config storage | ✅ Running | ⚠️ Schema migrations needed |
 | **HashiCorp Vault** | Secrets management (SOC2) | ✅ Running | ❌ Not integrated |
-| **Temporal** | Workflow orchestration | ✅ Cloud Integrated | ⚠️ Workers not deployed |
+| **Temporal** | Workflow orchestration | ✅ Cloud Integrated | ⚠️ Creds needed in Env |
 | **Observability** | Grafana + Loki + Prometheus | ✅ Running | ✅ Complete |
 | **Connectors** | 13 connectors | ✅ Implemented | ⚠️ UI wiring incomplete |
 | **AI Agents** | 7 core + 93 scalable | ✅ Framework ready | ❌ RAG/LLM not integrated |

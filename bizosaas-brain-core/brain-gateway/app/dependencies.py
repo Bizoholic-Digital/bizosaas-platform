@@ -106,21 +106,46 @@ async def get_workflow_service():
     
     host = os.getenv("TEMPORAL_HOST", "temporal:7233")
     namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
-    
-    # Check for mTLS certs (Required for Cloud)
     cert_content = os.getenv("TEMPORAL_MTLS_CERT")
     key_content = os.getenv("TEMPORAL_MTLS_KEY")
     
+    # Try to load from Connector Registry (via Vault)
+    # This allows updating credentials via Admin UI without redeploying
+    try:
+        secret_service = get_secret_service()
+        # Default tenant for system-wide Temporal
+        creds = await secret_service.get_connector_credentials("default", "temporal")
+        
+        if creds:
+            logger.info("Found configured Temporal connector credentials in Vault")
+            host = creds.get("host", host)
+            namespace = creds.get("namespace", namespace)
+            cert_content = creds.get("tls_cert", cert_content)
+            key_content = creds.get("tls_key", key_content)
+    except Exception as e:
+        logger.warning(f"Could not load Temporal credentials from Vault: {e}")
+
     cert_bytes = None
     key_bytes = None
     
+    # Helper to load content from file path or string
+    def load_content(val):
+        if not val:
+            return None
+        # If it looks like a file path and exists, read it
+        if "/" in val and os.path.exists(val):
+            try:
+                with open(val, "rb") as f:
+                    return f.read()
+            except Exception as e:
+                logger.error(f"Failed to read cert file {val}: {e}")
+                return None
+        # Otherwise assume it's the PEM content string
+        return val.encode('utf-8')
+
     if cert_content and key_content:
-        # If content is base64 encoded, decode it? 
-        # For simplicity, assume raw PEM string for now, or handle newlines if passed via env
-        # Docker env vars with newlines can be tricky.
-        # Let's assume they are passed as standard strings.
-        cert_bytes = cert_content.encode('utf-8')
-        key_bytes = key_content.encode('utf-8')
+        cert_bytes = load_content(cert_content)
+        key_bytes = load_content(key_content)
     
     try:
         _temporal_adapter = await TemporalAdapter.connect(

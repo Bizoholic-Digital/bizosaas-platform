@@ -114,7 +114,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/0
-      - TEMPORAL_HOST=${TEMPORAL_HOST:-temporal.default.connect.tmprl.cloud:7233}
+      - TEMPORAL_HOST=${TEMPORAL_HOST:-ap-south-2.aws.api.temporal.io:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-default}
       - TEMPORAL_MTLS_CERT=${TEMPORAL_MTLS_CERT:-}
       - TEMPORAL_MTLS_KEY=${TEMPORAL_MTLS_KEY:-}
