@@ -121,6 +121,7 @@ services:
       - USE_VAULT=true
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - DISABLE_AUTH=true
     networks:
       - brain-network
       - dokploy-network
