@@ -12,7 +12,7 @@ import {
   BookOpen, Image, Video, Newspaper, Tag, Filter,
   PieChart, Activity, LineChart, TrendingDown, AlertCircle,
   ChevronDown, ChevronRight, Menu, X, RefreshCw, Bot,
-  Sparkles, ShieldCheck, Layers, Link2
+  Sparkles, ShieldCheck, Layers, Link2, Palette
 } from 'lucide-react';
 import { useAuth } from '@/shared/components/AuthProvider';
 
@@ -151,6 +151,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/settings',
           icon: <Settings className="w-4 h-4" />,
           active: pathname === '/dashboard/settings'
+        },
+        {
+          id: 'branding',
+          name: 'Branding & White Label',
+          href: '/settings/branding',
+          icon: <Palette className="w-4 h-4 text-pink-500" />,
+          active: pathname === '/settings/branding'
         }
       ]
     }

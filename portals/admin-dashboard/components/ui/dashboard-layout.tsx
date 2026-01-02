@@ -12,6 +12,7 @@ import ErrorBoundary from '@/components/error-boundary';
 import { useSystemStatus } from '@/lib/hooks/useSystemStatus';
 import { useAuth } from '@/shared/components/AuthProvider';
 import { useTheme } from 'next-themes';
+import { useBranding } from '../providers/BrandingProvider';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { config: branding } = useBranding();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -84,12 +86,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold text-lg">
-                    A
-                  </div>
+                  {branding?.logo_url ? (
+                    <img src={branding.logo_url} alt="Logo" className="h-8 w-auto object-contain" />
+                  ) : (
+                    <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold text-lg">
+                      A
+                    </div>
+                  )}
                   <div>
                     <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate leading-none">
-                      BizOSaaS
+                      {branding?.portal_title || "BizOSaaS"}
                       <span className="text-[10px] font-bold text-indigo-500 ml-1.5 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-full uppercase tracking-tighter">Premium</span>
                     </h1>
                     <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider font-semibold">Platform Administration</p>
