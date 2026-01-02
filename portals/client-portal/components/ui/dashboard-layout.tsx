@@ -98,21 +98,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-2 min-w-0">
                   <div className="flex-shrink-0">
                     <img
-                      src={branding?.logo_url || "/logo-custom.png"}
+                      src="/logo-custom.png"
                       alt="Bizoholic logo"
-                      className="h-10 w-auto object-contain"
+                      className="h-7 w-auto object-contain"
                     />
                   </div>
-                  <div className="flex flex-col min-w-0">
-                    <h1 className="font-bold text-lg text-gray-900 dark:text-white truncate leading-tight">
-                      {branding?.portal_title || "BizOSaaS"}
-                      <span className="text-[10px] font-bold text-indigo-500 ml-1 px-1 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded uppercase tracking-tighter">Premium</span>
-                    </h1>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider truncate">Client Portal</p>
-                  </div>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider truncate">Client Portal</p>
                 </div>
               )}
               {isCollapsed && (
