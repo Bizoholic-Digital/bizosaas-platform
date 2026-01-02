@@ -6,6 +6,11 @@ import time
 from typing import Dict, Any, List
 from app.middleware.auth import get_current_user, require_role
 from domain.ports.identity_port import AuthenticatedUser
+from app.dependencies import get_db
+from sqlalchemy.orm import Session
+from app.models.tenant import TenantConfig
+from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -163,3 +168,64 @@ async def get_api_analytics(
         print(f"Error fetching Prometheus metrics: {e}")
 
     return metrics
+
+# --- Tenant Configuration (White Labeling) ---
+
+class TenantConfigUpdate(BaseModel):
+    portal_title: Optional[str] = None
+    logo_url: Optional[str] = None
+    favicon_url: Optional[str] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+    font_family: Optional[str] = None
+
+class TenantConfigResponse(BaseModel):
+    tenant_id: str
+    portal_title: str
+    logo_url: Optional[str]
+    favicon_url: Optional[str]
+    primary_color: str
+    secondary_color: str
+    font_family: str
+
+    class Config:
+        orm_mode = True
+
+@router.get("/config", response_model=TenantConfigResponse)
+def get_tenant_config(
+    user: AuthenticatedUser = Depends(require_role("Admin")),
+    db: Session = Depends(get_db)
+):
+    """Get branding configuration for the current tenant."""
+    config = db.query(TenantConfig).filter(TenantConfig.tenant_id == user.tenant_id).first()
+    if not config:
+        # Return defaults
+        return TenantConfigResponse(
+            tenant_id=str(user.tenant_id),
+            portal_title="BizOSaaS Client Portal",
+            logo_url=None,
+            favicon_url=None,
+            primary_color="#2563eb",
+            secondary_color="#475569",
+            font_family="Inter"
+        )
+    return config
+
+@router.put("/config", response_model=TenantConfigResponse)
+def update_tenant_config(
+    update_data: TenantConfigUpdate,
+    user: AuthenticatedUser = Depends(require_role("Admin")),
+    db: Session = Depends(get_db)
+):
+    """Update branding configuration for the current tenant."""
+    config = db.query(TenantConfig).filter(TenantConfig.tenant_id == user.tenant_id).first()
+    if not config:
+        config = TenantConfig(tenant_id=user.tenant_id)
+        db.add(config)
+    
+    for key, value in update_data.dict(exclude_unset=True).items():
+        setattr(config, key, value)
+    
+    db.commit()
+    db.refresh(config)
+    return config

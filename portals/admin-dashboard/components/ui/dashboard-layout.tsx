@@ -83,9 +83,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
-                <div>
-                  <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate">BizOSaaS <span className="text-xs font-normal text-indigo-500 ml-1">(Premium)</span></h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Platform Administration</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white font-bold text-lg">
+                    A
+                  </div>
+                  <div>
+                    <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate leading-none">
+                      BizOSaaS
+                      <span className="text-[10px] font-bold text-indigo-500 ml-1.5 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-full uppercase tracking-tighter">Premium</span>
+                    </h1>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider font-semibold">Platform Administration</p>
+                  </div>
                 </div>
               )}
               {isCollapsed && (

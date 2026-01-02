@@ -158,6 +158,17 @@ export const brainApi = {
             }
         }
     },
+    admin: {
+        getTenantConfig: async (token?: string) => {
+            return apiFetch('/api/admin/config', {}, token);
+        },
+        updateTenantConfig: async (data: any, token?: string) => {
+            return apiFetch('/api/admin/config', {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            }, token);
+        }
+    },
     mcp: {
         listCategories: async (token?: string): Promise<any[]> => {
             return apiFetch('/api/mcp/categories', {}, token);

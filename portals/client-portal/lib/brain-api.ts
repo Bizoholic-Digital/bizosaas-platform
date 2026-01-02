@@ -187,6 +187,12 @@ export const brainApi = {
             return apiFetch('/api/mcp/installed', {}, token);
         }
     },
+    public: {
+        getConfig: async (tenantId?: string): Promise<any> => {
+            const query = tenantId ? `?tenant_id=${tenantId}` : '';
+            return apiFetch(`/api/public/config${query}`, {});
+        }
+    },
     cms: {
         getPages: async (token?: string) => {
             return apiFetch('/api/cms/pages', {}, token);

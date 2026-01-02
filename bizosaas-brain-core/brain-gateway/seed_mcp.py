@@ -71,6 +71,13 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-hubspot:latest"},
                 "is_official": True
             },
+            {
+                 "name": "Zoho CRM", "slug": "zoho-crm", "category_slug": "crm",
+                 "description": "Sync leads, contacts, and deals. Automate sales workflows.",
+                 "capabilities": ["leads", "contacts", "deals"],
+                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zohocrm:latest"},
+                 "is_official": True
+            },
             # CMS
             {
                 "name": "WordPress", "slug": "wordpress", "category_slug": "cms",
@@ -95,7 +102,7 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-stripe:latest"},
                 "is_official": True
             },
-            # Analytics
+            # Analytics & Marketing
             {
                 "name": "Google Analytics 4", "slug": "google-analytics", "category_slug": "analytics",
                 "description": "Web traffic and user behavior analytics.",
@@ -103,14 +110,36 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-analytics:latest"},
                 "is_official": True
             },
+            {
+                "name": "Google Ads", "slug": "google-ads", "category_slug": "advertising",
+                "description": "Manage ad campaigns, track conversions, and optimize spend.",
+                "capabilities": ["campaigns", "conversions", "insights"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-googleads:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Meta Ads & Social", "slug": "facebook-ads", "category_slug": "advertising",
+                "description": "Manage Facebook and Instagram ads, posts, and insights.",
+                "capabilities": ["campaigns", "posts", "insights", "capi"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-facebook:latest"},
+                "is_official": True
+            },
             # Infrastructure
             {
-                "name": "Redis Cloud MCP", "slug": "redis-mcp", "category_slug": "infrastructure",
+                "name": "Redis Cloud", "slug": "redis", "category_slug": "infrastructure",
                 "description": "Control and monitor Redis Cloud instances.",
                 "capabilities": ["keys", "flush", "metrics", "monitor"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-redis:latest"},
                 "is_official": True
-            }, 
+            },
+            # Billing
+            {
+                "name": "Lago Billing", "slug": "lago", "category_slug": "payments",
+                "description": "Open Source Metering and Usage-Based Billing.",
+                "capabilities": ["customers", "subscriptions", "plans", "invoices"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-lago:latest"},
+                "is_official": True
+            },
         ]
         
         for mcp_data in mcps_data:

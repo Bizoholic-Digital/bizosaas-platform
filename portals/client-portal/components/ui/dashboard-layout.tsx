@@ -11,6 +11,7 @@ import ComprehensiveNavigation from './comprehensive-navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
 import { useAuth } from '../auth/AuthProvider';
 import { useTheme } from 'next-themes';
+import { useBranding } from '../providers/BrandingProvider';
 
 
 interface DashboardLayoutProps {
@@ -34,6 +35,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { config: branding } = useBranding();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -96,8 +98,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
-                <div>
-                  <h1 className="font-black text-xl text-gray-900 dark:text-white truncate tracking-tight underline decoration-purple-500 decoration-2">BizOSaaS <span className="text-xs font-normal text-indigo-500 ml-1 no-underline decoration-0">(Premium)</span></h1>
+                <div className="flex items-center gap-2">
+                  {branding?.logo_url ? (
+                    <img src={branding.logo_url} alt="Logo" className="h-8 w-auto object-contain" />
+                  ) : (
+                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg">
+                      B
+                    </div>
+                  )}
+                  <div>
+                    <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate leading-none">
+                      {branding?.portal_title || "BizOSaaS"}
+                      <span className="text-[10px] font-bold text-indigo-500 ml-1.5 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-full uppercase tracking-tighter">Premium</span>
+                    </h1>
+                  </div>
                 </div>
               )}
               {isCollapsed && (
@@ -164,14 +178,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => router.push('/settings')}
-                    className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md border border-gray-200 dark:border-gray-700 transition-colors"
+                    className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 transition-all shadow-sm active:scale-95"
                   >
                     <Settings className="w-3.5 h-3.5" />
                     Settings
                   </button>
                   <button
                     onClick={() => logout()}
-                    className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-md border border-red-100 dark:border-red-900/10 transition-colors"
+                    className="flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/30 transition-all hover:shadow-sm active:scale-95"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Sign Out

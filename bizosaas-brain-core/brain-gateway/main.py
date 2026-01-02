@@ -101,6 +101,9 @@ app.include_router(onboarding.router)
 app.include_router(admin.router)
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 
+from app.api import public
+app.include_router(public.router)
+
 from app.routers import oauth
 from app.api import rag
 app.include_router(oauth.router)
