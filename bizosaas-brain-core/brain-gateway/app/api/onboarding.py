@@ -129,6 +129,40 @@ async def save_digital_presence(presence: DigitalPresence):
     """Save digital presence details"""
     return {"status": "success", "message": "Presence saved"}
 
+@router.get("/search-business")
+async def search_business(q: str):
+    """
+    Search for a business publicly (e.g., via Google Places API).
+    For now, return structured data based on the query to simulate the logic.
+    """
+    if "acme" in q.lower():
+        return {
+            "status": "success",
+            "results": [
+                {
+                    "companyName": "Acme Corp Headquaters",
+                    "location": "123 Business Rd, New York, NY",
+                    "website": "https://acme.org",
+                    "phone": "+1 212 555 0199",
+                    "industry": "Manufacturing"
+                }
+            ]
+        }
+    
+    # Generic result for other queries
+    return {
+        "status": "success",
+        "results": [
+            {
+                "companyName": q.title(),
+                "location": "Determined from search",
+                "website": f"https://{q.lower().replace(' ', '')}.com",
+                "phone": "+1 555 000 0000",
+                "industry": "General Business"
+            }
+        ]
+    }
+
 @router.post("/integrations")
 async def save_integrations(analytics: AnalyticsConfig, social: SocialMediaConfig):
     """Save integration preferences"""

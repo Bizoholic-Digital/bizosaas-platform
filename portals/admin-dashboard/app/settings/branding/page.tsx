@@ -92,10 +92,12 @@ export default function BrandingSettingsPage() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Branding & White Label</h2>
-                    <p className="text-muted-foreground">Customize the look and feel of your Client Portal.</p>
+            <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Branding & White Label</h2>
+                        <p className="text-lg text-muted-foreground mt-2">Customize the look and feel of your Client Portal.</p>
+                    </div>
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">

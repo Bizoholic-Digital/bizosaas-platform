@@ -36,10 +36,22 @@ class WordPressConnector(BaseConnector, CMSPort):
         return {"Authorization": f"Basic {token}"}
 
     def _get_api_url(self, path: str) -> str:
-        base_url = self.credentials.get("url", "").rstrip("/")
+        url = self.credentials.get("url", "").strip()
+        if not url:
+            return ""
+        
+        base_url = url.rstrip("/")
+        # Check if we should use standard wp-json or if it's already provided
         if "wp-json" in base_url:
              return f"{base_url}/wp/v2/{path.lstrip('/')}"
         return f"{base_url}/wp-json/wp/v2/{path.lstrip('/')}"
+
+    def _get_plugin_api_url(self, plugin_prefix: str, path: str) -> str:
+        url = self.credentials.get("url", "").strip().rstrip("/")
+        if not url: return ""
+        if "wp-json" in url:
+            return f"{url}/{plugin_prefix}/{path.lstrip('/')}"
+        return f"{url}/wp-json/{plugin_prefix}/{path.lstrip('/')}"
 
     async def validate_credentials(self) -> bool:
         url = self.credentials.get("url", "")
@@ -87,8 +99,47 @@ class WordPressConnector(BaseConnector, CMSPort):
         return {"data": []}
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Legacy action support"""
-        return {}
+        """Perform actions like plugin discovery"""
+        if action == "discover_plugins":
+            return await self._discover_plugins()
+        return {"status": "error", "message": f"Unknown action: {action}"}
+
+    async def _discover_plugins(self) -> Dict[str, Any]:
+        """Detect WooCommerce, FluentCRM, etc."""
+        plugins = {
+            "woocommerce": {"detected": False, "version": None, "connector_id": "woocommerce"},
+            "fluent_crm": {"detected": False, "version": None, "connector_id": "fluent-crm"}
+        }
+        
+        auth = self._get_auth_header()
+        async with httpx.AsyncClient() as client:
+            # Detect WooCommerce
+            try:
+                # WC usually has a system status or just check root of v3
+                # We'll check the index of wc/v3
+                wc_url = self._get_plugin_api_url("wc/v3", "")
+                resp = await client.get(wc_url, headers=auth, timeout=10.0)
+                if resp.status_code == 200:
+                    plugins["woocommerce"]["detected"] = True
+                    logger.info("WooCommerce detected on WordPress site")
+            except Exception as e:
+                logger.debug(f"WooCommerce detection failed: {e}")
+
+            # Detect FluentCRM
+            try:
+                fc_url = self._get_plugin_api_url("fluent-crm/v1", "contacts")
+                resp = await client.get(fc_url, headers=auth, timeout=10.0)
+                # FluentCRM might return 200 even for empty contacts
+                if resp.status_code in [200, 403]: # 403 might mean it exists but lacks specific permissions we'll fix later
+                    plugins["fluent_crm"]["detected"] = True
+                    logger.info("FluentCRM detected on WordPress site")
+            except Exception as e:
+                logger.debug(f"FluentCRM detection failed: {e}")
+
+        return {
+            "status": "success",
+            "plugins": plugins
+        }
 
     # --- CMSPort Implementation ---
     async def get_stats(self) -> CMSStats:

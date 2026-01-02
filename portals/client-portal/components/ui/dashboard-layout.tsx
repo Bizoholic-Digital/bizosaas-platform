@@ -98,19 +98,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
-                <div className="flex items-center gap-2">
-                  {branding?.logo_url ? (
-                    <img src={branding.logo_url} alt="Logo" className="h-8 w-auto object-contain" />
-                  ) : (
-                    <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg">
-                      B
-                    </div>
-                  )}
-                  <div>
-                    <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate leading-none">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <img
+                      src={branding?.logo_url || "/logo-custom.png"}
+                      alt="Bizoholic logo"
+                      className="h-10 w-auto object-contain"
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <h1 className="font-bold text-lg text-gray-900 dark:text-white truncate leading-tight">
                       {branding?.portal_title || "BizOSaaS"}
-                      <span className="text-[10px] font-bold text-indigo-500 ml-1.5 px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-full uppercase tracking-tighter">Premium</span>
+                      <span className="text-[10px] font-bold text-indigo-500 ml-1 px-1 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 rounded uppercase tracking-tighter">Premium</span>
                     </h1>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider truncate">Client Portal</p>
                   </div>
                 </div>
               )}
@@ -202,17 +203,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             )}
 
             {!isCollapsed && (
-              <div className="mt-4 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                <Wifi className="w-3 h-3 text-green-500" />
-                <span>System Online</span>
-                <span className="text-gray-300 dark:text-gray-700">•</span>
-                <span className="flex items-center gap-1 text-green-500">
-                  <span className="relative flex h-2 w-2">
+              <div className="mt-4 flex items-center justify-between text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                <div className="flex items-center gap-1.5">
+                  <Wifi className="w-3 h-3 text-green-500" />
+                  <span>System Online</span>
+                </div>
+                <span className="text-gray-300 dark:text-gray-700 mx-1">•</span>
+                <div className="flex items-center gap-1.5 text-green-500">
+                  <div className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  Live API
-                </span>
+                  </div>
+                  <span>Live API</span>
+                </div>
               </div>
             )}
           </div>

@@ -3,6 +3,27 @@
 **Date**: December 17, 2025  
 **Status**: Active Development
 
+## BizoSaaS Platform Explained
+
+BizOSaaS is an AI-powered multi-tenant SaaS platform that leverages 93+ specialized CrewAI agents to automate business operations for clients. The platform provides a unified interface for managing CMS, CRM, and eCommerce integrations through intelligent automation.
+The BizoSaaS Platform has the below sequence:
+1. New clients will be taken through the onboarding wizard
+2. The onboarding wizard will request for the list of all tools and services the client would like to integrate by providing them the list of all external tools and services like the CMSs, CRMs, Analytics, Search Consoles, etc integrations. 
+3. For each of the external tools and services selected the onboarding wizard will list the consolidated list of all the fields required so that the client (user) can list it accordingly to be filled.
+4. The list of fields should be as minimal as possible making the onboarding as easy as possible.
+5. The onboarding wizard should be a step-by-step multi stage process. 
+6. The user should be able to save as draft and continue at a later stage. 
+7. The onboarding can start with like asking for the company name, google my business profile link or ask the user to select the business from the list which will be populated via the API making it easier for the user to select from the dropdown. The user will be able to connect and integrate with the Google My business profile only if the google account is linked to the gmail address used by the user to setup the account. this is the enable the security and stop companies to acquire the profiles of competitors. 
+8. With the google my business profile, locality, industry, website (if already exists) the onboarding ai agent will start populating the data and provide it to the user for confirmation. 
+9. On confirmation the process will proceed forward by analyzing and auditing the current online presence. 
+10. While the analysis and the auditing is being done in the background via the workflows that we have setup we should be proceeding to keep the interaction going forward by asking for the goals, budget, target audience for the campaigns. 
+11. Once the research is completed and the details are received the ai agent will do a feasibility check by comparing the output from the various research ai agent and the requirement of the client and provide as strategy that is best suited for the client to achieve the goal by suggesting if they should refine their goals, budgets, target audience etc which the client will get into a loop until the client is satisfied with the suggested strategy.
+12. Once the strategy is confirmed the setup ai agents will start triggering the various workflows and executing it such that the campaigns are setup and the work starts across these multiple campaigns. 
+13. The list of all tasks will be populated and shown to maintain the transparency for the client. 
+14. The progress on the various tasks will be updated such that the clients are aware of the progress on the various tasks. 
+15. This is nothing but a full fledged digital marketing agency where the clients are updated on a regular basis. 
+16. The clients can also update the requirements and based on that the campaigns will be updated such that any changes will also effect the outcome of the campaigns which will also be updated and reported to the client for tier review and approval to proceed to update the tasks accordingly. 
+
 ---
 
 ## Table of Contents
@@ -111,10 +132,10 @@ Internet → Traefik (Reverse Proxy)
               │
     ┌─────────┴─────────┬─────────────┬──────────┐
     ↓                   ↓             ↓          ↓
-┌────────┐      ┌──────────┐   ┌─────────┐  ┌────────┐
-│ Plane  │      │   Lago   │   │Authentik│  │Temporal│
-│(Project│      │(Billing) │   │  (IAM)  │  │(Workflow)│
-└────────┘      └──────────┘   └─────────┘  └────────┘
+┌───────────┐      ┌──────────┐   ┌─────────┐  ┌──────────┐
+│ Plane     │      │   Lago   │   │Authentik│  │Temporal  │
+│(Project)  │      │(Billing) │   │  (IAM)  │  │(Workflow)│
+└───────────┘      └──────────┘   └─────────┘  └──────────┘
     │                │              │            │
     └────────────────┴──────────────┴────────────┘
                      │
@@ -134,11 +155,6 @@ Internet → Traefik (Reverse Proxy)
 | **bizosaas-core** | Brain Gateway, Auth Service | Core API services | ✅ Active |
 | **bizosaas-frontend** | Client Portal | Client-facing UI | ✅ Active |
 | **bizosaas-admin** | Admin Dashboard | Platform administration | ✅ Active |
-| **bizosaas-billing** | Lago (API, Worker, Front) | Billing management | ⚠️ Migrating to shared DB |
-| **bizosaas-authentik** | Authentik (Server, Worker) | Identity & access | ⏳ Migrating to shared DB |
-| **bizosaas-observability** | Prometheus, Grafana, Loki | Monitoring | ✅ Merged into infra |
-| **bizoholic-website** | WordPress + MySQL | Company website | ✅ Active |
-| **coreldove-website** | WordPress + MySQL (2 sites) | Client websites | ✅ Active |
 | ~~**automation-hub**~~ | ~~n8n~~ | ~~Workflow automation~~ | ❌ Deprecated (replaced by Temporal) |
 | ~~**database-services**~~ | ~~Standalone DBs~~ | ~~Database management~~ | ❌ Deprecated (consolidated) |
 
@@ -182,6 +198,26 @@ Internet → Traefik (Reverse Proxy)
 - **Logging**: Structured logging to Loki
 - **Metrics**: Prometheus metrics for all endpoints
 - **AI Agent Orchestration**: Manages 93+ specialized agents
+- **White-Labeling & Branding**: Centralized management of portal identity (logo, colors, fonts)
+
+### 4. Smart Connector Discovery
+
+**Automated Upsell & Integration Logic**:
+- **WordPress Intelligence**: Automatically detects plugins (WooCommerce, FluentCRM) and prompts for connection.
+- **Google Ecosystem**: Link GTM to Analytics/Ads via "Magic Discovery" flow.
+- **Cross-Platform Mapping**: Intelligent detection of related services (e.g., Shopify to Facebook Pixel).
+
+### 5. AI Agent Visibility & Governance
+
+**Admin Dashboard (Global Visibility)**:
+- View all active agents across all tenants.
+- Monitor agent performance and cost.
+- Global persona management and capability toggle.
+
+**Client Portal (Contextual Visibility)**:
+- **Personal Business Agent**: Primary interface for the client.
+- **Task Transparency**: Clients see specific tasks performed by specialized agents (e.g., "SEO Agent optimized /blog/post-1").
+- **Approval Loops**: Strategic agents present plans for client review before execution.
 
 ---
 
@@ -308,37 +344,37 @@ BizOSaaS provides **21 pre-built connectors** to integrate with external service
 |-----------|------|--------------|--------|
 | **WordPress** | CMS | Posts, pages, media, users, comments | ✅ Active |
 | **WooCommerce** | eCommerce | Products, orders, customers, inventory | ✅ Active |
-| **Shopify** | eCommerce | Products, orders, customers, analytics | ⏳ Implemented |
+| **Shopify** | eCommerce | Products, orders, customers, analytics | ✅ Active |
 
 ##### CRM & Marketing (4)
 | Connector | Type | Capabilities | Status |
 |-----------|------|--------------|--------|
 | **FluentCRM** | CRM | Contacts, campaigns, tags, segments | ✅ Active |
-| **Zoho CRM** | CRM | Leads, contacts, deals, activities | ⏳ Implemented |
-| **Google Analytics** | Analytics | Traffic, conversions, user behavior | ⏳ Implemented |
-| **Google Tag Manager** | Tag Management | Tags, triggers, variables | ⏳ Implemented |
+| **Zoho CRM** | CRM | Leads, contacts, deals, activities | ✅ Active |
+| **Google Analytics** | Analytics | Traffic, conversions, user behavior | ✅ Active |
+| **Google Tag Manager** | Tag Management | Tags, triggers, variables | ✅ Active |
 
 ##### Advertising Platforms (5)
 | Connector | Type | Capabilities | Status |
 |-----------|------|--------------|--------|
-| **Google Ads** | Advertising | Campaigns, ad groups, keywords, performance | ⏳ Implemented |
-| **Facebook Ads** | Advertising | Campaigns, ad sets, ads, insights | ⏳ Implemented |
-| **Pinterest Ads** | Advertising | Campaigns, pins, analytics | ⏳ Implemented |
-| **Snapchat Ads** | Advertising | Campaigns, creatives, metrics | ⏳ Implemented |
-| **Google Shopping** | eCommerce Ads | Product feeds, campaigns, performance | ⏳ Implemented |
+| **Google Ads** | Advertising | Campaigns, ad groups, keywords, performance | ✅ Active |
+| **Facebook Ads** | Advertising | Campaigns, ad sets, ads, insights | ✅ Active |
+| **Pinterest Ads** | Advertising | Campaigns, pins, analytics | ✅ Active |
+| **Snapchat Ads** | Advertising | Campaigns, creatives, metrics | ✅ Active |
+| **Google Shopping** | eCommerce Ads | Product feeds, campaigns, performance | ✅ Active |
 
 ##### Communication & Messaging (3)
 | Connector | Type | Capabilities | Status |
 |-----------|------|--------------|--------|
-| **WhatsApp Business** | Messaging | Send messages, templates, webhooks | ⏳ Implemented |
-| **Telegram** | Messaging | Bots, channels, messages | ⏳ Implemented |
+| **WhatsApp Business** | Messaging | Send messages, templates, webhooks | ✅ Active |
+| **Telegram** | Messaging | Bots, channels, messages | ✅ Active |
 | **Email (SMTP)** | Email | Send emails, templates | ✅ Built-in |
 
 ##### Project Management & Billing (3)
 | Connector | Type | Capabilities | Status |
 |-----------|------|--------------|--------|
 | **Plane** | Project Management | Workspaces, projects, issues, cycles | ✅ Active |
-| **Trello** | Project Management | Boards, lists, cards, members | ⏳ Implemented |
+| **Trello** | Project Management | Boards, lists, cards, members | ✅ Active |
 | **Lago** | Billing | Customers, subscriptions, invoices, usage | ✅ Active |
 
 ##### Other Integrations (3)
@@ -461,29 +497,27 @@ VAULT_ROOT_TOKEN=staging-root-token-bizosaas-2025
 ## Current Status & Next Steps
 
 ### Completed ✅
-- [x] Infrastructure consolidation plan
-- [x] Single shared PostgreSQL setup
-- [x] Single shared Redis setup
-- [x] Monitoring stack (Prometheus, Grafana, Loki)
-- [x] Temporal workflow engine (replaced n8n)
-- [x] Brain Gateway deployment
-- [x] Client Portal deployment
-- [x] Admin Dashboard deployment
+- [x] **Consolidated Infrastructure**: Single Postgres/Redis stack for all core services (Authentik, Lago, Plane, Gateway).
+- [x] **Authentik Integration**: SSO implemented for Grafana and other internal tools.
+- [x] **White-Labeling**: Custom branding (Logo, Title, Primary Colors) dynamically applied via Admin Dashboard.
+- [x] **Smart Connector Discovery**: Automated WooCommerce/FluentCRM detection for WordPress and Magic Discovery for Google.
+- [x] **WordPress Connector Fix**: Resolved 500 error and aligned credential keys.
+- [x] **Marketing Hub**: Full-featured campaign management dashboard in Client Portal.
+- [x] **Connector Registry expansion**: 30+ service connectors implemented and registered.
+- [x] **Onboarding Magic**: Real-world Google Business Profile search and auto-fill.
+- [x] **Background Auditing**: Automated presence audits via Temporal workflows.
+- [x] **Task Transparency**: Live sync of implementation tasks from Plane.
+- [x] **MCP Orchestration**: Automatic provisioning of tools based on user selection.
+- [x] **AI Agent specialized roles**: Defined 7 core AI agent types with specific tools and capabilities.
 
 ### In Progress ⏳
-- [ ] Migrate Authentik to shared DB/Redis
-- [ ] Migrate Lago to shared DB/Redis (currently failing)
-- [ ] Deploy Plane project management
-- [ ] Remove duplicate monitoring stack
-- [ ] Delete deprecated projects (automation-hub, database-services)
+- [ ] **Feasibility Engine**: AI loop for campaign strategy validation against historical connector data.
+- [ ] **Advanced AI Agent Collaboration**: Agents talking to each other for cross-platform automation.
 
 ### Pending 📋
-- [ ] AI Agent specification document
-- [ ] Client onboarding flow implementation
-- [ ] Service integration connectors (CMS, CRM, eCommerce)
-- [ ] Production deployment to KVM4
-- [ ] Load testing and optimization
-- [ ] Security audit
+- [ ] **Multi-tenant Billing**: Automated invoicing via Lago based on connector usage.
+- [ ] **Extended Agent Marketplace**: Scalability for 93+ specialized agents.
+- [ ] **Security Hardening**: Vault production SEAL and Authentik MFA enforcement.
 
 ---
 
@@ -497,5 +531,5 @@ VAULT_ROOT_TOKEN=staging-root-token-bizosaas-2025
 ---
 
 **Document Owner**: Platform Architecture Team  
-**Last Updated**: December 17, 2025  
-**Next Review**: January 2026
+**Last Updated**: January 2, 2026  
+**Next Review**: February 2026

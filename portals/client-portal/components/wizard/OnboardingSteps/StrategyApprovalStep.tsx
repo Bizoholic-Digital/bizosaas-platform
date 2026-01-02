@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { OnboardingState } from '../types/onboarding';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Rocket } from 'lucide-react';
 
 interface Props {
     data: OnboardingState;
@@ -61,8 +61,32 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                 </div>
             </div>
 
-            <div className="text-center text-sm text-gray-500 py-4">
-                Our AI Agents are ready to execute this plan upon your approval.
+            <div className="space-y-4">
+                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <Rocket className="text-blue-600 w-5 h-5" />
+                    Live Execution Plan (Synced with Plane)
+                </h3>
+                <div className="space-y-2">
+                    {[
+                        { title: "Technical Infrastructure Setup", status: "queued", icon: "⚙️" },
+                        { title: "Analytics & Tracking Integration", status: "queued", icon: "📈" },
+                        { title: "Campaign Asset Creation", status: "queued", icon: "🎨" },
+                        { title: "Channel Connection & Verification", status: "queued", icon: "🔗" }
+                    ].map((task, i) => (
+                        <div key={i} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg shadow-sm group hover:border-blue-200 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <span className="text-lg">{task.icon}</span>
+                                <span className="text-sm font-medium text-gray-700">{task.title}</span>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                                {task.status}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+                <p className="text-xs text-center text-gray-400">
+                    * Tasks will be automatically assigned to our AI Agents upon approval.
+                </p>
             </div>
         </div>
     );

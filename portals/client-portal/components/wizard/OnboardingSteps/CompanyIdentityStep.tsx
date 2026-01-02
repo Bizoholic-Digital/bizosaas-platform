@@ -15,18 +15,27 @@ export function CompanyIdentityStep({ data, onUpdate }: Props) {
     const [loadingGmb, setLoadingGmb] = React.useState(false);
 
     const fetchGmbData = async () => {
-        if (!data.gmbLink) return;
+        const query = data.gmbLink || data.companyName;
+        if (!query) return;
         setLoadingGmb(true);
-        // Simulate API call to fetch data from GMB
-        setTimeout(() => {
-            onUpdate({
-                companyName: "Acme Corp (Fetched)",
-                location: "123 Business Rd, Tech City",
-                website: "https://acme.example.com",
-                phone: "+1 555 123 4567"
-            });
+        try {
+            const res = await fetch(`/api/brain/onboarding/search-business?q=${encodeURIComponent(query)}`);
+            const json = await res.json();
+            if (json.status === 'success' && json.results.length > 0) {
+                const result = json.results[0];
+                onUpdate({
+                    companyName: result.companyName,
+                    location: result.location,
+                    website: result.website,
+                    phone: result.phone,
+                    industry: result.industry
+                });
+            }
+        } catch (e) {
+            console.error("Failed to fetch business data", e);
+        } finally {
             setLoadingGmb(false);
-        }, 1500);
+        }
     };
 
     return (

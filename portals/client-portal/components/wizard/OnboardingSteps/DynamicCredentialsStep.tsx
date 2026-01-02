@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, CheckCircle, AlertCircle, Lock, Monitor, Shield } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Lock, Monitor, Shield, Plug } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { ToolIntegration } from '../types/onboarding';
 
@@ -29,6 +29,7 @@ export function DynamicCredentialsStep({ data, onUpdate }: Props) {
     const [status, setStatus] = useState<ConnectionStatus>({});
     const [tools, setTools] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [discoveryResult, setDiscoveryResult] = useState<{ slug: string, plugins: any } | null>(null);
 
     const selectedSlugs = data.selectedMcps || [];
 
@@ -67,17 +68,34 @@ export function DynamicCredentialsStep({ data, onUpdate }: Props) {
 
         try {
             // Call the connection API
-            // Note: connectorId might need mapping from slug. Assuming slug === connectorId for now.
             await brainApi.connectors.connect(tool.slug, creds);
 
             setStatus(prev => ({ ...prev, [tool.slug]: 'connected' }));
 
-            // Allow parent to know (optional)
-            // onUpdate({}); 
+            // Smart Discovery for WordPress
+            if (tool.slug === 'wordpress') {
+                try {
+                    const discovery = await brainApi.connectors.performAction(tool.slug, 'discover_plugins', {});
+                    if (discovery.status === 'success' && discovery.plugins) {
+                        const detected = Object.entries(discovery.plugins).filter(([_, p]: any) => p.detected);
+                        if (detected.length > 0) {
+                            setDiscoveryResult({ slug: tool.slug, plugins: discovery.plugins });
+                        }
+                    }
+                } catch (discoveryError) {
+                    console.warn("Plugin discovery failed", discoveryError);
+                }
+            }
         } catch (e) {
             console.error(`Failed to connect ${tool.name}`, e);
             setStatus(prev => ({ ...prev, [tool.slug]: 'error' }));
         }
+    };
+
+    const handleAddDiscovery = (mcpSlug: string) => {
+        const newSelected = [...(data.selectedMcps || []), mcpSlug];
+        onUpdate({ selectedMcps: Array.from(new Set(newSelected)) });
+        setDiscoveryResult(null);
     };
 
     const renderFormFields = (tool: any) => {
@@ -110,8 +128,8 @@ export function DynamicCredentialsStep({ data, onUpdate }: Props) {
                             <Input
                                 type="password"
                                 placeholder="xxxx-xxxx-xxxx-xxxx"
-                                value={credentials[tool.slug]?.password || ''}
-                                onChange={e => handleChange(tool.slug, 'password', e.target.value)}
+                                value={credentials[tool.slug]?.application_password || ''}
+                                onChange={e => handleChange(tool.slug, 'application_password', e.target.value)}
                             />
                             <p className="text-xs text-muted-foreground">Generated in WP Admin Users Profile</p>
                         </div>
@@ -234,6 +252,57 @@ export function DynamicCredentialsStep({ data, onUpdate }: Props) {
                     );
                 })}
             </div>
+
+            {/* Smart Discovery Modal/Overlay */}
+            {discoveryResult && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+                    <Card className="w-full max-w-lg shadow-2xl border-blue-200">
+                        <CardContent className="p-8">
+                            <div className="flex items-center gap-4 mb-6">
+                                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <Plug className="text-blue-600 w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold">Smart Discovery!</h3>
+                                    <p className="text-sm text-gray-500">We detected additional services on your site.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 mb-8">
+                                {Object.entries(discoveryResult.plugins).map(([key, plugin]: any) => {
+                                    if (!plugin.detected) return null;
+                                    return (
+                                        <div key={key} className="flex items-center justify-between p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
+                                                    {key[0].toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold capitalize">{key.replace('_', ' ')}</p>
+                                                    <p className="text-xs text-gray-500">Plugin detected and ready</p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                size="sm"
+                                                onClick={() => handleAddDiscovery(plugin.connector_id || key.replace('_', '-'))}
+                                                className="bg-blue-600 hover:bg-blue-700"
+                                            >
+                                                Add & Connect
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="flex justify-end gap-3">
+                                <Button variant="ghost" onClick={() => setDiscoveryResult(null)}>
+                                    Maybe Later
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 }

@@ -151,8 +151,43 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute actions on Google Business Profile.
-        Supported actions: 'auto_link'
+        Supported actions: 'auto_link', 'search_locations'
         """
+        if action == "search_locations":
+            query = payload.get("query", "")
+            if not query:
+                return {"status": "error", "message": "Search query is required"}
+            
+            # Use Google Business Information API to search
+            # For this MVP, we search across accounts first
+            accounts_data = await self.sync_data("accounts")
+            accounts = accounts_data.get("accounts", [])
+            
+            all_found = []
+            for acc in accounts:
+                headers = {"Authorization": f"Bearer {await self._get_access_token()}"}
+                async with httpx.AsyncClient() as client:
+                    # Search locations for each account
+                    resp = await client.get(
+                        f"{self._get_base_url()}/{acc['name']}/locations",
+                        headers=headers,
+                        params={"filter": f"locationName={query}"} # Simplified filtering
+                    )
+                    if resp.status_code == 200:
+                        locs = resp.json().get("locations", [])
+                        for l in locs:
+                            all_found.append({
+                                "account": acc["name"],
+                                "location": l["name"],
+                                "title": l.get("title"),
+                                "address": l.get("storefrontAddress")
+                            })
+            
+            return {
+                "status": "success",
+                "results": all_found
+            }
+
         if action == "auto_link":
             # 1. Discover accounts
             data = await self.sync_data("accounts")

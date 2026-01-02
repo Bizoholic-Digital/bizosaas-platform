@@ -131,8 +131,14 @@ export function OnboardingWizard() {
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
                     <span className="font-bold text-xl text-gray-900 tracking-tight">BizOSaaS</span>
                 </div>
-                <div className="text-sm text-gray-400 font-medium">
-                    Step {state.currentStep + 1} of {STEPS.length}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100 animate-pulse">
+                        <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                        <span className="text-xs font-bold uppercase tracking-wider">Draft Saved</span>
+                    </div>
+                    <div className="text-sm text-gray-400 font-medium">
+                        Step {state.currentStep + 1} of {STEPS.length}
+                    </div>
                 </div>
             </div>
 
