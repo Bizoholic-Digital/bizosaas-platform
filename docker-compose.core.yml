@@ -17,8 +17,8 @@ services:
     # container_name: bizosaas-brain-staging
     environment:
       # Database & Cache
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025%21StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - DATABASE_URL=${DATABASE_URL:-postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}
+      - REDIS_URL=${REDIS_URL:-redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0}
 
       # Authentication
       - JWT_SECRET=${JWT_SECRET:-vdMxrD6bZpZk6lClpkSP56+WNapkPAG5lY+BojEA/u7ffehUKcVL7re6xRaPWUCZffoxXF9ZFuU+KcZSWpz6CA==}
@@ -83,8 +83,8 @@ services:
       context: ./bizosaas-brain-core/ai-agents
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025%21StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - DATABASE_URL=${DATABASE_URL:-postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}
+      - REDIS_URL=${REDIS_URL:-redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0}
       - BRAIN_GATEWAY_URL=http://brain-gateway:8000
       - PYTHONPATH=/app
     networks:
