@@ -11,7 +11,8 @@ import {
     Plug,
     Rocket,
     Megaphone,
-    Bot
+    Bot,
+    Lock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -26,11 +27,13 @@ import { CampaignGoalsStep } from './OnboardingSteps/CampaignGoalsStep';
 import { CategorizedToolSelectionStep } from './OnboardingSteps/CategorizedToolSelectionStep';
 import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
+import { DynamicCredentialsStep } from './OnboardingSteps/DynamicCredentialsStep';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
     { id: 'presence', title: 'Presence', icon: Globe },
-    { id: 'tools', title: 'Select Tools', icon: Plug }, // New Step
+    { id: 'tools', title: 'Select Tools', icon: Plug },
+    { id: 'credentials', title: 'Connect', icon: Lock }, // New Step
     { id: 'analytics', title: 'Analytics', icon: BarChart3 },
     { id: 'social', title: 'Social', icon: Share2 },
     { id: 'goals', title: 'Goals', icon: Target },
@@ -100,15 +103,17 @@ export function OnboardingWizard() {
                 />;
             case 2: // New Tools Step
                 return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
-            case 3:
-                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
+            case 3: // Credentials
+                return <DynamicCredentialsStep data={state.tools} onUpdate={updateTools} />;
             case 4:
-                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
+                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
             case 5:
-                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
+                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
             case 6:
-                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
             case 7:
+                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+            case 8:
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;
