@@ -19,7 +19,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
@@ -41,7 +41,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
@@ -64,7 +64,7 @@ services:
       VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
     networks:
-      - brain-network
+      - dokploy-network
     cap_add:
       - IPC_LOCK
     deploy:
@@ -87,7 +87,7 @@ services:
       - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_SEEDS=postgres
     networks:
-      - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
@@ -105,7 +105,7 @@ services:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=http://localhost:3003
     networks:
-      - brain-network
+      - dokploy-network
     deploy:
       resources:
         limits:
@@ -119,9 +119,8 @@ services:
 # Networks
 # ═══════════════════════════════════════════════════════════════════════════
 networks:
-  brain-network:
-    driver: bridge
-    name: brain-network
+  dokploy-network:
+    external: true
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Volumes

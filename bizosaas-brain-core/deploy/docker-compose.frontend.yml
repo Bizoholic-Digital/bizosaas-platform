@@ -21,7 +21,6 @@ services:
       - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
       - AUTHENTIK_URL=${AUTHENTIK_URL:-http://localhost:9000}
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -40,7 +39,5 @@ services:
 # Networks
 # ═══════════════════════════════════════════════════════════════════════════
 networks:
-  brain-network:
-    external: true
   dokploy-network:
     external: true

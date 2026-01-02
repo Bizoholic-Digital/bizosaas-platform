@@ -16,7 +16,7 @@ services:
       POSTGRES_USER: ${AUTHENTIK_POSTGRES_USER:-authentik}
       POSTGRES_DB: ${AUTHENTIK_POSTGRES_DB:-authentik}
     networks:
-      - brain-network
+      - dokploy-network
 
   authentik-redis:
     image: redis:alpine
@@ -32,7 +32,7 @@ services:
     volumes:
       - authentik_redis_data:/data
     networks:
-      - brain-network
+      - dokploy-network
 
   authentik-server:
     image: ghcr.io/goauthentik/server:2024.10.1
@@ -56,7 +56,7 @@ services:
       - authentik-postgres
       - authentik-redis
     networks:
-      - brain-network
+      - dokploy-network
 
   authentik-worker:
     image: ghcr.io/goauthentik/server:2024.10.1
@@ -88,5 +88,5 @@ volumes:
 
 
 networks:
-  brain-network:
+  dokploy-network:
     external: true
