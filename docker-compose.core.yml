@@ -43,6 +43,7 @@ services:
       # Server Configuration
       - ALLOWED_HOSTS=api.bizoholic.net,localhost
       - CORS_ALLOWED_ORIGINS=https://app.bizoholic.net,https://admin.bizoholic.net
+      - PYTHONPATH=/app
 
     networks:
       - dokploy-network
@@ -71,6 +72,28 @@ services:
       retries: 3
       start_period: 40s
 
+    restart: unless-stopped
+
+  # ========================================
+  # AI Agents Service
+  # ========================================
+  ai-agents:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
+    build:
+      context: ./bizosaas-brain-core/ai-agents
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025%21StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - BRAIN_GATEWAY_URL=http://brain-gateway:8000
+      - PYTHONPATH=/app
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     restart: unless-stopped
   # ========================================
   # MCP Server (GitHub Integration)
