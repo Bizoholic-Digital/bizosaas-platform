@@ -294,6 +294,19 @@ export function ConnectorsContent() {
                 namespace: { type: 'string', label: 'Namespace', required: true },
                 address: { type: 'string', label: 'Address', placeholder: 'namespace.tmprl.cloud:7233', required: true }
             }
+        },
+        {
+            id: 'grafana',
+            name: 'Grafana',
+            type: 'infrastructure',
+            description: 'Platform monitoring and observability dashboards.',
+            icon: 'activity',
+            version: '1.0.0',
+            status: 'disconnected',
+            auth_schema: {
+                url: { type: 'string', label: 'Grafana URL', placeholder: 'http://grafana:3000', required: true },
+                api_key: { type: 'password', label: 'API Key', required: true }
+            }
         }
     ];
 
