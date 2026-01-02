@@ -97,8 +97,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
                 <div>
-                  <h1 className="font-black text-xl text-gray-900 dark:text-white truncate tracking-tight underline decoration-purple-500 decoration-2">BizOSaaS</h1>
-                  <p className="text-[10px] text-purple-600 dark:text-purple-400 font-bold mt-1 uppercase tracking-widest leading-none">V5.0.3-PREMIUM</p>
+                  <h1 className="font-black text-xl text-gray-900 dark:text-white truncate tracking-tight underline decoration-purple-500 decoration-2">BizOSaaS <span className="text-xs font-normal text-indigo-500 ml-1 no-underline decoration-0">(Premium)</span></h1>
                 </div>
               )}
               {isCollapsed && (
@@ -189,15 +188,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             )}
 
             {!isCollapsed && (
-              <div className="mt-4 flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                  <Wifi className="w-3 h-3 text-green-500" />
-                  <span>System Online</span>
-                </div>
-                <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                  <span className="flex h-2 w-2 rounded-full bg-green-500 ml-0.5"></span>
-                  <span>Live API</span>
-                </div>
+              <div className="mt-4 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                <Wifi className="w-3 h-3 text-green-500" />
+                <span>System Online</span>
+                <span className="text-gray-300 dark:text-gray-700">•</span>
+                <span className="flex items-center gap-1 text-green-500">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  Live API
+                </span>
               </div>
             )}
           </div>
