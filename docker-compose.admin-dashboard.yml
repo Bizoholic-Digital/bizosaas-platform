@@ -121,8 +121,5 @@ services:
       - "traefik.docker.network=dokploy-network"
 
 networks:
-  brain-network:
-    external: true
-
   dokploy-network:
     external: true

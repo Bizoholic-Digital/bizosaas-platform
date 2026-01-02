@@ -234,9 +234,6 @@ services:
   #         memory: 128M
 
 networks:
-  brain-network:
-    external: true
-    name: brain-network
   dokploy-network:
     external: true
 

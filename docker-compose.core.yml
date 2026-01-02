@@ -45,7 +45,6 @@ services:
       - CORS_ALLOWED_ORIGINS=https://app.bizoholic.net,https://admin.bizoholic.net
 
     networks:
-      - brain-network
       - dokploy-network
 
     deploy:
@@ -95,7 +94,5 @@ services:
   # Networks
   # ═══════════════════════════════════════════════════════════════════════════
 networks:
-  brain-network:
-    external: true
   dokploy-network:
     external: true
