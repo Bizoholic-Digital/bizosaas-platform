@@ -189,9 +189,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             )}
 
             {!isCollapsed && (
-              <div className="mt-4 flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
-                <Wifi className="w-3 h-3 text-green-500" />
-                <span>System Online</span>
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                  <Wifi className="w-3 h-3 text-green-500" />
+                  <span>System Online</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
+                  <span className="flex h-2 w-2 rounded-full bg-green-500 ml-0.5"></span>
+                  <span>Live API</span>
+                </div>
               </div>
             )}
           </div>
@@ -243,12 +249,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 </button>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-4">
-                  <div className="hidden md:flex items-center gap-2">
-                    <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Live API</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
