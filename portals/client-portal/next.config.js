@@ -32,11 +32,11 @@ const nextConfig = {
     return [
       {
         source: '/api/brain/health',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/health`,
+        destination: `${process.env.BRAIN_GATEWAY_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/health`,
       },
       {
         source: '/api/brain/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/:path*`,
+        destination: `${process.env.BRAIN_GATEWAY_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/:path*`,
       },
     ];
   },

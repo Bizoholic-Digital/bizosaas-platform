@@ -29,11 +29,11 @@ const nextConfig = {
     return [
       {
         source: '/api/brain/health',
-        destination: 'http://localhost:8000/health',
+        destination: `${process.env.BRAIN_GATEWAY_URL || 'http://localhost:8000'}/health`,
       },
       {
         source: '/api/brain/:path*',
-        destination: 'http://localhost:8000/api/:path*',
+        destination: `${process.env.BRAIN_GATEWAY_URL || 'http://localhost:8000'}/api/:path*`,
       },
     ];
   },
