@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { BusinessProfile } from '../types/onboarding';
-import { Search, MapPin, Globe, Phone } from 'lucide-react';
+import { Search, MapPin, Globe, Phone, Target, Rocket } from 'lucide-react';
 
 interface Props {
     data: BusinessProfile;
@@ -88,6 +88,43 @@ export function CompanyIdentityStep({ data, onUpdate }: Props) {
                             value={data.industry}
                             onChange={(e) => onUpdate({ industry: e.target.value })}
                             placeholder="e.g. Retail, SaaS, Agency"
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label>Brief Description</Label>
+                    <textarea
+                        className="w-full min-h-[80px] p-3 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={data.description || ''}
+                        onChange={(e) => onUpdate({ description: e.target.value })}
+                        placeholder="What does your company do?"
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                            <Target className="w-4 h-4 text-blue-500" />
+                            Target Audience
+                        </Label>
+                        <textarea
+                            className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm"
+                            value={data.target_audience_desc || ''}
+                            onChange={(e) => onUpdate({ target_audience_desc: e.target.value })}
+                            placeholder="Who is your ideal customer? (e.g. Small business owners in NY)"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                            <Rocket className="w-4 h-4 text-purple-500" />
+                            Main Products/Services
+                        </Label>
+                        <textarea
+                            className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm"
+                            value={data.main_products_services || ''}
+                            onChange={(e) => onUpdate({ main_products_services: e.target.value })}
+                            placeholder="What are you primarily selling? (e.g. Cloud storage, Organic coffee)"
                         />
                     </div>
                 </div>

@@ -1,58 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-
-    // Validate required fields
-    const { business_type, industry, company_size, goals } = body;
-
-    if (!body) {
-      return NextResponse.json(
-        { error: 'Missing request body' },
-        { status: 400 }
-      );
+    const token = await getToken({ req: request });
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Accept any valid business profile data
-    // In a real implementation, we would save this to the database/CRM
+    const body = await request.json();
+    const backendUrl = process.env.BRAIN_GATEWAY_URL || 'http://brain-gateway:8000';
 
-    const businessProfile = {
-      id: `bp_${Date.now()}`,
-      business_type: business_type || 'unknown',
-      industry: industry || 'unknown',
-      company_size: company_size || 'unknown',
-      goals: goals || [],
-      onboarding_completed: true,
-      created_at: new Date().toISOString(),
-    };
-
-    return NextResponse.json({
-      success: true,
-      profile: businessProfile,
-      message: 'Business profile created successfully',
-      next_step: '/dashboard'
+    const response = await fetch(`${backendUrl}/api/onboarding/business-profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.accessToken}`,
+      },
+      body: JSON.stringify(body),
     });
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
+
+    return NextResponse.json(data);
+
   } catch (error) {
-    console.error('Business profile creation error:', error);
+    console.error('Business profile update error:', error);
     return NextResponse.json(
-      { error: 'Failed to create business profile' },
+      { error: 'Internal Server Error' },
       { status: 500 }
     );
   }
 }
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json({
-    success: true,
-    profile: {
-      id: 'bp_mock',
-      business_type: 'technology',
-      industry: 'software',
-      company_size: '10-50',
-      goals: ['lead_generation', 'brand_awareness'],
-      onboarding_completed: false
+  try {
+    const token = await getToken({ req: request });
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-  });
+
+    const backendUrl = process.env.BRAIN_GATEWAY_URL || 'http://brain-gateway:8000';
+
+    const response = await fetch(`${backendUrl}/api/onboarding/business-profile`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token.accessToken}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Business profile fetch error:', error);
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
+  }
 }

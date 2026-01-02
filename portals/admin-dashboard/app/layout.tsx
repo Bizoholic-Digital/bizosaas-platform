@@ -44,10 +44,8 @@ function hexToHsl(hex: string): string {
 export async function generateMetadata(): Promise<Metadata> {
   let config: any = {};
   try {
-    // NOTE: Admin uses the private endpoint, which requires auth normally.
-    // However, for metadata generation (server-side), we might need a workaround or handle failure.
-    // Since this is for branding, we'll try to fetch it.
-    config = await brainApi.admin.getTenantConfig();
+    // Use the same public config as the Client Portal for standardized branding
+    config = await brainApi.public.getConfig();
   } catch (e) {
     console.error("Failed to load admin metadata config", e);
   }
@@ -80,7 +78,7 @@ export default async function RootLayout({
   let primaryHsl = "221.2 83.2% 53.3%"; // Default Blue
 
   try {
-    config = await brainApi.admin.getTenantConfig();
+    config = await brainApi.public.getConfig();
     if (config.primary_color) {
       primaryHsl = hexToHsl(config.primary_color);
     }

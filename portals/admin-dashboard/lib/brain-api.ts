@@ -188,5 +188,11 @@ export const brainApi = {
         getInstalled: async (token?: string): Promise<any[]> => {
             return apiFetch('/api/mcp/installed', {}, token);
         }
+    },
+    public: {
+        getConfig: async (tenantId?: string): Promise<any> => {
+            const query = tenantId ? `?tenant_id=${tenantId}` : '';
+            return apiFetch(`/api/public/config${query}`, {});
+        }
     }
 };

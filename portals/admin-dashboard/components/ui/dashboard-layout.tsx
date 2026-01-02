@@ -132,7 +132,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             )}
           </div>
 
-          <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'p-4'}`}>
+          <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'p-6'}`}>
             <Suspense fallback={
               <div className="animate-pulse space-y-2">
                 {[...Array(8)].map((_, i) => (
@@ -184,7 +184,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     <Wifi className="w-3 h-3 text-green-500" />
                     <span>System Online</span>
                   </div>
-                  <span className="text-gray-300 dark:text-gray-700 mx-1">•</span>
                   <div className="flex items-center gap-1.5 text-green-500">
                     <div className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>

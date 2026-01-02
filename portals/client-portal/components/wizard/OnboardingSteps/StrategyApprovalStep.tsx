@@ -12,7 +12,10 @@ interface Props {
 export function StrategyApprovalStep({ data, onConfirm }: Props) {
     // Simple strategy synthesis logic
     const getStrategySummary = () => {
-        let summary = `Focus on ${data.goals.primaryGoal.replace('_', ' ')} using `;
+        let summary = `Focus on ${data.goals.primaryGoal.replace('_', ' ')} for ${data.profile.companyName} `;
+        if (data.profile.industry) summary += `in the ${data.profile.industry} sector `;
+        summary += `using `;
+
         if (data.socialMedia.platforms.length > 0) {
             summary += data.socialMedia.platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ');
         } else {
@@ -45,17 +48,29 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                     {getStrategySummary()}
                 </p>
 
-                <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="bg-white/60 p-3 rounded-lg">
-                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Channels</span>
-                        <span className="font-semibold text-gray-900">
-                            {data.socialMedia.platforms.length ? data.socialMedia.platforms.join(', ') : 'SEO & Content'}
-                        </span>
+                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Mission</span>
+                        <p className="font-medium text-gray-900 line-clamp-2">
+                            {data.profile.description || 'Promoting business growth and digital excellence.'}
+                        </p>
                     </div>
                     <div className="bg-white/60 p-3 rounded-lg">
-                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Budget Allocation</span>
+                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Target Audience</span>
+                        <p className="font-medium text-gray-900 line-clamp-2">
+                            {data.profile.target_audience_desc || 'General market and niche prospects.'}
+                        </p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Focus Offering</span>
+                        <p className="font-medium text-gray-900 line-clamp-2">
+                            {data.profile.main_products_services || 'Core business solutions.'}
+                        </p>
+                    </div>
+                    <div className="bg-white/60 p-3 rounded-lg">
+                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Active Channels</span>
                         <span className="font-semibold text-gray-900">
-                            70% Acquisition / 30% Retargeting
+                            {data.socialMedia.platforms.length ? data.socialMedia.platforms.join(', ') : 'SEO & Content'}
                         </span>
                     </div>
                 </div>

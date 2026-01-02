@@ -27,6 +27,8 @@ class BusinessProfile(BaseModel):
     website: Optional[str] = None
     phone: Optional[str] = None
     description: Optional[str] = None
+    target_audience_desc: Optional[str] = None
+    main_products_services: Optional[str] = None
 
 class DigitalPresence(BaseModel):
     websiteDetected: bool
@@ -154,11 +156,12 @@ async def search_business(q: str):
         "status": "success",
         "results": [
             {
-                "companyName": q.title(),
-                "location": "Determined from search",
-                "website": f"https://{q.lower().replace(' ', '')}.com",
+                "companyName": q.replace("https://", "").replace("www.", "").split("/")[0].title() if "http" in q else q.title(),
+                "location": "Global / Remote" if "http" in q else "Determined from search",
+                "website": q if "http" in q else f"https://{q.lower().replace(' ', '')}.com",
                 "phone": "+1 555 000 0000",
-                "industry": "General Business"
+                "industry": "Professional Services",
+                "description": f"A growing company in the {q} space focused on innovation and customer success."
             }
         ]
     }

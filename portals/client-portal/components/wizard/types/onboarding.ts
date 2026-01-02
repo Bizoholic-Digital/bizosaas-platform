@@ -6,6 +6,8 @@ export interface BusinessProfile {
     website?: string;
     phone?: string;
     description?: string;
+    target_audience_desc?: string;
+    main_products_services?: string;
 }
 
 export interface DigitalPresence {

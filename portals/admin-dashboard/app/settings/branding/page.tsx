@@ -92,7 +92,7 @@ export default function BrandingSettingsPage() {
 
     return (
         <DashboardLayout>
-            <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+            <div className="flex-1 w-full max-w-6xl mx-auto p-12 md:p-16 lg:p-20 space-y-12">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">Branding & White Label</h2>
