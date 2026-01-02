@@ -70,11 +70,29 @@ def seed_connectors():
         }
 
         # Redis Cloud
+        import os
         logger.info("📝 Seeding Redis Cloud connection...")
+        redis_url = os.getenv("REDIS_URL", "redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0")
+        
         active_connectors["default:redis"] = {
             "connector_id": "redis",
             "credentials": {
-                "url": "redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0",
+                "url": redis_url,
+                "force_connect": True
+            },
+            "status": ConnectorStatus.CONNECTED
+        }
+
+        # Temporal Cloud
+        logger.info("📝 Seeding Temporal Cloud connection...")
+        temporal_host = os.getenv("TEMPORAL_HOST", "ap-south-2.aws.api.temporal.io:7233")
+        temporal_ns = os.getenv("TEMPORAL_NAMESPACE", "default")
+        
+        active_connectors["default:temporal"] = {
+            "connector_id": "temporal",
+            "credentials": {
+                "host": temporal_host,
+                "namespace": temporal_ns,
                 "force_connect": True
             },
             "status": ConnectorStatus.CONNECTED
