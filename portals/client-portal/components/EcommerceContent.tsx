@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Plus, Search, Filter, Edit, Trash2, Package,
-    ShoppingCart, Users, BarChart3, Target, MessageSquare, RefreshCw, AlertCircle
+    ShoppingCart, Users, BarChart3, Target, MessageSquare, RefreshCw, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { ProductForm } from './ProductForm';
 import { OrderForm } from './OrderForm';

@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { 
+import {
   Shield,
   Users,
   Key,
@@ -50,7 +50,8 @@ import {
   FileText,
   Activity,
   Ban,
-  UserX
+  UserX,
+  BarChart3
 } from 'lucide-react';
 
 // Role and permission interfaces
@@ -137,25 +138,25 @@ const mockPermissions: Permission[] = [
   { id: 'agent.configure', name: 'Configure Agents', description: 'Modify agent settings and configurations', category: 'agent_management', level: 'write' },
   { id: 'agent.start_stop', name: 'Start/Stop Agents', description: 'Start, stop, or restart agents', category: 'agent_management', level: 'execute' },
   { id: 'agent.delete', name: 'Delete Agents', description: 'Permanently delete agents', category: 'agent_management', level: 'admin' },
-  
+
   // Configuration
   { id: 'config.view', name: 'View Configuration', description: 'View system and agent configurations', category: 'configuration', level: 'read' },
   { id: 'config.modify', name: 'Modify Configuration', description: 'Change system and agent configurations', category: 'configuration', level: 'write' },
   { id: 'config.deploy', name: 'Deploy Configuration', description: 'Deploy configuration changes', category: 'configuration', level: 'execute' },
-  
+
   // Monitoring
   { id: 'monitor.view', name: 'View Monitoring', description: 'Access monitoring dashboards and metrics', category: 'monitoring', level: 'read' },
   { id: 'monitor.alerts', name: 'Manage Alerts', description: 'Configure and manage monitoring alerts', category: 'monitoring', level: 'write' },
-  
+
   // Tasks
   { id: 'task.view', name: 'View Tasks', description: 'View task status and history', category: 'tasks', level: 'read' },
   { id: 'task.create', name: 'Create Tasks', description: 'Create and assign new tasks', category: 'tasks', level: 'write' },
   { id: 'task.manage', name: 'Manage Tasks', description: 'Modify, cancel, or reassign tasks', category: 'tasks', level: 'execute' },
-  
+
   // Analytics
   { id: 'analytics.view', name: 'View Analytics', description: 'Access performance analytics and reports', category: 'analytics', level: 'read' },
   { id: 'analytics.export', name: 'Export Analytics', description: 'Export analytics data and reports', category: 'analytics', level: 'write' },
-  
+
   // System
   { id: 'system.admin', name: 'System Administration', description: 'Full system administration access', category: 'system', level: 'admin' },
   { id: 'user.manage', name: 'User Management', description: 'Manage users and their permissions', category: 'system', level: 'admin' },
@@ -197,9 +198,9 @@ const mockRoles: Role[] = [
     name: 'Domain Administrator',
     description: 'Administrative access within specific domains',
     level: 'domain_admin',
-    permissions: mockPermissions.filter(p => 
-      p.category === 'agent_management' || 
-      p.category === 'configuration' || 
+    permissions: mockPermissions.filter(p =>
+      p.category === 'agent_management' ||
+      p.category === 'configuration' ||
       p.category === 'monitoring' ||
       (p.category === 'tasks' && p.level !== 'admin')
     ),
@@ -221,7 +222,7 @@ const mockRoles: Role[] = [
     name: 'Agent Operator',
     description: 'Operational access to manage agents and tasks',
     level: 'agent_operator',
-    permissions: mockPermissions.filter(p => 
+    permissions: mockPermissions.filter(p =>
       (p.category === 'agent_management' && p.level !== 'admin') ||
       p.category === 'monitoring' ||
       p.category === 'tasks'
@@ -347,8 +348,8 @@ const RoleBadge: React.FC<{ role: Role }> = ({ role }) => {
 };
 
 // Permission list component
-const PermissionsList: React.FC<{ 
-  permissions: Permission[]; 
+const PermissionsList: React.FC<{
+  permissions: Permission[];
   userPermissions: Permission[];
   onToggle?: (permission: Permission, granted: boolean) => void;
   readonly?: boolean;
@@ -422,8 +423,8 @@ const PermissionsList: React.FC<{
 };
 
 // User management component
-const UserManagement: React.FC<{ 
-  users: User[]; 
+const UserManagement: React.FC<{
+  users: User[];
   roles: Role[];
   onUserUpdate: (user: User) => void;
 }> = ({ users, roles, onUserUpdate }) => {
@@ -472,7 +473,7 @@ const UserManagement: React.FC<{
                   </div>
                   <RoleBadge role={user.role} />
                 </div>
-                
+
                 <div className="flex items-center space-x-4">
                   <div className="text-right text-sm">
                     <p className="text-gray-500">Last Login</p>
@@ -480,12 +481,12 @@ const UserManagement: React.FC<{
                       {user.lastLogin ? user.lastLogin.toLocaleString() : 'Never'}
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center space-x-1">
                     <span className="text-sm">{user.sessionCount} sessions</span>
                     {getTimeRestrictionStatus(user)}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -568,7 +569,7 @@ const UserManagement: React.FC<{
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label>Status</Label>
                   <div className="flex items-center space-x-2">
@@ -627,7 +628,7 @@ export default function AgentAccessControl() {
   const [currentUser] = useState<User>(mockUsers[0]); // Simulate current user
 
   const handleUserUpdate = (updatedUser: User) => {
-    setUsers(prev => prev.map(user => 
+    setUsers(prev => prev.map(user =>
       user.id === updatedUser.id ? updatedUser : user
     ));
   };
@@ -635,12 +636,12 @@ export default function AgentAccessControl() {
   // Access control provider value
   const accessControlValue: AccessControlContextType = {
     currentUser,
-    hasPermission: (permission: string, resource?: string) => 
+    hasPermission: (permission: string, resource?: string) =>
       checkPermission(currentUser, permission, resource),
     hasRole: (role: string) => currentUser.role.level === role,
-    canAccessAgent: (agentId: string) => 
+    canAccessAgent: (agentId: string) =>
       checkPermission(currentUser, 'agent.view', agentId),
-    canAccessDomain: (domain: string) => 
+    canAccessDomain: (domain: string) =>
       checkDomainAccess(currentUser, domain)
   };
 
@@ -681,7 +682,7 @@ export default function AgentAccessControl() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -693,7 +694,7 @@ export default function AgentAccessControl() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -705,7 +706,7 @@ export default function AgentAccessControl() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -750,9 +751,8 @@ export default function AgentAccessControl() {
                     {roles.map((role) => (
                       <div
                         key={role.id}
-                        className={`p-3 border rounded cursor-pointer hover:bg-gray-50 ${
-                          selectedRole?.id === role.id ? 'border-blue-500 bg-blue-50' : ''
-                        }`}
+                        className={`p-3 border rounded cursor-pointer hover:bg-gray-50 ${selectedRole?.id === role.id ? 'border-blue-500 bg-blue-50' : ''
+                          }`}
                         onClick={() => setSelectedRole(role)}
                       >
                         <div className="flex items-center justify-between">
