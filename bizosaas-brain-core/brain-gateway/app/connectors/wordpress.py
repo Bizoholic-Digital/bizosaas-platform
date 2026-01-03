@@ -376,22 +376,33 @@ class WordPressConnector(BaseConnector, CMSPort):
                 return None
 
     async def create_page(self, page: Page) -> Page:
+        # Sanitize status for WordPress (must be publish, draft, pending, private)
+        wp_status = page.status if page.status in ["publish", "draft", "future", "pending", "private"] else "publish"
+        
         payload = {
             "title": page.title,
             "content": page.content,
-            "status": page.status,
+            "status": wp_status,
             "slug": page.slug
         }
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self._get_api_url("pages"),
-                headers=self._get_auth_header(),
-                json=payload
-            )
-            response.raise_for_status()
-            p = response.json()
-            page.id = str(p["id"])
-            return page
+            try:
+                response = await client.post(
+                    self._get_api_url("pages"),
+                    headers=self._get_auth_header(),
+                    json=payload,
+                    timeout=20.0
+                )
+                if response.status_code != 201:
+                    logger.error(f"WordPress create_page failed: {response.status_code} - {response.text}")
+                
+                response.raise_for_status()
+                p = response.json()
+                page.id = str(p["id"])
+                return page
+            except Exception as e:
+                logger.error(f"Page creation exception: {str(e)}")
+                raise
             
     async def update_page(self, page_id: str, updates: Dict[str, Any]) -> Page:
         async with httpx.AsyncClient() as client:
