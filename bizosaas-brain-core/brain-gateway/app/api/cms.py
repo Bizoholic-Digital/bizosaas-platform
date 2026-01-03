@@ -140,11 +140,17 @@ async def create_page(
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
-        # Convert to dict, excluding auto-fields if needed
-        payload = page.dict(exclude={"id", "published_at", "updated_at"})
-        # CMSPort.create_page likely expects dict or Page model
-        # Assuming connector accepts dict for now
-        result = await connector.create_page(payload)
+        # Convert Pydantic model to dict, then to PortPage object
+        data = page.dict(exclude={"id", "published_at", "updated_at"})
+        port_page = PortPage(
+            id="", # Will be set by connector
+            title=data.get("title", ""),
+            slug=data.get("slug", ""),
+            content=data.get("content", ""),
+            status=data.get("status", "draft"),
+            author_id=user.email
+        )
+        result = await connector.create_page(port_page)
         
         return PageMessage(
             id=result.id,
@@ -185,8 +191,8 @@ async def update_page(
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
-        payload = page.dict(exclude={"id", "published_at", "updated_at"})
-        result = await connector.update_page(page_id, payload)
+        data = page.dict(exclude={"id", "published_at", "updated_at"})
+        result = await connector.update_page(page_id, data)
         
         return PageMessage(
             id=result.id,
@@ -238,8 +244,17 @@ async def create_post(
     tenant_id = user.tenant_id or "default"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
-        payload = post.dict(exclude={"id", "published_at", "updated_at"})
-        result = await connector.create_post(payload)
+        data = post.dict(exclude={"id", "published_at", "updated_at"})
+        port_post = PortPost(
+            id="",
+            title=data.get("title", ""),
+            slug=data.get("slug", ""),
+            content=data.get("content", ""),
+            status=data.get("status", "publish"),
+            excerpt=data.get("excerpt", ""),
+            author_id=user.email
+        )
+        result = await connector.create_post(port_post)
         return PostMessage(
              id=result.id,
              title=result.title,

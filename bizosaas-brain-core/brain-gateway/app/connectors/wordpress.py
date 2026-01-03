@@ -171,19 +171,30 @@ class WordPressConnector(BaseConnector, CMSPort):
 
             for slug, req in requirements.items():
                 try:
-                    # Check namespace list first
+                    # Method 1: Check namespace list in /wp-json index (Most reliable)
                     detected = req["prefix"] in namespaces
                     
-                    # Fallback or confirmation: try hitting the specific endpoint
+                    # Method 2: Confirmation/Fallback by hitting the endpoint
+                    # Only do this if it wasn't already detected in the index,
+                    # but be careful of WAFs returning 403 for non-existent paths.
                     if not detected:
                         url = self._get_plugin_api_url(req["prefix"], req["path"])
                         resp = await client.get(url, headers=auth, timeout=5.0)
-                        # 200 means it definitely exists and is public
-                        # 401/403 means the endpoint is registered but we lack permissions 
-                        # (common for CRM/WooCommerce depending on API key scope)
-                        if resp.status_code in [200, 401, 403]:
+                        
+                        # If we get 404, it's definitely not there
+                        if resp.status_code == 404:
+                            detected = False
+                        # If we get 200, it's definitely there
+                        elif resp.status_code == 200:
                             detected = True
-                    
+                        # If we get 401 or 403, it MIGHT be there but restricted, 
+                        # OR a WAF is blocking the probe. We'll only trust it if 
+                        # we have no other info, but typically index is better.
+                        elif resp.status_code in [401, 403]:
+                            # If it was in namespaces but resp was 403, that's fine.
+                            # But if it WASN'T in namespaces and resp is 403, it's likely a WAF.
+                            detected = False 
+
                     plugins[slug] = {
                         "detected": detected,
                         "label": req["label"]
