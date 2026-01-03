@@ -82,7 +82,7 @@ class CITestSuite {
       } else {
         this.results.failed++;
         await this.log('error', `❌ ${route.name}: FAIL (${response.status})`);
-        
+
         if (route.required) {
           this.results.criticalFailures.push(`${route.name}: ${response.status}`);
         }
@@ -92,10 +92,10 @@ class CITestSuite {
     } catch (error) {
       this.results.total++;
       this.results.failed++;
-      
+
       const errorMsg = `${route.name}: ${error.code || error.message}`;
       await this.log('error', `❌ ${errorMsg}`);
-      
+
       if (route.required) {
         this.results.criticalFailures.push(errorMsg);
       }
@@ -135,9 +135,10 @@ class CITestSuite {
 
   async runHealthCheck() {
     await this.log('info', 'Running application health check...');
-    
+
     try {
-      const response = await axios.get(BASE_URL, { timeout: 10000 });
+      // Increase timeout for local dev compilation
+      const response = await axios.get(BASE_URL, { timeout: 30000 });
       if (response.status === 200) {
         await this.log('info', '✅ Application is responding');
         return true;
@@ -153,7 +154,7 @@ class CITestSuite {
 
   async runTests() {
     console.log('🚀 BizOSaaS Client Portal CI/CD Test Suite');
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
     console.log(`Base URL: ${BASE_URL}`);
     console.log(`Timeout: ${TIMEOUT}ms`);
     console.log('');
@@ -167,21 +168,21 @@ class CITestSuite {
 
     console.log('\n📋 Testing Critical Routes...');
     console.log('-'.repeat(40));
-    
+
     for (const route of CRITICAL_ROUTES) {
       await this.testRoute(route);
     }
 
     console.log('\n📋 Testing Secondary Routes...');
     console.log('-'.repeat(40));
-    
+
     for (const route of SECONDARY_ROUTES) {
       await this.testRoute(route);
     }
 
     console.log('\n🔌 Testing API Endpoints...');
     console.log('-'.repeat(40));
-    
+
     for (const api of CRITICAL_APIS) {
       await this.testAPI(api);
     }
@@ -200,7 +201,7 @@ class CITestSuite {
     console.log(`Passed: ${this.results.passed}`);
     console.log(`Failed: ${this.results.failed}`);
     console.log(`Success Rate: ${successRate}%`);
-    console.log(`Duration: ${(duration/1000).toFixed(1)}s`);
+    console.log(`Duration: ${(duration / 1000).toFixed(1)}s`);
 
     const report = {
       timestamp: new Date().toISOString(),
