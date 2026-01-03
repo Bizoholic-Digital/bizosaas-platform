@@ -104,8 +104,16 @@ async def disconnect_connector(
     """Disconnect an integration"""
     tenant_id = user.tenant_id or "default"
     
+    # Remove from Vault
     success = await secret_service.delete_connector_credentials(tenant_id, connector_id)
     
+    # Also remove from in-memory seeded store if present
+    from app.store import active_connectors
+    in_memory_key = f"{tenant_id}:{connector_id}"
+    if in_memory_key in active_connectors:
+        del active_connectors[in_memory_key]
+        success = True # Consider it a success if we removed it from memory
+        
     if not success:
         raise HTTPException(status_code=500, detail="Failed to delete credentials")
         

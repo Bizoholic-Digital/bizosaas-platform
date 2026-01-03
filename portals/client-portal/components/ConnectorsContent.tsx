@@ -257,6 +257,20 @@ export function ConnectorsContent() {
             auth_schema: {
                 advertiser_id: { type: 'string', label: 'Advertiser ID', required: true }
             }
+        },
+        {
+            id: 'amazon',
+            name: 'Amazon Marketplace',
+            type: 'ecommerce',
+            description: 'Source and manage listings on Amazon marketplaces (Coreldove).',
+            icon: 'shopping-cart',
+            version: '1.0.0',
+            status: 'disconnected',
+            auth_schema: {
+                seller_id: { type: 'string', label: 'Seller ID', required: true },
+                mws_auth_token: { type: 'password', label: 'MWS Auth Token', required: true },
+                marketplace_id: { type: 'string', label: 'Marketplace ID', required: true }
+            }
         }
     ];
 
