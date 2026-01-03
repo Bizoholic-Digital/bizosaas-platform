@@ -122,7 +122,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-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}
       - VECTOR_DB_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
       - USE_VAULT=true
-      - VAULT_ADDR=http://vault:8200
+      - VAULT_ADDR=http://brain-vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
       - PYTHONPATH=/app
     networks:
@@ -156,7 +156,7 @@ services:
       - BRAIN_GATEWAY_URL=http://bizosaas-brain-staging:8000
       - OPENAI_API_KEY=${OPENAI_API_KEY:-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}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-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}
-      - VAULT_ADDR=http://vault:8200
+      - VAULT_ADDR=http://brain-vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
       - PYTHONPATH=/app
     networks:
