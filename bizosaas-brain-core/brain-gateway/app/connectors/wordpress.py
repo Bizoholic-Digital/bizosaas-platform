@@ -123,8 +123,27 @@ class WordPressConnector(BaseConnector, CMSPort):
         elif action == "install_plugin":
             success = await self.install_plugin(payload.get("slug"))
             return {"status": "success" if success else "error"}
+        elif action == "uninstall_plugin":
+            success = await self.uninstall_plugin(payload.get("slug"))
+            return {"status": "success" if success else "error"}
         elif action == "search_plugin_directory":
             return await self._search_wp_org_plugins(payload.get("query", ""))
+        elif action == "create_post":
+            from app.ports.cms_port import Post
+            post = Post(**payload)
+            result = await self.create_post(post)
+            return result.dict()
+        elif action == "create_page":
+            from app.ports.cms_port import Page
+            page = Page(**payload)
+            result = await self.create_page(page)
+            return result.dict()
+        elif action == "delete_post":
+            success = await self.delete_post(payload.get("post_id"))
+            return {"status": "success" if success else "error"}
+        elif action == "delete_page":
+            success = await self.delete_page(payload.get("page_id"))
+            return {"status": "success" if success else "error"}
         return {"status": "error", "message": f"Unknown action: {action}"}
 
     async def _discover_plugins(self) -> Dict[str, Any]:
@@ -139,21 +158,32 @@ class WordPressConnector(BaseConnector, CMSPort):
         auth = self._get_auth_header()
         
         async with httpx.AsyncClient() as client:
+            # First, fetch the /wp-json index to see available namespaces globally
+            # This is the most reliable way to check for plugin activations
+            namespaces = []
+            try:
+                index_url = self.credentials.get("url", "").rstrip("/") + "/wp-json"
+                index_resp = await client.get(index_url, timeout=5.0)
+                if index_resp.status_code == 200:
+                    namespaces = index_resp.json().get("namespaces", [])
+            except Exception as e:
+                logger.warning(f"Failed to fetch WordPress index: {e}")
+
             for slug, req in requirements.items():
                 try:
-                    url = self._get_plugin_api_url(req["prefix"], req["path"])
-                    resp = await client.get(url, headers=auth, timeout=5.0)
-                    # For FluentCRM, it might return 403 if it exists but we lack specific CRM perms, 
-                    # but the namespace exists if the plugin is active.
-                    detected = resp.status_code in [200, 401, 403]
-                    # Also check /wp-json index to see available namespaces
+                    # Check namespace list first
+                    detected = req["prefix"] in namespaces
+                    
+                    # Fallback or confirmation: try hitting the specific endpoint
                     if not detected:
-                        index_url = self.credentials.get("url", "").rstrip("/") + "/wp-json"
-                        index_resp = await client.get(index_url, timeout=5.0)
-                        if index_resp.status_code == 200:
-                            namespaces = index_resp.json().get("namespaces", [])
-                            detected = req["prefix"] in namespaces
-
+                        url = self._get_plugin_api_url(req["prefix"], req["path"])
+                        resp = await client.get(url, headers=auth, timeout=5.0)
+                        # 200 means it definitely exists and is public
+                        # 401/403 means the endpoint is registered but we lack permissions 
+                        # (common for CRM/WooCommerce depending on API key scope)
+                        if resp.status_code in [200, 401, 403]:
+                            detected = True
+                    
                     plugins[slug] = {
                         "detected": detected,
                         "label": req["label"]
