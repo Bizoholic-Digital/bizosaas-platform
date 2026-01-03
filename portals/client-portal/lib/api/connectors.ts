@@ -7,7 +7,7 @@ export interface ConnectorConfig {
     description: string;
     icon: string;
     version: string;
-    status: 'connected' | 'disconnected' | 'error' | 'syncing';
+    status: 'connected' | 'disconnected' | 'error' | 'syncing' | 'degraded';
     lastSync?: string;
     auth_schema: {
         [key: string]: {

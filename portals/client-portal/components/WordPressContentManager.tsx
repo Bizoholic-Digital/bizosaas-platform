@@ -35,8 +35,8 @@ export function WordPressContentManager({ connectorId, siteUrl }: { connectorId:
         setLoading(true);
         try {
             const res = await connectorsApi.syncResource<{ data: WordPressPost[] }>(connectorId, 'posts');
-            if (res.data) {
-                setPosts(res.data);
+            if (res.data?.data) {
+                setPosts(res.data.data);
             }
         } catch (error) {
             console.error("Failed to load posts", error);

@@ -42,8 +42,8 @@ export function WordPressPluginManager({ connectorId }: { connectorId: string })
         setLoading(true);
         try {
             const res = await connectorsApi.syncResource<{ data: WordPressPlugin[] }>(connectorId, 'plugins');
-            if (res.data) {
-                setPlugins(res.data);
+            if (res.data?.data) {
+                setPlugins(res.data.data);
             }
         } catch (error) {
             console.error("Failed to load plugins", error);
