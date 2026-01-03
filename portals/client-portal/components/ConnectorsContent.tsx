@@ -10,8 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Cloud, Database, ShoppingCart, Layout, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag, Eye, EyeOff } from 'lucide-react';
 import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/connectors';
 import { toast } from 'sonner';
-import { useSearchParams } from 'next/navigation';
-import { WordPressManagementDialog } from './WordPressManagementDialog';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 
 // Icon mapping
@@ -37,6 +36,7 @@ const ICONS: Record<string, any> = {
 
 export function ConnectorsContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const activeCategory = searchParams.get('category');
     const [connectors, setConnectors] = useState<ConnectorConfig[]>([]);
     const [loading, setLoading] = useState(true);
@@ -46,9 +46,6 @@ export function ConnectorsContent() {
     const [isValidating, setIsValidating] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
-    const [manageDialogOpen, setManageDialogOpen] = useState(false);
-    const [managedConnector, setManagedConnector] = useState<ConnectorConfig | null>(null);
-
 
     // Mock data for initial development - Replace with API call later
     const MOCK_CONNECTORS: ConnectorConfig[] = [
@@ -476,15 +473,24 @@ export function ConnectorsContent() {
                                             </Button>
 
                                             {c.id === 'wordpress' && (
-                                                <Button variant="default" onClick={() => {
-                                                    setManagedConnector(c);
-                                                    setManageDialogOpen(true);
-                                                }}>
+                                                <Button variant="default" onClick={() => router.push('/dashboard/cms')}>
                                                     Manage
                                                 </Button>
                                             )}
 
-                                            {c.id !== 'wordpress' && (
+                                            {c.id === 'fluentcrm' && (
+                                                <Button variant="default" onClick={() => router.push('/dashboard/crm')}>
+                                                    Manage
+                                                </Button>
+                                            )}
+
+                                            {c.id === 'woocommerce' && (
+                                                <Button variant="default" onClick={() => router.push('/dashboard/ecommerce')}>
+                                                    Manage
+                                                </Button>
+                                            )}
+
+                                            {c.id !== 'wordpress' && c.id !== 'fluentcrm' && c.id !== 'woocommerce' && (
                                                 <Button variant="secondary" className="opacity-50 cursor-not-allowed">
                                                     Details
                                                 </Button>
@@ -505,12 +511,6 @@ export function ConnectorsContent() {
                 })}
             </div>
 
-            <WordPressManagementDialog
-                open={manageDialogOpen}
-                onOpenChange={setManageDialogOpen}
-                connectorId={managedConnector?.id || ''}
-                connectorName={managedConnector?.name || ''}
-            />
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent>

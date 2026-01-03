@@ -31,6 +31,17 @@ export interface CMSMedia {
     mime_type: string;
 }
 
+export interface CMSPlugin {
+    id: string;
+    name: string;
+    slug: string;
+    version: string;
+    status: 'active' | 'inactive';
+    description?: string;
+    author?: string;
+    plugin_url?: string;
+}
+
 export class CmsApi {
     // Pages
     async getPages(params?: { limit?: number; status?: string }): Promise<ApiResponse<CMSPage[]>> {
@@ -84,6 +95,15 @@ export class CmsApi {
 
     async getStats(): Promise<ApiResponse<{ pages: number; posts: number; media: number; lastSync?: string }>> {
         return brainApi.get<{ pages: number; posts: number; media: number; lastSync?: string }>('/api/brain/cms/stats');
+    }
+
+    // Plugins
+    async getPlugins(): Promise<ApiResponse<CMSPlugin[]>> {
+        return brainApi.get<CMSPlugin[]>('/api/brain/cms/plugins');
+    }
+
+    async togglePlugin(slug: string, active: boolean): Promise<ApiResponse<{ status: string }>> {
+        return brainApi.post<{ status: string }>(`/api/brain/cms/plugins/${slug}/toggle?active=${active}`, {});
     }
 }
 

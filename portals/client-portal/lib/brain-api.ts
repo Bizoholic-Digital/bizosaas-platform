@@ -236,6 +236,14 @@ export const brainApi = {
         },
         listMedia: async (token?: string) => {
             return apiFetch('/api/cms/media', {}, token);
+        },
+        getPlugins: async (token?: string) => {
+            return apiFetch('/api/cms/plugins', {}, token);
+        },
+        togglePlugin: async (slug: string, active: boolean, token?: string) => {
+            return apiFetch(`/api/cms/plugins/${slug}/toggle?active=${active}`, {
+                method: 'POST'
+            }, token);
         }
     },
     crm: {

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { FileText, File, Image, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink } from 'lucide-react';
+import { FileText, File, Image, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink, Zap } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -31,10 +31,21 @@ interface Page {
     status: string;
 }
 
+interface Plugin {
+    id: string;
+    name: string;
+    slug: string;
+    version: string;
+    status: 'active' | 'inactive';
+    description?: string;
+    author?: string;
+}
+
 export default function CMSPage() {
     const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('wordpress', 'cms');
     const [posts, setPosts] = useState<Post[]>([]);
     const [pages, setPages] = useState<Page[]>([]);
+    const [plugins, setPlugins] = useState<Plugin[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
 
     const [activeTab, setActiveTab] = useState('posts');
@@ -57,13 +68,15 @@ export default function CMSPage() {
     const loadData = async () => {
         setIsLoadingData(true);
         try {
-            const [postsData, pagesData] = await Promise.all([
+            const [postsData, pagesData, pluginsData] = await Promise.all([
                 brainApi.cms.getPosts().catch(() => []),
-                brainApi.cms.getPages().catch(() => [])
+                brainApi.cms.getPages().catch(() => []),
+                brainApi.cms.getPlugins().catch(() => [])
             ]);
 
             setPosts(postsData || []);
             setPages(pagesData || []);
+            setPlugins(pluginsData || []);
         } catch (error) {
             console.error('Failed to load CMS data:', error);
             toast.error('Failed to load CMS data');
@@ -140,6 +153,17 @@ export default function CMSPage() {
         setIsCreateDialogOpen(true);
     };
 
+    const handleTogglePlugin = async (slug: string, currentStatus: string) => {
+        const newActive = currentStatus !== 'active';
+        try {
+            await brainApi.cms.togglePlugin(slug, newActive);
+            toast.success(`Plugin ${newActive ? 'activated' : 'deactivated'} successfully`);
+            loadData();
+        } catch (error) {
+            toast.error('Failed to toggle plugin');
+        }
+    };
+
     if (statusLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
@@ -194,11 +218,11 @@ export default function CMSPage() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Media</CardTitle>
-                        <Image className="w-4 h-4 text-muted-foreground" />
+                        <CardTitle className="text-sm font-medium">Plugins</CardTitle>
+                        <Zap className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">-</div>
+                        <div className="text-2xl font-bold">{plugins.filter(p => p.status === 'active').length}/{plugins.length}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -212,9 +236,9 @@ export default function CMSPage() {
                             if (!open) resetForm();
                         }}>
                             <DialogTrigger asChild>
-                                <Button>
+                                <Button disabled={activeTab === 'plugins'}>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    New {activeTab === 'posts' ? 'Post' : 'Page'}
+                                    New {activeTab === 'posts' ? 'Post' : activeTab === 'pages' ? 'Page' : 'Content'}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[600px]">
@@ -276,7 +300,7 @@ export default function CMSPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsList className="grid w-full grid-cols-3 mb-4">
                             <TabsTrigger value="posts">
                                 <FileText className="w-4 h-4 mr-2" />
                                 Posts ({posts.length})
@@ -284,6 +308,10 @@ export default function CMSPage() {
                             <TabsTrigger value="pages">
                                 <File className="w-4 h-4 mr-2" />
                                 Pages ({pages.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="plugins">
+                                <Zap className="w-4 h-4 mr-2" />
+                                Plugins ({plugins.length})
                             </TabsTrigger>
                         </TabsList>
 
@@ -368,6 +396,46 @@ export default function CMSPage() {
                                         </div>
                                     </div>
                                 ))
+                            )}
+                        </TabsContent>
+                        <TabsContent value="plugins" className="space-y-4">
+                            {isLoadingData ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                                </div>
+                            ) : plugins.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground">No plugins found</div>
+                            ) : (
+                                <div className="grid grid-cols-1 gap-4">
+                                    {plugins.map((plugin) => (
+                                        <div key={plugin.id} className="flex items-center justify-between p-4 rounded-lg border bg-card hover:shadow-sm transition-shadow">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`p-2 rounded-lg ${plugin.status === 'active' ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
+                                                    <Zap className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-semibold text-slate-900 dark:text-white">{plugin.name}</p>
+                                                        <span className="text-xs text-muted-foreground text-opacity-70">v{plugin.version}</span>
+                                                    </div>
+                                                    <p className="text-sm text-muted-foreground line-clamp-1 max-w-md">{plugin.description?.replace(/<[^>]*>?/gm, '')}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <Badge variant={plugin.status === 'active' ? 'default' : 'secondary'} className={plugin.status === 'active' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-none' : ''}>
+                                                    {plugin.status === 'active' ? 'Active' : 'Inactive'}
+                                                </Badge>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleTogglePlugin(plugin.id, plugin.status)}
+                                                >
+                                                    {plugin.status === 'active' ? 'Deactivate' : 'Activate'}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </TabsContent>
                     </Tabs>

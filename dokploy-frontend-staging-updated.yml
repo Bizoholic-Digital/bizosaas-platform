@@ -8,8 +8,7 @@ services:
   # 1. CLIENT PORTAL (Port 3003)
   # ==========================================
   client-portal:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
-    pull_policy: always
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging-local
     container_name: bizosaas-client-portal-staging
     build:
       context: .
@@ -62,8 +61,7 @@ services:
   # 2. BIZOSAAS ADMIN DASHBOARD (Port 3004)
   # ==========================================
   admin-dashboard:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
-    pull_policy: always
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging-local
     container_name: bizosaas-admin-dashboard-staging
     build:
       context: .

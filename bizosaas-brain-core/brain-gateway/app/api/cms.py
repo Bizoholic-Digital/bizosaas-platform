@@ -41,6 +41,16 @@ class MediaMessage(BaseModel):
     title: Optional[str] = ""
     mime_type: Optional[str] = ""
 
+class PluginMessage(BaseModel):
+    id: str
+    name: str
+    slug: str
+    version: str
+    status: str
+    description: Optional[str] = ""
+    author: Optional[str] = ""
+    plugin_url: Optional[str] = ""
+
 async def get_active_cms_connector(tenant_id: str, secret_service: SecretService) -> CMSPort:
     # Find any connected CMS connector for this tenant
     # 1. Get all CMS connector types
@@ -311,3 +321,44 @@ async def list_media(
 ):
     # Media port undefined in base yet, placeholder
     return []
+
+@router.get("/plugins", response_model=List[PluginMessage])
+async def list_plugins(
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    
+    try:
+        plugins = await connector.get_plugins()
+        return [
+            PluginMessage(
+                id=p.id,
+                name=p.name,
+                slug=p.slug,
+                version=p.version,
+                status=p.status,
+                description=p.description,
+                author=p.author,
+                plugin_url=p.plugin_url
+            ) for p in plugins
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CMS Error: {str(e)}")
+
+@router.post("/plugins/{slug}/toggle")
+async def toggle_plugin(
+    slug: str,
+    active: bool,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    
+    try:
+        success = await connector.toggle_plugin(slug, active)
+        return {"status": "success" if success else "error"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CMS Error: {str(e)}")

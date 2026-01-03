@@ -18,6 +18,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
 
     steps:
       - name: Checkout code
@@ -60,22 +64,24 @@ jobs:
             NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
             NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
             NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
-            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-            CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+            CLERK_SECRET_KEY=${{ env.CLERK_SECRET_KEY }}
             NEXTAUTH_URL=https://admin.bizoholic.net
-            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+            NEXTAUTH_SECRET=${{ env.NEXTAUTH_SECRET }}
             SERVICE_PATH=portals/admin-dashboard
 
   notify-dokploy:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: success()
+    env:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
     steps:
       - name: Trigger Dokploy Deployment (Frontend Stack)
         run: |
           echo "Triggering Frontend deployment on Dokploy..."
           curl -i -X POST "https://dk8.bizoholic.net/api/compose.deploy" \
             --retry 3 --retry-delay 10 --max-time 120 \
-            -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "Authorization: Bearer $DOKPLOY_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
