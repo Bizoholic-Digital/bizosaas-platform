@@ -27,8 +27,8 @@ export function useConnectorStatus(connectorId: string, type?: string) {
 
             if (!found && type) {
                 found = response.find((c: any) =>
-                    c.type === type &&
-                    (c.status?.toUpperCase() === 'CONNECTED' || c.status === 'connected')
+                    (c.type === type || (c.features && c.features.includes(type))) &&
+                    (c.status?.toUpperCase() === 'CONNECTED' || c.status === 'connected' || c.status === 'degraded' || c.status?.toUpperCase() === 'DEGRADED')
                 );
             }
 

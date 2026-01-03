@@ -73,7 +73,9 @@ class VaultAdapter(SecretPort):
             logger.info(f"Stored secret in Vault: {path}")
             return True
         except Exception as e:
+            import traceback
             logger.error(f"Failed to store secret in Vault: {e}")
+            logger.error(traceback.format_exc())
             return False
     
     async def get_secret(self, path: str) -> Optional[Dict[str, Any]]:

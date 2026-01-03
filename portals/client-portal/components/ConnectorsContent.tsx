@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Cloud, Database, ShoppingCart, Layout, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag, Eye, EyeOff } from 'lucide-react';
+import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Cloud, Database, ShoppingCart, Layout, Search, MapPin, Star, Calendar, Mail, MessageSquare, Zap, Activity, Video, Monitor, Facebook, Tag, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/connectors';
 import { toast } from 'sonner';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 
 
 // Icon mapping
@@ -18,6 +19,7 @@ const ICONS: Record<string, any> = {
     wordpress: Layout,
     fluentcrm: Database,
     woocommerce: ShoppingCart,
+    'shopping-cart': ShoppingCart,
     facebook: Facebook,
     tag: Tag,
     bing: Search,
@@ -31,10 +33,12 @@ const ICONS: Record<string, any> = {
     gohighlevel: Zap,
     hubspot: Activity,
     'tiktok-ads': Video,
+    amazon: ShoppingCart,
     default: Plug
 };
 
 export function ConnectorsContent() {
+    const { isLoaded, user } = useUser();
     const searchParams = useSearchParams();
     const router = useRouter();
     const activeCategory = searchParams.get('category');
@@ -46,6 +50,7 @@ export function ConnectorsContent() {
     const [isValidating, setIsValidating] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+    const [showGooglePrompt, setShowGooglePrompt] = useState(false);
 
     // Mock data for initial development - Replace with API call later
     const MOCK_CONNECTORS: ConnectorConfig[] = [
@@ -99,10 +104,8 @@ export function ConnectorsContent() {
             icon: 'map-pin',
             version: '1.0.0',
             status: 'disconnected',
-            auth_schema: {
-                account_id: { type: 'string', label: 'Account ID', placeholder: 'accounts/123...', required: true },
-                location_id: { type: 'string', label: 'Location ID', placeholder: 'locations/123...', required: true }
-            }
+            auth_type: 'oauth' as any,
+            auth_schema: {}
         },
         {
             id: 'microsoft-ads',
@@ -138,9 +141,8 @@ export function ConnectorsContent() {
             icon: 'tag',
             version: '1.0.0',
             status: 'disconnected',
-            auth_schema: {
-                container_id: { type: 'string', label: 'Container ID', placeholder: 'GTM-XXXXXX', required: true }
-            }
+            auth_type: 'oauth' as any,
+            auth_schema: {}
         },
         {
             id: 'yelp',
@@ -190,10 +192,8 @@ export function ConnectorsContent() {
             icon: 'search-console',
             version: '1.0.0',
             status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true },
-                site_url: { type: 'string', label: 'Site URL (https://...)', required: true }
-            }
+            auth_type: 'oauth' as any,
+            auth_schema: {}
         },
         {
             id: 'google-ads',
@@ -203,10 +203,8 @@ export function ConnectorsContent() {
             icon: 'google-ads',
             version: '2.0.0',
             status: 'disconnected',
-            auth_schema: {
-                customer_id: { type: 'string', label: 'Account ID', placeholder: '123-456-7890', required: true },
-                developer_token: { type: 'password', label: 'Developer Token', required: true }
-            }
+            auth_type: 'oauth' as any,
+            auth_schema: {}
         },
         {
             id: 'twilio',
@@ -305,6 +303,16 @@ export function ConnectorsContent() {
 
 
     useEffect(() => {
+        if (isLoaded && user) {
+            const hasGoogleAccount = user.externalAccounts.some((acc: any) => acc.provider === 'google');
+            const googleConnectorsConnected = connectors.some(c => c.id.includes('google') && c.status === 'connected');
+            if (hasGoogleAccount && !googleConnectorsConnected) {
+                setShowGooglePrompt(true);
+            }
+        }
+    }, [isLoaded, user, connectors]);
+
+    useEffect(() => {
         loadConnectors();
     }, []);
 
@@ -333,6 +341,20 @@ export function ConnectorsContent() {
     };
 
     const handleOpenConnect = (connector: ConnectorConfig) => {
+        if ((connector as any).auth_type === 'oauth') {
+            toast.info(`Redirecting to ${connector.name} OAuth...`);
+            // In a real app, this would be: 
+            // window.location.href = `${process.env.NEXT_PUBLIC_BRAIN_GATEWAY_URL}/api/auth/${connector.id}/start`;
+
+            // For the demo, we'll simulate success after a delay
+            setTimeout(() => {
+                setConnectors(prev => prev.map(c =>
+                    c.id === connector.id ? { ...c, status: 'connected' } : c
+                ));
+                toast.success(`Connected ${connector.name} via Google account`);
+            }, 1500);
+            return;
+        }
         setSelectedConnector(connector);
         setCredentials({});
         setDialogOpen(true);
@@ -350,10 +372,6 @@ export function ConnectorsContent() {
 
         setIsValidating(true);
         try {
-            // 1. Validate (simulated for now if API not ready, or real call)
-            // const validRes = await connectorsApi.validateConnection(selectedConnector.id);
-            // if (!validRes.data?.valid) throw new Error(validRes.data?.message || "Validation failed");
-
             setIsConnecting(true);
             const res = await connectorsApi.connectService(selectedConnector.id, credentials);
 
@@ -391,7 +409,6 @@ export function ConnectorsContent() {
     const handleSync = async (connector: ConnectorConfig) => {
         try {
             toast.info(`Syncing ${connector.name}...`);
-            // await connectorsApi.syncConnector(connector.id);
             setConnectors(prev => prev.map(c =>
                 c.id === connector.id ? { ...c, status: 'syncing' } : c
             ));
@@ -427,9 +444,32 @@ export function ConnectorsContent() {
                 </Button>
             </div>
 
+            {showGooglePrompt && (
+                <Card className="bg-primary/5 border-primary/20">
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-full">
+                                <Sparkles className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <h4 className="font-semibold">Connect Google Services</h4>
+                                <p className="text-sm text-muted-foreground">We detected you're signed in with Google. Want to sync your Business Profile and Ads?</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => setShowGooglePrompt(false)}>Later</Button>
+                            <Button variant="default" size="sm" onClick={() => {
+                                const gbp = MOCK_CONNECTORS.find(c => c.id === 'google-business-profile');
+                                if (gbp) handleOpenConnect(gbp);
+                                setShowGooglePrompt(false);
+                            }}>Connect Now</Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredConnectors.map(c => {
-
                     const Icon = ICONS[c.icon] || ICONS.default;
                     const isConnected = c.status === 'connected' || c.status === 'syncing' || c.status === 'degraded';
 
@@ -524,7 +564,6 @@ export function ConnectorsContent() {
                     );
                 })}
             </div>
-
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent>

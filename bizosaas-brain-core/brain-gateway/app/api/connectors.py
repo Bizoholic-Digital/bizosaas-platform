@@ -41,12 +41,42 @@ async def list_connectors_with_status(
     
     results = []
     for config in configs:
-        status = ConnectorStatus.CONNECTED if config.id in all_connected_ids else ConnectorStatus.DISCONNECTED
-        last_sync = None  # TODO: Store sync metadata in Vault
+        is_connected = config.id in all_connected_ids
+        status = ConnectorStatus.DISCONNECTED
+        features = []
+        
+        if is_connected:
+            try:
+                # To get live status and features, we need to instantiate and check
+                credentials = await secret_service.get_connector_credentials(tenant_id, config.id)
+                # Fallback to in-memory if secret service returns empty but it was in memory
+                if not credentials and config.id in in_memory_ids:
+                    from app.store import active_connectors
+                    credentials = active_connectors.get(f"{tenant_id}:{config.id}", {})
+
+                if credentials:
+                    connector = ConnectorRegistry.create_connector(config.id, tenant_id, credentials)
+                    status = await connector.get_status()
+                    
+                    # Discover specific active features (for multi-capability connectors like WordPress)
+                    if hasattr(connector, '_discover_plugins'):
+                        discovery = await connector.perform_action("discover_plugins", {})
+                        if discovery.get("status") == "success":
+                            plugins = discovery.get("plugins", {})
+                            if plugins.get("fluent-crm", {}).get("detected"):
+                                features.append("crm")
+                            if plugins.get("woocommerce", {}).get("detected"):
+                                features.append("ecommerce")
+            except Exception as e:
+                logger.warning(f"Failed to get live status for {config.id}: {e}")
+                status = ConnectorStatus.ERROR
+
+        last_sync = None 
         
         # Merge status into config
         data = config.dict()
         data["status"] = status.value
+        data["features"] = features
         data["lastSync"] = last_sync
         results.append(data)
         

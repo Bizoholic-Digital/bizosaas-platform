@@ -33,7 +33,8 @@ interface Order {
 }
 
 export default function EcommercePage() {
-    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('woocommerce', 'ecommerce');
+    // Look for any connected e-commerce service.
+    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('', 'ecommerce');
     const [products, setProducts] = useState<Product[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);

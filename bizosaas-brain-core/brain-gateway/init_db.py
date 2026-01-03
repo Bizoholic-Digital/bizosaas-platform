@@ -8,7 +8,8 @@ from app.dependencies import engine
 from app.models import Base
 
 # Import all models to ensure they are registered with Base
-from app.models import user, mcp, agent
+from app.models import user, mcp, agent, onboarding_session
+
 
 def init_db():
     print(f"Creating database tables using engine: {engine.url}...")

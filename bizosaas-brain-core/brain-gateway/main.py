@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, admin, mcp, marketing, campaigns, analytics
+from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, admin, mcp, marketing, campaigns, analytics, privacy
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
@@ -101,6 +101,7 @@ app.include_router(onboarding.router)
 app.include_router(admin.router)
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
+app.include_router(privacy.router)
 
 from app.api import public
 app.include_router(public.router)

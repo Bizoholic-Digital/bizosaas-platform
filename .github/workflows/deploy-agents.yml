@@ -60,10 +60,10 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: success()
-    env:
-      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
     steps:
       - name: Trigger Dokploy Deployment (Backend Stack)
+        env:
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
         run: |
           echo "Triggering Backend deployment on Dokploy..."
           curl -i -X POST "https://dk8.bizoholic.net/api/compose.deploy" \

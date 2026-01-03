@@ -19,6 +19,8 @@ class AgentConfig(BaseModel):
     role: str
     capabilities: List[str]
     tools: List[str]
+    workflows: List[str] = []  # Background Temporal workflows
+    portal_category: str = "client"  # "client" or "admin"
     icon: str
     color: str
 
@@ -52,6 +54,8 @@ AGENTS = [
             "ROI optimization"
         ],
         tools=["google-ads", "facebook-ads", "google-analytics", "mailchimp"],
+        workflows=["StrategyValidationWorkflow", "RefreshAdPerformance"],
+        portal_category="client",
         icon="📊",
         color="#FF6B6B"
     ),
@@ -164,6 +168,8 @@ AGENTS = [
             "Resource optimization"
         ],
         tools=["internal-registry", "mcp-gateway", "temporal"],
+        workflows=["TenantProvisioning", "SecurityAuditScan"],
+        portal_category="admin",
         icon="🛡️",
         color="#3B82F6"
     ),
@@ -181,8 +187,250 @@ AGENTS = [
         tools=["slack", "gmail", "notion"],
         icon="✨",
         color="#A855F7"
-    )
+    ),
+    # --- NEW AGENTS (Sprint 3) ---
+    AgentConfig(
+        id="seo-specialist",
+        name="SEO Specialist",
+        description="Optimizes website content for search engine visibility and rankings",
+        role="Search Engine Optimization Expert",
+        capabilities=[
+            "Keyword research",
+            "On-page SEO audit",
+            "Backlink analysis",
+            "Technical SEO fixes",
+            "SERP tracking"
+        ],
+        tools=["google-search-console", "google-analytics", "wordpress"],
+        icon="🔍",
+        color="#10B981"
+    ),
+    AgentConfig(
+        id="social-media-manager",
+        name="Social Media Manager",
+        description="Manages and schedules social media posts across platforms",
+        role="Social Media Strategist",
+        capabilities=[
+            "Post scheduling",
+            "Engagement tracking",
+            "Hashtag research",
+            "Influencer identification",
+            "Social listening"
+        ],
+        tools=["facebook", "instagram", "twitter", "linkedin"],
+        icon="📱",
+        color="#EC4899"
+    ),
+    AgentConfig(
+        id="email-marketing-expert",
+        name="Email Marketing Expert",
+        description="Creates and optimizes email campaigns for maximum engagement",
+        role="Email Campaign Specialist",
+        capabilities=[
+            "Campaign automation",
+            "Subject line optimization",
+            "A/B testing",
+            "Segmentation strategies",
+            "Deliverability optimization"
+        ],
+        tools=["mailchimp", "hubspot", "fluentcrm"],
+        icon="📧",
+        color="#F59E0B"
+    ),
+    AgentConfig(
+        id="review-manager",
+        name="Review Response Manager",
+        description="Monitors and responds to customer reviews across platforms",
+        role="Reputation Management Specialist",
+        capabilities=[
+            "Review monitoring",
+            "Response drafting",
+            "Sentiment analysis",
+            "Review solicitation",
+            "Crisis detection"
+        ],
+        tools=["google-business-profile", "yelp", "trustpilot"],
+        icon="⭐",
+        color="#EF4444"
+    ),
+    AgentConfig(
+        id="ppc-optimizer",
+        name="PPC Optimizer",
+        description="Optimizes paid advertising campaigns for maximum ROI",
+        role="Pay-Per-Click Specialist",
+        capabilities=[
+            "Bid management",
+            "Quality score optimization",
+            "Ad copy testing",
+            "Landing page recommendations",
+            "Budget allocation"
+        ],
+        tools=["google-ads", "microsoft-ads", "facebook-ads"],
+        icon="💰",
+        color="#8B5CF6"
+    ),
+    AgentConfig(
+        id="competitor-analyst",
+        name="Competitor Analyst",
+        description="Monitors and analyzes competitor strategies and market positioning",
+        role="Competitive Intelligence Expert",
+        capabilities=[
+            "Competitor tracking",
+            "Pricing analysis",
+            "Market positioning",
+            "Gap identification",
+            "Trend forecasting"
+        ],
+        tools=["google-search-console", "google-analytics"],
+        icon="🎯",
+        color="#06B6D4"
+    ),
+    AgentConfig(
+        id="appointment-scheduler",
+        name="Appointment Scheduler",
+        description="Manages booking and scheduling for client meetings",
+        role="Scheduling Automation Specialist",
+        capabilities=[
+            "Calendar management",
+            "Booking automation",
+            "Reminder sending",
+            "Availability optimization",
+            "No-show follow-up"
+        ],
+        tools=["calendly", "google-calendar"],
+        icon="📅",
+        color="#14B8A6"
+    ),
+    AgentConfig(
+        id="compliance-guardian",
+        name="Compliance Guardian",
+        description="Monitors content and campaigns for legal and regulatory compliance",
+        role="Legal & Compliance Specialist",
+        capabilities=[
+            "FTC compliance check",
+            "GDPR validation",
+            "ADA accessibility audit",
+            "Privacy policy review",
+            "Terms of service monitoring"
+        ],
+        tools=["internal-scanner", "website-auditor"],
+        icon="⚖️",
+        color="#6366F1"
+    ),
+    AgentConfig(
+        id="billing-assistant",
+        name="Billing Assistant",
+        description="Manages invoices, subscriptions, and payment tracking",
+        role="Financial Operations Specialist",
+        capabilities=[
+            "Invoice generation",
+            "Payment reminders",
+            "Subscription management",
+            "Revenue forecasting",
+            "Churn prediction"
+        ],
+        tools=["lago", "stripe", "quickbooks"],
+        icon="💳",
+        color="#84CC16"
+    ),
+    AgentConfig(
+        id="local-seo-expert",
+        name="Local SEO Expert",
+        description="Optimizes local business presence for geographic searches",
+        role="Local Search Specialist",
+        capabilities=[
+            "GMB optimization",
+            "Local citation building",
+            "NAP consistency",
+            "Local keyword targeting",
+            "Map pack ranking"
+        ],
+        tools=["google-business-profile", "yelp", "google-search-console"],
+        icon="📍",
+        color="#F97316"
+    ),
+    AgentConfig(
+        id="video-content-strategist",
+        name="Video Content Strategist",
+        description="Plans and optimizes video content for marketing",
+        role="Video Marketing Specialist",
+        capabilities=[
+            "Script writing",
+            "Video SEO",
+            "Thumbnail optimization",
+            "Engagement analysis",
+            "Content repurposing"
+        ],
+        tools=["youtube", "tiktok", "vimeo"],
+        icon="🎬",
+        color="#DC2626"
+    ),
+    AgentConfig(
+        id="lead-nurturing-specialist",
+        name="Lead Nurturing Specialist",
+        description="Develops and executes lead nurturing campaigns",
+        role="Lead Conversion Expert",
+        capabilities=[
+            "Drip campaign design",
+            "Lead scoring",
+            "Touchpoint optimization",
+            "Conversion tracking",
+            "Funnel analysis"
+        ],
+        tools=["fluentcrm", "hubspot", "mailchimp"],
+        icon="🌱",
+        color="#22C55E"
+    ),
+    AgentConfig(
+        id="whatsapp-broadcast-agent",
+        name="WhatsApp Broadcast Agent",
+        description="Manages WhatsApp business messaging and broadcasts",
+        role="Messaging Automation Specialist",
+        capabilities=[
+            "Broadcast campaigns",
+            "Template management",
+            "Quick replies",
+            "Customer segmentation",
+            "Engagement tracking"
+        ],
+        tools=["whatsapp", "twilio"],
+        icon="💬",
+        color="#25D366"
+    ),
+    AgentConfig(
+        id="analytics-reporter",
+        name="Analytics Reporter",
+        description="Generates automated reports and dashboards",
+        role="Reporting Automation Specialist",
+        capabilities=[
+            "Automated reporting",
+            "KPI tracking",
+            "Dashboard creation",
+            "Anomaly detection",
+            "Executive summaries"
+        ],
+        tools=["google-analytics", "google-data-studio", "metabase"],
+        icon="📋",
+        color="#7C3AED"
+    ),
+    AgentConfig(
+        id="product-recommendation-engine",
+        name="Product Recommendation Engine",
+        description="Provides personalized product recommendations",
+        role="Personalization Specialist",
+        capabilities=[
+            "Collaborative filtering",
+            "Cross-sell suggestions",
+            "Upsell opportunities",
+            "Customer segmentation",
+            "Behavioral analysis"
+        ],
+        tools=["woocommerce", "shopify", "amazon"],
+        icon="🎁",
+        color="#F472B6"
+    ),
 ]
+
 
 # Mock conversation storage
 conversations: Dict[str, List[ChatMessage]] = {}

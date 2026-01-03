@@ -56,6 +56,20 @@ def seed_connectors():
             "status": ConnectorStatus.CONNECTED,
             "last_sync": None
         }
+
+        # Coreldove - Amazon Marketplace
+        logger.info("📝 Seeding Coreldove Amazon Marketplace connection...")
+        active_connectors["default:amazon"] = {
+            "connector_id": "amazon",
+            "credentials": {
+                "seller_id": "A1234567890BC",
+                "mws_auth_token": "amzn.mws.mock.token",
+                "marketplace_id": "ATVPDKIKX0DER",
+                "force_connect": True
+            },
+            "status": ConnectorStatus.CONNECTED,
+            "last_sync": None
+        }
         
         # Lago for Billing
         logger.info("📝 Seeding Lago Billing connection...")

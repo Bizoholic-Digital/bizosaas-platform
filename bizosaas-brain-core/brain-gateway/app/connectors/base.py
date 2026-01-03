@@ -34,6 +34,7 @@ class ConnectorConfig(BaseModel):
     description: str
     icon: str
     version: str = "1.0.0"
+    capabilities: List[Union[ConnectorType, str]] = []  # List of what this connector provides
     auth_schema: Dict[str, Any]  # JSON schema for required credentials
 
 class BaseConnector(ABC):
@@ -113,3 +114,42 @@ class BaseConnector(ABC):
         except Exception as e:
             self.logger.error(f"Connection test failed: {str(e)}")
             return {"success": False, "message": f"Connection failed: {str(e)}"}
+
+    def track_event(
+        self, 
+        event_code: str, 
+        quantity: float = 1.0, 
+        resource_type: str = None,
+        metadata: dict = None,
+        db_session = None
+    ) -> None:
+        """
+        Track a billable usage event for this connector.
+        
+        Args:
+            event_code: Specific event identifier (e.g., 'post_synced', 'ad_optimized')
+            quantity: Number of units for this event
+            resource_type: Type of resource affected (e.g., 'posts', 'contacts')
+            metadata: Additional event context
+            db_session: SQLAlchemy session for persistence
+        """
+        if db_session is None:
+            self.logger.debug(f"Billing event skipped (no db): {event_code}")
+            return
+        
+        try:
+            from app.models.billing_event import BillingEventService
+            service = BillingEventService(db_session)
+            service.track_event(
+                tenant_id=self.tenant_id,
+                event_type="connector_synced" if "sync" in event_code else "connector_action",
+                event_code=event_code,
+                quantity=quantity,
+                connector_id=self.config.id,
+                resource_type=resource_type,
+                metadata=metadata or {}
+            )
+            self.logger.debug(f"Tracked billing event: {event_code} x{quantity}")
+        except Exception as e:
+            self.logger.warning(f"Failed to track billing event: {e}")
+

@@ -19,6 +19,7 @@ class WordPressConnector(BaseConnector, CMSPort):
             description="Connect your WordPress site to sync content and media.",
             icon="wordpress",
             version="2.1.0",
+            capabilities=[ConnectorType.CMS, ConnectorType.CRM, ConnectorType.ECOMMERCE],
             auth_schema={
                 "url": {"type": "string", "label": "WordPress Site URL", "placeholder": "https://your-site.com"},
                 "username": {"type": "string", "label": "Username"},

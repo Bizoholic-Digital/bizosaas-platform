@@ -3,6 +3,8 @@
 import React from 'react';
 import { useUser } from "@clerk/nextjs";
 import { Plug, Sparkles, BarChart3, TrendingUp } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { WorkflowStatus } from '@bizosaas/shared-ui';
 import { getUserDisplayInfoFromSession } from '@/utils/rbac';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
 
@@ -69,6 +71,47 @@ export default function DashboardPage() {
               <p className="text-2xl font-bold text-gray-900 dark:text-white">4.2%</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Active Workflows - NEW */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Running Workflows</h3>
+          <WorkflowStatus
+            workflowId="wp-setup-77fb"
+            name="WordPress Environment Setup"
+            status="RUNNING"
+            progress={65}
+            type="client"
+            steps={[
+              { id: '1', name: 'Provisioning', status: 'COMPLETED', timestamp: '14:20' },
+              { id: '2', name: 'Install WooCommerce', status: 'COMPLETED', timestamp: '14:22' },
+              { id: '3', name: 'Install FluentCRM', status: 'RUNNING', description: 'Activating marketing automation features...' },
+              { id: '4', name: 'Initial Business Sync', status: 'PENDING' }
+            ]}
+          />
+        </div>
+
+        {/* Magic Discovery - NEW */}
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-lg text-white shadow-lg space-y-4">
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-8 h-8 text-blue-200" />
+            <h3 className="text-xl font-bold">Magic Service Discovery</h3>
+          </div>
+          <p className="text-blue-100 text-sm">
+            We found 4 services (Google Ads, Analytics, Meta Pixel, GTM) linked to your email
+            <strong> {sessionUser?.email}</strong>.
+          </p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between bg-white/10 p-3 rounded-md">
+              <span className="text-xs">Google Account Services</span>
+              <Badge className="bg-green-400 text-white border-0">4 Detected</Badge>
+            </div>
+          </div>
+          <button className="w-full bg-white text-blue-700 font-semibold py-2 rounded-md hover:bg-blue-50 transition-colors shadow-sm">
+            Approve & Connect All
+          </button>
         </div>
       </div>
 

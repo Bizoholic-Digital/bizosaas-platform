@@ -1,0 +1,252 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "BizOSaaS Brain API Gateway",
+        "description": "Central orchestration layer for 93+ specialized AI agents, digital marketing integrations, and multi-tenant business operations.",
+        "version": "2.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8001",
+            "description": "Staging Gateway"
+        }
+    ],
+    "paths": {
+        "/api/onboarding/status": {
+            "get": {
+                "tags": [
+                    "Onboarding"
+                ],
+                "summary": "Check onboarding progress",
+                "responses": {
+                    "200": {
+                        "description": "Onboarding status",
+                        "content": {
+                            "application_json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "isComplete": {
+                                            "type": "boolean"
+                                        },
+                                        "currentStep": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/onboarding/business-profile": {
+            "post": {
+                "tags": [
+                    "Onboarding"
+                ],
+                "summary": "Save business identity",
+                "description": "Stage 1 of onboarding. Captures company name, industry, and GMB links.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application_json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BusinessProfile"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile saved"
+                    }
+                }
+            }
+        },
+        "/api/onboarding/google/discover": {
+            "post": {
+                "tags": [
+                    "Onboarding",
+                    "Magic Discovery"
+                ],
+                "summary": "Automatic Google Service Discovery",
+                "description": "Exchanges a Google OAuth token for automatic provisioning of Analytics, Search Console, and Ads MCPs.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application_json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "access_token": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Discovery complete"
+                    }
+                }
+            }
+        },
+        "/api/connectors": {
+            "get": {
+                "tags": [
+                    "Connectors"
+                ],
+                "summary": "List all available and active connectors",
+                "responses": {
+                    "200": {
+                        "description": "Array of connector configurations",
+                        "content": {
+                            "application_json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ConnectorConfig"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/agents/chat": {
+            "post": {
+                "tags": [
+                    "AI Agents"
+                ],
+                "summary": "Interact with the Personal Business Agent",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application_json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "context_id": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Agent response"
+                    }
+                }
+            }
+        },
+        "/api/campaigns/feasibility": {
+            "post": {
+                "tags": [
+                    "Campaigns",
+                    "AI Strategy"
+                ],
+                "summary": "Analyze strategy feasibility",
+                "description": "Triggers the specialized AI loop to validate budget vs. goals using historical connector data.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application_json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "goal": {
+                                        "type": "string"
+                                    },
+                                    "budget": {
+                                        "type": "number"
+                                    },
+                                    "platforms": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Feasibility report"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BusinessProfile": {
+                "type": "object",
+                "required": [
+                    "companyName",
+                    "industry",
+                    "location"
+                ],
+                "properties": {
+                    "companyName": {
+                        "type": "string"
+                    },
+                    "industry": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "gmbLink": {
+                        "type": "string"
+                    },
+                    "website": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ConnectorConfig": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "connected",
+                            "disconnected",
+                            "error"
+                        ]
+                    },
+                    "icon": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

@@ -7,9 +7,19 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_identity_port, get_current_user, get_secret_service
 from app.domain.services.secret_service import SecretService
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
+from app.services.onboarding_service import OnboardingSessionService
+from app.services.discovery_service import ServiceDiscoveryService
 
 
 router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
+
+@router.get("/magic-discovery")
+async def magic_discovery(
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Magic Discovery: Find services linked to user email/domain"""
+    results = await ServiceDiscoveryService.discover_by_email(current_user.email, current_user.tenant_id)
+    return results
 
 # --- Enums & Models ---
 
@@ -106,30 +116,88 @@ MOCK_STORE = {}
 # --- Endpoints ---
 
 @router.get("/status")
-async def get_onboarding_status():
+async def get_onboarding_status(
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
     """Check if onboarding is complete for the current tenant"""
-    # TODO: Fetch from actual DB using tenant context
-    return {
-        "isConnectionSuccess": True,
-        "isComplete": False, 
-        "currentStep": 0
-    }
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    return service.get_status(tenant_id, user_id)
+
+@router.get("/draft")
+async def get_onboarding_draft(
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get saved draft to resume onboarding"""
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    draft = service.get_draft(tenant_id, user_id)
+    
+    if not draft:
+        return {"hasDraft": False}
+    
+    return {"hasDraft": True, "draft": draft}
 
 @router.post("/business-profile")
-async def save_business_profile(profile: BusinessProfile):
-    """Save business identity details"""
-    # TODO: Save to DB
-    return {"status": "success", "message": "Profile saved", "data": profile}
+async def save_business_profile(
+    profile: BusinessProfile,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Save business identity details (Step 1-2)"""
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    
+    session = service.save_profile(tenant_id, user_id, profile.dict())
+    return {
+        "status": "success", 
+        "message": "Profile saved", 
+        "currentStep": session.current_step,
+        "sessionId": str(session.id)
+    }
 
 @router.get("/business-profile")
-async def get_business_profile():
-    # Helper to return mock success for check
-    return {"success": True, "profile": {"onboarding_completed": False}}
+async def get_business_profile(
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get saved business profile"""
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    
+    session = service.get_session(tenant_id, user_id)
+    if not session:
+        return {"success": True, "profile": None, "onboarding_completed": False}
+    
+    return {
+        "success": True, 
+        "profile": session.profile_data,
+        "onboarding_completed": session.is_complete
+    }
 
 @router.post("/digital-presence")
-async def save_digital_presence(presence: DigitalPresence):
-    """Save digital presence details"""
-    return {"status": "success", "message": "Presence saved"}
+async def save_digital_presence(
+    presence: DigitalPresence,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Save digital presence details (Step 3)"""
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    
+    session = service.save_digital_presence(tenant_id, user_id, presence.dict())
+    return {
+        "status": "success", 
+        "message": "Digital presence saved",
+        "currentStep": session.current_step
+    }
 
 @router.get("/search-business")
 async def search_business(q: str):
@@ -167,14 +235,43 @@ async def search_business(q: str):
     }
 
 @router.post("/integrations")
-async def save_integrations(analytics: AnalyticsConfig, social: SocialMediaConfig):
-    """Save integration preferences"""
-    return {"status": "success", "message": "Integrations saved"}
+async def save_integrations(
+    analytics: AnalyticsConfig, 
+    social: SocialMediaConfig,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Save integration preferences (Step 4-5)"""
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    
+    service.save_analytics(tenant_id, user_id, analytics.dict())
+    session = service.save_social_media(tenant_id, user_id, social.dict())
+    
+    return {
+        "status": "success", 
+        "message": "Integrations saved",
+        "currentStep": session.current_step
+    }
 
 @router.post("/goals")
-async def save_goals(goals: CampaignGoals):
-    """Save campaign goals"""
-    return {"status": "success", "message": "Goals saved"}
+async def save_goals(
+    goals: CampaignGoals,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Save campaign goals (Step 6-7)"""
+    service = OnboardingSessionService(db)
+    tenant_id = current_user.tenant_id or "default"
+    user_id = current_user.id
+    
+    session = service.save_goals(tenant_id, user_id, goals.dict())
+    return {
+        "status": "success", 
+        "message": "Goals saved",
+        "currentStep": session.current_step
+    }
 
 @router.post("/google/discover")
 async def discover_google_services(

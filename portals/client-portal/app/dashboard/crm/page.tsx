@@ -34,7 +34,9 @@ interface Deal {
 }
 
 export default function CRMPage() {
-    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('hubspot', 'crm');
+    // Look for any connected CRM service. If HubSpot isn't found, pick the first connected CRM-type connector.
+    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('', 'crm');
+
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [deals, setDeals] = useState<Deal[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
