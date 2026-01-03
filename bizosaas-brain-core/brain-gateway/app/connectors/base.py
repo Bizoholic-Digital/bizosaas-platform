@@ -25,6 +25,7 @@ class ConnectorStatus(str, Enum):
     DISCONNECTED = "disconnected"
     ERROR = "error"
     PENDING = "pending"
+    DEGRADED = "degraded"
 
 class ConnectorConfig(BaseModel):
     id: str

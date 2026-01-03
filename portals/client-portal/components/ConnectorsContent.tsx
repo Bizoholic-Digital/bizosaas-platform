@@ -11,6 +11,7 @@ import { Plug, Check, ExternalLink, RefreshCw, AlertCircle, X, CheckCircle2, Clo
 import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/connectors';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
+import { WordPressManagementDialog } from './WordPressManagementDialog';
 
 
 // Icon mapping
@@ -45,6 +46,8 @@ export function ConnectorsContent() {
     const [isValidating, setIsValidating] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+    const [manageDialogOpen, setManageDialogOpen] = useState(false);
+    const [managedConnector, setManagedConnector] = useState<ConnectorConfig | null>(null);
 
 
     // Mock data for initial development - Replace with API call later
@@ -417,14 +420,15 @@ export function ConnectorsContent() {
                 {filteredConnectors.map(c => {
 
                     const Icon = ICONS[c.icon] || ICONS.default;
-                    const isConnected = c.status === 'connected' || c.status === 'syncing';
+                    const isConnected = c.status === 'connected' || c.status === 'syncing' || c.status === 'degraded';
 
                     return (
                         <Card key={c.id} className={`relative overflow-hidden transition-all ${isConnected ? 'border-primary/50 bg-primary/5' : ''}`}>
                             {isConnected && (
                                 <div className="absolute top-0 right-0 p-3">
-                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                        <Check className="h-3 w-3 mr-1" /> Connected
+                                    <Badge variant="default" className={c.status === 'degraded' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-green-600 hover:bg-green-700'}>
+                                        {c.status === 'degraded' ? <AlertCircle className="h-3 w-3 mr-1" /> : <Check className="h-3 w-3 mr-1" />}
+                                        {c.status === 'degraded' ? 'Limited' : 'Connected'}
                                     </Badge>
                                 </div>
                             )}
@@ -448,7 +452,8 @@ export function ConnectorsContent() {
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="text-muted-foreground">Status</span>
                                         <span className={`font-medium ${c.status === 'connected' ? 'text-green-600' :
-                                            c.status === 'syncing' ? 'text-blue-600 animate-pulse' : 'text-gray-500'
+                                            c.status === 'syncing' ? 'text-blue-600 animate-pulse' :
+                                                c.status === 'degraded' ? 'text-amber-600' : 'text-gray-500'
                                             }`}>
                                             {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
                                         </span>
@@ -464,10 +469,27 @@ export function ConnectorsContent() {
                             <CardFooter className="flex gap-2">
                                 {isConnected ? (
                                     <>
-                                        <Button variant="outline" className="w-full" onClick={() => handleSync(c)} disabled={c.status === 'syncing'}>
-                                            <RefreshCw className={`mr-2 h-4 w-4 ${c.status === 'syncing' ? 'animate-spin' : ''}`} />
-                                            Sync
-                                        </Button>
+                                        <div className="grid grid-cols-2 gap-2 w-full">
+                                            <Button variant="outline" onClick={() => handleSync(c)} disabled={c.status === 'syncing'}>
+                                                <RefreshCw className={`mr-2 h-4 w-4 ${c.status === 'syncing' ? 'animate-spin' : ''}`} />
+                                                Sync
+                                            </Button>
+
+                                            {c.id === 'wordpress' && (
+                                                <Button variant="default" onClick={() => {
+                                                    setManagedConnector(c);
+                                                    setManageDialogOpen(true);
+                                                }}>
+                                                    Manage
+                                                </Button>
+                                            )}
+
+                                            {c.id !== 'wordpress' && (
+                                                <Button variant="secondary" className="opacity-50 cursor-not-allowed">
+                                                    Details
+                                                </Button>
+                                            )}
+                                        </div>
                                         <Button variant="destructive" size="icon" onClick={() => handleDisconnect(c)}>
                                             <X className="h-4 w-4" />
                                         </Button>
@@ -482,6 +504,13 @@ export function ConnectorsContent() {
                     );
                 })}
             </div>
+
+            <WordPressManagementDialog
+                open={manageDialogOpen}
+                onOpenChange={setManageDialogOpen}
+                connectorId={managedConnector?.id || ''}
+                connectorName={managedConnector?.name || ''}
+            />
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogContent>

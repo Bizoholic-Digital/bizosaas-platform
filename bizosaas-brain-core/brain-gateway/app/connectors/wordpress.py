@@ -2,7 +2,7 @@ import httpx
 import base64
 import logging
 from typing import Dict, Any, List, Optional
-from ..ports.cms_port import CMSPort, Page, Post, CMSStats
+from ..ports.cms_port import CMSPort, Page, Post, CMSStats, Plugin
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
 
@@ -18,11 +18,11 @@ class WordPressConnector(BaseConnector, CMSPort):
             type=ConnectorType.CMS,
             description="Connect your WordPress site to sync content and media.",
             icon="wordpress",
-            version="2.0.0",
+            version="2.1.0",
             auth_schema={
                 "url": {"type": "string", "label": "WordPress Site URL", "placeholder": "https://your-site.com"},
                 "username": {"type": "string", "label": "Username"},
-                "application_password": {"type": "string", "label": "Application Password", "help": "Generate in Users > Profile"}
+                "application_password": {"type": "password", "label": "Application Password", "help": "Generate in Users > Profile"}
             }
         )
 
@@ -61,6 +61,7 @@ class WordPressConnector(BaseConnector, CMSPort):
             
         try:
             async with httpx.AsyncClient() as client:
+                # Use /users/me to verify credentials and permissions
                 api_url = self._get_api_url("users/me")
                 logger.info(f"Validating WordPress connection to: {api_url}")
                 
@@ -71,7 +72,11 @@ class WordPressConnector(BaseConnector, CMSPort):
                 )
                 
                 if response.status_code == 200:
-                    logger.info("WordPress connection validated successfully")
+                    user_data = response.json()
+                    # Check if user has administrator or editor capabilities
+                    capabilities = user_data.get("capabilities", {})
+                    is_admin = capabilities.get("administrator", False)
+                    logger.info(f"WordPress connection validated successfully. Is Admin: {is_admin}")
                     return True
                 else:
                     logger.error(f"WordPress validation failed: HTTP {response.status_code} - {response.text[:100]}")
@@ -85,6 +90,13 @@ class WordPressConnector(BaseConnector, CMSPort):
 
     async def get_status(self) -> ConnectorStatus:
         if await self.validate_credentials():
+            # Check for required plugins
+            discovery = await self._discover_plugins()
+            plugins = discovery.get("plugins", {})
+            
+            # If any detected is false, we're degraded
+            if any(not p.get("detected") for p in plugins.values()):
+                return ConnectorStatus.DEGRADED
             return ConnectorStatus.CONNECTED
         return ConnectorStatus.ERROR
 
@@ -96,50 +108,155 @@ class WordPressConnector(BaseConnector, CMSPort):
         elif resource_type == 'pages':
             items = await self.get_pages()
             return {"data": [p.dict() for p in items]}
+        elif resource_type == 'plugins':
+            items = await self.get_plugins()
+            return {"data": [p.dict() for p in items]}
         return {"data": []}
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """Perform actions like plugin discovery"""
+        """Perform actions like plugin discovery, install, etc."""
         if action == "discover_plugins":
             return await self._discover_plugins()
+        elif action == "toggle_plugin":
+            success = await self.toggle_plugin(payload.get("slug"), payload.get("active", False))
+            return {"status": "success" if success else "error"}
+        elif action == "install_plugin":
+            success = await self.install_plugin(payload.get("slug"))
+            return {"status": "success" if success else "error"}
+        elif action == "search_plugin_directory":
+            return await self._search_wp_org_plugins(payload.get("query", ""))
         return {"status": "error", "message": f"Unknown action: {action}"}
 
     async def _discover_plugins(self) -> Dict[str, Any]:
         """Detect WooCommerce, FluentCRM, etc."""
-        plugins = {
-            "woocommerce": {"detected": False, "version": None, "connector_id": "woocommerce"},
-            "fluent_crm": {"detected": False, "version": None, "connector_id": "fluent-crm"}
+        # Requirements map: name -> {prefix, path, label}
+        requirements = {
+            "woocommerce": {"prefix": "wc/v3", "path": "", "label": "WooCommerce"},
+            "fluent-crm": {"prefix": "fluent-crm/v1", "path": "contacts", "label": "FluentCRM"}
         }
         
+        plugins = {}
         auth = self._get_auth_header()
+        
         async with httpx.AsyncClient() as client:
-            # Detect WooCommerce
-            try:
-                # WC usually has a system status or just check root of v3
-                # We'll check the index of wc/v3
-                wc_url = self._get_plugin_api_url("wc/v3", "")
-                resp = await client.get(wc_url, headers=auth, timeout=10.0)
-                if resp.status_code == 200:
-                    plugins["woocommerce"]["detected"] = True
-                    logger.info("WooCommerce detected on WordPress site")
-            except Exception as e:
-                logger.debug(f"WooCommerce detection failed: {e}")
+            for slug, req in requirements.items():
+                try:
+                    url = self._get_plugin_api_url(req["prefix"], req["path"])
+                    resp = await client.get(url, headers=auth, timeout=5.0)
+                    # For FluentCRM, it might return 403 if it exists but we lack specific CRM perms, 
+                    # but the namespace exists if the plugin is active.
+                    detected = resp.status_code in [200, 401, 403]
+                    # Also check /wp-json index to see available namespaces
+                    if not detected:
+                        index_url = self.credentials.get("url", "").rstrip("/") + "/wp-json"
+                        index_resp = await client.get(index_url, timeout=5.0)
+                        if index_resp.status_code == 200:
+                            namespaces = index_resp.json().get("namespaces", [])
+                            detected = req["prefix"] in namespaces
 
-            # Detect FluentCRM
-            try:
-                fc_url = self._get_plugin_api_url("fluent-crm/v1", "contacts")
-                resp = await client.get(fc_url, headers=auth, timeout=10.0)
-                # FluentCRM might return 200 even for empty contacts
-                if resp.status_code in [200, 403]: # 403 might mean it exists but lacks specific permissions we'll fix later
-                    plugins["fluent_crm"]["detected"] = True
-                    logger.info("FluentCRM detected on WordPress site")
-            except Exception as e:
-                logger.debug(f"FluentCRM detection failed: {e}")
+                    plugins[slug] = {
+                        "detected": detected,
+                        "label": req["label"]
+                    }
+                except Exception:
+                    plugins[slug] = {"detected": False, "label": req["label"]}
 
         return {
             "status": "success",
             "plugins": plugins
         }
+
+    async def _search_wp_org_plugins(self, query: str) -> Dict[str, Any]:
+        """Search WordPress.org plugin directory"""
+        try:
+            async with httpx.AsyncClient() as client:
+                url = f"https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[search]={query}&request[per_page]=10"
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    return {
+                        "status": "success",
+                        "plugins": data.get("plugins", [])
+                    }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": "Failed to search directory"}
+
+    # --- Plugin Management Implementation ---
+    async def get_plugins(self) -> List[Plugin]:
+        async with httpx.AsyncClient() as client:
+            try:
+                # Requires 'activate_plugins' capability
+                response = await client.get(
+                    self._get_api_url("plugins"),
+                    headers=self._get_auth_header(),
+                    timeout=15.0
+                )
+                if response.status_code != 200:
+                    logger.warning(f"Failed to fetch plugins: {response.status_code} - {response.text}")
+                    return []
+                
+                data = response.json()
+                return [
+                    Plugin(
+                        id=p["plugin"],
+                        name=p["name"],
+                        slug=p["plugin"].split('/')[0],
+                        version=p["version"],
+                        status=p["status"],
+                        description=p.get("description", {}).get("rendered", ""),
+                        author=p.get("author_name", ""),
+                        plugin_url=p.get("plugin_uri", "")
+                    ) for p in data
+                ]
+            except Exception as e:
+                logger.error(f"Plugin fetch failed: {e}")
+                return []
+
+    async def toggle_plugin(self, slug: str, active: bool) -> bool:
+        """Activate or deactivate a plugin"""
+        async with httpx.AsyncClient() as client:
+            try:
+                # WP REST API uses the relative path as the identifier (e.g. 'akismet/akismet.php')
+                # But sometimes users just provide the slug. We need the full id.
+                plugins = await self.get_plugins()
+                plugin_id = next((p.id for p in plugins if p.slug == slug or p.id == slug), slug)
+                
+                status = "active" if active else "inactive"
+                response = await client.post(
+                    self._get_api_url(f"plugins/{plugin_id}"),
+                    headers=self._get_auth_header(),
+                    json={"status": status}
+                )
+                return response.status_code == 200
+            except Exception as e:
+                logger.error(f"Plugin toggle failed: {e}")
+                return False
+
+    async def install_plugin(self, slug: str) -> bool:
+        """
+        WordPress core REST API doesn't support installation from repo. 
+        This usually requires WP-CLI or a helper plugin.
+        We'll log this as a limitation or suggest using the WP dashboard for now.
+        Alternatively, if we had a helper plugin on the client side, we could do it.
+        """
+        logger.info(f"Install plugin requested for: {slug}. Standard REST API does not support remote installs.")
+        return False
+
+    async def uninstall_plugin(self, slug: str) -> bool:
+        async with httpx.AsyncClient() as client:
+            try:
+                plugins = await self.get_plugins()
+                plugin_id = next((p.id for p in plugins if p.slug == slug or p.id == slug), slug)
+                
+                response = await client.delete(
+                    self._get_api_url(f"plugins/{plugin_id}"),
+                    headers=self._get_auth_header()
+                )
+                return response.status_code in [200, 204]
+            except Exception as e:
+                logger.error(f"Plugin uninstall failed: {e}")
+                return False
 
     # --- CMSPort Implementation ---
     async def get_stats(self) -> CMSStats:
@@ -302,22 +419,44 @@ class WordPressConnector(BaseConnector, CMSPort):
                 return None
 
     async def create_post(self, post: Post) -> Post:
+        # Standard WordPress post payload
         payload = {
             "title": post.title,
             "content": post.content,
-            "status": post.status or "publish",
+            "status": post.status if post.status in ["publish", "draft", "private", "pending"] else "publish",
             "slug": post.slug
         }
+        
+        # Add basic fields that might prevent success on some themes/plugins
+        if post.excerpt:
+            payload["excerpt"] = post.excerpt
+            
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self._get_api_url("posts"),
-                headers=self._get_auth_header(),
-                json=payload
-            )
-            response.raise_for_status()
-            p = response.json()
-            post.id = str(p["id"])
-            return post
+            try:
+                response = await client.post(
+                    self._get_api_url("posts"),
+                    headers=self._get_auth_header(),
+                    json=payload,
+                    timeout=20.0
+                )
+                
+                if response.status_code != 201:
+                    logger.error(f"WordPress create post failed: {response.status_code} - {response.text}")
+                    # Special check for permissions
+                    if response.status_code == 403:
+                         raise Exception("Permission denied. Check if Application Password has administrator/editor role.")
+                    response.raise_for_status()
+                
+                p = response.json()
+                post.id = str(p["id"])
+                logger.info(f"Successfully created WordPress post: {post.id}")
+                return post
+            except httpx.HTTPStatusError as e:
+                logger.error(f"HTTP Error creating post: {e.response.text}")
+                raise Exception(f"WordPress API Error: {e.response.text}")
+            except Exception as e:
+                logger.error(f"Error creating post: {str(e)}")
+                raise
 
     async def update_post(self, post_id: str, updates: Dict[str, Any]) -> Post:
         async with httpx.AsyncClient() as client:

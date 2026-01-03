@@ -61,10 +61,17 @@ export class ConnectorsApi {
     }
 
     /**
-     * Trigger a manual sync
+     * Trigger a manual sync for a specific resource
      */
-    async syncConnector(connectorId: string, resource?: string): Promise<ApiResponse<{ jobId: string; status: string }>> {
-        return brainApi.post<{ jobId: string; status: string }>(`/api/brain/connectors/${connectorId}/sync`, { resource });
+    async syncResource<T = any>(connectorId: string, resource: string): Promise<ApiResponse<T>> {
+        return brainApi.get<T>(`/api/brain/connectors/${connectorId}/sync/${resource}`);
+    }
+
+    /**
+     * Execute a specific action on a connector
+     */
+    async performAction<T = any>(connectorId: string, action: string, payload: any = {}): Promise<ApiResponse<T>> {
+        return brainApi.post<T>(`/api/brain/connectors/${connectorId}/action/${action}`, payload);
     }
 }
 

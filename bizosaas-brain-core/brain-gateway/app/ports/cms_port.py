@@ -33,6 +33,16 @@ class CMSStats(BaseModel):
     media: int
     last_sync: Optional[datetime] = None
 
+class Plugin(BaseModel):
+    id: str
+    name: str
+    slug: str
+    version: str
+    status: str  # active, inactive
+    description: Optional[str] = None
+    author: Optional[str] = None
+    plugin_url: Optional[str] = None
+
 class CMSPort(ABC):
     """
     Abstract Port for Content Management Systems (WordPress, Webflow, etc).
@@ -76,4 +86,21 @@ class CMSPort(ABC):
     
     @abstractmethod
     async def delete_post(self, post_id: str) -> bool:
+        pass
+
+    # Plugin Management
+    @abstractmethod
+    async def get_plugins(self) -> List[Plugin]:
+        pass
+
+    @abstractmethod
+    async def toggle_plugin(self, slug: str, active: bool) -> bool:
+        pass
+
+    @abstractmethod
+    async def install_plugin(self, slug: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def uninstall_plugin(self, slug: str) -> bool:
         pass
