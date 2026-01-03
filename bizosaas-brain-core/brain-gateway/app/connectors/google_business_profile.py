@@ -1,10 +1,10 @@
 import httpx
+import os
 import time
 from typing import Dict, Any, List, Optional
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
-from .registry import ConnectorRegistry
 from .oauth_mixin import OAuthMixin
-import os
+from .registry import ConnectorRegistry
 
 @ConnectorRegistry.register
 class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
@@ -16,10 +16,11 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
             type=ConnectorType.OTHER,
             description="Manage your local business presence, reviews, and posts on Google.",
             icon="map-pin",
-            version="1.0.0",
+            version="1.1.0",
             auth_schema={
-                "access_token": {"type": "string", "label": "Access Token", "format": "password"},
-                "refresh_token": {"type": "string", "label": "Refresh Token", "format": "password"},
+                "access_token": {"type": "string", "label": "Access Token", "format": "password", "hidden": True},
+                "refresh_token": {"type": "string", "label": "Refresh Token", "format": "password", "hidden": True},
+                "expires_at": {"type": "number", "label": "Expires At", "hidden": True},
                 "location_id": {"type": "string", "label": "Location ID", "placeholder": "locations/123456"},
                 "account_id": {"type": "string", "label": "Account ID", "placeholder": "accounts/123456"}
             }
@@ -31,76 +32,45 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
     def _get_account_url(self) -> str:
          return "https://mybusinessaccountmanagement.googleapis.com/v1"
 
-    def _get_reviews_url(self) -> str:
-        return "https://mybusinessnotifications.googleapis.com/v1"
-
-    async def get_auth_url(self, redirect_uri: str, state: str) -> str:
-        client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
-        scopes = [
-            "https://www.googleapis.com/auth/business.manage",
-            "openid",
-            "email",
-            "profile"
-        ]
-        scope_str = "%20".join(scopes)
-        return (
-            f"https://accounts.google.com/o/oauth2/v2/auth?"
-            f"client_id={client_id}&"
-            f"redirect_uri={redirect_uri}&"
-            f"response_type=code&"
-            f"scope={scope_str}&"
-            f"state={state}&"
-            f"access_type=offline&"
-            f"prompt=consent"
-        )
-
-    async def exchange_code(self, code: str, redirect_uri: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://oauth2.googleapis.com/token",
-                data={
-                    "code": code,
-                    "client_id": os.environ.get("GOOGLE_CLIENT_ID", ""),
-                    "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET", ""),
-                    "redirect_uri": redirect_uri,
-                    "grant_type": "authorization_code",
-                },
-            )
-            response.raise_for_status()
-            return response.json()
-
-    async def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                "https://oauth2.googleapis.com/token",
-                data={
-                    "refresh_token": refresh_token,
-                    "client_id": os.environ.get("GOOGLE_CLIENT_ID", ""),
-                    "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET", ""),
-                    "grant_type": "refresh_token",
-                },
-            )
-            response.raise_for_status()
-            return response.json()
-
     async def _get_access_token(self) -> str:
-        # Check if current token is valid (this is a simplified logic)
-        # In a real app we'd check expiry
-        return self.credentials.get("access_token", "")
+        """
+        Retrieves a valid access token, refreshing if necessary.
+        """
+        access_token = self.credentials.get("access_token")
+        refresh_token = self.credentials.get("refresh_token")
+        expires_at = self.credentials.get("expires_at", 0)
+
+        # Refresh if expired or about to expire
+        if refresh_token and (not access_token or time.time() > (expires_at - 60)):
+            try:
+                token_data = await self.refresh_token(refresh_token)
+                self.credentials["access_token"] = token_data.get("access_token")
+                if "expires_in" in token_data:
+                    self.credentials["expires_at"] = int(time.time()) + token_data["expires_in"]
+                return self.credentials["access_token"]
+            except Exception as e:
+                self.logger.error(f"Failed to refresh GBP token: {e}")
+        
+        if not access_token:
+            raise ValueError("No valid OAuth session. Please reconnect Google Business Profile.")
+            
+        return access_token
 
     async def validate_credentials(self) -> bool:
-        token = await self._get_access_token()
-        if not token:
+        try:
+            token = await self._get_access_token()
+            async with httpx.AsyncClient() as client:
+                headers = {"Authorization": f"Bearer {token}"}
+                # Test by listing accounts
+                response = await client.get(f"{self._get_account_url()}/accounts", headers=headers)
+                return response.status_code == 200
+        except Exception:
             return False
-        
-        async with httpx.AsyncClient() as client:
-            headers = {"Authorization": f"Bearer {token}"}
-            # Test by listing accounts
-            response = await client.get(f"{self._get_account_url()}/accounts", headers=headers)
-            return response.status_code == 200
 
     async def get_status(self) -> ConnectorStatus:
         if await self.validate_credentials():
+            if not self.credentials.get("location_id"):
+                return ConnectorStatus.DEGRADED
             return ConnectorStatus.CONNECTED
         return ConnectorStatus.ERROR
 
@@ -121,16 +91,17 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
             elif resource_type == "locations":
                 account_id = self.credentials.get("account_id")
                 if not account_id:
-                    # Fallback: find first account
-                    accounts = await self.sync_data("accounts")
-                    if not accounts.get("accounts"):
+                    # Discover accounts
+                    accounts_data = await self.sync_data("accounts")
+                    accounts = accounts_data.get("accounts", [])
+                    if not accounts:
                          return {"error": "No accounts found"}
-                    account_id = accounts["accounts"][0]["name"]
+                    account_id = accounts[0]["name"]
 
                 response = await client.get(
                     f"{self._get_base_url()}/{account_id}/locations", 
                     headers=headers,
-                    params={"readMask": "name,title,storeCode"}
+                    params={"readMask": "name,title,storefrontAddress,categories,regularHours"}
                 )
                 response.raise_for_status()
                 return response.json()
@@ -138,105 +109,115 @@ class GoogleBusinessProfileConnector(BaseConnector, OAuthMixin):
             elif resource_type == "reviews":
                 location_id = self.credentials.get("location_id")
                 if not location_id:
-                    return {"error": "location_id is required to fetch reviews"}
+                    raise ValueError("location_id is required to fetch reviews")
                 
-                # Reviews are under a different base URL
+                # Use My Business API v4 for reviews (legacy but still common for reviews)
                 url = f"https://mybusiness.googleapis.com/v4/{location_id}/reviews"
                 response = await client.get(url, headers=headers)
                 response.raise_for_status()
                 return response.json()
 
-        return {"error": "Unsupported resource type"}
+        return {"error": f"Unsupported resource type: {resource_type}"}
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute actions on Google Business Profile.
-        Supported actions: 'auto_link', 'search_locations'
-        """
-        if action == "search_locations":
-            query = payload.get("query", "")
-            if not query:
-                return {"status": "error", "message": "Search query is required"}
-            
-            # Use Google Business Information API to search
-            # For this MVP, we search across accounts first
-            accounts_data = await self.sync_data("accounts")
-            accounts = accounts_data.get("accounts", [])
-            
-            all_found = []
-            for acc in accounts:
-                headers = {"Authorization": f"Bearer {await self._get_access_token()}"}
-                async with httpx.AsyncClient() as client:
-                    # Search locations for each account
-                    resp = await client.get(
-                        f"{self._get_base_url()}/{acc['name']}/locations",
-                        headers=headers,
-                        params={"filter": f"locationName={query}"} # Simplified filtering
-                    )
-                    if resp.status_code == 200:
-                        locs = resp.json().get("locations", [])
-                        for l in locs:
-                            all_found.append({
-                                "account": acc["name"],
-                                "location": l["name"],
-                                "title": l.get("title"),
-                                "address": l.get("storefrontAddress")
-                            })
-            
-            return {
-                "status": "success",
-                "results": all_found
-            }
-
         if action == "auto_link":
-            # 1. Discover accounts
-            data = await self.sync_data("accounts")
-            accounts = data.get("accounts", [])
+            token = await self._get_access_token()
+            headers = {"Authorization": f"Bearer {token}"}
             
+            # 1. Get Accounts
+            acc_resp = await self.sync_data("accounts")
+            accounts = acc_resp.get("accounts", [])
             if not accounts:
                 return {"status": "error", "message": "No Google Business accounts found."}
-                
-            # If multiple accounts, we might need to iterate. For auto-link, we try the first one or target name.
-            account_id = accounts[0]["name"]
-            self.credentials["account_id"] = account_id
             
-            # 2. Discover locations for this account
-            loc_data = await self.sync_data("locations")
-            locations = loc_data.get("locations", [])
-            
-            if not locations:
-                 return {"status": "partial_success", "message": f"Linked account {account_id} but no locations found.", "account_id": account_id}
-            
-            if len(locations) == 1:
-                location_id = locations[0]["name"]
-                self.credentials["location_id"] = location_id
-                return {
-                    "status": "success",
-                    "auto": True,
-                    "message": f"Automatically linked location: {locations[0].get('title')}",
-                    "account_id": account_id,
-                    "location_id": location_id
-                }
-            
-            # Match by title if provided
+            # 2. Find Locations across all accounts
+            all_locations = []
+            for acc in accounts:
+                async with httpx.AsyncClient() as client:
+                    loc_resp = await client.get(
+                        f"{self._get_base_url()}/{acc['name']}/locations",
+                        headers=headers,
+                        params={"readMask": "name,title,storefrontAddress"}
+                    )
+                    if loc_resp.status_code == 200:
+                        locs = loc_resp.json().get("locations", [])
+                        for l in locs:
+                            all_locations.append({
+                                "account_id": acc["name"],
+                                "location_id": l["name"],
+                                "title": l["title"],
+                                "address": l.get("storefrontAddress")
+                            })
+
+            if not all_locations:
+                return {"status": "error", "message": "No locations discovered."}
+
+            # 3. Auto-link if exactly one, or search by name
             target_name = payload.get("target_name")
             if target_name:
-                for loc in locations:
-                    if target_name.lower() in loc.get("title", "").lower():
-                        self.credentials["location_id"] = loc["name"]
-                        return {
-                            "status": "success",
-                            "auto": True,
-                            "message": f"Linked matching location: {loc.get('title')}",
-                            "account_id": account_id,
-                            "location_id": loc["name"]
-                        }
+                for loc in all_locations:
+                    if target_name.lower() in loc["title"].lower():
+                        self.credentials["account_id"] = loc["account_id"]
+                        self.credentials["location_id"] = loc["location_id"]
+                        return {"status": "success", "message": f"Linked: {loc['title']}", "location": loc}
+
+            if len(all_locations) == 1:
+                loc = all_locations[0]
+                self.credentials["account_id"] = loc["account_id"]
+                self.credentials["location_id"] = loc["location_id"]
+                return {"status": "success", "message": f"Automatically linked: {loc['title']}", "location": loc}
 
             return {
                 "status": "multiple_found",
-                "message": "Multiple locations found. Please select one manually.",
-                "account_id": account_id,
-                "locations": locations
+                "locations": all_locations
             }
 
-        raise ValueError(f"Unsupported action: {action}")
+        raise NotImplementedError(f"Action {action} not implemented for GBP")
+
+    # OAuthMixin Implementation
+    async def get_auth_url(self, redirect_uri: str, state: str) -> str:
+        client_id = os.getenv("GOOGLE_CLIENT_ID")
+        scopes = [
+            "https://www.googleapis.com/auth/business.manage",
+            "openid", "email", "profile"
+        ]
+        return (
+            f"https://accounts.google.com/o/oauth2/v2/auth?"
+            f"client_id={client_id}&"
+            f"redirect_uri={redirect_uri}&"
+            f"response_type=code&"
+            f"scope={' '.join(scopes)}&"
+            f"state={state}&"
+            f"access_type=offline&"
+            f"prompt=consent"
+        )
+    
+    async def exchange_code(self, code: str, redirect_uri: str) -> Dict[str, Any]:
+        url = "https://oauth2.googleapis.com/token"
+        data = {
+            "code": code,
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code"
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, data=data)
+            resp.raise_for_status()
+            token_data = resp.json()
+            if "expires_in" in token_data:
+                token_data["expires_at"] = int(time.time()) + token_data["expires_in"]
+            return token_data
+    
+    async def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
+        url = "https://oauth2.googleapis.com/token"
+        data = {
+            "refresh_token": refresh_token,
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "grant_type": "refresh_token"
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, data=data)
+            resp.raise_for_status()
+            return resp.json()

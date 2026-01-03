@@ -165,10 +165,26 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
         },
         {
           id: 'marketing',
-          name: 'Marketing',
-          href: '/dashboard/marketing',
+          name: 'Marketing & Campaigns',
+          href: '#',
           icon: <Mail className="w-4 h-4" />,
-          active: pathname.startsWith('/dashboard/marketing')
+          active: pathname.startsWith('/dashboard/marketing') || pathname.startsWith('/crm/campaigns'),
+          subItems: [
+            {
+              id: 'marketing-overview',
+              name: 'Marketing Overview',
+              href: '/dashboard/marketing',
+              icon: <Activity className="w-4 h-4" />,
+              active: pathname === '/dashboard/marketing'
+            },
+            {
+              id: 'campaigns-manager',
+              name: 'Campaigns Manager',
+              href: '/crm/campaigns',
+              icon: <Zap className="w-4 h-4" />,
+              active: pathname === '/crm/campaigns'
+            }
+          ]
         }
       ]
     },

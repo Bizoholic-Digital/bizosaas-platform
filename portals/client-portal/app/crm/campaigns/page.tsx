@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Zap, Plus, Search, Filter, Download, RefreshCw, 
+import {
+  Zap, Plus, Search, Filter, Download, RefreshCw,
   Play, Pause, Square, Calendar, Users, Mail,
   Eye, Edit, Trash2, MoreHorizontal, Target, TrendingUp,
   BarChart3, Activity, Clock, CheckCircle, AlertCircle
 } from 'lucide-react';
 import DashboardLayout from '../../../components/ui/dashboard-layout';
+import { brainApi } from '@/lib/brain-api';
 
 const CampaignsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -19,99 +20,30 @@ const CampaignsPage = () => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        // Mock API call - replace with actual Brain Hub API calls
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setCampaigns([
-          {
-            id: '1',
-            name: 'Q4 Lead Generation',
-            type: 'email',
-            status: 'active',
-            channel: 'Email Marketing',
-            startDate: '2024-09-01T00:00:00Z',
-            endDate: '2024-12-31T23:59:59Z',
-            budget: 15000,
-            spent: 8750,
-            audience: 2500,
-            sent: 2500,
-            delivered: 2425,
-            opened: 875,
-            clicked: 234,
-            converted: 43,
-            revenue: 125000,
-            ctr: 26.74, // clicked/opened * 100
-            conversionRate: 18.38, // converted/clicked * 100
-            roas: 14.29, // revenue/spent
-            progress: 58 // spent/budget * 100
-          },
-          {
-            id: '2',
-            name: 'Holiday Promotion 2024',
-            type: 'social',
-            status: 'scheduled',
-            channel: 'Social Media',
-            startDate: '2024-11-15T00:00:00Z',
-            endDate: '2024-12-25T23:59:59Z',
-            budget: 8000,
-            spent: 0,
-            audience: 5000,
-            sent: 0,
-            delivered: 0,
-            opened: 0,
-            clicked: 0,
-            converted: 0,
-            revenue: 0,
-            ctr: 0,
-            conversionRate: 0,
-            roas: 0,
-            progress: 0
-          },
-          {
-            id: '3',
-            name: 'Product Launch Campaign',
-            type: 'ppc',
-            status: 'completed',
-            channel: 'Google Ads',
-            startDate: '2024-08-01T00:00:00Z',
-            endDate: '2024-08-31T23:59:59Z',
-            budget: 12000,
-            spent: 11500,
-            audience: 15000,
-            sent: 15000,
-            delivered: 14850,
-            opened: 4455,
-            clicked: 890,
-            converted: 156,
-            revenue: 195000,
-            ctr: 19.98,
-            conversionRate: 17.53,
-            roas: 16.96,
-            progress: 100
-          },
-          {
-            id: '4',
-            name: 'Retargeting Campaign',
-            type: 'display',
-            status: 'paused',
-            channel: 'Display Ads',
-            startDate: '2024-09-15T00:00:00Z',
-            endDate: '2024-10-15T23:59:59Z',
-            budget: 5000,
-            spent: 2100,
-            audience: 800,
-            sent: 800,
-            delivered: 796,
-            opened: 159,
-            clicked: 32,
-            converted: 8,
-            revenue: 15000,
-            ctr: 20.13,
-            conversionRate: 25.00,
-            roas: 7.14,
-            progress: 42
-          }
-        ]);
+        const data = await brainApi.campaigns.list();
+
+        // Enrich data with defaults for missing metrics
+        const enriched = (Array.isArray(data) ? data : []).map((c: any) => ({
+          ...c,
+          channel: c.channels?.[0]?.channel_type || 'General',
+          startDate: c.created_at,
+          endDate: c.created_at, // Fallback
+          budget: c.budget || 0,
+          spent: c.spent || 0,
+          audience: c.audience || 0,
+          sent: c.sent || 0,
+          delivered: c.delivered || 0,
+          opened: c.opened || 0,
+          clicked: c.clicked || 0,
+          converted: c.converted || 0,
+          revenue: c.revenue || 0,
+          ctr: c.ctr || 0,
+          conversionRate: c.conversionRate || 0,
+          roas: c.roas || 0,
+          progress: c.budget > 0 ? (c.spent / c.budget) * 100 : 0
+        }));
+
+        setCampaigns(enriched);
       } catch (error) {
         console.error('Failed to fetch campaigns:', error);
       } finally {
@@ -132,7 +64,7 @@ const CampaignsPage = () => {
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    
+
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
         {config.icon}
@@ -151,7 +83,7 @@ const CampaignsPage = () => {
     };
 
     const config = channelConfig[channel as keyof typeof channelConfig] || { color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' };
-    
+
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
         {channel}
@@ -161,7 +93,7 @@ const CampaignsPage = () => {
 
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         campaign.channel.toLowerCase().includes(searchTerm.toLowerCase());
+      campaign.channel.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = selectedFilter === 'all' || campaign.status === selectedFilter;
     return matchesSearch && matchesFilter;
   });
@@ -335,8 +267,8 @@ const CampaignsPage = () => {
                   <span>{campaign.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full" 
+                  <div
+                    className="bg-blue-600 h-2 rounded-full"
                     style={{ width: `${Math.min(campaign.progress, 100)}%` }}
                   ></div>
                 </div>

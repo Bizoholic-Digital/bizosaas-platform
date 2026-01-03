@@ -1,5 +1,7 @@
 import httpx
-from typing import Dict, Any, Optional
+import os
+import time
+from typing import Dict, Any, Optional, List
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .oauth_mixin import OAuthMixin
 from .registry import ConnectorRegistry
@@ -14,49 +16,48 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
             type=ConnectorType.ANALYTICS,
             description="Track website traffic, user behavior, and conversion metrics.",
             icon="google-analytics",
-            version="1.0.0",
+            version="1.1.0",
             auth_schema={
-                "property_id": {"type": "string", "label": "GA4 Property ID"},
-                "client_email": {"type": "string", "label": "Service Account Email"},
-                "private_key": {"type": "string", "label": "Private Key", "format": "textarea", "help": "From Google Cloud Service Account JSON"}
+                "access_token": {"type": "string", "label": "Access Token", "format": "password", "hidden": True},
+                "refresh_token": {"type": "string", "label": "Refresh Token", "format": "password", "hidden": True},
+                "expires_at": {"type": "number", "label": "Expires At", "hidden": True},
+                "property_id": {"type": "string", "label": "GA4 Property ID", "placeholder": "properties/123456789"}
             }
         )
 
     async def _get_access_token(self) -> str:
         """
-        Retrieves a valid access token. 
-        If a refresh_token is present, it will attempt to refresh the access token.
+        Retrieves a valid access token, refreshing if necessary.
         """
-        # If we have a valid access_token, use it
-        if self.credentials.get("access_token") and not self.credentials.get("expires_at"):
-             # Simple case: token provided but no expiry info
-             return self.credentials.get("access_token")
+        access_token = self.credentials.get("access_token")
+        refresh_token = self.credentials.get("refresh_token")
+        expires_at = self.credentials.get("expires_at", 0)
 
-        # If we have a refresh_token, try to refresh
-        if self.credentials.get("refresh_token"):
+        # Refresh if expired or about to expire (within 60 seconds)
+        if refresh_token and (not access_token or time.time() > (expires_at - 60)):
             try:
-                token_data = await self.refresh_token(self.credentials.get("refresh_token"))
-                # Update credentials for this instance
+                token_data = await self.refresh_token(refresh_token)
                 self.credentials["access_token"] = token_data.get("access_token")
-                # Update secure storage would happen here in a real scenario
+                # Update expires_at if provided by Google (typically 3600s)
+                if "expires_in" in token_data:
+                    self.credentials["expires_at"] = int(time.time()) + token_data["expires_in"]
+                
+                # Note: In a real production system, we would trigger a callback here 
+                # to persist the updated credentials to the database.
                 return self.credentials["access_token"]
             except Exception as e:
-                self.logger.error(f"Failed to refresh Google access token: {e}")
+                self.logger.error(f"Failed to refresh Google Analytics token: {e}")
         
-        # Fallback to Service Account if property_id and keys are present
-        if self.credentials.get("client_email") and self.credentials.get("private_key"):
-            # TODO: Implement full Service Account JWT flow
-            raise NotImplementedError("Service Account JWT flow not fully implemented. Please use OAuth.")
-
-        raise ValueError("No valid access_token or refresh_token found in credentials.")
+        if not access_token:
+            raise ValueError("No valid OAuth session found. Please reconnect.")
+            
+        return access_token
 
     async def validate_credentials(self) -> bool:
         try:
             token = await self._get_access_token()
-            # Simple metadata check
-            property_id = self.credentials.get("property_id")
-            url = f"https://analyticsdata.googleapis.com/v1beta/properties/{property_id}/metadata"
-            
+            # Try to list accounts as a validation check
+            url = "https://analyticsadmin.googleapis.com/v1beta/accountSummaries"
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     url,
@@ -65,11 +66,13 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
                 )
                 return response.status_code == 200
         except Exception as e:
-            self.logger.error(f"Validation failed: {e}")
+            self.logger.error(f"GA4 Validation failed: {e}")
             return False
 
     async def get_status(self) -> ConnectorStatus:
         if await self.validate_credentials():
+            if not self.credentials.get("property_id"):
+                return ConnectorStatus.DEGRADED # Connected but needs configuration
             return ConnectorStatus.CONNECTED
         return ConnectorStatus.ERROR
 
@@ -80,7 +83,7 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
         """
         token = await self._get_access_token()
         
-        if resource_type == 'properties':
+        if resource_type == 'properties' or resource_type == 'list_properties':
             url = "https://analyticsadmin.googleapis.com/v1beta/properties"
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
@@ -88,7 +91,7 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
                 return resp.json()
 
         if resource_type == 'accounts':
-            url = "https://analyticsadmin.googleapis.com/v1alpha/accountSummaries"
+            url = "https://analyticsadmin.googleapis.com/v1beta/accountSummaries"
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
                 resp.raise_for_status()
@@ -96,96 +99,101 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
 
         # GA4 Report
         property_id = self.credentials.get("property_id")
-        url = f"https://analyticsdata.googleapis.com/v1beta/properties/{property_id}:runReport"
+        if not property_id:
+             raise ValueError("property_id is required for reports. Run 'auto_link' first.")
+             
+        # Standardize property_id (ensure it has properties/ prefix if needed)
+        full_property_id = property_id if property_id.startswith("properties/") else f"properties/{property_id}"
+        
+        url = f"https://analyticsdata.googleapis.com/v1beta/{full_property_id}:runReport"
         
         # Default report request
         report_request = {
             "dateRanges": [{"startDate": "30daysAgo", "endDate": "today"}],
             "dimensions": [{"name": "date"}],
-            "metrics": [{"name": "activeUsers"}, {"name": "sessions"}]
+            "metrics": [{"name": "activeUsers"}, {"name": "sessions"}, {"name": "screenPageViews"}]
         }
         
-        # Allow overriding via params
         if params and "request_body" in params:
             report_request = params["request_body"]
 
-        try:
-            token = await self._get_access_token()
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    url,
-                    headers={"Authorization": f"Bearer {token}"},
-                    json=report_request,
-                    timeout=30.0
-                )
-                response.raise_for_status()
-                return response.json()
-        except Exception as e:
-            self.logger.error(f"Sync failed for {resource_type}: {e}")
-            raise
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                url,
+                headers={"Authorization": f"Bearer {token}"},
+                json=report_request,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute actions on Google Analytics.
-        action: 'link_property'
+        action: 'auto_link', 'set_property'
         """
-        if action == "link_property":
+        if action == "set_property":
             property_id = payload.get("property_id")
             if not property_id:
-                raise ValueError("property_id is required for link_property action")
-            
-            # Update credentials
+                raise ValueError("property_id is required")
             self.credentials["property_id"] = property_id
-            return {
-                "status": "success",
-                "message": f"Successfully linked property {property_id}",
-                "property_id": property_id
-            }
+            return {"status": "success", "property_id": property_id}
 
-        if action == "auto_link" or action == "sync_and_link":
-            # 1. Discover properties
-            data = await self.sync_data("properties")
-            properties = data.get("properties", [])
-            
-            if not properties:
-                return {"status": "error", "message": "No Google Analytics 4 properties found."}
+        if action == "auto_link":
+            # Discover first available property
+            # First, check accountSummaries to find properties more easily
+            token = await self._get_access_token()
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    "https://analyticsadmin.googleapis.com/v1beta/accountSummaries",
+                    headers={"Authorization": f"Bearer {token}"}
+                )
+                if resp.status_code != 200:
+                    return {"status": "error", "message": "Failed to fetch account summaries"}
                 
-            property_id = None
-            if len(properties) == 1:
-                property_id = properties[0]["name"].split("/")[-1]
-                self.credentials["property_id"] = property_id
+                summaries = resp.json().get("accountSummaries", [])
+                discovered_properties = []
                 
-                # If sync_and_link, perform an initial sync
-                sync_result = {}
-                if action == "sync_and_link":
-                    sync_result = await self.sync_data("basic_report")
+                for account in summaries:
+                    for prop in account.get("propertySummaries", []):
+                        discovered_properties.append({
+                            "id": prop["property"],
+                            "name": prop["displayName"]
+                        })
+                
+                if not discovered_properties:
+                    return {"status": "error", "message": "No GA4 properties found in this account."}
+                
+                # Auto-select the first one if only one, or return list
+                if len(discovered_properties) == 1 or payload.get("force_first"):
+                    prop = discovered_properties[0]
+                    self.credentials["property_id"] = prop["id"]
+                    return {
+                        "status": "success",
+                        "message": f"Successfully linked property: {prop['name']}",
+                        "property_id": prop["id"]
+                    }
                 
                 return {
-                    "status": "success",
-                    "auto": True,
-                    "message": f"Automatically linked and synced property: {properties[0].get('displayName')}",
-                    "property_id": property_id,
-                    "initial_sync": sync_result
+                    "status": "multiple_found",
+                    "properties": discovered_properties
                 }
             
-            return {
-                "status": "multiple_found",
-                "message": "Multiple properties found. Please select one manually.",
-                "properties": properties
-            }
-            
-        raise NotImplementedError(f"Action {action} not implemented for Google Analytics")
+        raise NotImplementedError(f"Action {action} not implemented for GA4")
 
     # OAuthMixin Implementation
     async def get_auth_url(self, redirect_uri: str, state: str) -> str:
-        client_id = os.getenv("GOOGLE_CLIENT_ID", "YOUR_GOOGLE_CLIENT_ID")
-        scope = "https://www.googleapis.com/auth/analytics.readonly"
+        client_id = os.getenv("GOOGLE_CLIENT_ID")
+        scopes = [
+            "https://www.googleapis.com/auth/analytics.readonly",
+            "https://www.googleapis.com/auth/analytics.edit" # Needed for some management tasks
+        ]
         return (
             f"https://accounts.google.com/o/oauth2/v2/auth?"
             f"client_id={client_id}&"
             f"redirect_uri={redirect_uri}&"
             f"response_type=code&"
-            f"scope={scope}&"
+            f"scope={' '.join(scopes)}&"
             f"state={state}&"
             f"access_type=offline&"
             f"prompt=consent"
@@ -203,7 +211,11 @@ class GoogleAnalyticsConnector(BaseConnector, OAuthMixin):
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, data=data)
             resp.raise_for_status()
-            return resp.json()
+            token_data = resp.json()
+            # Calculate expiry
+            if "expires_in" in token_data:
+                token_data["expires_at"] = int(time.time()) + token_data["expires_in"]
+            return token_data
     
     async def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
         url = "https://oauth2.googleapis.com/token"

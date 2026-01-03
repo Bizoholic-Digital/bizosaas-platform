@@ -15,23 +15,23 @@ from app.domain.services.secret_service import SecretService
 router = APIRouter()
 
 class PageMessage(BaseModel):
-    id: str
+    id: Optional[str] = ""
     title: str
     slug: str
     content: Optional[str] = ""
-    status: str
-    published_at: Optional[datetime]
+    status: Optional[str] = "draft"
+    published_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     author: Optional[str] = ""
 
 class PostMessage(BaseModel):
-    id: str
+    id: Optional[str] = ""
     title: str
     slug: str
     content: Optional[str] = ""
     excerpt: Optional[str] = ""
     category: Optional[str] = ""
-    status: str
+    status: Optional[str] = "publish"
     published_at: Optional[datetime] = None
     author: Optional[str] = ""
 
