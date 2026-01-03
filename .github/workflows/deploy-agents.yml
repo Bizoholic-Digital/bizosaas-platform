@@ -64,7 +64,7 @@ jobs:
       - name: Trigger Dokploy Deployment (Backend Stack)
         run: |
           echo "Triggering Backend deployment on Dokploy..."
-          curl -i -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
+          curl -i -X POST "https://dk8.bizoholic.net/api/compose.deploy" \
             --retry 3 --retry-delay 10 --max-time 120 \
             -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
