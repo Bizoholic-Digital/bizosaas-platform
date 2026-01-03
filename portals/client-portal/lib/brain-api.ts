@@ -353,5 +353,16 @@ export const brainApi = {
                 method: 'POST'
             }, token);
         }
+    },
+    analytics: {
+        getOverview: async (token?: string) => {
+            return apiFetch('/api/analytics/overview', {}, token);
+        },
+        collectEvent: async (event: any, token?: string) => {
+            return apiFetch('/api/analytics/collect', {
+                method: 'POST',
+                body: JSON.stringify(event)
+            }, token);
+        }
     }
 };

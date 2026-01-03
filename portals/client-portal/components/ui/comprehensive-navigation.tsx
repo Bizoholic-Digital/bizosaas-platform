@@ -126,6 +126,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           icon: <Sparkles className="w-4 h-4 text-indigo-500" />,
           badge: isCollapsed ? undefined : 'AI',
           active: pathname === '/dashboard/ai-assistant'
+        },
+        {
+          id: 'analytics',
+          name: 'Analytics Dashboard',
+          href: '/analytics',
+          icon: <BarChart3 className="w-4 h-4 text-blue-500" />,
+          active: pathname === '/analytics'
         }
       ]
     },
@@ -178,13 +185,6 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           icon: <Bot className="w-4 h-4" />,
           badge: isCollapsed ? undefined : 'NEW',
           active: pathname.startsWith('/ai-agents')
-        },
-        {
-          id: 'analytics',
-          name: 'Business Intelligence',
-          href: getLink('analytics', '/analytics'),
-          icon: <BarChart3 className={`w-4 h-4 ${hasCategory('analytics') ? '' : 'text-gray-400'}`} />,
-          active: pathname.startsWith('/analytics')
         }
       ]
     },
