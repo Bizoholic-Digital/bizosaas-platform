@@ -20,6 +20,8 @@ from app.middleware.auth import get_current_user
 from domain.ports.identity_port import AuthenticatedUser
 from app.dependencies import get_db
 
+from app.models.audit import ConsentRecord, AuditLog
+
 router = APIRouter(prefix="/api/privacy", tags=["privacy", "gdpr"])
 
 
@@ -30,102 +32,83 @@ class ConsentType:
     ANALYTICS = "analytics"
     PERSONALIZATION = "personalization"
     THIRD_PARTY = "third_party"
-    ESSENTIAL = "essential"  # Always required, cannot be declined
-
-
-class ConsentRecord(BaseModel):
-    consent_type: str
-    granted: bool
-    timestamp: datetime
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    WP_PLUGIN_DISCOVERY = "wp_plugin_discovery"
+    ESSENTIAL = "essential"
 
 
 class ConsentUpdateRequest(BaseModel):
-    marketing: bool = False
-    analytics: bool = False
-    personalization: bool = False
-    third_party: bool = False
+    consent_type: str
+    granted: bool
+    presentation_text: Optional[str] = None
 
-
-class DataExportRequest(BaseModel):
-    format: str = "json"  # json or csv
-    include_connectors: bool = True
-    include_campaigns: bool = True
-    include_conversations: bool = True
-
-
-class DataDeletionRequest(BaseModel):
-    confirm_email: EmailStr
-    reason: Optional[str] = None
-    retain_billing_records: bool = True  # Required for legal compliance
-
-
-# --- In-memory storage (replace with DB in production) ---
-CONSENT_STORE: Dict[str, Dict[str, ConsentRecord]] = {}
-DELETION_REQUESTS: Dict[str, Dict[str, Any]] = {}
-
-
-# --- Endpoints ---
 
 @router.get("/consent")
 async def get_consent_preferences(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
-    Get current consent preferences for the user.
-    GDPR Article 7: Conditions for consent
+    Get current consent preferences for the user from the database.
     """
-    user_id = user.id
-    
-    consents = CONSENT_STORE.get(user_id, {})
+    records = db.query(ConsentRecord).filter(
+        ConsentRecord.user_id == user.id,
+        ConsentRecord.revoked_at == None
+    ).all()
     
     return {
-        "user_id": user_id,
-        "consents": {
-            "marketing": consents.get("marketing", {}).get("granted", False) if consents.get("marketing") else False,
-            "analytics": consents.get("analytics", {}).get("granted", False) if consents.get("analytics") else False,
-            "personalization": consents.get("personalization", {}).get("granted", False) if consents.get("personalization") else False,
-            "third_party": consents.get("third_party", {}).get("granted", False) if consents.get("third_party") else False,
-            "essential": True,  # Always true
-        },
-        "last_updated": max(
-            [c.get("timestamp") for c in consents.values() if c.get("timestamp")],
-            default=None
-        )
+        "user_id": user.id,
+        "consents": {r.consent_type: r.granted for r in records},
+        "last_updated": max([r.created_at for r in records], default=None) if records else None
     }
 
 
 @router.post("/consent")
 async def update_consent_preferences(
     request: ConsentUpdateRequest,
-    user: AuthenticatedUser = Depends(get_current_user)
+    req: Request,
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
-    Update consent preferences.
-    GDPR Article 7: Withdrawal of consent must be as easy as giving it.
+    Update consent preferences and log the action.
     """
-    user_id = user.id
-    now = datetime.utcnow()
+    # Revoke previous consent for this type
+    db.query(ConsentRecord).filter(
+        ConsentRecord.user_id == user.id,
+        ConsentRecord.consent_type == request.consent_type,
+        ConsentRecord.revoked_at == None
+    ).update({"revoked_at": datetime.utcnow()})
     
-    if user_id not in CONSENT_STORE:
-        CONSENT_STORE[user_id] = {}
+    # Create new record
+    new_record = ConsentRecord(
+        user_id=user.id,
+        tenant_id=user.tenant_id or "default",
+        consent_type=request.consent_type,
+        granted=request.granted,
+        presented_text=request.presentation_text,
+        ip_address=req.client.host,
+        user_agent=req.headers.get("user-agent")
+    )
+    db.add(new_record)
     
-    for consent_type, granted in [
-        ("marketing", request.marketing),
-        ("analytics", request.analytics),
-        ("personalization", request.personalization),
-        ("third_party", request.third_party),
-    ]:
-        CONSENT_STORE[user_id][consent_type] = {
-            "granted": granted,
-            "timestamp": now.isoformat(),
-        }
+    # Audit Log
+    audit = AuditLog(
+        tenant_id=user.tenant_id or "default",
+        user_id=user.id,
+        action="consent_updated",
+        resource_type="consent",
+        details={"type": request.consent_type, "granted": request.granted},
+        ip_address=req.client.host,
+        user_agent=req.headers.get("user-agent")
+    )
+    db.add(audit)
+    
+    db.commit()
     
     return {
         "status": "success",
-        "message": "Consent preferences updated",
-        "updated_at": now.isoformat()
+        "message": f"Consent for '{request.consent_type}' updated",
+        "timestamp": datetime.utcnow().isoformat()
     }
 
 

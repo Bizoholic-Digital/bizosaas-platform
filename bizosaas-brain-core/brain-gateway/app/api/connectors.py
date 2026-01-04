@@ -23,61 +23,65 @@ async def list_connector_types(
 @router.get("", response_model=List[Dict[str, Any]])
 async def list_connectors_with_status(
     user: AuthenticatedUser = Depends(get_current_user),
-    secret_service: SecretService = Depends(get_secret_service)
+    secret_service: SecretService = Depends(get_secret_service),
+    db: Session = Depends(get_db)
 ):
-    """List all connectors with their status"""
+    """List all connectors with status and auto-detected suggestions (gated by consent)"""
     tenant_id = user.tenant_id or "default"
     configs = ConnectorRegistry.get_all_configs()
     
-    # Get list of connected connectors from Vault
+    # Check for Discovery Consent (GDPR/SOC2)
+    consent = db.query(ConsentRecord).filter(
+        ConsentRecord.user_id == user.id,
+        ConsentRecord.consent_type == "third_party_sync",
+        ConsentRecord.granted == True,
+        ConsentRecord.revoked_at == None
+    ).first()
+    
+    # Get connected connectors from Vault
     connected_ids = await secret_service.list_tenant_connectors(tenant_id)
-    
-    # Also check in-memory store (for seeded connectors)
-    from app.store import active_connectors
-    in_memory_keys = [k for k in active_connectors.keys() if k.startswith(f"{tenant_id}:")]
-    in_memory_ids = [k.split(":")[1] for k in in_memory_keys]
-    
-    all_connected_ids = list(set(connected_ids) | set(in_memory_ids))
-    
     results = []
+    
     for config in configs:
-        is_connected = config.id in all_connected_ids
+        is_connected = config.id in connected_ids
         status = ConnectorStatus.DISCONNECTED
         features = []
+        suggestions = []
         
         if is_connected:
             try:
-                # To get live status and features, we need to instantiate and check
                 credentials = await secret_service.get_connector_credentials(tenant_id, config.id)
-                # Fallback to in-memory if secret service returns empty but it was in memory
-                if not credentials and config.id in in_memory_ids:
-                    from app.store import active_connectors
-                    credentials = active_connectors.get(f"{tenant_id}:{config.id}", {})
-
                 if credentials:
                     connector = ConnectorRegistry.create_connector(config.id, tenant_id, credentials)
                     status = await connector.get_status()
                     
-                    # Discover specific active features (for multi-capability connectors like WordPress)
-                    if hasattr(connector, '_discover_plugins'):
+                    # Discovery logic (only if consent granted)
+                    if consent and hasattr(connector, '_discover_plugins'):
                         discovery = await connector.perform_action("discover_plugins", {})
                         if discovery.get("status") == "success":
                             plugins = discovery.get("plugins", {})
-                            if plugins.get("fluent-crm", {}).get("detected"):
-                                features.append("crm")
-                            if plugins.get("woocommerce", {}).get("detected"):
-                                features.append("ecommerce")
+                            
+                            # Map plugins to platform features
+                            mapping = {
+                                "woocommerce": {"slug": "woocommerce", "label": "WooCommerce", "type": "ecommerce"},
+                                "fluent-crm": {"slug": "fluent-crm", "label": "FluentCRM", "type": "crm"}
+                            }
+                            
+                            for p_slug, p_info in plugins.items():
+                                if p_info.get("detected") and p_slug in mapping:
+                                    feat_type = mapping[p_slug]["type"]
+                                    if p_slug in connected_ids:
+                                        features.append(feat_type)
+                                    else:
+                                        suggestions.append(mapping[p_slug])
             except Exception as e:
-                logger.warning(f"Failed to get live status for {config.id}: {e}")
+                logger.warning(f"Status check failed for {config.id}: {e}")
                 status = ConnectorStatus.ERROR
 
-        last_sync = None 
-        
-        # Merge status into config
         data = config.dict()
         data["status"] = status.value
         data["features"] = features
-        data["lastSync"] = last_sync
+        data["suggestions"] = suggestions
         results.append(data)
         
     return results

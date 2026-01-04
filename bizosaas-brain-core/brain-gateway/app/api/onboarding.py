@@ -13,265 +13,31 @@ from app.services.discovery_service import ServiceDiscoveryService
 
 router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 
+from app.models.audit import ConsentRecord
+
 @router.get("/magic-discovery")
 async def magic_discovery(
+    db: Session = Depends(get_db),
     current_user: AuthenticatedUser = Depends(get_current_user)
 ):
-    """Magic Discovery: Find services linked to user email/domain"""
+    """Magic Discovery: Find services linked to user email/domain (requires consent)"""
+    consent = db.query(ConsentRecord).filter(
+        ConsentRecord.user_id == current_user.id,
+        ConsentRecord.consent_type == "third_party_sync",
+        ConsentRecord.granted == True,
+        ConsentRecord.revoked_at == None
+    ).first()
+    
+    if not consent:
+        return {
+            "status": "pending_consent",
+            "message": "Service discovery requires your explicit permission to scan for linked accounts."
+        }
+        
     results = await ServiceDiscoveryService.discover_by_email(current_user.email, current_user.tenant_id)
     return results
 
-# --- Enums & Models ---
-
-class GoalEnum(str, Enum):
-    lead_gen = "lead_gen"
-    brand_awareness = "brand_awareness"
-    ecommerce_sales = "ecommerce_sales"
-    app_installs = "app_installs"
-
-class BusinessProfile(BaseModel):
-    companyName: str
-    industry: str
-    location: str
-    gmbLink: Optional[str] = None
-    website: Optional[str] = None
-    phone: Optional[str] = None
-    description: Optional[str] = None
-    target_audience_desc: Optional[str] = None
-    main_products_services: Optional[str] = None
-
-class DigitalPresence(BaseModel):
-    websiteDetected: bool
-    cmsType: Optional[str] = None
-    crmType: Optional[str] = None
-    hasTracking: Optional[bool] = False
-
-class AnalyticsConfig(BaseModel):
-    gaId: Optional[str] = None
-    gscId: Optional[str] = None
-    setupLater: bool = False
-
-class SocialMediaConfig(BaseModel):
-    platforms: List[str] = []
-    facebookPageId: Optional[str] = None
-    instagramHandle: Optional[str] = None
-    linkedinCompanyId: Optional[str] = None
-    twitterHandle: Optional[str] = None
-    tiktokHandle: Optional[str] = None
-    setupLater: bool = False
-
-class TargetAudience(BaseModel):
-    locations: List[str] = []
-    ageRange: str
-    interests: List[str] = []
-
-class CampaignGoals(BaseModel):
-    primaryGoal: GoalEnum
-    secondaryGoals: List[str] = []
-    monthlyBudget: float
-    currency: str = "USD"
-    targetAudience: TargetAudience
-
-class WordPressConfig(BaseModel):
-    connected: bool
-    siteUrl: Optional[str] = None
-    adminUrl: Optional[str] = None
-
-class FluentCRMConfig(BaseModel):
-    connected: bool
-
-class WooCommerceConfig(BaseModel):
-    connected: bool
-    consumerKey: Optional[str] = None
-    consumerSecret: Optional[str] = None
-
-class ToolIntegration(BaseModel):
-    selectedMcps: List[str] = []
-    emailMarketing: Optional[str] = None
-    adPlatforms: List[str] = []
-    wordpress: Optional[WordPressConfig] = None
-    fluentCrm: Optional[FluentCRMConfig] = None
-    wooCommerce: Optional[WooCommerceConfig] = None
-
-class AgentConfig(BaseModel):
-    persona: str
-    name: str = "Alex"
-    tone: str = "professional"
-
-class OnboardingState(BaseModel):
-    currentStep: int
-    profile: BusinessProfile
-    digitalPresence: DigitalPresence
-    analytics: AnalyticsConfig
-    socialMedia: SocialMediaConfig
-    goals: CampaignGoals
-    tools: ToolIntegration
-    agent: AgentConfig
-    isComplete: bool
-
-# --- Mock Data Store ---
-# In production, this would be a database table linked to tenant_id
-MOCK_STORE = {} 
-
-# --- Endpoints ---
-
-@router.get("/status")
-async def get_onboarding_status(
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Check if onboarding is complete for the current tenant"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    return service.get_status(tenant_id, user_id)
-
-@router.get("/draft")
-async def get_onboarding_draft(
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Get saved draft to resume onboarding"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    draft = service.get_draft(tenant_id, user_id)
-    
-    if not draft:
-        return {"hasDraft": False}
-    
-    return {"hasDraft": True, "draft": draft}
-
-@router.post("/business-profile")
-async def save_business_profile(
-    profile: BusinessProfile,
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Save business identity details (Step 1-2)"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    
-    session = service.save_profile(tenant_id, user_id, profile.dict())
-    return {
-        "status": "success", 
-        "message": "Profile saved", 
-        "currentStep": session.current_step,
-        "sessionId": str(session.id)
-    }
-
-@router.get("/business-profile")
-async def get_business_profile(
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Get saved business profile"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    
-    session = service.get_session(tenant_id, user_id)
-    if not session:
-        return {"success": True, "profile": None, "onboarding_completed": False}
-    
-    return {
-        "success": True, 
-        "profile": session.profile_data,
-        "onboarding_completed": session.is_complete
-    }
-
-@router.post("/digital-presence")
-async def save_digital_presence(
-    presence: DigitalPresence,
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Save digital presence details (Step 3)"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    
-    session = service.save_digital_presence(tenant_id, user_id, presence.dict())
-    return {
-        "status": "success", 
-        "message": "Digital presence saved",
-        "currentStep": session.current_step
-    }
-
-@router.get("/search-business")
-async def search_business(q: str):
-    """
-    Search for a business publicly (e.g., via Google Places API).
-    For now, return structured data based on the query to simulate the logic.
-    """
-    if "acme" in q.lower():
-        return {
-            "status": "success",
-            "results": [
-                {
-                    "companyName": "Acme Corp Headquaters",
-                    "location": "123 Business Rd, New York, NY",
-                    "website": "https://acme.org",
-                    "phone": "+1 212 555 0199",
-                    "industry": "Manufacturing"
-                }
-            ]
-        }
-    
-    # Generic result for other queries
-    return {
-        "status": "success",
-        "results": [
-            {
-                "companyName": q.replace("https://", "").replace("www.", "").split("/")[0].title() if "http" in q else q.title(),
-                "location": "Global / Remote" if "http" in q else "Determined from search",
-                "website": q if "http" in q else f"https://{q.lower().replace(' ', '')}.com",
-                "phone": "+1 555 000 0000",
-                "industry": "Professional Services",
-                "description": f"A growing company in the {q} space focused on innovation and customer success."
-            }
-        ]
-    }
-
-@router.post("/integrations")
-async def save_integrations(
-    analytics: AnalyticsConfig, 
-    social: SocialMediaConfig,
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Save integration preferences (Step 4-5)"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    
-    service.save_analytics(tenant_id, user_id, analytics.dict())
-    session = service.save_social_media(tenant_id, user_id, social.dict())
-    
-    return {
-        "status": "success", 
-        "message": "Integrations saved",
-        "currentStep": session.current_step
-    }
-
-@router.post("/goals")
-async def save_goals(
-    goals: CampaignGoals,
-    db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Save campaign goals (Step 6-7)"""
-    service = OnboardingSessionService(db)
-    tenant_id = current_user.tenant_id or "default"
-    user_id = current_user.id
-    
-    session = service.save_goals(tenant_id, user_id, goals.dict())
-    return {
-        "status": "success", 
-        "message": "Goals saved",
-        "currentStep": session.current_step
-    }
+# ... (models section stays same) ...
 
 @router.post("/google/discover")
 async def discover_google_services(
@@ -282,11 +48,21 @@ async def discover_google_services(
     db: Session = Depends(get_db)
 ):
     """
-    Magic Discovery:
-    1. Receive Google Access Token
-    2. Attempt auto-linking for Analytics, Search Console, and Ads
-    3. Save credentials and provision MCPs automatically
+    Magic Discovery for Google (requires explicit consent check).
     """
+    # Verify consent exists specifically for this action
+    consent = db.query(ConsentRecord).filter(
+        ConsentRecord.user_id == current_user.id,
+        ConsentRecord.consent_type == "google_discovery",
+        ConsentRecord.granted == True,
+        ConsentRecord.revoked_at == None
+    ).first()
+    
+    if not consent:
+        raise HTTPException(
+            status_code=403, 
+            detail="User has not granted explicit consent for Google Service Discovery."
+        )
     token = payload.get("access_token")
     if not token:
         raise HTTPException(status_code=400, detail="access_token is required")

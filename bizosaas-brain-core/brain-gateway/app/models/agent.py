@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, JSON, DateTime, ForeignKey
+from sqlalchemy import Column, String, JSON, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -20,6 +20,10 @@ class Agent(Base):
     color = Column(String, default="#4f46e5")
     cost_tier = Column(String, default="standard")
     instructions = Column(String)  # System prompt
+    last_optimized_at = Column(DateTime, nullable=True)
+    finetuning_status = Column(String, default="not_started") # pending, completed, failed
+    finetuning_data_count = Column(Integer, default=0)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = Column(String)  # User email/ID

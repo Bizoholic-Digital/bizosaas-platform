@@ -14,10 +14,30 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, admin, mcp, marketing, campaigns, analytics, privacy
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+
+# Initialize Telemetry
+resource = Resource(attributes={
+    SERVICE_NAME: "brain-gateway"
+})
+
+provider = TracerProvider(resource=resource)
+processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=os.getenv("OTLP_ENDPOINT", "http://tempo:4317")))
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+
+from app.api import connectors, agents, cms, onboarding, crm, ecommerce, billing, admin, mcp, marketing, campaigns, analytics, privacy, compliance
 import app.connectors # Trigger registration
 
 app = FastAPI(title="Brain API Gateway")
+
+# Instrument App
+FastAPIInstrumentor.instrument_app(app)
 
 # Add Prometheus metrics
 Instrumentator().instrument(app).expose(app)
@@ -102,6 +122,7 @@ app.include_router(admin.router)
 app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 app.include_router(privacy.router)
+app.include_router(compliance.router)
 
 from app.api import public
 app.include_router(public.router)

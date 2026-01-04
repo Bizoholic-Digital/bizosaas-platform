@@ -6,6 +6,7 @@ from .tenant import TenantConfig
 from .onboarding_session import OnboardingSession, OnboardingStatus
 from .billing_event import BillingEvent, EventType
 from .strategy_validation import StrategyValidation, ValidationStatus
+from .audit import AuditLog, ConsentRecord
 
 
 

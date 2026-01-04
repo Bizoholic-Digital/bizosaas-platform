@@ -116,6 +116,13 @@ const navigation: NavigationItem[] = [
     category: 'system'
   },
   {
+    name: 'Compliance Center',
+    href: '/security/compliance',
+    icon: Shield,
+    description: 'Regulatory status (SOC2, HIPAA, GDPR)',
+    category: 'system'
+  },
+  {
     name: 'System Settings',
     href: '/settings',
     icon: Settings,
