@@ -30,6 +30,7 @@ from .tiktok_ads import TikTokAdsConnector
 from .amazon import AmazonConnector
 from .temporal import TemporalConnector
 from .redis import RedisConnector
+from .automation import AutomationConnector
 
 __all__ = [
     "BaseConnector",
@@ -66,5 +67,6 @@ __all__ = [
     "TikTokAdsConnector",
     "AmazonConnector",
     "TemporalConnector",
-    "RedisConnector"
+    "RedisConnector",
+    "AutomationConnector"
 ]

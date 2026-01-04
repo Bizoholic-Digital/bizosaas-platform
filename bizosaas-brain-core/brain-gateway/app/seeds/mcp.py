@@ -64,6 +64,36 @@ def seed_mcp_registry():
                 "rating": 4
             },
             {
+                "name": "Automation Hub",
+                "slug": "automation-hub",
+                "description": "Unified interface for connecting external n8n, Zapier, and Make instances.",
+                "category_id": cat_map["automation"],
+                "capabilities": ["workflows", "webhooks", "universal-connect"],
+                "mcp_config": {"type": "internal"},
+                "is_official": True,
+                "rating": 5
+            },
+            {
+                "name": "Pabbly Connect",
+                "slug": "pabbly",
+                "description": "Connect 1,000+ apps for sales, marketing, and more.",
+                "category_id": cat_map["automation"],
+                "capabilities": ["workflows", "automation"],
+                "mcp_config": {"type": "saas", "url": "https://pabbly.com"},
+                "is_official": False,
+                "rating": 4
+            },
+            {
+                "name": "Temporal Cloud",
+                "slug": "temporal",
+                "description": "Durable execution platform for reliable workflows.",
+                "category_id": cat_map["automation"],
+                "capabilities": ["workflows", "durability"],
+                "mcp_config": {"type": "saas", "url": "https://temporal.io"},
+                "is_official": True,
+                "rating": 5
+            },
+            {
                 "name": "WordPress Connector",
                 "slug": "wordpress",
                 "description": "Deep integration with WordPress for content and users.",
