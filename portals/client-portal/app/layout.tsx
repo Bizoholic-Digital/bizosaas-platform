@@ -105,7 +105,19 @@ export default async function RootLayout({
         `}} />
       </head>
       <body className={inter.className}>
-        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+        <ClerkProvider
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          appearance={{
+            elements: {
+              formButtonPrimary: 'bg-primary hover:bg-primary/90 text-sm normal-case shadow-none',
+              card: 'shadow-xl border border-gray-100 dark:border-gray-800',
+            },
+            variables: {
+              colorPrimary: config.primary_color || '#2563eb',
+              borderRadius: '0.5rem',
+            }
+          }}
+        >
           <Providers>
             <OfflineBanner />
             {/* Main Content Area */}

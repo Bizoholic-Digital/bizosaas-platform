@@ -107,7 +107,20 @@ export default async function RootLayout({
         `}} />
       </head>
       <body className="font-sans antialiased h-screen overflow-hidden">
-        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
+        <ClerkProvider
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          appearance={{
+            elements: {
+              formButtonPrimary: 'bg-primary hover:bg-primary/90 text-sm normal-case shadow-none',
+              card: 'shadow-2xl border border-gray-100 dark:border-gray-800',
+              headerTitle: 'text-gray-900 dark:text-white font-black tracking-tight',
+            },
+            variables: {
+              colorPrimary: config.primary_color || '#2563eb',
+              borderRadius: '0.75rem',
+            }
+          }}
+        >
           <Providers>
             <OfflineBanner />
             <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
