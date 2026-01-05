@@ -1,5 +1,5 @@
 # BizOSaaS Admin Dashboard - Standardized Dockerfile
-# Build Cache Bust: 2025-12-24T15:20:00Z
+# Build Cache Bust: 2026-01-05T12:55:00Z
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Stage 1: Dependencies
