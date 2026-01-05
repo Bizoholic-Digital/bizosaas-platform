@@ -14,6 +14,8 @@ services:
     build:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
     # container_name: bizosaas-brain-staging
     environment:
       # Database & Cache
@@ -61,13 +63,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.brain-gateway-http.rule=Host(`api.bizoholic.net`)"
       - "traefik.http.routers.brain-gateway-http.entrypoints=web"
-      - "traefik.http.routers.brain-gateway-http.middlewares=redirect-to-https@file"
       - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
       - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls=true"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
-      - "traefik.http.routers.brain-gateway.priority=100"
+      - "traefik.http.routers.brain-gateway.priority=2000"
       - "traefik.docker.network=dokploy-network"
 
     healthcheck:

@@ -17,8 +17,8 @@ services:
         NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
         CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
-    # Removed host port mapping to prevent Dokploy label conflicts
-    # Port 3000 is used internally by Traefik
+    ports:
+      - "3003:3000"
 
     environment:
       # Clerk Authentication
@@ -58,7 +58,7 @@ services:
       - "traefik.http.routers.client-portal.entrypoints=websecure"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
       - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
-      - "traefik.http.routers.client-portal.priority=100"
+      - "traefik.http.routers.client-portal.priority=2000"
       - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
 
@@ -79,8 +79,8 @@ services:
         CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
     restart: unless-stopped
-    # Removed host port mapping to prevent Dokploy label conflicts
-    # Port 3000 is used internally by Traefik
+    ports:
+      - "3004:3000"
 
     environment:
       # Clerk Authentication
@@ -116,7 +116,7 @@ services:
       - "traefik.http.routers.admin-dashboard.tls=true"
       - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
-      - "traefik.http.routers.admin-dashboard.priority=100"
+      - "traefik.http.routers.admin-dashboard.priority=2000"
       - "traefik.docker.network=dokploy-network"
 
 networks:
