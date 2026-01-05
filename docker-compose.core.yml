@@ -67,6 +67,7 @@ services:
       - "traefik.http.routers.brain-gateway.tls=true"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+      - "traefik.http.routers.brain-gateway.priority=100"
       - "traefik.docker.network=dokploy-network"
 
     healthcheck:
