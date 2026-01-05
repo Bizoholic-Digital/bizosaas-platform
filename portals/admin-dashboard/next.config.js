@@ -1,6 +1,6 @@
 const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
-  disable: true, // process.env.NODE_ENV === "development",
+  disable: false, // Enable PWA
   register: true,
   scope: "/",
   sw: "sw.js",
