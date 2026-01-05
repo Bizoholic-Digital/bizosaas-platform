@@ -24,7 +24,6 @@ services:
         CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
     ports:
       - "3003:3000"
-    container_name: bizosaas-client-portal-staging
     environment:
       # Clerk Authentication (Unified Identity)
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
