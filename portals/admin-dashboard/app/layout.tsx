@@ -35,21 +35,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <div className="w-full bg-yellow-400 text-black text-center font-bold py-2 text-xl block z-[9999]" style={{ display: 'block !important', position: 'relative' }}>
-          ADMIN UI RELOADED - VERSION 5
+        <div className="w-full bg-red-600 text-white text-center font-bold py-10 text-4xl block z-[9999]">
+          EMERGENCY RENDER TEST - V9
         </div>
-        <div className="fixed top-0 left-0 bg-red-600 text-white z-[9999] px-2 text-[10px]">
-          SERVER_RENDER_OK
+
+        <div className="flex flex-col min-h-screen bg-white">
+          <main className="flex-1 p-20">
+            {children}
+          </main>
         </div>
-        <Providers>
-          {/* <OfflineBanner /> */}
-          <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
-          {/* <PWAInstallPrompt /> */}
-        </Providers>
       </body>
     </html>
   );
