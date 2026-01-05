@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import { SignIn } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/theme-toggle';
 
@@ -21,13 +21,16 @@ export default function AdminLoginPage() {
 
       {/* Login Form Container */}
       <div className="z-10">
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        }>
-          <SignIn redirectUrl="/dashboard" signUpUrl="/signup" />
-        </Suspense>
+        <SignIn
+          appearance={{
+            elements: {
+              rootBox: "mx-auto",
+              card: "shadow-2xl"
+            }
+          }}
+          redirectUrl="/dashboard"
+          signUpUrl="/signup"
+        />
       </div>
 
       <style jsx global>{`
