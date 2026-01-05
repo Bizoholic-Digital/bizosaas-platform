@@ -34,7 +34,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased h-screen overflow-hidden">
+      <body className="font-sans antialiased">
+        <div className="w-full bg-yellow-400 text-black text-center font-bold py-2 text-xl block z-[9999]" style={{ display: 'block !important', position: 'relative' }}>
+          ADMIN UI RELOADED - VERSION 5
+        </div>
         <div className="fixed top-0 left-0 bg-red-600 text-white z-[9999] px-2 text-[10px]">
           SERVER_RENDER_OK
         </div>
