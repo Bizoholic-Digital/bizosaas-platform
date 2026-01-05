@@ -18,10 +18,19 @@ export default function AdminLoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="z-10">
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
-          <SignIn redirectUrl="/dashboard" signUpUrl="/signup" />
-        </Suspense>
+      <div className="z-10 flex flex-col items-center">
+        {!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && (
+          <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-4">
+            Error: Clerk Publishable Key is missing in browser.
+          </div>
+        )}
+        <div className="p-2 rounded-2xl">
+          <SignIn
+            routing="hash"
+            fallbackRedirectUrl="/dashboard"
+            signUpUrl="/signup"
+          />
+        </div>
       </div>
 
       <style jsx global>{`
