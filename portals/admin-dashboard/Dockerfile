@@ -68,9 +68,12 @@ RUN apk add --no-cache curl
 RUN mkdir .next && chown nextjs:nodejs .next
 
 # Copy built application
-COPY --from=builder /app/portals/admin-dashboard/public ./public
+# Next.js standalone output in monorepo includes the service path
 COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/static ./.next/static
+# We need to copy static and public to the subfolder where server.js will look for them
+COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/static ./portals/admin-dashboard/.next/static
+COPY --from=builder /app/portals/admin-dashboard/public ./portals/admin-dashboard/public
+
 # Copy vault injector (Note: Copying from context root)
 COPY scripts/vault-injector.js ./scripts/vault-injector.js
 
@@ -80,8 +83,11 @@ EXPOSE 3000
 
 ENV HOSTNAME="0.0.0.0"
 
+# Healthcheck targeting the internal server.js path
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start with Vault secret injection
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && if [ -f server.js ]; then node server.js; else cd portals/admin-dashboard && node server.js; fi"]
+# Start from the service directory to ensure paths match
+WORKDIR /app/portals/admin-dashboard
+CMD ["sh", "-c", "eval $(node ../../scripts/vault-injector.js) && node server.js"]
+
