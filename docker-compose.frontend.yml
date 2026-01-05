@@ -23,8 +23,8 @@ services:
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
         CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
     ports:
-      - "3003:3003"
-    # container_name: client-portal
+      - "3003:3000"
+    container_name: bizosaas-client-portal-staging
     environment:
       # Clerk Authentication (Unified Identity)
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
@@ -51,7 +51,7 @@ services:
 
       # Environment
       NODE_ENV: production
-      PORT: 3003
+      PORT: 3000
     networks:
       - dokploy-network
     deploy:
@@ -64,7 +64,7 @@ services:
       - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
       - "traefik.http.routers.client-portal.entrypoints=websecure"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
-      - "traefik.http.services.client-portal.loadbalancer.server.port=3003"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
       - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
 
