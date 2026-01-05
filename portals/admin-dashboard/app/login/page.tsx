@@ -18,18 +18,32 @@ export default function AdminLoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="z-10 flex flex-col items-center">
-        {!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl mb-4">
-            Error: Clerk Publishable Key is missing in browser.
-          </div>
-        )}
-        <div className="p-2 rounded-2xl">
-          <SignIn
-            routing="hash"
-            fallbackRedirectUrl="/dashboard"
-            signUpUrl="/signup"
-          />
+      <div className="z-50 py-20 flex flex-col items-center gap-8 px-4">
+        {/* Test Header to confirm rendering */}
+        <div className="text-center space-y-4">
+          <h1 className="text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+            ADMIN <span className="text-indigo-600">PORTAL</span>
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md">
+            Management console for platform administrators.
+          </p>
+        </div>
+
+        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 border border-gray-200 dark:border-gray-700">
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center p-12 gap-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+              <p className="text-sm text-gray-500">Connecting to Auth Service...</p>
+            </div>
+          }>
+            <SignIn
+              routing="path"
+              path="/login"
+              signUpUrl="/signup"
+              afterSignInUrl="/dashboard"
+              afterSignUpUrl="/dashboard"
+            />
+          </Suspense>
         </div>
       </div>
 

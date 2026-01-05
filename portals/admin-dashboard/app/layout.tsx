@@ -36,13 +36,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased h-screen overflow-hidden">
         <Providers>
-          <OfflineBanner />
-          <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="flex-1 overflow-y-auto p-0">
+          {/* <OfflineBanner /> */}
+          <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+            <main className="flex-1">
               {children}
             </main>
           </div>
-          <PWAInstallPrompt />
+          {/* <PWAInstallPrompt /> */}
         </Providers>
       </body>
     </html>
