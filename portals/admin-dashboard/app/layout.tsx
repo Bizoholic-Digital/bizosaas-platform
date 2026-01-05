@@ -1,14 +1,11 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { AdminNavigation } from '@/components/AdminNavigation';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
-import { OfflineBanner } from '@/components/OfflineBanner';
 
 import { Providers } from './providers';
 
 // Using system fonts to avoid network calls during Docker build
-const inter = { variable: '--font-sans' };
+const inter = { className: 'font-sans' };
 
 export const metadata: Metadata = {
   title: 'BizOSaaS Admin v5 [LIVE]',
@@ -34,16 +31,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased">
-        <div className="w-full bg-red-600 text-white text-center font-bold py-10 text-4xl block z-[9999]">
-          EMERGENCY RENDER TEST - V9
-        </div>
-
-        <div className="flex flex-col min-h-screen bg-white">
-          <main className="flex-1 p-20">
-            {children}
-          </main>
-        </div>
+      <body className={inter.className}>
+        <Providers>
+          {/* Main Content Area */}
+          <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
+            <main className="flex-1 overflow-y-auto p-0">
+              {children}
+            </main>
+          </div>
+        </Providers>
       </body>
     </html>
   );
