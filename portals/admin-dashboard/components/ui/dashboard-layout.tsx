@@ -136,13 +136,45 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </Suspense>
           </div>
 
-          <div className="p-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <Wifi className="w-3 h-3 text-green-500" />
-              <span>Online</span>
-              {!isCollapsed && (
-                <span className="ml-auto text-[10px]">v1.2.0-stg</span>
-              )}
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+            <div className={`flex flex-col gap-4 ${isCollapsed ? 'items-center' : ''}`}>
+              <div className={`flex items-center justify-between w-full ${isCollapsed ? 'flex-col gap-2' : ''}`}>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center text-white font-bold shadow-sm border-2 border-white dark:border-gray-700">
+                    {user?.name?.[0] || user?.email?.[0]?.toUpperCase() || 'A'}
+                  </div>
+                  {!isCollapsed && (
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">
+                        {user?.name || "Admin User"}
+                      </p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                        {user?.email || "admin@bizosaas.com"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {!isCollapsed && (
+                  <div className="flex flex-shrink-0 items-center gap-1.5 px-2 py-1 rounded-full bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[10px] font-bold text-green-700 dark:text-green-400 uppercase tracking-widest">Online</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => logout()}
+                className={`flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200
+                  ${isCollapsed
+                    ? 'p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl'
+                    : 'w-full px-4 py-2.5 text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-900/20'
+                  }`}
+                title={isCollapsed ? "Sign Out" : ""}
+              >
+                <LogOut className={isCollapsed ? "w-5 h-5" : "w-4 h-4"} />
+                {!isCollapsed && <span>Sign Out</span>}
+              </button>
             </div>
           </div>
         </div>
@@ -187,52 +219,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   )}
                 </button>
 
-                <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
-                  <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                </button>
-
-                <div className="relative" data-user-menu>
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <div className="text-right hidden sm:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user?.name || "Admin User"}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user?.email || "admin@bizosaas.com"}
-                      </p>
-                    </div>
-                    <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {user?.name?.[0] || "A"}
-                    </div>
+                {/* Header Actions */}
+                <div className="flex items-center gap-2">
+                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
+                    <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
                   </button>
-
-                  {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 border border-gray-200 dark:border-gray-700 z-50">
-                      <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.name || 'Admin User'}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || 'admin@bizosaas.com'}</p>
-                      </div>
-                      <button
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </button>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setShowUserMenu(false);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
-                    </div>
-                  )}
+                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                  </button>
                 </div>
               </div>
             </div>
