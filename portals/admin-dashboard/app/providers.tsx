@@ -11,6 +11,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // Standard Next.js pattern: Create QueryClient inside useState to ensure persistence across renders
     const [queryClient] = useState(() => new QueryClient());
     const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+    console.log('Providers rendering, Clerk Key present:', !!clerkKey);
 
     const content = (
         <AuthProvider platform="admin">
