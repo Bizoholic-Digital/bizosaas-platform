@@ -17,8 +17,8 @@ services:
     # container_name: bizosaas-brain-staging
     environment:
       # Database & Cache
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025%21StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025%21StagingDB@dokploy-postgres:5432/bizosaas_staging
+      - REDIS_URL=redis://dokploy-redis:6379/0
 
       # Authentication
       - JWT_SECRET=${JWT_SECRET:-vdMxrD6bZpZk6lClpkSP56+WNapkPAG5lY+BojEA/u7ffehUKcVL7re6xRaPWUCZffoxXF9ZFuU+KcZSWpz6CA==}
