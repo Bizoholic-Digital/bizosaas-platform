@@ -1,7 +1,7 @@
 # Docker Compose for Production VPS
 version: '3.9'
 services:
-  client-portal:
+  admin-dashboard:
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
@@ -11,8 +11,8 @@ services:
         NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
         NEXTAUTH_URL: https://admin.bizoholic.net
         NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
+        CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
     # container_name: bizosaas-admin-dashboard
     restart: unless-stopped
@@ -20,8 +20,8 @@ services:
       - "3004:3004"
     environment:
       # Clerk Authentication
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
+      CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
@@ -40,7 +40,6 @@ services:
       NODE_ENV: production
       PORT: 3004
     networks:
-      - brain-network
       - dokploy-network
     healthcheck:
       test: [ "CMD", "curl", "-s", "--retry 1", "-f", "http://localhost:3004/api/health" ]
@@ -59,8 +58,5 @@ services:
       - "traefik.docker.network=dokploy-network"
 
 networks:
-  brain-network:
-    external: true
-
   dokploy-network:
     external: true
