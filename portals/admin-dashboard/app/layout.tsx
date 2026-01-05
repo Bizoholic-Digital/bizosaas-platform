@@ -35,6 +35,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased h-screen overflow-hidden">
+        <div className="fixed top-0 left-0 bg-red-600 text-white z-[9999] px-2 text-[10px]">
+          SERVER_RENDER_OK
+        </div>
         <Providers>
           {/* <OfflineBanner /> */}
           <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
