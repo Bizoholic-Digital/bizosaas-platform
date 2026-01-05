@@ -96,6 +96,8 @@ services:
       NEXT_PUBLIC_VAULT_UI_URL: https://vault.bizoholic.net
 
       # Environment
+      CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
+      NEXT_PUBLIC_CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NODE_ENV: production
       PORT: 3000
     networks:
