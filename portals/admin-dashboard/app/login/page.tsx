@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { ClerkSignInWrapper } from '@/components/ClerkSignInWrapper';
+import React, { Suspense } from 'react'
+import { SignIn } from '@clerk/nextjs'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function AdminLoginPage() {
   return (
@@ -14,14 +14,23 @@ export default function AdminLoginPage() {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 dark:bg-pink-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      {/* Login Form Container */}
       <div className="z-10">
-        <ClerkSignInWrapper />
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
+          <SignIn
+            appearance={{
+              elements: {
+                rootBox: "mx-auto",
+                card: "shadow-2xl"
+              }
+            }}
+            redirectUrl="/dashboard"
+            signUpUrl="/signup"
+          />
+        </Suspense>
       </div>
 
       <style jsx global>{`
@@ -36,5 +45,5 @@ export default function AdminLoginPage() {
         .animation-delay-4000 { animation-delay: 4s; }
       `}</style>
     </div>
-  );
+  )
 }

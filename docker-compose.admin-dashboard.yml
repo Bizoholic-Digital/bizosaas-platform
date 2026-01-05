@@ -1,7 +1,8 @@
 # Docker Compose for Production VPS
 version: '3.9'
 services:
-  admin-dashboard:
+  client-portal:
+    # Renamed from admin-dashboard to match Dokploy configuration
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
