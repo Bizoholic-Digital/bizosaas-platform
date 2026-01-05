@@ -51,7 +51,6 @@ services:
       NODE_ENV: production
       PORT: 3003
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -70,7 +69,5 @@ services:
 # Networks
 # ═══════════════════════════════════════════════════════════════════════════
 networks:
-  brain-network:
-    external: true
   dokploy-network:
     external: true
