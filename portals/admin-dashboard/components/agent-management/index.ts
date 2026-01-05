@@ -3,6 +3,7 @@ export { AgentDashboard } from './agent-dashboard'
 export { AgentHierarchy } from './agent-hierarchy'
 export { AgentMetrics } from './agent-metrics'
 export { AgentLogs } from './agent-logs'
+export { AgentManagementControls } from './AgentManagementControls'
 export { AgentControls } from './agent-controls'
 
 // Re-export the store for convenience

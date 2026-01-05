@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Activity, Brain, CheckCircle, XCircle, Clock, AlertTriangle, Zap, Target, Users, BarChart3 } from 'lucide-react'
+import { Activity, Brain, CheckCircle, XCircle, Clock, AlertTriangle, Zap, Target, Users, BarChart3, Settings } from 'lucide-react'
+import { AgentManagementControls } from '../../components/agent-management/AgentManagementControls'
 
 interface AgentStatus {
   id: string
@@ -28,6 +29,7 @@ export default function AIAgentsPage() {
   const [agents, setAgents] = useState<AgentStatus[]>([])
   const [metrics, setMetrics] = useState<AgentMetrics | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
+  const [managingAgentId, setManagingAgentId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function AIAgentsPage() {
           description: 'Analyzes and scores incoming leads based on behavioral patterns'
         },
         {
-          id: 'agent-2', 
+          id: 'agent-2',
           name: 'Content Generation Agent',
           type: 'content',
           status: 'processing',
@@ -155,6 +157,13 @@ export default function AIAgentsPage() {
 
   return (
     <div className="space-y-6 p-6">
+      {managingAgentId && (
+        <AgentManagementControls
+          agentId={managingAgentId}
+          onClose={() => setManagingAgentId(null)}
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">AI Agent Status Monitor</h1>
@@ -180,7 +189,7 @@ export default function AIAgentsPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -243,9 +252,8 @@ export default function AIAgentsPage() {
           {agents.map((agent) => (
             <div
               key={agent.id}
-              className={`p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
-                selectedAgent === agent.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-              }`}
+              className={`p-6 hover:bg-gray-50 transition-colors cursor-pointer ${selectedAgent === agent.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                }`}
               onClick={() => setSelectedAgent(selectedAgent === agent.id ? null : agent.id)}
             >
               <div className="flex items-center justify-between">
@@ -307,7 +315,7 @@ export default function AIAgentsPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-gray-900">Recent Activity</h4>
                       <div className="space-y-1">
@@ -317,11 +325,10 @@ export default function AIAgentsPage() {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500">Status:</span>
-                          <span className={`font-medium capitalize ${
-                            agent.status === 'active' ? 'text-green-600' :
-                            agent.status === 'error' ? 'text-red-600' :
-                            agent.status === 'processing' ? 'text-blue-600' : 'text-gray-600'
-                          }`}>
+                          <span className={`font-medium capitalize ${agent.status === 'active' ? 'text-green-600' :
+                              agent.status === 'error' ? 'text-red-600' :
+                                agent.status === 'processing' ? 'text-blue-600' : 'text-gray-600'
+                            }`}>
                             {agent.status}
                           </span>
                         </div>
@@ -331,6 +338,16 @@ export default function AIAgentsPage() {
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-gray-900">Actions</h4>
                       <div className="space-y-2">
+                        <button
+                          className="w-full text-left px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center justify-center font-medium shadow-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setManagingAgentId(agent.id);
+                          }}
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          Manage Agent Configuration
+                        </button>
                         <button className="w-full text-left px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors">
                           View Execution Log
                         </button>

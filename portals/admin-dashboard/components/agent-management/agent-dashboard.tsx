@@ -5,13 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-import { 
-  Activity, 
-  Bot, 
-  Play, 
-  Pause, 
-  Settings, 
-  BarChart3, 
+import {
+  Activity,
+  Bot,
+  Play,
+  Pause,
+  Settings,
+  BarChart3,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -26,7 +26,7 @@ import {
 import { AgentHierarchy } from './agent-hierarchy'
 import { AgentMetrics } from './agent-metrics'
 import { AgentLogs } from './agent-logs'
-import { AgentControls } from './agent-controls'
+import { AgentManagementControls } from './AgentManagementControls'
 import { useAgentStore } from '../../lib/stores/agent-store'
 
 interface AgentStats {
@@ -98,8 +98,8 @@ export function AgentDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={fetchAgents}
               disabled={isLoading}
               className="flex items-center gap-2"
@@ -236,16 +236,15 @@ export function AgentDashboard() {
             {/* Agent Grid Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {agents
-                .filter(agent => 
+                .filter(agent =>
                   (filterStatus === 'all' || agent.status === filterStatus) &&
                   agent.name.toLowerCase().includes(searchTerm.toLowerCase())
                 )
                 .map((agent) => (
-                  <Card 
+                  <Card
                     key={agent.id}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                      selectedAgent === agent.id ? 'ring-2 ring-blue-500' : ''
-                    }`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${selectedAgent === agent.id ? 'ring-2 ring-blue-500' : ''
+                      }`}
                     onClick={() => setSelectedAgent(agent.id)}
                   >
                     <CardHeader>
@@ -279,7 +278,7 @@ export function AgentDashboard() {
                           <span className="text-sm text-gray-600">Performance:</span>
                           <div className="flex items-center gap-1">
                             <div className="w-16 bg-gray-200 rounded-full h-2">
-                              <div 
+                              <div
                                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                                 style={{ width: `${agent.performance}%` }}
                               />
@@ -292,8 +291,8 @@ export function AgentDashboard() {
                           <span className="text-sm">{agent.lastActive}</span>
                         </div>
                         <div className="flex gap-2 mt-4">
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant={agent.status === 'active' ? 'outline' : 'default'}
                             className="flex-1"
                           >
@@ -321,7 +320,7 @@ export function AgentDashboard() {
           </TabsContent>
 
           <TabsContent value="hierarchy" className="space-y-6">
-            <AgentHierarchy 
+            <AgentHierarchy
               agents={agents}
               selectedAgent={selectedAgent}
               onSelectAgent={setSelectedAgent}
@@ -329,14 +328,14 @@ export function AgentDashboard() {
           </TabsContent>
 
           <TabsContent value="metrics" className="space-y-6">
-            <AgentMetrics 
+            <AgentMetrics
               agents={agents}
               selectedAgent={selectedAgent}
             />
           </TabsContent>
 
           <TabsContent value="logs" className="space-y-6">
-            <AgentLogs 
+            <AgentLogs
               selectedAgent={selectedAgent}
             />
           </TabsContent>
@@ -344,7 +343,7 @@ export function AgentDashboard() {
 
         {/* Agent Controls Panel */}
         {selectedAgent && (
-          <AgentControls 
+          <AgentManagementControls
             agentId={selectedAgent}
             onClose={() => setSelectedAgent(null)}
           />
