@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { SignIn } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ClerkSignInWrapper } from '@/components/ClerkSignInWrapper';
 
 export default function AdminLoginPage() {
   return (
@@ -21,16 +21,7 @@ export default function AdminLoginPage() {
 
       {/* Login Form Container */}
       <div className="z-10">
-        <SignIn
-          appearance={{
-            elements: {
-              rootBox: "mx-auto",
-              card: "shadow-2xl"
-            }
-          }}
-          redirectUrl="/dashboard"
-          signUpUrl="/signup"
-        />
+        <ClerkSignInWrapper />
       </div>
 
       <style jsx global>{`
