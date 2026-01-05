@@ -65,6 +65,7 @@ services:
       - "traefik.http.routers.client-portal.entrypoints=websecure"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
       - "traefik.http.services.client-portal.loadbalancer.server.port=3003"
+      - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
 
 # ═══════════════════════════════════════════════════════════════════════════
