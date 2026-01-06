@@ -35,19 +35,19 @@ services:
       NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
 
       # NextAuth (Optional, but kept for session stability)
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://app.bizoholic.net}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-bizosaas-client-portal-staging-secret-2025}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
 
       # API Endpoints
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.bizoholic.net}
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://api.bizoholic.net}
-      NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL:-https://api.bizoholic.net}
-      NEXT_PUBLIC_AUTH_URL: ${NEXT_PUBLIC_AUTH_URL:-https://api.bizoholic.net}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
+      NEXT_PUBLIC_AUTH_URL: ${NEXT_PUBLIC_AUTH_URL}
 
       # New Brain Gateway Integration
-      NEXT_PUBLIC_BRAIN_API_URL: ${NEXT_PUBLIC_BRAIN_API_URL:-https://api.bizoholic.net}
-      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL:-https://temporal.bizoholic.net}
-      NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL:-https://vault.bizoholic.net}
+      NEXT_PUBLIC_BRAIN_API_URL: ${NEXT_PUBLIC_BRAIN_API_URL}
+      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL}
+      NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL}
 
       # Environment
       NODE_ENV: production
