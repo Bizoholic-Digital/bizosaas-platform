@@ -18,18 +18,10 @@ export default function AdminLoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="z-10 bg-white/10 dark:bg-gray-900/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-2xl">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">Admin Login</h1>
-        <Suspense fallback={<div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
-          <SignIn routing="path" path="/login" />
+      <div className="z-10">
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
+          <SignIn redirectUrl="/dashboard" signUpUrl="/signup" />
         </Suspense>
-
-        {/* Debug Info in Admin only */}
-        <div className="mt-6 text-center">
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-            Auth Domain: {typeof window !== 'undefined' ? window.location.hostname : 'ssr'}
-          </p>
-        </div>
       </div>
 
       <style jsx global>{`
