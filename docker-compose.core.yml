@@ -18,33 +18,33 @@ services:
       - "8000:8000"
     # container_name: bizosaas-brain-staging
     environment:
-      # Database & Cache (Neon Cloud & Redis Cloud)
-      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - VECTOR_DB_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
+      # Database & Cache (Mapping to Dokploy Env)
+      - DATABASE_URL=${DATABASE_URL}
+      - VECTOR_DB_URL=${VECTOR_DB_URL}
+      - REDIS_URL=${REDIS_URL}
 
       # Authentication
-      - JWT_SECRET=${JWT_SECRET:-vdMxrD6bZpZk6lClpkSP56+WNapkPAG5lY+BojEA/u7ffehUKcVL7re6xRaPWUCZffoxXF9ZFuU+KcZSWpz6CA==}
+      - JWT_SECRET=${JWT_SECRET}
 
       # Temporal (Temporal Cloud)
-      - TEMPORAL_HOST=ap-south-2.aws.api.temporal.io:7233
-      - TEMPORAL_NAMESPACE=bizosaas-platform-mtls.mdqxv
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
 
       # Vault (Internal)
       - USE_VAULT=true
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=staging-root-token-bizosaas-2025
+      - VAULT_TOKEN=${VAULT_TOKEN}
 
       # Plans.so Cloud settings
-      - PLANE_WEBHOOK_SECRET=plane_wh_a3cadefb02fd418a8c19fd2434292f61
-      - PLANE_WEBHOOK_URL=https://silo.plane.so/api/github/plane-webhook
+      - PLANE_WEBHOOK_SECRET=${PLANE_WEBHOOK_SECRET}
+      - PLANE_WEBHOOK_URL=${PLANE_WEBHOOK_URL}
 
       # LLM API Keys
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-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}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-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}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-AIzaSyAYDIx5BI6DNLcMqwoyU8NUiytdBlwbYOE}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-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}
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-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}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
 
       # Server Configuration
       - ALLOWED_HOSTS=api.bizoholic.net,localhost
