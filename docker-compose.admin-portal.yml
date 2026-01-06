@@ -20,7 +20,7 @@ services:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
     restart: unless-stopped
     ports:
-      - "3004:3000"
+      - "3004:3004"
 
     environment:
       # Clerk Authentication
@@ -40,11 +40,11 @@ services:
       CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NEXT_PUBLIC_CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3004
     networks:
       - dokploy-network
     healthcheck:
-      test: [ "CMD", "curl", "-s", "--retry", "1", "-f", "http://localhost:3000/api/health" ]
+      test: [ "CMD", "curl", "-s", "--retry", "1", "-f", "http://localhost:3004/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -55,8 +55,8 @@ services:
       - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
       - "traefik.http.routers.admin-dashboard.tls=true"
       - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
-      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
-      - "traefik.http.routers.admin-dashboard.priority=3000"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3004"
+      - "traefik.http.routers.admin-dashboard.priority=5000"
       - "traefik.docker.network=dokploy-network"
 
 networks:

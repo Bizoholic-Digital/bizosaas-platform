@@ -85,7 +85,7 @@ ENV HOSTNAME="0.0.0.0"
 
 # Healthcheck targeting the internal server.js path
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000/api/health || exit 1
+    CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
 
 # Start from the service directory to ensure paths match
 WORKDIR /app/portals/admin-dashboard
