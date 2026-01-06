@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
-    Settings, Bot, Cpu, Memory, HardDrive, Network, Zap, Shield, Clock, Target,
+    Settings, Bot, Cpu, HardDrive, Network, Zap, Shield, Clock, Target,
     AlertCircle, CheckCircle, Save, RotateCcw, Copy, Download, Upload, Play, Pause,
     Square, Trash2, Plus, Edit, Key, Database, Globe, Lock, Unlock, Eye,
     EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users, Sparkles, Server
