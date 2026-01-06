@@ -48,31 +48,35 @@ def get_secret_service():
     """
     from app.domain.services.secret_service import SecretService
     
-    # Check if Vault is enabled
-    use_vault = os.getenv("USE_VAULT", "false").lower() == "true"
-    vault_addr = os.getenv("VAULT_ADDR")
-    vault_token = os.getenv("VAULT_TOKEN")
+    # Configuration
+    use_vault = os.getenv("USE_VAULT", "true").lower() == "true"
+    vault_addr = os.getenv("VAULT_ADDR", "http://vault:8200")
+    vault_token = os.getenv("VAULT_TOKEN") # Will be None if not provided
     
+    # Try Vault first if configured and token is present
     if use_vault and vault_addr and vault_token:
         try:
             from adapters.vault_adapter import VaultAdapter
-            logger.info(f"Initializing Vault adapter at {vault_addr}")
+            logger.info(f"Attempting to initialize Vault adapter at {vault_addr}")
             vault_adapter = VaultAdapter(
                 vault_url=vault_addr,
                 vault_token=vault_token,
-                mount_point=os.getenv("VAULT_MOUNT_POINT", "bizosaas")
+                mount_point=os.getenv("VAULT_MOUNT_POINT", "secret")
             )
-            logger.info("Successfully connected to Vault for secret storage")
-            return SecretService(secret_adapter=vault_adapter)
+            # Only use it if authenticated
+            if vault_adapter.client and vault_adapter.client.is_authenticated():
+                logger.info("Successfully connected to Vault for secret storage")
+                return SecretService(secret_adapter=vault_adapter)
+            else:
+                logger.warning("Vault initialized but not authenticated. Falling back.")
         except Exception as e:
             logger.error(f"Failed to initialize Vault: {e}")
-            logger.warning("Falling back to EnvSecretAdapter")
     
-    # Fallback to development adapter
-    from app.adapters.env_secret_adapter import EnvSecretAdapter
-    logger.warning("Using EnvSecretAdapter - secrets stored in memory (development only)")
-    env_adapter = EnvSecretAdapter()
-    return SecretService(secret_adapter=env_adapter)
+    # Fallback to persistent Database storage (Safer than EnvSecretAdapter)
+    from adapters.database_secret_adapter import DatabaseSecretAdapter
+    logger.info("Using DatabaseSecretAdapter for persistent secret storage")
+    db_adapter = DatabaseSecretAdapter(session_factory=SessionLocal)
+    return SecretService(secret_adapter=db_adapter)
 
 from fastapi import Security, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
