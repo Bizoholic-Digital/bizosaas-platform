@@ -2,6 +2,7 @@
 
 import { AgentRoleManagement } from './AgentRoleManagement';
 import { AgentPerformancePanel } from './AgentPerformancePanel';
+import { AgentOptimizationQueue } from './AgentOptimizationQueue';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ import {
     Settings, Bot, Cpu, Memory, HardDrive, Network, Zap, Shield, Clock, Target,
     AlertCircle, CheckCircle, Save, RotateCcw, Copy, Download, Upload, Play, Pause,
     Square, Trash2, Plus, Edit, Key, Database, Server, Globe, Lock, Unlock, Eye,
-    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users
+    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users, Sparkles
 } from 'lucide-react';
 
 interface AgentManagementControlsProps {
@@ -300,6 +301,7 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                             <NavButton id="roles" label="Role Management" icon={Users} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="resources" label="Resources" icon={Cpu} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="performance" label="Performance" icon={Zap} active={activeTab} onClick={setActiveTab} />
+                            <NavButton id="optimizations" label="Optimizations" icon={Sparkles} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="ai" label="AI Configuration" icon={Bot} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="integrations" label="Integrations" icon={Globe} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="security" label="Security" icon={Shield} active={activeTab} onClick={setActiveTab} />
@@ -442,6 +444,10 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
 
                         {activeTab === 'performance' && (
                             <AgentPerformancePanel agentId={agentId} />
+                        )}
+
+                        {activeTab === 'optimizations' && (
+                            <AgentOptimizationQueue agentId={agentId} />
                         )}
 
                         {activeTab === 'ai' && (
