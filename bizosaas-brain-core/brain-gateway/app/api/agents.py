@@ -283,6 +283,54 @@ async def clear_conversation_history(agent_id: str, user_id: str = "default"):
         del conversations[conversation_id]
     return {"status": "cleared"}
 
+from app.models.agent import Agent, AgentOptimization
+from app.services.agent_service import AgentService
+
+@router.get("/optimizations", response_model=List[Dict[str, Any]])
+async def list_optimizations(
+    agent_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """List all AI-suggested agent optimizations"""
+    optimizations = AgentService.get_agent_optimizations(db, agent_id)
+    return [opt.to_dict() for opt in optimizations]
+
+@router.post("/{agent_id}/optimizations/generate", response_model=List[Dict[str, Any]])
+async def generate_optimizations(
+    agent_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Manually trigger agent optimization analysis (Mocked)"""
+    new_optimizations = AgentService.create_mock_optimizations(db, agent_id)
+    return [opt.to_dict() for opt in new_optimizations]
+
+@router.post("/optimizations/{optimization_id}/approve", response_model=Dict[str, Any])
+async def approve_optimization(
+    optimization_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Approve an optimization for execution"""
+    opt = AgentService.approve_optimization(db, optimization_id)
+    if not opt:
+        raise HTTPException(status_code=404, detail="Optimization not found")
+    return opt.to_dict()
+
+@router.post("/optimizations/{optimization_id}/toggle-auto", response_model=Dict[str, Any])
+async def toggle_auto_optimization(
+    optimization_id: str,
+    enabled: bool = Body(..., embed=True),
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Enable/Disable auto-execution for an optimization"""
+    opt = AgentService.toggle_auto_execute(db, optimization_id, enabled)
+    if not opt:
+        raise HTTPException(status_code=404, detail="Optimization not found")
+    return opt.to_dict()
+
 # Helper functions
 def generate_agent_response(agent: AgentConfig, message: str, context: Optional[Dict] = None) -> str:
     """Generate contextual response based on agent type"""

@@ -18,29 +18,33 @@ services:
       - "8000:8000"
     # container_name: bizosaas-brain-staging
     environment:
-      # Database & Cache
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025%21StagingDB@dokploy-postgres:5432/bizosaas_staging
-      - REDIS_URL=redis://dokploy-redis:6379/0
+      # Database & Cache (Neon Cloud & Redis Cloud)
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      - VECTOR_DB_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
 
       # Authentication
       - JWT_SECRET=${JWT_SECRET:-vdMxrD6bZpZk6lClpkSP56+WNapkPAG5lY+BojEA/u7ffehUKcVL7re6xRaPWUCZffoxXF9ZFuU+KcZSWpz6CA==}
 
-      # Temporal
-      - TEMPORAL_HOST=bizosaas-temporal-server-staging:7233
+      # Temporal (Temporal Cloud)
+      - TEMPORAL_HOST=ap-south-2.aws.api.temporal.io:7233
+      - TEMPORAL_NAMESPACE=bizosaas-platform-mtls.mdqxv
 
-      # LLM API Keys (use environment variables for security)
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - COHERE_API_KEY=${COHERE_API_KEY:-}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
-      - TOGETHER_API_KEY=${TOGETHER_API_KEY:-}
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY:-}
+      # Vault (Internal)
+      - USE_VAULT=true
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=staging-root-token-bizosaas-2025
 
-      # GitHub Integration
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # Plans.so Cloud settings
+      - PLANE_WEBHOOK_SECRET=plane_wh_a3cadefb02fd418a8c19fd2434292f61
+      - PLANE_WEBHOOK_URL=https://silo.plane.so/api/github/plane-webhook
+
+      # LLM API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-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}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-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}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-AIzaSyAYDIx5BI6DNLcMqwoyU8NUiytdBlwbYOE}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-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}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-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}
 
       # Server Configuration
       - ALLOWED_HOSTS=api.bizoholic.net,localhost

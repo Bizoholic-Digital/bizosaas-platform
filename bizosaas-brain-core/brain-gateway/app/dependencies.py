@@ -2,7 +2,6 @@ from functools import lru_cache
 import os
 import logging
 from domain.ports.identity_port import IdentityPort
-from adapters.identity.authentik_adapter import AuthentikAdapter
 from adapters.identity.mock_adapter import MockIdentityAdapter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
@@ -75,19 +74,42 @@ def get_secret_service():
     env_adapter = EnvSecretAdapter()
     return SecretService(secret_adapter=env_adapter)
 
-def get_current_user():
+from fastapi import Security, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer(auto_error=False)
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
     """Dependency Injection: Returns the current authenticated user.
-    In production, this would validate JWT tokens and extract user info.
-    For now, returns a default user for development/staging.
+    Validates JWT tokens from the Authorization header using the configured Identity Adapter.
     """
-    from domain.ports.identity_port import AuthenticatedUser
+    if os.getenv("DISABLE_AUTH", "false").lower() == "true":
+        from domain.ports.identity_port import AuthenticatedUser
+        return AuthenticatedUser(
+            id="00000000-0000-0000-0000-000000000001",
+            email="system@bizosaas.local",
+            name="System User",
+            roles=["admin"],
+            tenant_id="default"
+        )
+
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    token = credentials.credentials
+    identity_port = get_identity_port()
     
-    # TODO: Implement proper JWT validation from request headers
-    # For now, return a mock authenticated user for development
-    return AuthenticatedUser(
-        id="00000000-0000-0000-0000-000000000001",  # Valid UUID
-        email="system@bizosaas.local",
-        name="System User",
-        roles=["admin"],
-        tenant_id="00000000-0000-0000-0000-000000000001"  # Valid UUID
-    )
+    user = await identity_port.get_user_from_token(token)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    return user
+
