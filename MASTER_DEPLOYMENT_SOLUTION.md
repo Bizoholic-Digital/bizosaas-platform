@@ -1,53 +1,33 @@
-# 📗 Master Deployment Solution Guide
-This document contains the definitive fixes for the BizOSaaS platform (Staging Environment). 
+# Master Deployment Solution Guide (Updated 06/01/2026)
 
-## 🚨 The Primary Recurring Issue: 502 Bad Gateway
-**Cause**: Port and Routing Conflict.
-1. **Redundant Service**: The `client-portal` was defined in two stacks, confusing Traefik.
-2. **Port Mismatch**: Dokploy expected internal port `3003`/`3004`, but the app was listening on `3000`.
+## 1. Core Service Routing Strategy
+Due to issues with Dokploy's Overlay network (packet loss from Traefik container), we have implemented a **Bridge Network Strategy** for Traefik routing.
 
-## ✅ The Permanent Fix (Applied Jan 6, 2026)
+**Key Configuration:**
+-   **Services File:** `/etc/dokploy/traefik/dynamic/services.yml` (Server-side only, managed manually)
+-   **Network:** `bizosaascore-vault-entjt5` (Bridge network shared by Vault and Traefik)
+-   **Addressing:** Services use their IP addresses on this bridge network to ensure connectivity.
 
-### 1. Unified Networking & Ports
-- **Client Portal**: Listening on internal port **3003**, mapped to external **3003**.
-- **Admin Dashboard**: Listening on internal port **3004**, mapped to external **3004**.
-- **Brain Gateway**: Listening on internal port **8000**.
-- **Priority**: Custom Traefik priority is set to `5000` to override any Dokploy defaults.
+**Current IP Map (Dynamic on Restart):**
+-   Client Portal: `172.19.0.4:3003` (`http://app.bizoholic.net`)
+-   Admin Portal: `172.19.0.5:3004` (`http://admin.bizoholic.net`)
+-   Brain Gateway: `172.19.0.6:8000` (`http://api.bizoholic.net`)
+-   Vault: `http://vault:8200` (`http://vault.bizoholic.net`)
 
-### 2. Redeploy Sequence (Do this in order)
-If everything goes down or you get a 502, simply redeploy in this exact order:
-1. **Stack**: `bizosaascore-braingateway-kdbono` (The Brain)
-2. **Stack**: `bizosaasfrontend-clientportal-r1a5il` (Client Portal)
-3. **Stack**: `bizosaasfrontend-adminportal-do3e1r` (Admin Dashboard)
+**Maintenance:**
+-   If containers are recreated and get new IPs, `services.yml` must be updated on the server.
+-   A template is stored in `infrastructure/dokploy/services-template.yml`.
 
-## 🛠️ Essential VPS Troubleshooting Commands
-If web pages are not loading, SSH to the VPS and run:
+## 2. Vault Deployment
+-   **URL:** `https://vault.bizoholic.net`
+-   **Setup:** Accessible via `dokploy-network` and `bizosaascore-vault-entjt5`.
+-   **Initialization:** Use `scripts/init-local-vault.sh` to unseal or init if redeployed.
 
-### Check Routing (Is Traefik seeing the portal?)
-```bash
-# Search Traefik logs for the specific domain
-docker logs dokploy-traefik_traefik.0zd884g5tjahfhu08ns41jefn.z0qiobivsuoa0l5p618zy7ihz | grep "app.bizoholic.net"
-```
+## 3. Deployment Redundancy
+-   **Secret Storage:** Primary -> Vault. Fallback -> PostgreSQL (`DatabaseSecretAdapter`).
+-   To redeploy apps, use Dokploy UI, but verify IPs if Traefik returns 502.
 
-### Check Container Internal Port (Is the app actually listening?)
-```bash
-# Should return "Ready" and show port 3003/3004
-docker logs bizosaasfrontend-clientportal-r1a5il-client-portal-1
-```
-
-### Force Cleanup (If Dokploy says "Container Name Already in Use")
-```bash
-docker rm -f bizosaas-admin-dashboard-staging
-docker rm -f bizosaas-client-portal-staging
-```
-
-## 🔐 Auth Troubleshooting (Clerk)
-If the login form doesn't appear:
-1. Ensure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set in the Dokploy environment variables.
-2. Check `credentials.md` for the latest verified keys.
-
-## 📡 Health Check URLs
-Verify these from your browser:
-- **API**: [https://api.bizoholic.net/docs](https://api.bizoholic.net/docs)
-- **Client**: [https://app.bizoholic.net/api/health](https://app.bizoholic.net/api/health)
-- **Admin**: [https://admin.bizoholic.net/api/health](https://admin.bizoholic.net/api/health)
+## 4. Immediate Actions Performed
+1.  Fixed network connectivity by attaching Portals/Gateway to `bizosaascore-vault-entjt5`.
+2.  Created static `services.yml` to route traffic via local bridge IPs.
+3.  Synced working configs to git `staging` branch.
