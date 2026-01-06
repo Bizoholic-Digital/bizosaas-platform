@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { Plug, Sparkles, BarChart3, TrendingUp } from 'lucide-react';
 import { getUserDisplayInfoFromSession } from '@/utils/rbac';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
+import { MagicDiscovery } from '@/components/discovery/MagicDiscovery';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -21,6 +22,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6">
+      <MagicDiscovery />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">

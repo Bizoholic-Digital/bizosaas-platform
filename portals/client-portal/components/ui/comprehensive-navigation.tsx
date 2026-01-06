@@ -180,6 +180,21 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           active: pathname.startsWith('/ai-agents')
         },
         {
+          id: 'agent-management',
+          name: 'Agent Management Center',
+          href: '/dashboard/agent-management',
+          icon: <Settings className="w-4 h-4 text-purple-500" />,
+          active: pathname === '/dashboard/agent-management'
+        },
+        {
+          id: 'partner-dashboard',
+          name: 'Partner Dashboard',
+          href: '/dashboard/partner',
+          icon: <Building2 className="w-4 h-4 text-blue-500" />,
+          active: pathname === '/dashboard/partner',
+          show: isAdmin || user?.role === 'partner'
+        },
+        {
           id: 'analytics',
           name: 'Business Intelligence',
           href: getLink('analytics', '/analytics'),
