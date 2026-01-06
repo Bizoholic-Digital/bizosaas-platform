@@ -23,8 +23,8 @@ import { Label } from "@/components/ui/label";
 import {
     Settings, Bot, Cpu, Memory, HardDrive, Network, Zap, Shield, Clock, Target,
     AlertCircle, CheckCircle, Save, RotateCcw, Copy, Download, Upload, Play, Pause,
-    Square, Trash2, Plus, Edit, Key, Database, Server, Globe, Lock, Unlock, Eye,
-    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users, Sparkles
+    Square, Trash2, Plus, Edit, Key, Database, Globe, Lock, Unlock, Eye,
+    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users, Sparkles, Server
 } from 'lucide-react';
 
 interface AgentManagementControlsProps {
@@ -483,7 +483,7 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                                             value={[config.aiSettings.temperature]}
                                             max={1}
                                             step={0.1}
-                                            onValueChange={([v]) => updateConfig(['aiSettings', 'temperature'], v)}
+                                            onValueChange={(val: number[]) => updateConfig(['aiSettings', 'temperature'], val[0])}
                                         />
                                         <p className="text-xs text-gray-400">Controls randomness: Lower is more deterministic, higher is more creative.</p>
                                     </div>

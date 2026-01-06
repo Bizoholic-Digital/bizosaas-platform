@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
         // if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         if (!PLANE_API_TOKEN) {
-            console.error('PLANE_API_TOKEN is not defined');
-            return NextResponse.json({ error: 'System configuration error: Missing Plane Token' }, { status: 500 });
+            console.warn('PLANE_API_TOKEN is not defined, switching to mock mode.');
+            // throw new Error('Mock Mode'); // Throwing error to catch block to return mock data
         }
 
         // Forward query params? (e.g. project filters)
@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
         // Add fake project data if Plane is not actually connected yet (Fallback)
         // REMOVE THIS BLOCK when Plane is live
         try {
+            if (!PLANE_API_TOKEN) throw new Error('Mock Mode');
             const response = await fetch(url.toString(), {
                 headers: {
                     'X-Api-Key': PLANE_API_TOKEN,
