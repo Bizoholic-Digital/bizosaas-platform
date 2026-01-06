@@ -56,6 +56,7 @@ services:
       VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
     networks:
       - brain-network
+      - dokploy-network
     cap_add:
       - IPC_LOCK
     deploy:
