@@ -10,20 +10,20 @@ services:
       dockerfile: ./portals/client-portal/Dockerfile.prod
       args:
         SERVICE_PATH: portals/client-portal
-        NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
-        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
-        NEXT_PUBLIC_GRAPHQL_URL: https://api.bizoholic.net/graphql
-        NEXTAUTH_URL: https://app.bizoholic.net
-        NEXTAUTH_SECRET: bizosaas-client-portal-staging-secret-2025
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
-        CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
+        NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL}
+        NEXTAUTH_URL: ${NEXTAUTH_URL}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     ports:
       - "3003:3000"
 
     environment:
       # Clerk Authentication
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
-      CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
@@ -71,12 +71,12 @@ services:
       dockerfile: portals/admin-dashboard/Dockerfile
       args:
         SERVICE_PATH: portals/admin-dashboard
-        NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
-        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net
-        NEXTAUTH_URL: https://admin.bizoholic.net
-        NEXTAUTH_SECRET: bizosaas-admin-dashboard-staging-secret-2025
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
-        CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
+        NEXTAUTH_URL: ${NEXTAUTH_URL}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
     restart: unless-stopped
     ports:
@@ -84,8 +84,8 @@ services:
 
     environment:
       # Clerk Authentication
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
-      CLERK_SECRET_KEY: sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
