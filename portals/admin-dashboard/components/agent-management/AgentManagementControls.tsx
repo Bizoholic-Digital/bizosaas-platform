@@ -1,5 +1,6 @@
 'use client';
 
+import { AgentRoleManagement } from './AgentRoleManagement';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,7 @@ import {
     Settings, Bot, Cpu, Memory, HardDrive, Network, Zap, Shield, Clock, Target,
     AlertCircle, CheckCircle, Save, RotateCcw, Copy, Download, Upload, Play, Pause,
     Square, Trash2, Plus, Edit, Key, Database, Server, Globe, Lock, Unlock, Eye,
-    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw
+    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users
 } from 'lucide-react';
 
 interface AgentManagementControlsProps {
@@ -295,6 +296,7 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                         <div className="space-y-1">
                             <NavButton id="status" label="Status & Control" icon={Activity} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="basic" label="Basic Settings" icon={Settings} active={activeTab} onClick={setActiveTab} />
+                            <NavButton id="roles" label="Role Management" icon={Users} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="resources" label="Resources" icon={Cpu} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="performance" label="Performance" icon={Zap} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="ai" label="AI Configuration" icon={Bot} active={activeTab} onClick={setActiveTab} />
@@ -433,6 +435,10 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                             </div>
                         )}
 
+                        {activeTab === 'roles' && (
+                            <AgentRoleManagement agentId={agentId} />
+                        )}
+
                         {activeTab === 'ai' && (
                             <div className="space-y-6 max-w-3xl">
                                 <div className="grid grid-cols-2 gap-6">
@@ -505,8 +511,8 @@ function NavButton({ id, label, icon: Icon, active, onClick }: { id: string, lab
         <button
             onClick={() => onClick(id)}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${active === id
-                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
         >
             <Icon className="w-4 h-4" />
