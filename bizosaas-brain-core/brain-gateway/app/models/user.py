@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer, JSON
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer, JSON, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -9,6 +9,14 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
+
+    # Association table for Partners managing Tenants
+    partner_managed_tenants = Table(
+        'partner_managed_tenants',
+        Base.metadata,
+        Column('user_id', UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True),
+        Column('tenant_id', UUID(as_uuid=True), ForeignKey('tenants.id'), primary_key=True)
+    )
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(320), unique=True, nullable=False, index=True)
@@ -42,6 +50,12 @@ class User(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     tenant = relationship("Tenant", back_populates="users")
     mcp_installations = relationship("UserMcpInstallation", back_populates="user", cascade="all, delete-orphan")
+    managed_tenants = relationship(
+        "Tenant",
+        secondary="partner_managed_tenants",
+        back_populates="managers",
+        lazy="selectin"
+    )
 
 class Tenant(Base):
     __tablename__ = "tenants"
@@ -66,3 +80,9 @@ class Tenant(Base):
     
     # Relationships
     users = relationship("User", back_populates="tenant", cascade="all, delete-orphan")
+    managers = relationship(
+        "User",
+        secondary="partner_managed_tenants",
+        back_populates="managed_tenants",
+        lazy="selectin"
+    )
