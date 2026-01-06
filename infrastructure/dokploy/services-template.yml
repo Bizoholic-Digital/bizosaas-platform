@@ -1,0 +1,55 @@
+http:
+  routers:
+    client-portal:
+      rule: "Host(`app.bizoholic.net`)"
+      service: client-portal
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    
+    admin-portal:
+      rule: "Host(`admin.bizoholic.net`)"
+      service: admin-portal
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+    vault:
+      rule: "Host(`vault.bizoholic.net`)"
+      service: vault
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+    brain-api:
+      rule: "Host(`api.bizoholic.net`)"
+      service: brain-api
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    client-portal:
+      loadBalancer:
+        servers:
+          # Note: Use internal Bridge IP if Overlay routing fails
+          - url: "http://172.19.0.4:3003"
+    
+    admin-portal:
+      loadBalancer:
+        servers:
+          - url: "http://172.19.0.5:3004"
+
+    vault:
+      loadBalancer:
+        servers:
+          - url: "http://vault:8200"
+    
+    brain-api:
+      loadBalancer:
+        servers:
+          - url: "http://172.19.0.6:8000"
