@@ -4,13 +4,14 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   Bot,
   Activity,
   Settings,
   Target,
   BarChart3,
   Shield,
+  FlaskConical,
   ChevronLeft
 } from 'lucide-react';
 
@@ -21,6 +22,7 @@ import AgentConfigurationManager from './AgentConfigurationManager';
 import TaskManagementInterface from './TaskManagementInterface';
 import PerformanceAnalyticsDashboard from './PerformanceAnalyticsDashboard';
 import AgentAccessControl from './AgentAccessControl';
+import PlaygroundManager from './PlaygroundManager';
 
 // Component interface for dynamic loading
 interface AgentManagementComponent {
@@ -84,6 +86,15 @@ const AGENT_MANAGEMENT_COMPONENTS: AgentManagementComponent[] = [
     icon: Shield,
     component: AgentAccessControl,
     permissions: ['user.manage', 'system.admin']
+  },
+  {
+    id: 'playground',
+    name: 'Agent Playground',
+    description: 'Sandboxed environment for testing and fine-tuning agents safely',
+    icon: FlaskConical,
+    component: PlaygroundManager,
+    requiresAgentId: true,
+    permissions: ['agent.playground']
   }
 ];
 
@@ -97,7 +108,7 @@ const hasPermission = (permissions: string[] = []): boolean => {
 export default function AgentManagementInterface() {
   const [activeComponent, setActiveComponent] = useState<string>('dashboard');
   const [selectedAgentId, setSelectedAgentId] = useState<string>('lead-scoring-agent');
-  
+
   // Filter components based on permissions
   const availableComponents = AGENT_MANAGEMENT_COMPONENTS.filter(component =>
     hasPermission(component.permissions)
@@ -144,7 +155,7 @@ export default function AgentManagementInterface() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {/* Quick Stats */}
             <div className="hidden md:flex items-center space-x-6 text-sm">
@@ -206,7 +217,7 @@ export default function AgentManagementInterface() {
                 <p className="text-sm text-blue-700">{currentComponent.description}</p>
               </div>
             </div>
-            
+
             {/* Agent selector for agent-specific components */}
             {currentComponent.requiresAgentId && (
               <div className="flex items-center space-x-2">
@@ -268,5 +279,6 @@ export {
   AgentConfigurationManager,
   TaskManagementInterface,
   PerformanceAnalyticsDashboard,
-  AgentAccessControl
+  AgentAccessControl,
+  PlaygroundManager,
 };
