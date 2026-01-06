@@ -63,8 +63,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
       - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls=true"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
       - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+      - "traefik.http.routers.client-portal.priority=3000"
       - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
 
