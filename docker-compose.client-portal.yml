@@ -23,7 +23,7 @@ services:
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
         CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
     ports:
-      - "3003:3003"
+      - "3003:3000"
 
     environment:
       # Clerk Authentication (Unified Identity)
@@ -51,7 +51,7 @@ services:
 
       # Environment
       NODE_ENV: production
-      PORT: 3003
+      PORT: 3000
     networks:
       - dokploy-network
     deploy:
@@ -61,12 +61,6 @@ services:
           memory: 512M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
-      - "traefik.http.routers.client-portal.entrypoints=websecure"
-      - "traefik.http.routers.client-portal.tls=true"
-      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
-      - "traefik.http.services.client-portal.loadbalancer.server.port=3003"
-      - "traefik.http.routers.client-portal.priority=5000"
       - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
 
