@@ -5,7 +5,7 @@ services:
   # ========================================
   # Admin Dashboard
   # ========================================
-  admin-portal:
+  admin-dashboard:
     build:
       context: .
       dockerfile: portals/admin-dashboard/Dockerfile
@@ -51,12 +51,12 @@ services:
       start_period: 40s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.admin-portal.rule=Host(`admin.bizoholic.net`)"
-      - "traefik.http.routers.admin-portal.entrypoints=websecure"
-      - "traefik.http.routers.admin-portal.tls=true"
-      - "traefik.http.routers.admin-portal.tls.certresolver=letsencrypt"
-      - "traefik.http.services.admin-portal.loadbalancer.server.port=3000"
-      - "traefik.http.routers.admin-portal.priority=2000"
+      - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
+      - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.admin-dashboard.tls=true"
+      - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
+      - "traefik.http.routers.admin-dashboard.priority=2000"
       - "traefik.docker.network=dokploy-network"
 
 networks:
