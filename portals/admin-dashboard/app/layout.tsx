@@ -13,11 +13,21 @@ export const metadata: Metadata = {
   keywords: ['BizOSaaS', 'Admin', 'Platform', 'Management', 'Multi-tenant', 'AI Workflows', 'Super Admin'],
   authors: [{ name: 'BizOSaaS Team' }],
   robots: 'noindex, nofollow', // Admin dashboard should not be indexed
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'BizOSaaS Admin',
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#3b82f6',
 };
 
 // Force dynamic rendering for all pages - prevents static generation errors
