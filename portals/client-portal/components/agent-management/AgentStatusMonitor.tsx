@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
+import {
   Activity,
   Zap,
   Cpu,
@@ -24,7 +24,7 @@ import {
   RotateCcw,
   Calendar,
   BarChart3,
-  LineChart,
+  LineChart as LucideLineChart,
   Gauge,
   Wifi,
   WifiOff,
@@ -82,7 +82,7 @@ interface Alert {
 const generateMockMetrics = (baseMetrics?: RealTimeMetrics): RealTimeMetrics => {
   const now = new Date();
   const variance = 0.1; // 10% variance
-  
+
   const base = baseMetrics || {
     timestamp: now,
     cpuUsage: 45,
@@ -114,7 +114,7 @@ const generateMockMetrics = (baseMetrics?: RealTimeMetrics): RealTimeMetrics => 
 const createMockAgentPerformance = (agentId: string, agentName: string): AgentPerformance => {
   const metrics: RealTimeMetrics[] = [];
   const now = new Date();
-  
+
   // Generate last 30 data points (30 minutes of data)
   for (let i = 29; i >= 0; i--) {
     const timestamp = new Date(now.getTime() - i * 60000); // 1 minute intervals
@@ -207,9 +207,9 @@ const MetricCard: React.FC<{
         </div>
         {threshold && (
           <div className="mt-2">
-            <Progress 
-              value={value} 
-              className="h-2" 
+            <Progress
+              value={value}
+              className="h-2"
               max={100}
             />
           </div>
@@ -220,8 +220,8 @@ const MetricCard: React.FC<{
 };
 
 // Alert component
-const AlertItem: React.FC<{ 
-  alert: Alert; 
+const AlertItem: React.FC<{
+  alert: Alert;
   onAcknowledge: (alertId: string) => void;
 }> = ({ alert, onAcknowledge }) => {
   const getAlertIcon = () => {
@@ -248,8 +248,8 @@ const AlertItem: React.FC<{
           <span className="text-sm font-medium">{alert.message}</span>
         </div>
         {!alert.acknowledged && (
-          <Button 
-            size="sm" 
+          <Button
+            size="sm"
             variant="outline"
             onClick={() => onAcknowledge(alert.id)}
           >
@@ -267,25 +267,25 @@ const AlertItem: React.FC<{
 // SLA monitoring component
 const SLAMonitor: React.FC<{ sla: AgentPerformance['sla'] }> = ({ sla }) => {
   const slaItems = [
-    { 
-      name: 'Uptime', 
-      target: sla.targetUptime, 
-      current: sla.currentUptime, 
+    {
+      name: 'Uptime',
+      target: sla.targetUptime,
+      current: sla.currentUptime,
       unit: '%',
       color: 'text-green-600'
     },
-    { 
-      name: 'Response Time', 
-      target: sla.targetResponseTime, 
-      current: sla.currentResponseTime, 
+    {
+      name: 'Response Time',
+      target: sla.targetResponseTime,
+      current: sla.currentResponseTime,
       unit: 'ms',
       color: 'text-blue-600',
       inverse: true // Lower is better
     },
-    { 
-      name: 'Success Rate', 
-      target: sla.targetSuccessRate, 
-      current: sla.currentSuccessRate, 
+    {
+      name: 'Success Rate',
+      target: sla.targetSuccessRate,
+      current: sla.currentSuccessRate,
       unit: '%',
       color: 'text-purple-600'
     }
@@ -294,10 +294,10 @@ const SLAMonitor: React.FC<{ sla: AgentPerformance['sla'] }> = ({ sla }) => {
   return (
     <div className="space-y-4">
       {slaItems.map((item) => {
-        const isOnTarget = item.inverse 
-          ? item.current <= item.target 
+        const isOnTarget = item.inverse
+          ? item.current <= item.target
           : item.current >= item.target;
-        
+
         return (
           <div key={item.name} className="space-y-2">
             <div className="flex justify-between items-center">
@@ -316,8 +316,8 @@ const SLAMonitor: React.FC<{ sla: AgentPerformance['sla'] }> = ({ sla }) => {
                 )}
               </div>
             </div>
-            <Progress 
-              value={item.inverse 
+            <Progress
+              value={item.inverse
                 ? Math.max(0, 100 - (item.current / item.target) * 100)
                 : (item.current / item.target) * 100
               }
@@ -345,7 +345,7 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
         setAgentPerformance(prev => {
           const newMetric = generateMockMetrics(prev.metrics[prev.metrics.length - 1]);
           const newMetrics = [...prev.metrics.slice(1), newMetric];
-          
+
           return {
             ...prev,
             metrics: newMetrics,
@@ -366,7 +366,7 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
   const handleAcknowledgeAlert = (alertId: string) => {
     setAgentPerformance(prev => ({
       ...prev,
-      alerts: prev.alerts.map(alert => 
+      alerts: prev.alerts.map(alert =>
         alert.id === alertId ? { ...alert, acknowledged: true } : alert
       )
     }));
@@ -447,9 +447,9 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
           </CardHeader>
           <CardContent className="space-y-3">
             {unacknowledgedAlerts.map(alert => (
-              <AlertItem 
-                key={alert.id} 
-                alert={alert} 
+              <AlertItem
+                key={alert.id}
+                alert={alert}
                 onAcknowledge={handleAcknowledgeAlert}
               />
             ))}
@@ -534,10 +534,10 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="responseTime" 
-                      stroke="#f59e0b" 
+                    <Line
+                      type="monotone"
+                      dataKey="responseTime"
+                      stroke="#f59e0b"
                       strokeWidth={2}
                     />
                   </LineChart>
@@ -556,19 +556,19 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
-                    <Area 
-                      type="monotone" 
-                      dataKey="successRate" 
+                    <Area
+                      type="monotone"
+                      dataKey="successRate"
                       stackId="1"
-                      stroke="#10b981" 
+                      stroke="#10b981"
                       fill="#10b981"
                       fillOpacity={0.6}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="errorRate" 
+                    <Area
+                      type="monotone"
+                      dataKey="errorRate"
                       stackId="2"
-                      stroke="#ef4444" 
+                      stroke="#ef4444"
                       fill="#ef4444"
                       fillOpacity={0.6}
                     />
@@ -592,17 +592,17 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="cpu" 
-                      stroke="#3b82f6" 
+                    <Line
+                      type="monotone"
+                      dataKey="cpu"
+                      stroke="#3b82f6"
                       strokeWidth={2}
                       name="CPU %"
                     />
-                    <Line 
-                      type="monotone" 
-                      dataKey="memory" 
-                      stroke="#10b981" 
+                    <Line
+                      type="monotone"
+                      dataKey="memory"
+                      stroke="#10b981"
                       strokeWidth={2}
                       name="Memory %"
                     />
