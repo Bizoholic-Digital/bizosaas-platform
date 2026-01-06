@@ -10,7 +10,7 @@ import {
   Activity,
   Zap,
   Cpu,
-  Memory,
+  Layers,
   HardDrive,
   Network,
   Clock,
@@ -336,7 +336,7 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
     createMockAgentPerformance(agentId, 'Lead Scoring Agent')
   );
   const [isRealTime, setIsRealTime] = useState(true);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Real-time data updates
   useEffect(() => {
@@ -472,7 +472,7 @@ export default function AgentStatusMonitor({ agentId }: { agentId: string }) {
           title="Memory"
           value={latestMetrics.memoryUsage}
           unit="%"
-          icon={Memory}
+          icon={Layers}
           color="text-green-600"
           trend={previousMetrics ? getTrend(latestMetrics.memoryUsage, previousMetrics.memoryUsage) : 'stable'}
           threshold={{ warning: 75, critical: 90 }}
