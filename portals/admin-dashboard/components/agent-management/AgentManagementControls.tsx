@@ -1,6 +1,7 @@
 'use client';
 
 import { AgentRoleManagement } from './AgentRoleManagement';
+import { AgentPerformancePanel } from './AgentPerformancePanel';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -439,6 +440,10 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                             <AgentRoleManagement agentId={agentId} />
                         )}
 
+                        {activeTab === 'performance' && (
+                            <AgentPerformancePanel agentId={agentId} />
+                        )}
+
                         {activeTab === 'ai' && (
                             <div className="space-y-6 max-w-3xl">
                                 <div className="grid grid-cols-2 gap-6">
@@ -488,7 +493,7 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                             </div>
                         )}
 
-                        {(activeTab === 'resources' || activeTab === 'performance' || activeTab === 'integrations' || activeTab === 'security' || activeTab === 'monitoring') && (
+                        {(activeTab === 'resources' || activeTab === 'integrations' || activeTab === 'security' || activeTab === 'monitoring') && (
                             <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 text-gray-500">
                                 <div className="p-4 bg-gray-100 rounded-full">
                                     <Settings className="w-8 h-8" />
