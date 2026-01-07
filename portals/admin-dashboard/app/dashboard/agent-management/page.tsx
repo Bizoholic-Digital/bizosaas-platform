@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import AgentManagementInterface from '@/components/agent-management';
+import { AgentManagementInterface } from '../../../components/agent-management/index';
 
 export default function AgentManagementPage() {
     return (

@@ -15,23 +15,23 @@ from app.domain.services.secret_service import SecretService
 router = APIRouter()
 
 class PageMessage(BaseModel):
-    id: str
+    id: Optional[str] = None
     title: str
     slug: str
     content: Optional[str] = ""
-    status: str
+    status: str = "draft"
     published_at: Optional[datetime]
     updated_at: Optional[datetime] = None
     author: Optional[str] = ""
 
 class PostMessage(BaseModel):
-    id: str
+    id: Optional[str] = None
     title: str
     slug: str
     content: Optional[str] = ""
     excerpt: Optional[str] = ""
     category: Optional[str] = ""
-    status: str
+    status: str = "draft"
     published_at: Optional[datetime] = None
     author: Optional[str] = ""
 
@@ -140,11 +140,14 @@ async def create_page(
     connector = await get_active_cms_connector(tenant_id, secret_service)
     
     try:
-        # Convert to dict, excluding auto-fields if needed
-        payload = page.dict(exclude={"id", "published_at", "updated_at"})
-        # CMSPort.create_page likely expects dict or Page model
-        # Assuming connector accepts dict for now
-        result = await connector.create_page(payload)
+        # Convert to the Page model expected by the connector
+        page_obj = PortPage(
+            title=page.title,
+            slug=page.slug,
+            content=page.content or "",
+            status=page.status
+        )
+        result = await connector.create_page(page_obj)
         
         return PageMessage(
             id=result.id,
@@ -238,8 +241,15 @@ async def create_post(
     tenant_id = user.tenant_id or "default_tenant"
     connector = await get_active_cms_connector(tenant_id, secret_service)
     try:
-        payload = post.dict(exclude={"id", "published_at", "updated_at"})
-        result = await connector.create_post(payload)
+        # Convert to the Post model expected by the connector
+        post_obj = PortPost(
+            title=post.title,
+            slug=post.slug,
+            content=post.content or "",
+            excerpt=post.excerpt,
+            status=post.status or "publish"
+        )
+        result = await connector.create_post(post_obj)
         return PostMessage(
              id=result.id,
              title=result.title,

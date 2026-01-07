@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
-import { 
+import {
   Calendar,
   Clock,
   CheckCircle,
@@ -85,7 +85,7 @@ interface AgentTask {
   status: 'pending' | 'in_progress' | 'completed' | 'failed' | 'cancelled';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   category: string;
-  
+
   // Timing
   createdAt: Date;
   startedAt?: Date;
@@ -93,25 +93,25 @@ interface AgentTask {
   dueDate?: Date;
   estimatedDuration: number; // minutes
   actualDuration?: number; // minutes
-  
+
   // Progress tracking
   progress: number; // 0-100
   steps: TaskStep[];
-  
+
   // Results and metadata
   result?: any;
   errorMessage?: string;
   notes?: string;
   tags: string[];
-  
+
   // Dependencies
   dependencies: string[]; // Task IDs
   dependents: string[]; // Task IDs
-  
+
   // Context data
   inputData?: any;
   outputData?: any;
-  
+
   // Retry information
   retryCount: number;
   maxRetries: number;
@@ -210,13 +210,13 @@ const generateMockTasks = (): AgentTask[] => {
   const tasks: AgentTask[] = [];
   const statuses: AgentTask['status'][] = ['pending', 'in_progress', 'completed', 'failed'];
   const priorities: AgentTask['priority'][] = ['low', 'medium', 'high', 'urgent'];
-  
+
   for (let i = 1; i <= 15; i++) {
     const template = mockTaskTemplates[Math.floor(Math.random() * mockTaskTemplates.length)];
     const agent = mockAgentWorkloads[Math.floor(Math.random() * mockAgentWorkloads.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const createdAt = new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000);
-    
+
     tasks.push({
       id: `task-${i}`,
       templateId: template.id,
@@ -267,7 +267,7 @@ const generateMockTasks = (): AgentTask[] => {
       maxRetries: 3
     });
   }
-  
+
   return tasks;
 };
 
@@ -310,8 +310,8 @@ const PriorityBadge: React.FC<{ priority: AgentTask['priority'] }> = ({ priority
 };
 
 // Task card component
-const TaskCard: React.FC<{ 
-  task: AgentTask; 
+const TaskCard: React.FC<{
+  task: AgentTask;
   onEdit: (task: AgentTask) => void;
   onView: (task: AgentTask) => void;
   onDelete: (taskId: string) => void;
@@ -322,7 +322,7 @@ const TaskCard: React.FC<{
     const diff = task.dueDate.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (diff < 0) return 'Overdue';
     if (hours < 24) return `${hours}h ${minutes}m`;
     return `${Math.floor(hours / 24)}d ${hours % 24}h`;
@@ -367,7 +367,7 @@ const TaskCard: React.FC<{
           <TaskStatusBadge status={task.status} />
           <PriorityBadge priority={task.priority} />
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
             <span>Progress</span>
@@ -418,7 +418,7 @@ const TaskCard: React.FC<{
 // Agent workload component
 const AgentWorkloadCard: React.FC<{ workload: AgentWorkload }> = ({ workload }) => {
   const utilizationPercentage = (workload.currentTasks / workload.maxConcurrentTasks) * 100;
-  
+
   const getStatusColor = () => {
     switch (workload.status) {
       case 'available': return 'text-green-600';
@@ -519,7 +519,7 @@ const TaskCreationDialog: React.FC<{
 
     onCreateTask(newTask);
     onOpenChange(false);
-    
+
     // Reset form
     setFormData({
       title: '',
@@ -669,7 +669,9 @@ const TaskCreationDialog: React.FC<{
 
 // Main task management interface
 export default function TaskManagementInterface() {
-  const [tasks, setTasks] = useState<AgentTask[]>(generateMockTasks());
+  const [tasks, setTasks] = useState<AgentTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [agentWorkloads, setAgentWorkloads] = useState<AgentWorkload[]>(mockAgentWorkloads);
   const [selectedTask, setSelectedTask] = useState<AgentTask | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -678,10 +680,63 @@ export default function TaskManagementInterface() {
   const [priorityFilter, setPriorityFilter] = useState<AgentTask['priority'] | 'all'>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
 
+  const fetchTasks = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/brain/plane?type=issues');
+      if (!response.ok) throw new Error('Failed to fetch tasks');
+      const data = await response.json();
+
+      // Map Plane issues to AgentTask interface
+      const planeTasks: AgentTask[] = (data.results || []).map((issue: any) => ({
+        id: issue.id,
+        title: issue.name,
+        description: issue.description_strip || issue.description_html || '',
+        assignedAgentId: issue.assignees?.[0] || 'unassigned',
+        assignedAgentName: issue.assignees_detail?.[0]?.display_name || 'Unassigned',
+        status: mapPlaneStatus(issue.state_detail?.name || 'Backlog'),
+        priority: (issue.priority || 'medium') as AgentTask['priority'],
+        category: 'general',
+        createdAt: new Date(issue.created_at),
+        dueDate: issue.target_date ? new Date(issue.target_date) : undefined,
+        estimatedDuration: issue.estimate || 0,
+        progress: issue.state_detail?.group === 'completed' ? 100 : 0,
+        steps: [],
+        tags: issue.labels || [],
+        retryCount: 0,
+        maxRetries: 3,
+        dependencies: [],
+        dependents: []
+      }));
+
+      setTasks(planeTasks);
+    } catch (err: any) {
+      console.error('Error fetching tasks:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapPlaneStatus = (state: string): AgentTask['status'] => {
+    const s = state.toLowerCase();
+    if (s.includes('backlog') || s.includes('todo')) return 'pending';
+    if (s.includes('progress')) return 'in_progress';
+    if (s.includes('done') || s.includes('completed')) return 'completed';
+    if (s.includes('fail') || s.includes('error')) return 'failed';
+    if (s.includes('cancel')) return 'cancelled';
+    return 'pending';
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
   // Filter tasks
   const filteredTasks = tasks.filter(task => {
     if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !task.description.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      !task.description.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
     if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
     if (assigneeFilter !== 'all' && task.assignedAgentId !== assigneeFilter) return false;
@@ -696,14 +751,31 @@ export default function TaskManagementInterface() {
     failed: filteredTasks.filter(t => t.status === 'failed')
   };
 
-  const handleCreateTask = (taskData: Partial<AgentTask>) => {
-    const newTask: AgentTask = {
-      id: `task-${Date.now()}`,
-      assignedAgentName: agentWorkloads.find(a => a.agentId === taskData.assignedAgentId)?.agentName || 'Unknown Agent',
-      ...taskData as AgentTask
-    };
-    
-    setTasks(prev => [newTask, ...prev]);
+  const handleCreateTask = async (taskData: Partial<AgentTask>) => {
+    try {
+      const response = await fetch('/api/brain/plane', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: {
+            name: taskData.title,
+            description_html: `<p>${taskData.description}</p>`,
+            priority: taskData.priority,
+            assignees: taskData.assignedAgentId !== 'unassigned' ? [taskData.assignedAgentId] : []
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to create task');
+
+      // Refresh list
+      fetchTasks();
+    } catch (err: any) {
+      console.error('Error creating task:', err);
+      alert('Failed to create task: ' + err.message);
+    }
   };
 
   const handleDeleteTask = (taskId: string) => {
@@ -741,8 +813,8 @@ export default function TaskManagementInterface() {
           <p className="text-gray-600">Assign, monitor, and manage AI agent tasks</p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => setTasks(generateMockTasks())}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={fetchTasks} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button onClick={() => setIsCreateDialogOpen(true)}>

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import {
   Bot,
   Activity,
@@ -280,5 +280,7 @@ export {
   TaskManagementInterface,
   PerformanceAnalyticsDashboard,
   AgentAccessControl,
+
   PlaygroundManager,
+  AgentManagementInterface,
 };
