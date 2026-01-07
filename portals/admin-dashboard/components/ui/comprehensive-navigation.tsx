@@ -150,7 +150,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           id: 'security-audit',
           name: 'Security & Audit',
           href: '/dashboard/security',
-          icon: <Shield className="w-4 h-4" />,
+          icon: <Shield className="w-4 h-4 text-red-500" />,
           active: pathname === '/dashboard/security'
         },
         {

@@ -56,6 +56,20 @@ class User(Base):
         back_populates="managers",
         lazy="selectin"
     )
+    audit_logs = relationship("AuditLog", back_populates="user")
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    action = Column(String(100), nullable=False) # e.g. "PROMOTE_TO_PARTNER"
+    details = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    ip_address = Column(String(45), nullable=True)
+    
+    # Relationships
+    user = relationship("User", back_populates="audit_logs")
 
 class Tenant(Base):
     __tablename__ = "tenants"

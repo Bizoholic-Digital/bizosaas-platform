@@ -4,7 +4,8 @@ import os
 import psutil
 import time
 from typing import Dict, Any, List
-from app.middleware.auth import get_current_user, require_role
+from app.dependencies import get_current_user, require_role, get_db
+from sqlalchemy.orm import Session
 from domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -163,3 +164,46 @@ async def get_api_analytics(
         print(f"Error fetching Prometheus metrics: {e}")
 
     return metrics
+
+@router.post("/users/{user_id}/promote")
+async def promote_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Promote a user to partner role."""
+    from app.services.user_service import UserService
+    from uuid import UUID
+    user_service = UserService(db)
+    try:
+        user = user_service.promote_to_partner(UUID(user_id))
+        return {"status": "success", "message": f"User {user.email} promoted to partner"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/users/{user_id}/demote")
+async def demote_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Demote a partner to client role."""
+    from app.services.user_service import UserService
+    from uuid import UUID
+    user_service = UserService(db)
+    try:
+        user = user_service.demote_to_client(UUID(user_id))
+        return {"status": "success", "message": f"User {user.email} demoted to client"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/audit-logs")
+async def get_audit_logs(
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Fetch recent audit logs."""
+    from app.models.user import AuditLog
+    logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
+    return logs

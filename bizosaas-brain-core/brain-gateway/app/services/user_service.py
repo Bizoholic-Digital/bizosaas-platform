@@ -12,7 +12,17 @@ class UserService:
         if not user:
             raise ValueError("User not found")
         
+        from app.models.user import AuditLog
+        old_role = user.role
         user.role = "partner"
+        
+        log = AuditLog(
+            user_id=user.id,
+            action="ROLE_MIGRATION",
+            details={"from": old_role, "to": "partner"}
+        )
+        self.db.add(log)
+        
         self.db.commit()
         self.db.refresh(user)
         return user
@@ -23,9 +33,18 @@ class UserService:
         if not user:
             raise ValueError("User not found")
         
+        from app.models.user import AuditLog
+        old_role = user.role
         user.role = "client" 
         # Clear managed tenants as they are no longer a partner
         user.managed_tenants = []
+        
+        log = AuditLog(
+            user_id=user.id,
+            action="ROLE_MIGRATION",
+            details={"from": old_role, "to": "client"}
+        )
+        self.db.add(log)
         
         self.db.commit()
         self.db.refresh(user)

@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
 import {
-  Home, Users, FileText, ShoppingCart, Building2, BarChart3,
+  Home, Users,
+  LifeBuoy,
+  FileText, ShoppingCart, Building2, BarChart3,
   Settings, User, Brain, Zap, Target, TrendingUp, Database,
   Globe, Search, MessageSquare, Phone, Mail, Calendar,
   Package, CreditCard, UserCheck, Shield, Bell, Download,
@@ -155,6 +157,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/ecommerce',
           icon: <ShoppingCart className="w-4 h-4" />,
           active: pathname.startsWith('/dashboard/ecommerce')
+        },
+        {
+          id: 'support',
+          name: 'Help & Support',
+          href: '/dashboard/support',
+          icon: <LifeBuoy className="w-4 h-4 ml-1" />,
+          active: pathname === '/dashboard/support'
         },
         {
           id: 'marketing',
