@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
-  Menu, X, Home, Users, ShoppingCart, BarChart3, 
-  Settings, Bell, CreditCard, FileText, LinkIcon, 
+  Menu, X, Home, Users, ShoppingCart, BarChart3,
+  Settings, Bell, CreditCard, FileText, LinkIcon,
   ChevronDown, ChevronRight, Moon, Sun, TrendingUp,
   DollarSign, User, Target, Calendar, Package,
   Mail, MessageSquare, Share2, Activity, Zap,
@@ -31,7 +31,7 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       return "light";
     }
   });
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'New tenant registered', type: 'info', time: '2 min ago' },
     { id: 2, title: 'Server CPU usage high', type: 'warning', time: '5 min ago' },
@@ -49,13 +49,13 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+
     try {
       document.documentElement.classList.toggle("dark", theme === "dark");
     } catch (e) {
       console.warn("Cannot set theme class");
     }
-    
+
     // Initialize expanded sections
     setExpandedSections({
       "management": false,
@@ -129,7 +129,7 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       icon: Bot,
       label: 'AI & Automation',
       children: [
-        { id: 'workflows', label: 'Workflow Management', icon: Workflow, href: '/workflows' },
+        { id: 'workflows', label: 'Workflow Management', icon: Workflow, href: '/dashboard/workflows' },
         { id: 'ai-agents', label: 'AI Agent Monitor', icon: Activity, href: '/ai-agents' },
         { id: 'chat', label: 'AI Assistant', icon: MessageSquare, href: '/chat' }
       ]
@@ -209,7 +209,7 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
             )}
           </div>
         </button>
-        
+
         {isExpanded && (
           <div className="ml-6 mt-2 space-y-1">
             {item.children.map((child: any) => (

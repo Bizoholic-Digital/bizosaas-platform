@@ -88,7 +88,7 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Workflow Orchestration',
-    href: '/workflows',
+    href: '/dashboard/workflows',
     icon: Workflow,
     description: 'AI workflows and automation control',
     category: 'monitoring'
