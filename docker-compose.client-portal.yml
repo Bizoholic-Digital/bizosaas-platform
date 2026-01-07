@@ -47,6 +47,9 @@ services:
       NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL}
       NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL}
 
+      # Integrations
+      PLANE_API_TOKEN: ${PLANE_API_TOKEN}
+
       # Environment
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-3003}
