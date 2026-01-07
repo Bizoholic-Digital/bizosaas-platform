@@ -32,16 +32,26 @@ services:
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
       NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
 
-      # Brain Gateway
+      # Brain Gateway URLs
       NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+
+      # Internal Brain Gateway connection (for server actions)
+      BRAIN_GATEWAY_URL: ${BRAIN_GATEWAY_URL}
+
+      # Infrastructure UIs
       NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL}
       NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL}
+
+      # NextAuth (Optional, but kept for session stability)
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
 
       # Environment
       CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NEXT_PUBLIC_CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
-      NODE_ENV: production
-      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3004}
     networks:
       - dokploy-network
     deploy:
