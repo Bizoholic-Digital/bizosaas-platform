@@ -14,9 +14,10 @@ services:
     build:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    # Ports managed by Traefik - no host binding needed
     # container_name: bizosaas-brain-staging
+    expose:
+      - "8000"
     environment:
       # Database & Cache (Mapping to Dokploy Env)
       - DATABASE_URL=${DATABASE_URL}
@@ -106,6 +107,7 @@ services:
   # ═══════════════════════════════════════════════════════════════════════════
 networks:
   brain-network:
-    external: true
+    driver: bridge
+    name: brain-network
   dokploy-network:
     external: true
