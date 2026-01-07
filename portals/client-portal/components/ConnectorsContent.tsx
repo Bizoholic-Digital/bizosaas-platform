@@ -12,7 +12,6 @@ import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 
-
 // Icon mapping
 const ICONS: Record<string, any> = {
     wordpress: Layout,
@@ -33,6 +32,220 @@ const ICONS: Record<string, any> = {
     'tiktok-ads': Video,
     default: Plug
 };
+
+// Mock data moved outside to avoid re-creation
+const MOCK_CONNECTORS: ConnectorConfig[] = [
+    {
+        id: 'wordpress',
+        name: 'WordPress',
+        type: 'cms',
+        description: 'Connect your WordPress site to sync pages, posts, and media.',
+        icon: 'wordpress',
+        version: '2.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            url: { type: 'string', label: 'WordPress Site URL', placeholder: 'https://your-site.com', required: true },
+            username: { type: 'string', label: 'Username', required: true },
+            application_password: { type: 'password', label: 'Application Password', help: 'Generate in Users > Profile', required: true }
+        }
+    },
+    {
+        id: 'fluentcrm',
+        name: 'FluentCRM',
+        type: 'crm',
+        description: 'Sync contacts, tags, and campaigns from FluentCRM.',
+        icon: 'fluentcrm',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            url: { type: 'string', label: 'WordPress Site URL', placeholder: 'https://your-site.com', required: true },
+            username: { type: 'string', label: 'Username', required: true },
+            application_password: { type: 'password', label: 'Application Password', required: true }
+        }
+    },
+    {
+        id: 'woocommerce',
+        name: 'WooCommerce',
+        type: 'ecommerce',
+        description: 'Sync products, orders, and customers from your store.',
+        icon: 'woocommerce',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            url: { type: 'string', label: 'Store URL', placeholder: 'https://your-store.com', required: true },
+            consumer_key: { type: 'string', label: 'Consumer Key (CK)', required: true },
+            consumer_secret: { type: 'password', label: 'Consumer Secret (CS)', required: true }
+        }
+    },
+    {
+        id: 'google-business-profile',
+        name: 'Google Business Profile',
+        type: 'marketing',
+        description: 'Manage reviews and location info for US local business discovery.',
+        icon: 'map-pin',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            account_id: { type: 'string', label: 'Account ID', placeholder: 'accounts/123...', required: true },
+            location_id: { type: 'string', label: 'Location ID', placeholder: 'locations/123...', required: true }
+        }
+    },
+    {
+        id: 'microsoft-ads',
+        name: 'Microsoft Advertising',
+        type: 'marketing',
+        description: 'Bing search ads management with high-ROI potential for US SMBs.',
+        icon: 'bing',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            customer_id: { type: 'string', label: 'Customer ID', placeholder: '1234567', required: true },
+            developer_token: { type: 'password', label: 'Developer Token', required: true }
+        }
+    },
+    {
+        id: 'facebook-ads',
+        name: 'Meta Ads & CAPI',
+        type: 'marketing',
+        description: 'Advanced Meta Ads with Conversion API tracking support.',
+        icon: 'facebook',
+        version: '2.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            access_token: { type: 'password', label: 'Access Token', required: true },
+            pixel_id: { type: 'string', label: 'Meta Pixel ID', required: true }
+        }
+    },
+    {
+        id: 'google-tag-manager',
+        name: 'Google Tag Manager',
+        type: 'marketing',
+        description: 'Centralized tag management with auto-injection for SMB tools.',
+        icon: 'tag',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            container_id: { type: 'string', label: 'Container ID', placeholder: 'GTM-XXXXXX', required: true }
+        }
+    },
+    {
+        id: 'yelp',
+        name: 'Yelp Fusion',
+        type: 'marketing',
+        description: 'Monitor local reputation and reviews for US service businesses.',
+        icon: 'yelp',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            api_key: { type: 'password', label: 'Yelp API Key', required: true },
+            business_id: { type: 'string', label: 'Business ID', required: true }
+        }
+    },
+    {
+        id: 'calendly',
+        name: 'Calendly',
+        type: 'marketing',
+        description: 'Automated appointment scheduling for high-conversion flow.',
+        icon: 'calendly',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            access_token: { type: 'password', label: 'Personal Access Token', required: true },
+            organization_uri: { type: 'string', label: 'Organization URI', required: true }
+        }
+    },
+    {
+        id: 'mailchimp',
+        name: 'Mailchimp',
+        type: 'marketing',
+        description: 'Powerful email marketing and audience management (36x ROI).',
+        icon: 'mailchimp',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            api_key: { type: 'password', label: 'API Key', required: true },
+            server_prefix: { type: 'string', label: 'Server Prefix (e.g. us20)', required: true },
+            list_id: { type: 'string', label: 'Audience ID', required: false }
+        }
+    },
+    {
+        id: 'google-search-console',
+        name: 'Google Search Console',
+        type: 'analytics',
+        description: 'SEO intelligence and site performance monitoring for agents.',
+        icon: 'search-console',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            access_token: { type: 'password', label: 'Access Token', required: true },
+            site_url: { type: 'string', label: 'Site URL (https://...)', required: true }
+        }
+    },
+    {
+        id: 'google-ads',
+        name: 'Google Ads',
+        type: 'marketing',
+        description: 'Hyper-targeted search ads management for US high-intent keywords.',
+        icon: 'google-ads',
+        version: '2.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            customer_id: { type: 'string', label: 'Account ID', placeholder: '123-456-7890', required: true },
+            developer_token: { type: 'password', label: 'Developer Token', required: true }
+        }
+    },
+    {
+        id: 'twilio',
+        name: 'Twilio SMS',
+        type: 'marketing',
+        description: 'Direct SMS/WhatsApp lead outreach for US local service conversion.',
+        icon: 'twilio',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            account_sid: { type: 'string', label: 'Account SID', placeholder: 'AC...', required: true },
+            auth_token: { type: 'password', label: 'Auth Token', required: true },
+            from_number: { type: 'string', label: 'Twilio Number', placeholder: '+1...', required: true }
+        }
+    },
+    {
+        id: 'gohighlevel',
+        name: 'GoHighLevel (GHL)',
+        type: 'marketing',
+        description: 'Agency-level CRM & lead retention specifically for US SMBs.',
+        icon: 'gohighlevel',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            location_id: { type: 'string', label: 'Location ID', required: true }
+        }
+    },
+    {
+        id: 'hubspot',
+        name: 'HubSpot',
+        type: 'marketing',
+        description: 'Scalable CRM deals and contact management for growing businesses.',
+        icon: 'hubspot',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            access_token: { type: 'password', label: 'Access Token', required: true }
+        }
+    },
+    {
+        id: 'shopify',
+        name: 'Shopify',
+        type: 'ecommerce',
+        description: 'Connect your Shopify store to sync products, orders, and sales data.',
+        icon: 'woocommerce',
+        version: '1.0.0',
+        status: 'disconnected',
+        auth_schema: {
+            shop_url: { type: 'string', label: 'Shop URL', placeholder: 'your-store.myshopify.com', required: true },
+            access_token: { type: 'password', label: 'Admin Access Token', required: true }
+        }
+    }
+];
 
 export function ConnectorsContent() {
     const searchParams = useSearchParams();
@@ -68,249 +281,43 @@ export function ConnectorsContent() {
         all: 'Manage your integrations with external CMS, CRM, and E-commerce platforms.'
     };
 
+    const connectedPluginPlatforms = connectors
+        .filter(c => c.status === 'connected' && ['wordpress', 'shopify', 'woocommerce'].includes(c.id))
+        .map(c => c.id);
 
-    // Mock data for initial development - Replace with API call later
-    const MOCK_CONNECTORS: ConnectorConfig[] = [
-        {
-            id: 'wordpress',
-            name: 'WordPress',
-            type: 'cms',
-            description: 'Connect your WordPress site to sync pages, posts, and media.',
-            icon: 'wordpress',
-            version: '2.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                url: { type: 'string', label: 'WordPress Site URL', placeholder: 'https://your-site.com', required: true },
-                username: { type: 'string', label: 'Username', required: true },
-                application_password: { type: 'password', label: 'Application Password', help: 'Generate in Users > Profile', required: true }
-            }
-        },
-        {
-            id: 'fluentcrm',
-            name: 'FluentCRM',
-            type: 'crm',
-            description: 'Sync contacts, tags, and campaigns from FluentCRM.',
-            icon: 'fluentcrm',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                url: { type: 'string', label: 'WordPress Site URL', placeholder: 'https://your-site.com', required: true },
-                username: { type: 'string', label: 'Username', required: true },
-                application_password: { type: 'password', label: 'Application Password', required: true }
-            }
-        },
-        {
-            id: 'woocommerce',
-            name: 'WooCommerce',
-            type: 'ecommerce',
-            description: 'Sync products, orders, and customers from your store.',
-            icon: 'woocommerce',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                url: { type: 'string', label: 'Store URL', placeholder: 'https://your-store.com', required: true },
-                consumer_key: { type: 'string', label: 'Consumer Key (CK)', required: true },
-                consumer_secret: { type: 'password', label: 'Consumer Secret (CS)', required: true }
-            }
-        },
-        {
-            id: 'google-business-profile',
-            name: 'Google Business Profile',
-            type: 'marketing',
-            description: 'Manage reviews and location info for US local business discovery.',
-            icon: 'map-pin',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                account_id: { type: 'string', label: 'Account ID', placeholder: 'accounts/123...', required: true },
-                location_id: { type: 'string', label: 'Location ID', placeholder: 'locations/123...', required: true }
-            }
-        },
-        {
-            id: 'microsoft-ads',
-            name: 'Microsoft Advertising',
-            type: 'marketing',
-            description: 'Bing search ads management with high-ROI potential for US SMBs.',
-            icon: 'bing',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                customer_id: { type: 'string', label: 'Customer ID', placeholder: '1234567', required: true },
-                developer_token: { type: 'password', label: 'Developer Token', required: true }
-            }
-        },
-        {
-            id: 'facebook-ads',
-            name: 'Meta Ads & CAPI',
-            type: 'marketing',
-            description: 'Advanced Meta Ads with Conversion API tracking support.',
-            icon: 'facebook',
-            version: '2.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true },
-                pixel_id: { type: 'string', label: 'Meta Pixel ID', required: true }
-            }
-        },
-        {
-            id: 'google-tag-manager',
-            name: 'Google Tag Manager',
-            type: 'marketing',
-            description: 'Centralized tag management with auto-injection for SMB tools.',
-            icon: 'tag',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                container_id: { type: 'string', label: 'Container ID', placeholder: 'GTM-XXXXXX', required: true }
-            }
-        },
-        {
-            id: 'yelp',
-            name: 'Yelp Fusion',
-            type: 'marketing',
-            description: 'Monitor local reputation and reviews for US service businesses.',
-            icon: 'yelp',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                api_key: { type: 'password', label: 'Yelp API Key', required: true },
-                business_id: { type: 'string', label: 'Business ID', required: true }
-            }
-        },
-        {
-            id: 'calendly',
-            name: 'Calendly',
-            type: 'marketing',
-            description: 'Automated appointment scheduling for high-conversion flow.',
-            icon: 'calendly',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Personal Access Token', required: true },
-                organization_uri: { type: 'string', label: 'Organization URI', required: true }
-            }
-        },
-        {
-            id: 'mailchimp',
-            name: 'Mailchimp',
-            type: 'marketing',
-            description: 'Powerful email marketing and audience management (36x ROI).',
-            icon: 'mailchimp',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                api_key: { type: 'password', label: 'API Key', required: true },
-                server_prefix: { type: 'string', label: 'Server Prefix (e.g. us20)', required: true },
-                list_id: { type: 'string', label: 'Audience ID', required: false }
-            }
-        },
-        {
-            id: 'google-search-console',
-            name: 'Google Search Console',
-            type: 'analytics',
-            description: 'SEO intelligence and site performance monitoring for agents.',
-            icon: 'search-console',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true },
-                site_url: { type: 'string', label: 'Site URL (https://...)', required: true }
-            }
-        },
-        {
-            id: 'google-ads',
-            name: 'Google Ads',
-            type: 'marketing',
-            description: 'Hyper-targeted search ads management for US high-intent keywords.',
-            icon: 'google-ads',
-            version: '2.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                customer_id: { type: 'string', label: 'Account ID', placeholder: '123-456-7890', required: true },
-                developer_token: { type: 'password', label: 'Developer Token', required: true }
-            }
-        },
-        {
-            id: 'twilio',
-            name: 'Twilio SMS',
-            type: 'marketing',
-            description: 'Direct SMS/WhatsApp lead outreach for US local service conversion.',
-            icon: 'twilio',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                account_sid: { type: 'string', label: 'Account SID', placeholder: 'AC...', required: true },
-                auth_token: { type: 'password', label: 'Auth Token', required: true },
-                from_number: { type: 'string', label: 'Twilio Number', placeholder: '+1...', required: true }
-            }
-        },
-        {
-            id: 'gohighlevel',
-            name: 'GoHighLevel (GHL)',
-            type: 'marketing',
-            description: 'Agency-level CRM & lead retention specifically for US SMBs.',
-            icon: 'gohighlevel',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                location_id: { type: 'string', label: 'Location ID', required: true }
-            }
-        },
-        {
-            id: 'hubspot',
-            name: 'HubSpot',
-            type: 'marketing',
-            description: 'Scalable CRM deals and contact management for growing businesses.',
-            icon: 'hubspot',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                access_token: { type: 'password', label: 'Access Token', required: true }
-            }
-        },
-        {
-            id: 'tiktok-ads',
-            name: 'TikTok Ads',
-            type: 'marketing',
-            description: 'Mobile-first short-form video ads for the 2025 growth market.',
-            icon: 'tiktok-ads',
-            version: '1.0.0',
-            status: 'disconnected',
-            auth_schema: {
-                advertiser_id: { type: 'string', label: 'Advertiser ID', required: true }
-            }
-        }
-    ];
-
-    const filteredConnectors = connectors.filter(c => {
-        if (!activeCategory || activeCategory === 'all') return true;
-        return c.type === activeCategory;
-    });
-
-    const currentTitle = activeCategory ? (categoryTitles[activeCategory] || 'Connectors') : 'Data Connectors';
-    const currentDesc = activeCategory ? (categoryDescription[activeCategory] || 'Manage your integrations.') : 'Manage your integrations with external CMS, CRM, and E-commerce platforms.';
+    const isWpConnected = connectedPluginPlatforms.includes('wordpress');
+    const isShopifyConnected = connectedPluginPlatforms.includes('shopify');
+    const isAnyPluginServiceConnected = connectedPluginPlatforms.length > 0;
 
     useEffect(() => {
         loadConnectors();
     }, []);
 
     useEffect(() => {
-        if (activeCategory === 'marketplace') {
+        if (activeCategory === 'marketplace' && isAnyPluginServiceConnected) {
             loadMarketplace();
         }
-    }, [activeCategory]);
+    }, [activeCategory, connectedPluginPlatforms.join(',')]);
 
     const loadMarketplace = async () => {
         setLoadingMarketplace(true);
         try {
-            const res = await connectorsApi.getMarketplacePlugins();
-            if (res.data) {
-                setMarketplacePlugins(res.data);
-                // Track impressions for all plugins
-                res.data.forEach((p: any) => {
-                    connectorsApi.trackPluginInterest(p.slug, 'view');
-                });
-            }
+            // Fetch plugins for each connected platform
+            const pluginPromises = connectedPluginPlatforms.map(platform =>
+                connectorsApi.getMarketplacePlugins(platform === 'woocommerce' ? 'wordpress' : platform).catch(e => ({ data: [] }))
+            );
+
+            const results = await Promise.all(pluginPromises);
+            const allPlugins = results.flatMap((res, index) => {
+                const platform = connectedPluginPlatforms[index];
+                return (res.data || []).map((p: any) => ({ ...p, platform }));
+            });
+
+            setMarketplacePlugins(allPlugins);
+
+            allPlugins.forEach((p: any) => {
+                connectorsApi.trackPluginInterest(p.slug, 'view', p.platform);
+            });
         } catch (error) {
             console.error("Failed to load marketplace", error);
         } finally {
@@ -318,25 +325,11 @@ export function ConnectorsContent() {
         }
     };
 
-    const handleMarketplaceAction = async (plugin: any, action: string) => {
-        try {
-            await connectorsApi.trackPluginInterest(plugin.slug, action);
-            if (action === 'click') {
-                toast.success(`Demand tracked for ${plugin.name}. We are working on specialized deals for this plugin!`);
-            }
-        } catch (error) {
-            console.error("Tracking interest failed", error);
-        }
-    };
-
-
     const loadConnectors = async () => {
         setLoading(true);
         try {
-            // Attempt API call
             const res = await connectorsApi.getConnectors();
             if (res.data && Array.isArray(res.data)) {
-                // Merge real status into mock definitions to maintain the full list of available connectors
                 const merged = MOCK_CONNECTORS.map(mock => {
                     const real = (res.data as any[]).find(r => r.id === mock.id);
                     return real ? { ...mock, ...real } : mock;
@@ -347,7 +340,6 @@ export function ConnectorsContent() {
             }
         } catch (error) {
             console.error("Failed to load connectors", error);
-            // Fallback to mock data on error (for dev)
             setConnectors(MOCK_CONNECTORS);
         } finally {
             setLoading(false);
@@ -360,37 +352,17 @@ export function ConnectorsContent() {
         setDialogOpen(true);
     };
 
-    const handleCredentialChange = (key: string, value: string) => {
-        setCredentials(prev => ({
-            ...prev,
-            [key]: value
-        }));
-    };
-
     const handleConnect = async () => {
         if (!selectedConnector) return;
-
         setIsValidating(true);
         try {
-            // 1. Validate (simulated for now if API not ready, or real call)
-            // const validRes = await connectorsApi.validateConnection(selectedConnector.id);
-            // if (!validRes.data?.valid) throw new Error(validRes.data?.message || "Validation failed");
-
             setIsConnecting(true);
             const res = await connectorsApi.connectService(selectedConnector.id, credentials);
-
             if (res.error) throw new Error(res.error);
-
             toast.success(`Successfully connected to ${selectedConnector.name}`);
             setDialogOpen(false);
-
-            // Update local state
-            setConnectors(prev => prev.map(c =>
-                c.id === selectedConnector.id ? { ...c, status: 'connected', lastSync: new Date().toISOString() } : c
-            ));
-
+            loadConnectors();
         } catch (error: any) {
-            console.error("Connection failed", error);
             toast.error(error.message || "Failed to connect");
         } finally {
             setIsValidating(false);
@@ -402,9 +374,7 @@ export function ConnectorsContent() {
         try {
             await connectorsApi.disconnectService(connector.id);
             toast.success(`Disconnected ${connector.name}`);
-            setConnectors(prev => prev.map(c =>
-                c.id === connector.id ? { ...c, status: 'disconnected', lastSync: undefined } : c
-            ));
+            loadConnectors();
         } catch (error) {
             toast.error("Failed to disconnect");
         }
@@ -413,120 +383,148 @@ export function ConnectorsContent() {
     const handleSync = async (connector: ConnectorConfig) => {
         try {
             toast.info(`Syncing ${connector.name}...`);
-            // await connectorsApi.syncConnector(connector.id);
             setConnectors(prev => prev.map(c =>
                 c.id === connector.id ? { ...c, status: 'syncing' } : c
             ));
-
-            // Simulate sync finish
             setTimeout(() => {
-                setConnectors(prev => prev.map(c =>
-                    c.id === connector.id ? { ...c, status: 'connected', lastSync: new Date().toISOString() } : c
-                ));
+                loadConnectors();
                 toast.success(`Synced ${connector.name}`);
             }, 2000);
-
         } catch (error) {
             toast.error("Sync failed");
         }
     };
 
-    if (loading || (activeCategory === 'marketplace' && loadingMarketplace)) return (
+    const handleMarketplaceAction = async (plugin: any, action: string) => {
+        try {
+            await connectorsApi.trackPluginInterest(plugin.slug, action, plugin.platform);
+            if (action === 'click') {
+                toast.success(`Demand tracked for ${plugin.name}. We are working on specialized deals!`);
+            }
+        } catch (error) {
+            console.error("Tracking interest failed", error);
+        }
+    };
+
+    if (loading) return (
         <div className="flex items-center justify-center p-12">
             <RefreshCw className="h-8 w-8 animate-spin text-primary" />
         </div>
     );
 
+    const filteredConnectors = connectors.filter(c => {
+        if (!activeCategory || activeCategory === 'all') return true;
+        return c.type === activeCategory;
+    });
+
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">{currentTitle}</h2>
-                    <p className="text-muted-foreground">{currentDesc}</p>
-                </div>
-                <Button variant="outline" onClick={activeCategory === 'marketplace' ? loadMarketplace : loadConnectors}>
-                    <RefreshCw className="mr-2 h-4 w-4" /> Refresh
-                </Button>
+            <div className="flex flex-col gap-2">
+                <h2 className="text-2xl font-bold tracking-tight">{categoryTitles[activeCategory || 'all']}</h2>
+                <p className="text-muted-foreground">{categoryDescription[activeCategory || 'all']}</p>
             </div>
 
-            {/* WordPress Connection Prompt */}
-            {
-                !loading && activeCategory !== 'marketplace' && connectors.find(c => c.id === 'wordpress' && c.status === 'disconnected') && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-sm">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-full text-blue-600 dark:text-blue-300">
-                            <Layout className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Connect Your WordPress Site</h3>
-                            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                                Unlock full 2-way sync for posts, pages, media, and plugins. Manage your entire website directly from the portal.
-                            </p>
-                        </div>
+            {!isAnyPluginServiceConnected && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-sm">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-full text-blue-600 dark:text-blue-300">
+                        <Layout className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">
+                            {activeCategory === 'marketplace' ? 'Connect WordPress or Shopify to access Marketplace' : 'Connect Your Website'}
+                        </h3>
+                        <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                            {activeCategory === 'marketplace'
+                                ? 'The plugin marketplace requires a connection to WordPress or Shopify to install and sync tools automatically.'
+                                : 'Unlock full 2-way sync for posts, pages, media, and plugins. Manage your entire website directly from the portal.'}
+                        </p>
+                    </div>
+                    <div className="flex gap-2">
                         <Button
                             onClick={() => handleOpenConnect(connectors.find(c => c.id === 'wordpress')!)}
                             className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
                         >
-                            Connect Now
+                            Connect WordPress
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => handleOpenConnect(connectors.find(c => c.id === 'shopify')!)}
+                            className="border-blue-600 text-blue-600 hover:bg-blue-50 whitespace-nowrap"
+                        >
+                            Connect Shopify
                         </Button>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeCategory === 'marketplace' ? (
-                    marketplacePlugins.map((p: any) => {
-                        const Icon = ICONS[p.icon] || ICONS.default;
-                        return (
-                            <Card key={p.slug} className="flex flex-col relative overflow-hidden group border-blue-100 dark:border-blue-900/20">
-                                <CardHeader>
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                                            <Icon className="h-6 w-6" />
+                    !isAnyPluginServiceConnected ? null :
+                        marketplacePlugins.length === 0 ? (
+                            <div className="col-span-full py-20 text-center bg-slate-50 dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                <ShoppingCart className="h-12 w-12 mx-auto text-slate-300 mb-4" />
+                                <h3 className="text-lg font-medium">No plugins available for your connected platforms</h3>
+                                <p className="text-muted-foreground">Check back soon for new additions to the marketplace.</p>
+                            </div>
+                        ) : (
+                            marketplacePlugins.map((p: any) => {
+                                const Icon = ICONS[p.icon] || ICONS.default;
+                                return (
+                                    <Card key={`${p.platform}-${p.slug}`} className="flex flex-col relative overflow-hidden group border-blue-100 dark:border-blue-900/20">
+                                        <div className="absolute top-2 right-2 flex gap-1">
+                                            <Badge variant="secondary" className="bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm text-[10px] capitalize">
+                                                {p.platform}
+                                            </Badge>
                                         </div>
-                                        <div>
-                                            <CardTitle className="text-lg">{p.name}</CardTitle>
-                                            <Badge variant="secondary" className="mt-1 text-[10px]">{p.category}</Badge>
-                                        </div>
-                                    </div>
-                                    <CardDescription className="h-20 line-clamp-3">
-                                        {p.description}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="flex-1">
-                                    <div className="space-y-3">
-                                        {p.partner_deal && (
-                                            <div className="p-3 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-400 text-xs rounded-xl border border-green-100 dark:border-green-900/20 font-medium animate-pulse-subtle">
-                                                <Star className="inline h-3 w-3 mr-1 mb-0.5" />
-                                                Deal: {p.partner_deal}
+                                        <CardHeader>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                                                    <Icon className="h-6 w-6" />
+                                                </div>
+                                                <div>
+                                                    <CardTitle className="text-lg">{p.name}</CardTitle>
+                                                    <Badge variant="secondary" className="mt-1 text-[10px]">{p.category}</Badge>
+                                                </div>
                                             </div>
-                                        )}
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <span>Compatibility</span>
-                                            <span className="text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
-                                                <CheckCircle2 className="h-3 w-3" /> Verified
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <span>Status</span>
-                                            <span>{p.status || (p.supported ? 'Production Ready' : 'In Backlog')}</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                                <CardFooter>
-                                    <Button
-                                        className="w-full font-bold shadow-lg"
-                                        variant={p.supported ? "default" : "outline"}
-                                        onClick={() => handleMarketplaceAction(p, 'click')}
-                                    >
-                                        {p.supported ? 'Add to Strategy' : 'Request Access'}
-                                    </Button>
-                                </CardFooter>
-                            </Card>
-                        );
-                    })
+                                            <CardDescription className="h-20 line-clamp-3">
+                                                {p.description}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-1">
+                                            <div className="space-y-3">
+                                                {p.partner_deal && (
+                                                    <div className="p-3 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-400 text-xs rounded-xl border border-green-100 dark:border-green-900/20 font-bold">
+                                                        <Star className="inline h-3 w-3 mr-1 mb-0.5" />
+                                                        Deal: {p.partner_deal}
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span>Compatibility</span>
+                                                    <span className="text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                                                        <CheckCircle2 className="h-3 w-3" /> Verified
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                    <span>Status</span>
+                                                    <span>{p.status || (p.supported ? 'Production Ready' : 'In Backlog')}</span>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                className="w-full font-bold shadow-lg"
+                                                variant={p.supported ? "default" : "outline"}
+                                                onClick={() => handleMarketplaceAction(p, 'click')}
+                                            >
+                                                {p.supported ? 'Add to Strategy' : 'Request Access'}
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                );
+                            })
+                        )
                 ) : (
                     filteredConnectors.map(c => {
-
                         const Icon = ICONS[c.icon] || ICONS.default;
                         const isConnected = c.status === 'connected' || c.status === 'syncing';
 
@@ -616,8 +614,8 @@ export function ConnectorsContent() {
                                         id={key}
                                         type={field.type === 'password' && showPasswords[key] ? 'text' : field.type}
                                         placeholder={field.placeholder}
-                                        value={credentials[key] as string || ''}
-                                        onChange={(e) => handleCredentialChange(key, e.target.value)}
+                                        value={(credentials as any)[key] || ''}
+                                        onChange={(e) => setCredentials(prev => ({ ...prev, [key]: e.target.value }))}
                                         className={field.type === 'password' ? 'pr-10' : ''}
                                     />
                                     {field.type === 'password' && (
@@ -637,13 +635,17 @@ export function ConnectorsContent() {
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleConnect} disabled={isValidating || isConnecting}>
-                            {(isValidating || isConnecting) && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
-                            {isValidating ? 'Validating...' : 'Connect'}
+                        <Button
+                            onClick={handleConnect}
+                            disabled={isConnecting || isValidating}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            {(isConnecting || isValidating) && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                            Connect Service
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div >
+        </div>
     );
 }

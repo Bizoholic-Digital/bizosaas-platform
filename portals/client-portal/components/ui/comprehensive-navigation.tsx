@@ -191,9 +191,17 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
         {
           id: 'analytics',
           name: 'Business Intelligence',
-          href: getLink('analytics', '/analytics'),
-          icon: <BarChart3 className={`w-4 h-4 ${hasCategory('analytics') ? '' : 'text-gray-400'}`} />,
-          active: pathname.startsWith('/analytics')
+          href: '/dashboard/bi',
+          icon: <BarChart3 className="w-4 h-4" />,
+          active: pathname.startsWith('/dashboard/bi')
+        },
+        {
+          id: 'workflows',
+          name: 'Workflow Management',
+          href: '/dashboard/workflows',
+          icon: <RefreshCw className="w-4 h-4 text-purple-600" />,
+          active: pathname.startsWith('/dashboard/workflows'),
+          badge: 'DEMO'
         }
       ]
     },

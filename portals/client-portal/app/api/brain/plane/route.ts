@@ -58,11 +58,19 @@ export async function POST(req: NextRequest) {
         const DEFAULT_WORKSPACE = process.env.PLANE_WORKSPACE_SLUG || 'bizosaas';
         const DEFAULT_PROJECT = '031b7a9e-ee6d-46f5-99da-8e9e911ae71d';
 
-        if (!PLANE_API_TOKEN) return NextResponse.json({ error: 'Token missing' }, { status: 500 });
+        if (!PLANE_API_TOKEN) {
+            console.warn('PLANE_API_TOKEN is missing. Simulation mode.');
+            return NextResponse.json({ id: 'mock-issue-id', name: 'Task Created (Simulation Mode)' });
+        }
 
         const body = await req.json();
         const workspaceSlug = body.workspace || DEFAULT_WORKSPACE;
-        const projectId = body.project || DEFAULT_PROJECT;
+        let projectId = body.project || DEFAULT_PROJECT;
+
+        // Note: Plane API uses UUIDs for projects. To support project names (like 'Marketing Hub'),
+        // we would first need to list projects and find the matching ID.
+        // For now, we will log clearly what is being sent.
+        console.log(`Creating issue in Plane.so: Workspace=${workspaceSlug}, Project=${projectId}`);
 
         const url = `${PLANE_API_URL}/workspaces/${workspaceSlug}/projects/${projectId}/issues/`;
 
@@ -75,9 +83,25 @@ export async function POST(req: NextRequest) {
             body: JSON.stringify(body.data || body)
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Plane API Error:', response.status, errorText);
+
+            // If project not found, try to list projects to see if we have the right slug
+            if (response.status === 404) {
+                return NextResponse.json({
+                    error: `Project and Workspace combination not found. Verify workspace '${workspaceSlug}' and project ID '${projectId}'.`,
+                    details: errorText
+                }, { status: 404 });
+            }
+
+            return NextResponse.json({ error: errorText }, { status: response.status });
+        }
+
         const data = await response.json();
         return NextResponse.json(data, { status: response.status });
     } catch (error: any) {
+        console.error('Plane Proxy POST Error:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

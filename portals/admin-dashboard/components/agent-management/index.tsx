@@ -138,56 +138,56 @@ export default function AgentManagementInterface() {
   const stats = getComponentStats();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Bot className="w-8 h-8 text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  BizOSaaS Agent Management Center
-                </h1>
-                <p className="text-gray-600">
-                  Comprehensive AI Agent Ecosystem Control Panel
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {/* Quick Stats */}
-            <div className="hidden md:flex items-center space-x-6 text-sm">
-              <div className="text-center">
-                <p className="font-semibold text-gray-900">{stats.totalAgents}</p>
-                <p className="text-gray-500">Total Agents</p>
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-green-600">{stats.activeAgents}</p>
-                <p className="text-gray-500">Active</p>
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-blue-600">{stats.domainsManaged}</p>
-                <p className="text-gray-500">Domains</p>
-              </div>
-              <div className="text-center">
-                <p className="font-semibold text-orange-600">{stats.tasksInProgress}</p>
-                <p className="text-gray-500">Tasks</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Tabs value={activeComponent} onValueChange={setActiveComponent} className="flex flex-col flex-1 w-full">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Bot className="w-8 h-8 text-blue-600" />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    BizOSaaS Agent Management Center
+                  </h1>
+                  <p className="text-gray-600">
+                    Comprehensive AI Agent Ecosystem Control Panel
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Current user indicator */}
-            <Badge variant="outline" className="bg-green-100 text-green-800">
-              Super Admin
-            </Badge>
+            <div className="flex items-center space-x-4">
+              {/* Quick Stats */}
+              <div className="hidden md:flex items-center space-x-6 text-sm">
+                <div className="text-center">
+                  <p className="font-semibold text-gray-900">{stats.totalAgents}</p>
+                  <p className="text-gray-500">Total Agents</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-green-600">{stats.activeAgents}</p>
+                  <p className="text-gray-500">Active</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-blue-600">{stats.domainsManaged}</p>
+                  <p className="text-gray-500">Domains</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-orange-600">{stats.tasksInProgress}</p>
+                  <p className="text-gray-500">Tasks</p>
+                </div>
+              </div>
+
+              {/* Current user indicator */}
+              <Badge variant="outline" className="bg-green-100 text-green-800">
+                Super Admin
+              </Badge>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-gray-200 px-6">
-        <Tabs value={activeComponent} onValueChange={setActiveComponent}>
+        {/* Navigation Tabs */}
+        <div className="bg-white border-b border-gray-200 px-6">
           <TabsList className="bg-transparent border-b-0 h-auto p-0">
             {availableComponents.map((component) => {
               const Icon = component.icon;
@@ -203,56 +203,54 @@ export default function AgentManagementInterface() {
               );
             })}
           </TabsList>
-        </Tabs>
-      </div>
-
-      {/* Current Component Info */}
-      {currentComponent && (
-        <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <currentComponent.icon className="w-5 h-5 text-blue-600" />
-              <div>
-                <h2 className="font-medium text-blue-900">{currentComponent.name}</h2>
-                <p className="text-sm text-blue-700">{currentComponent.description}</p>
-              </div>
-            </div>
-
-            {/* Agent selector for agent-specific components */}
-            {currentComponent.requiresAgentId && (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-blue-700">Viewing:</span>
-                <select
-                  value={selectedAgentId}
-                  onChange={(e) => setSelectedAgentId(e.target.value)}
-                  className="px-3 py-1 border border-blue-300 rounded-md bg-white text-blue-900 text-sm"
-                >
-                  <option value="lead-scoring-agent">Lead Scoring Agent</option>
-                  <option value="content-creation-agent">Content Creation Agent</option>
-                  <option value="product-recommendation-agent">Product Recommendation Agent</option>
-                  <option value="payment-processing-agent">Payment Processing Agent</option>
-                  <option value="seo-optimization-agent">SEO Optimization Agent</option>
-                  <option value="data-collection-agent">Data Collection Agent</option>
-                </select>
-              </div>
-            )}
-          </div>
         </div>
-      )}
 
-      {/* Main Content Area */}
-      <div className="p-6">
-        <Tabs value={activeComponent}>
+        {/* Current Component Info */}
+        {currentComponent && (
+          <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <currentComponent.icon className="w-5 h-5 text-blue-600" />
+                <div>
+                  <h2 className="font-medium text-blue-900">{currentComponent.name}</h2>
+                  <p className="text-sm text-blue-700">{currentComponent.description}</p>
+                </div>
+              </div>
+
+              {/* Agent selector for agent-specific components */}
+              {currentComponent.requiresAgentId && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-blue-700">Viewing:</span>
+                  <select
+                    value={selectedAgentId}
+                    onChange={(e) => setSelectedAgentId(e.target.value)}
+                    className="px-3 py-1 border border-blue-300 rounded-md bg-white text-blue-900 text-sm"
+                  >
+                    <option value="lead-scoring-agent">Lead Scoring Agent</option>
+                    <option value="content-creation-agent">Content Creation Agent</option>
+                    <option value="product-recommendation-agent">Product Recommendation Agent</option>
+                    <option value="payment-processing-agent">Payment Processing Agent</option>
+                    <option value="seo-optimization-agent">SEO Optimization Agent</option>
+                    <option value="data-collection-agent">Data Collection Agent</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <div className="p-6 flex-1">
           {availableComponents.map((component) => (
-            <TabsContent key={component.id} value={component.id} className="mt-0">
-              {renderComponent()}
+            <TabsContent key={component.id} value={component.id} className="mt-0 h-full">
+              {activeComponent === component.id && renderComponent()}
             </TabsContent>
           ))}
-        </Tabs>
-      </div>
+        </div>
+      </Tabs>
 
       {/* Footer */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4 mt-12">
+      <div className="bg-white border-t border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between text-sm text-gray-500">
           <div className="flex items-center space-x-4">
             <span>BizOSaaS Agent Management v2.1.0</span>
@@ -280,7 +278,6 @@ export {
   TaskManagementInterface,
   PerformanceAnalyticsDashboard,
   AgentAccessControl,
-
   PlaygroundManager,
   AgentManagementInterface,
 };
