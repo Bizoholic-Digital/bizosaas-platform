@@ -68,11 +68,11 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
       # HTTP Router (redirect to HTTPS)
-      - "traefik.http.routers.brain-gateway-http.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway-http.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
       - "traefik.http.routers.brain-gateway-http.entrypoints=web"
       - "traefik.http.routers.brain-gateway-http.middlewares=redirect-to-https"
       # HTTPS Router
-      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
       - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls=true"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"

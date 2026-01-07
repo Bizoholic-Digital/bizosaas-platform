@@ -59,11 +59,11 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
       # HTTP Router (redirect to HTTPS)
-      - "traefik.http.routers.admin-dashboard-http.rule=Host(`admin.bizoholic.net`)"
+      - "traefik.http.routers.admin-dashboard-http.rule=Host(`${ADMIN_PORTAL_DOMAIN:-admin.bizoholic.net}`)"
       - "traefik.http.routers.admin-dashboard-http.entrypoints=web"
       - "traefik.http.routers.admin-dashboard-http.middlewares=redirect-to-https"
       # HTTPS Router
-      - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
+      - "traefik.http.routers.admin-dashboard.rule=Host(`${ADMIN_PORTAL_DOMAIN:-admin.bizoholic.net}`)"
       - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
       - "traefik.http.routers.admin-dashboard.tls=true"
       - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
