@@ -15,7 +15,7 @@ services:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile
     # Ports managed by Traefik - no host binding needed
-    # container_name: bizosaas-brain-staging
+    container_name: bizosaas-brain-staging
     expose:
       - "8000"
     environment:
