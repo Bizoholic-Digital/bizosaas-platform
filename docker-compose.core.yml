@@ -66,15 +66,21 @@ services:
 
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      # HTTP Router (redirect to HTTPS)
       - "traefik.http.routers.brain-gateway-http.rule=Host(`api.bizoholic.net`)"
       - "traefik.http.routers.brain-gateway-http.entrypoints=web"
+      - "traefik.http.routers.brain-gateway-http.middlewares=redirect-to-https"
+      # HTTPS Router
       - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
       - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls=true"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      # Service
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
-      - "traefik.http.routers.brain-gateway.priority=2000"
-      - "traefik.docker.network=dokploy-network"
+      # Middleware for HTTPS redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
     healthcheck:
       test: [ "CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")'" ]

@@ -63,6 +63,20 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
+      # HTTP Router (redirect to HTTPS)
+      - "traefik.http.routers.client-portal-http.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal-http.entrypoints=web"
+      - "traefik.http.routers.client-portal-http.middlewares=redirect-to-https"
+      # HTTPS Router
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls=true"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+      # Middleware for HTTPS redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     restart: unless-stopped
 
 # ═══════════════════════════════════════════════════════════════════════════
