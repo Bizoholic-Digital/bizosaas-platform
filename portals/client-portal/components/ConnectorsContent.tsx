@@ -449,6 +449,29 @@ export function ConnectorsContent() {
                 </Button>
             </div>
 
+            {/* WordPress Connection Prompt */}
+            {
+                !loading && activeCategory !== 'marketplace' && connectors.find(c => c.id === 'wordpress' && c.status === 'disconnected') && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex flex-col md:flex-row items-start md:items-center gap-4 shadow-sm">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-full text-blue-600 dark:text-blue-300">
+                            <Layout className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Connect Your WordPress Site</h3>
+                            <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                                Unlock full 2-way sync for posts, pages, media, and plugins. Manage your entire website directly from the portal.
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => handleOpenConnect(connectors.find(c => c.id === 'wordpress')!)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+                        >
+                            Connect Now
+                        </Button>
+                    </div>
+                )
+            }
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeCategory === 'marketplace' ? (
                     marketplacePlugins.map((p: any) => {
@@ -621,6 +644,6 @@ export function ConnectorsContent() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }

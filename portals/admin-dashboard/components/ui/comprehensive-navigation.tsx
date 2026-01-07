@@ -87,11 +87,11 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           active: pathname === '/dashboard/ai-assistant'
         },
         {
-          id: 'ai-agents',
-          name: 'AI Agent Monitor',
-          href: '/dashboard/ai-agents',
+          id: 'agent-management',
+          name: 'Agent Management',
+          href: '/dashboard/agent-management',
           icon: <Bot className="w-4 h-4 text-blue-500" />,
-          active: pathname === '/dashboard/ai-agents'
+          active: pathname === '/dashboard/agent-management'
         }
       ]
     },
@@ -114,6 +114,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/users',
           icon: <Users className="w-4 h-4" />,
           active: pathname === '/dashboard/users'
+        },
+        {
+          id: 'partner-program',
+          name: 'Partner Program',
+          href: '/dashboard/partner',
+          icon: <Target className="w-4 h-4 text-purple-500" />,
+          active: pathname === '/dashboard/partner'
         },
         {
           id: 'plugin-analytics',

@@ -5,6 +5,8 @@ import PartnerDashboard from '@/components/partner/PartnerDashboard';
 
 export default function PartnerDashboardPage() {
     return (
-        <PartnerDashboard />
+        <div className="h-full p-6 space-y-6 overflow-y-auto">
+            <PartnerDashboard />
+        </div>
     );
 }

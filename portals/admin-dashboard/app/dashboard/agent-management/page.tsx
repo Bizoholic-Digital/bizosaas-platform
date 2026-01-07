@@ -5,6 +5,8 @@ import AgentManagementInterface from '@/components/agent-management';
 
 export default function AgentManagementPage() {
     return (
-        <AgentManagementInterface />
+        <div className="h-full p-6 space-y-6 overflow-y-auto">
+            <AgentManagementInterface />
+        </div>
     );
 }
