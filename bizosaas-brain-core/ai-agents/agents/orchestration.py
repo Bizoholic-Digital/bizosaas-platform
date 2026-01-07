@@ -205,8 +205,47 @@ class HierarchicalCrewOrchestrator:
                 description="Monitors and predicts impact of marketing configurations",
                 agent_sequence=["impact_analysis"],
                 orchestration_mode=OrchestrationMode.SEQUENTIAL,
-                priority=WorkflowPriority.NORMAL,
+                priority=WorkflowPriority.MEDIUM,
                 timeout_minutes=30
+            ),
+            "amazon_product_sourcing": WorkflowDefinition(
+                workflow_id="amazon_product_sourcing",
+                name="Amazon Product Sourcing",
+                description="Intelligent discovery and validation of products on Amazon",
+                agent_sequence=[
+                    "product_sourcing_specialist",
+                    "amazon_optimization_specialist",
+                    "price_optimization_specialist"
+                ],
+                orchestration_mode=OrchestrationMode.SEQUENTIAL,
+                priority=WorkflowPriority.HIGH,
+                timeout_minutes=90
+            ),
+            "ecommerce_listing_optimization": WorkflowDefinition(
+                workflow_id="ecommerce_listing_optimization",
+                name="E-commerce Listing & SEO",
+                description="Automated high-converting, search-ready product listings",
+                agent_sequence=[
+                    "content_creator",
+                    "seo_specialist",
+                    "ecommerce_specialist"
+                ],
+                orchestration_mode=OrchestrationMode.SEQUENTIAL,
+                priority=WorkflowPriority.MEDIUM,
+                timeout_minutes=60
+            ),
+            "automated_order_fulfillment": WorkflowDefinition(
+                workflow_id="automated_order_fulfillment",
+                name="Automated Order Fulfillment",
+                description="End-to-end order processing, fraud detection, and inventory sync",
+                agent_sequence=[
+                    "fraud_detection_specialist",
+                    "ecommerce_specialist",
+                    "inventory_management_specialist"
+                ],
+                orchestration_mode=OrchestrationMode.SEQUENTIAL,
+                priority=WorkflowPriority.HIGH,
+                timeout_minutes=45
             )
         }
     

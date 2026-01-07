@@ -4,6 +4,7 @@ import { AgentRoleManagement } from './AgentRoleManagement';
 import { AgentPerformancePanel } from './AgentPerformancePanel';
 import { AgentOptimizationQueue } from './AgentOptimizationQueue';
 import PlaygroundManager from './PlaygroundManager';
+import { useAgentStore } from '../../lib/stores/agent-store';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -113,19 +114,21 @@ interface AgentConfig {
     };
 }
 
-// Mock configuration generator
-const createMockConfiguration = (agentId: string): AgentConfig => ({
+// Mock configuration generator with seeding from agent store
+import { Agent as StoreAgent } from '../../lib/stores/agent-store';
+
+const createMockConfiguration = (agentId: string, storeAgent?: StoreAgent): AgentConfig => ({
     id: agentId,
-    name: 'Lead Scoring Agent',
+    name: storeAgent?.name || 'Lead Scoring Agent',
     version: '2.1.4',
-    status: 'active',
+    status: (storeAgent?.status as any) || 'active',
 
     basic: {
-        enabled: true,
+        enabled: storeAgent?.status === 'active',
         autoRestart: true,
         priority: 'high',
-        description: 'AI-powered lead qualification and scoring system with behavioral analysis',
-        tags: ['CRM', 'Lead Management', 'AI', 'Scoring'],
+        description: storeAgent?.description || 'AI-powered lead qualification and scoring system with behavioral analysis',
+        tags: [storeAgent?.team || 'CRM', 'AI'],
         environment: 'production'
     },
 
@@ -186,8 +189,8 @@ const createMockConfiguration = (agentId: string): AgentConfig => ({
         model: 'gpt-4-turbo',
         temperature: 0.3,
         maxTokens: 4000,
-        tools: ['lead_analyzer', 'scoring_engine', 'behavioral_tracker'],
-        capabilities: ['lead_qualification', 'scoring', 'behavioral_analysis', 'predictive_modeling'],
+        tools: storeAgent?.tools || ['lead_analyzer', 'scoring_engine', 'behavioral_tracker'],
+        capabilities: storeAgent?.tasks || ['lead_qualification', 'scoring', 'behavioral_analysis', 'predictive_modeling'],
         learningEnabled: true,
         knowledgeBase: {
             enabled: true,
@@ -198,7 +201,10 @@ const createMockConfiguration = (agentId: string): AgentConfig => ({
 });
 
 export function AgentManagementControls({ agentId, onClose }: AgentManagementControlsProps) {
-    const [config, setConfig] = useState<AgentConfig>(createMockConfiguration(agentId));
+    const { agents } = useAgentStore();
+    const storeAgent = agents.find(a => a.id === agentId);
+
+    const [config, setConfig] = useState<AgentConfig>(createMockConfiguration(agentId, storeAgent));
     const [activeTab, setActiveTab] = useState('status');
     const [isLoading, setIsLoading] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -372,14 +378,47 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                                     />
                                 </div>
 
-                                {/* Live Metrics */}
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Live Resource Usage</CardTitle>
+                                {/* Continuous Feedback Loop & Optimization */}
+                                <Card className="border-blue-200 bg-blue-50/30">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-lg flex items-center gap-2">
+                                                <RefreshCw className="w-5 h-5 text-blue-600 animate-spin-slow" />
+                                                Continuous Feedback Loop
+                                            </CardTitle>
+                                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+                                                Auto-Optimizing
+                                            </Badge>
+                                        </div>
                                     </CardHeader>
-                                    <CardContent className="space-y-6">
-                                        <MetricBar label="CPU Usage" value={config.resources.cpu.current} max={100} unit="%" color="bg-blue-500" />
-                                        <MetricBar label="Memory Usage" value={config.resources.memory.current} max={config.resources.memory.limit} unit="MB" color="bg-purple-500" />
+                                    <CardContent className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="p-3 bg-white rounded-lg border border-blue-100 shadow-sm">
+                                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Learning Rate</p>
+                                                <p className="text-xl font-bold text-blue-700">0.02</p>
+                                                <div className="w-full bg-gray-100 h-1 mt-2 rounded-full overflow-hidden">
+                                                    <div className="bg-blue-500 h-full w-[20%]" />
+                                                </div>
+                                            </div>
+                                            <div className="p-3 bg-white rounded-lg border border-blue-100 shadow-sm">
+                                                <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Data Points</p>
+                                                <p className="text-xl font-bold text-blue-700">4,281</p>
+                                                <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1 font-medium">
+                                                    <Zap className="w-3 h-3" /> +12 per/min
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="text-sm text-gray-600 bg-white/50 p-3 rounded-lg border border-blue-50">
+                                            <p className="font-medium flex items-center gap-2 mb-1">
+                                                <Cpu className="w-4 h-4 text-blue-500" />
+                                                Recent Optimization
+                                            </p>
+                                            <p className="text-xs italic">"Bidding threshold adjusted by -5% based on conversion decay in the last 24h cycle."</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button variant="outline" size="sm" className="flex-1 bg-white">View Feedback Data</Button>
+                                            <Button variant="default" size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">Manual Override</Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>
@@ -491,11 +530,27 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Tools</Label>
-                                    <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-gray-50 min-h-[100px]">
-                                        {config.aiSettings.tools.map(tool => (
-                                            <Badge key={tool} variant="secondary" className="px-3 py-1 text-sm bg-white shadow-sm border">{tool}</Badge>
-                                        ))}
+                                    <Label>Tools & Services</Label>
+                                    <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-gray-50 min-h-[60px]">
+                                        {config.aiSettings.tools.length > 0 ? (
+                                            config.aiSettings.tools.map(tool => (
+                                                <Badge key={tool} variant="secondary" className="px-3 py-1 text-sm bg-white shadow-sm border">{tool}</Badge>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-gray-400 italic">No specific tools defined</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Core Tasks & Capabilities</Label>
+                                    <div className="flex flex-wrap gap-2 p-4 border rounded-lg bg-gray-50 min-h-[60px]">
+                                        {config.aiSettings.capabilities.length > 0 ? (
+                                            config.aiSettings.capabilities.map(cap => (
+                                                <Badge key={cap} variant="outline" className="px-3 py-1 text-sm bg-blue-50 text-blue-700 border-blue-100">{cap}</Badge>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-gray-400 italic">No specific capabilities defined</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>

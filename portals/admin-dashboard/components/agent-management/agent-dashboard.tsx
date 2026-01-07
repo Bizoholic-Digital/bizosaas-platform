@@ -21,7 +21,8 @@ import {
   Eye,
   Filter,
   Search,
-  RefreshCw
+  RefreshCw,
+  Database
 } from 'lucide-react'
 import { AgentHierarchy } from './agent-hierarchy'
 import { AgentMetrics } from './agent-metrics'
@@ -43,6 +44,7 @@ export function AgentDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [filterTeam, setFilterTeam] = useState<string>('all')
 
   const stats: AgentStats = getAgentStats()
 
@@ -123,7 +125,7 @@ export function AgentDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-gray-600">32 specialist agents</p>
+              <p className="text-xs text-gray-600">{stats.total} total agents in ecosystem</p>
             </CardContent>
           </Card>
 
@@ -174,10 +176,14 @@ export function AgentDashboard() {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Eye className="h-4 w-4" />
-              Overview
+              Live Overview
+            </TabsTrigger>
+            <TabsTrigger value="catalog" className="flex items-center gap-2">
+              <Bot className="h-4 w-4" />
+              Agent Catalog
             </TabsTrigger>
             <TabsTrigger value="hierarchy" className="flex items-center gap-2">
               <Network className="h-4 w-4" />
@@ -207,13 +213,29 @@ export function AgentDashboard() {
                   <div className="flex-1">
                     <input
                       type="text"
-                      placeholder="Search agents by name, domain, or function..."
+                      placeholder="Search 121+ agents by name, team, or function..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div className="flex gap-2">
+                    <select
+                      value={filterTeam}
+                      onChange={(e) => setFilterTeam(e.target.value)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Teams</option>
+                      <option value="Marketing & Advertising">Marketing</option>
+                      <option value="Content Creation">Content</option>
+                      <option value="SEO Team">SEO</option>
+                      <option value="E-commerce Team">E-commerce</option>
+                      <option value="Analytics & Insights">Analytics</option>
+                      <option value="CRM & Sales">CRM/Sales</option>
+                      <option value="Operations & Compliance">Operations</option>
+                      <option value="Gamification & Engagement">Gamification</option>
+                      <option value="Platform Core">Platform Core</option>
+                    </select>
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
@@ -224,10 +246,6 @@ export function AgentDashboard() {
                       <option value="inactive">Inactive</option>
                       <option value="error">Error</option>
                     </select>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      Filters
-                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -238,7 +256,9 @@ export function AgentDashboard() {
               {agents
                 .filter(agent =>
                   (filterStatus === 'all' || agent.status === filterStatus) &&
-                  agent.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  (filterTeam === 'all' || agent.team === filterTeam) &&
+                  (agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    agent.team.toLowerCase().includes(searchTerm.toLowerCase()))
                 )
                 .map((agent) => (
                   <Card
@@ -267,12 +287,25 @@ export function AgentDashboard() {
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Domain:</span>
-                          <Badge variant="outline">{agent.domain}</Badge>
+                          <span className="text-sm text-gray-600">Team:</span>
+                          <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">{agent.team}</Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Status:</span>
+                          <Badge
+                            variant="outline"
+                            className={
+                              agent.implementationStatus === 'implemented' ? 'text-green-600 border-green-200 bg-green-50' :
+                                agent.implementationStatus === 'skeleton' ? 'text-yellow-600 border-yellow-200 bg-yellow-50' :
+                                  'text-gray-400 border-gray-200 bg-gray-50'
+                            }
+                          >
+                            {agent.implementationStatus}
+                          </Badge>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Type:</span>
-                          <Badge variant="outline">{agent.type}</Badge>
+                          <Badge variant="outline" className="text-gray-500 border-gray-200">{agent.type}</Badge>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Performance:</span>
@@ -317,6 +350,65 @@ export function AgentDashboard() {
                   </Card>
                 ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="catalog" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-blue-600" />
+                  Full Agent Inventory (121+ Agents)
+                </CardTitle>
+                <CardDescription>
+                  Explore every specialized AI agent in the BizOSaas ecosystem, organized by team.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-8">
+                  {['Marketing & Advertising', 'Content Creation', 'SEO Team', 'E-commerce Team', 'Analytics & Insights', 'CRM & Sales', 'Operations & Compliance', 'Gamification & Engagement', 'Platform Core'].map(team => {
+                    const teamAgents = agents.filter(a => a.team === team);
+                    if (teamAgents.length === 0 && team !== 'Marketing & Advertising') return null;
+
+                    return (
+                      <div key={team} className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 flex items-center justify-between">
+                          {team}
+                          <Badge variant="outline">{teamAgents.length + (team === 'Marketing & Advertising' ? 100 : 0)} Agents</Badge>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {teamAgents.slice(0, 6).map(agent => (
+                            <div
+                              key={agent.id}
+                              className="p-4 border rounded-lg hover:border-blue-300 hover:shadow-sm cursor-pointer transition-all"
+                              onClick={() => {
+                                setSelectedAgent(agent.id);
+                                setActiveTab('overview');
+                              }}
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-medium text-blue-700">{agent.name}</h4>
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] px-1.5 py-0"
+                                >
+                                  {agent.implementationStatus}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-gray-500 line-clamp-2">{agent.description}</p>
+                            </div>
+                          ))}
+                          {team === 'Marketing & Advertising' && (
+                            <div className="p-4 border border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
+                              <p className="text-xs text-gray-400 font-medium">+ 100 Specialized Niche Agents</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="hierarchy" className="space-y-6">

@@ -430,9 +430,26 @@ class AmazonOptimizationAgent(BaseAgent):
     
     async def _execute_agent_logic(self, task_request: AgentTaskRequest) -> Dict[str, Any]:
         """Execute Amazon optimization tasks"""
+        input_data = task_request.input_data
+        product_name = input_data.get('product_name', 'Unknown Product')
+        
+        # simulated optimization analysis
+        competitor_prices = [29.99, 34.50, 27.99]
+        avg_price = sum(competitor_prices) / len(competitor_prices)
+        
         return {
-            "amazon_analysis": {},
-            "listing_recommendations": [],
+            "amazon_analysis": {
+                "competitor_avg_price": round(avg_price, 2),
+                "buy_box_probability": "high",
+                "recommended_keywords": ["trending", "bestseller", "premium"],
+                "stock_status": "in_stock"
+            },
+            "listing_recommendations": [
+                f"Price {product_name} at ${round(avg_price * 0.95, 2)} to undercut Buy Box.",
+                "Add high-resolution lifestyle images.",
+                "Update bullet points with key benefit-driven copy."
+            ],
+            "estimated_monthly_volume": 150,
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
 
