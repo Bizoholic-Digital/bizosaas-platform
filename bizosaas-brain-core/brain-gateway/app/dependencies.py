@@ -117,3 +117,24 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(
         
     return user
 
+def require_role(allowed_roles: list[str]):
+    """Factory function to create a dependency for role-based access control."""
+    async def role_dependency(user = Security(get_current_user)):
+        # If no roles specified, allow access (authentication is sufficient)
+        if not allowed_roles:
+            return user
+            
+        # Admin bypass
+        if "admin" in user.roles:
+            return user
+            
+        # Check if user has at least one of the allowed roles
+        has_role = any(role in user.roles for role in allowed_roles)
+        if not has_role:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Insufficient permissions. Required one of: {', '.join(allowed_roles)}",
+            )
+        return user
+    return role_dependency
+
