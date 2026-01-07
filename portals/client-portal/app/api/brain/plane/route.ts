@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
         const response = await fetch(url, {
             headers: {
-                'X-Api-Key': PLANE_API_TOKEN,
+                'X-Api-Key': PLANE_API_TOKEN as string,
                 'Content-Type': 'application/json',
             },
             next: { revalidate: 60 } // Cache for 1 min
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'X-Api-Key': PLANE_API_TOKEN,
+                'X-Api-Key': PLANE_API_TOKEN as string,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(body.data || body)
@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest) {
         const response = await fetch(url, {
             method: 'PATCH',
             headers: {
-                'X-Api-Key': PLANE_API_TOKEN,
+                'X-Api-Key': PLANE_API_TOKEN as string,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(body.data || body)
@@ -132,10 +132,12 @@ export async function DELETE(req: NextRequest) {
 
         const url = `${PLANE_API_URL}/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/`;
 
+        if (!PLANE_API_TOKEN) return NextResponse.json({ error: 'Token missing' }, { status: 500 });
+
         const response = await fetch(url, {
             method: 'DELETE',
             headers: {
-                'X-Api-Key': PLANE_API_TOKEN,
+                'X-Api-Key': PLANE_API_TOKEN as string,
             }
         });
 
