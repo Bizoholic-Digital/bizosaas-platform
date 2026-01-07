@@ -11,7 +11,7 @@ interface Props {
     onUpdate: (data: Partial<BusinessProfile>) => void;
 }
 
-export function CompanyIdentityStep({ data, onUpdate }: Props) {
+export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }: Props & { discovery?: any, isDiscovering?: boolean }) {
     const [loadingGmb, setLoadingGmb] = React.useState(false);
 
     const fetchGmbData = async () => {
@@ -37,32 +37,62 @@ export function CompanyIdentityStep({ data, onUpdate }: Props) {
             </div>
 
             <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <Label className="text-blue-900 font-semibold mb-2 block">
-                        🚀 Quick Setup with Google Maps
-                    </Label>
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                            <Input
-                                placeholder="Paste your Google Maps link to auto-fill"
-                                className="pl-9 bg-white"
-                                value={data.gmbLink || ''}
-                                onChange={(e) => onUpdate({ gmbLink: e.target.value })}
-                            />
-                        </div>
-                        <Button
-                            onClick={fetchGmbData}
-                            disabled={loadingGmb || !data.gmbLink}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                            {loadingGmb ? 'Fetching...' : 'Auto-Fill'}
-                        </Button>
+                {isDiscovering ? (
+                    <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 flex flex-col items-center justify-center text-center">
+                        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+                        <h3 className="text-lg font-semibold text-blue-900">Discovering your digital footprint...</h3>
+                        <p className="text-sm text-blue-600">We're checking Google and Microsoft services for your email.</p>
                     </div>
-                    <p className="text-xs text-blue-600 mt-2">
-                        We'll extract your website, address, and phone automatically.
-                    </p>
-                </div>
+                ) : discovery && (discovery.google?.length > 0 || discovery.microsoft?.length > 0) ? (
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <Label className="text-green-900 font-semibold mb-3 block flex items-center gap-2">
+                            ✨ Services Detected Automatically
+                        </Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {[...(discovery.google || []), ...(discovery.microsoft || [])].map((svc: any) => (
+                                <div key={svc.id} className="bg-white p-2.5 rounded border border-green-200 flex justify-between items-center text-sm shadow-sm">
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-gray-800">{svc.name}</span>
+                                        {svc.cost && <span className="text-[10px] text-orange-600 font-bold uppercase">{svc.cost} May Apply</span>}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {svc.requiresEnablement && (
+                                            <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">Needs Enablement</span>
+                                        )}
+                                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-xs text-green-600 mt-3 font-medium">
+                            We've pre-filled your business details based on these profiles.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <Label className="text-blue-900 font-semibold mb-2 block">
+                            🚀 Quick Setup with Google Maps
+                        </Label>
+                        <div className="flex gap-2">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Paste your Google Maps link to auto-fill"
+                                    className="pl-9 bg-white"
+                                    value={data.gmbLink || ''}
+                                    onChange={(e) => onUpdate({ gmbLink: e.target.value })}
+                                />
+                            </div>
+                            <Button
+                                onClick={fetchGmbData}
+                                disabled={loadingGmb || !data.gmbLink}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                {loadingGmb ? 'Fetching...' : 'Auto-Fill'}
+                            </Button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">

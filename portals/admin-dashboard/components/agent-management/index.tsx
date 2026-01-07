@@ -23,6 +23,7 @@ import TaskManagementInterface from './TaskManagementInterface';
 import PerformanceAnalyticsDashboard from './PerformanceAnalyticsDashboard';
 import AgentAccessControl from './AgentAccessControl';
 import PlaygroundManager from './PlaygroundManager';
+import { AgentDashboard } from './agent-dashboard';
 
 // Component interface for dynamic loading
 interface AgentManagementComponent {
@@ -280,4 +281,5 @@ export {
   AgentAccessControl,
   PlaygroundManager,
   AgentManagementInterface,
+  AgentDashboard,
 };

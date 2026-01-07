@@ -27,9 +27,24 @@ class PersonalAssistantAgent(BaseAgent):
         """
         Handle conversational requests. If the request is specialized, 
         delegate to the appropriate agent or workflow. Use RAG for knowledge.
+        Supports 'CSM' (Client Success Manager) mode for proactive guidance.
         """
         message = task_request.input_data.get("message", "").lower()
+        persona = task_request.input_data.get("persona", "general_assistant")
         
+        # CSM Specific Logic
+        if persona == "csm":
+            if any(word in message for word in ["status", "how is it going", "progress", "impact"]):
+                return await self._delegate_to_workflow("impact_analysis", task_request)
+            
+            # Proactive CSM Guidance
+            if not message: # Initial encounter
+                return {
+                    "response": "Hello! I'm your Client Success Manager. I've finished auditing your connected accounts and I'm ready to help you launch your first campaign. Shall we review the recommended strategy?",
+                    "suggestions": ["Review Strategy", "Check Discovery Results", "I have a question"],
+                    "agent_name": "csm"
+                }
+
         # Specialized Routing
         if any(word in message for word in ["seo", "keyword", "search"]):
             return await self._delegate_to_workflow("seo_specialist", task_request)
@@ -44,8 +59,6 @@ class PersonalAssistantAgent(BaseAgent):
         rag_context = await self._get_rag_context(message)
         
         if rag_context:
-            # In a real implementation, we would pass this context to an LLM
-            # For now, we synthesize a response with the retrieved knowledge
             retrieved_info = "\n".join(rag_context[:2])
             return {
                 "response": f"Based on my knowledge base: {retrieved_info}\n\nHow else can I assist you with your business today?",

@@ -1,3 +1,31 @@
+export interface DiscoveryService {
+    id: string;
+    name: string;
+    status: 'detected' | 'not_detected' | 'enabled' | 'error';
+    cost?: string;
+    requiresEnablement?: boolean;
+}
+
+export interface DiscoveryResults {
+    google: DiscoveryService[];
+    microsoft: DiscoveryService[];
+    lastUpdated?: string;
+}
+
+export interface SocialLoginInfo {
+    provider: 'google' | 'microsoft' | 'facebook' | 'apple' | 'none';
+    email: string;
+    name?: string;
+    profileImageUrl?: string;
+}
+
+export interface AIAgentConfig {
+    persona: 'csm' | 'marketing_manager' | 'sales_rep' | 'support_agent' | 'general_assistant';
+    name: string;
+    tone: 'professional' | 'friendly' | 'urgent' | 'witty';
+    clientAdvocate: boolean;
+}
+
 export interface BusinessProfile {
     companyName: string;
     industry: string;
@@ -44,7 +72,7 @@ export interface CampaignGoals {
 }
 
 export interface ToolIntegration {
-    selectedMcps?: string[]; // Added for MCP Marketplace
+    selectedMcps?: string[];
     emailMarketing?: 'mailchimp' | 'klaviyo' | 'activecampaign' | 'none';
     adPlatforms: string[];
     wordpress?: {
@@ -63,24 +91,17 @@ export interface ToolIntegration {
     };
 }
 
-// ... (existing code for AgentConfig) ...
-
-
-export interface AgentConfig {
-    persona: 'marketing_manager' | 'sales_rep' | 'support_agent' | 'general_assistant';
-    name: string;
-    tone: 'professional' | 'friendly' | 'urgent' | 'witty';
-}
-
 export interface OnboardingState {
     currentStep: number;
+    socialLogin?: SocialLoginInfo;
     profile: BusinessProfile;
     digitalPresence: DigitalPresence;
+    discovery: DiscoveryResults;
     analytics: AnalyticsConfig;
     socialMedia: SocialMediaConfig;
     goals: CampaignGoals;
     tools: ToolIntegration;
-    agent: AgentConfig; // New field
+    agent: AIAgentConfig;
     isComplete: boolean;
 }
 
@@ -103,6 +124,10 @@ export const INITIAL_STATE: OnboardingState = {
     },
     digitalPresence: {
         websiteDetected: false,
+    },
+    discovery: {
+        google: [],
+        microsoft: [],
     },
     analytics: {
         setupLater: false,
@@ -127,9 +152,10 @@ export const INITIAL_STATE: OnboardingState = {
         adPlatforms: [],
     },
     agent: {
-        persona: 'marketing_manager',
+        persona: 'csm',
         name: 'Alex',
-        tone: 'professional'
+        tone: 'professional',
+        clientAdvocate: true
     },
     isComplete: false,
 };

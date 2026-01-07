@@ -81,20 +81,41 @@ class ToolIntegration(BaseModel):
     fluentCrm: Optional[FluentCRMConfig] = None
     wooCommerce: Optional[WooCommerceConfig] = None
 
-class AgentConfig(BaseModel):
+class DiscoveryService(BaseModel):
+    id: str
+    name: str
+    status: str
+    cost: Optional[str] = None
+    requiresEnablement: Optional[bool] = False
+
+class DiscoveryResults(BaseModel):
+    google: List[DiscoveryService] = []
+    microsoft: List[DiscoveryService] = []
+    lastUpdated: Optional[str] = None
+
+class SocialLoginInfo(BaseModel):
+    provider: str
+    email: str
+    name: Optional[str] = None
+    profileImageUrl: Optional[str] = None
+
+class AIAgentConfig(BaseModel):
     persona: str
     name: str = "Alex"
     tone: str = "professional"
+    clientAdvocate: bool = True
 
 class OnboardingState(BaseModel):
     currentStep: int
+    socialLogin: Optional[SocialLoginInfo] = None
     profile: BusinessProfile
     digitalPresence: DigitalPresence
+    discovery: DiscoveryResults = Field(default_factory=DiscoveryResults)
     analytics: AnalyticsConfig
     socialMedia: SocialMediaConfig
     goals: CampaignGoals
     tools: ToolIntegration
-    agent: AgentConfig
+    agent: AIAgentConfig
     isComplete: bool
 
 # --- Mock Data Store ---
@@ -133,6 +154,49 @@ async def save_digital_presence(presence: DigitalPresence):
 async def save_integrations(analytics: AnalyticsConfig, social: SocialMediaConfig):
     """Save integration preferences"""
     return {"status": "success", "message": "Integrations saved"}
+
+@router.post("/discover")
+async def discover_services(
+    payload: Dict[str, Any],
+    current_user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    """
+    Automated Discovery Endpoint:
+    Triggers background checks for Google/Microsoft services based on SSO provider.
+    """
+    email = payload.get("email")
+    provider = payload.get("provider", "none")
+    
+    tenant_id = current_user.tenant_id or current_user.id
+    discovery_results = {"google": [], "microsoft": []}
+    profile_updates = {}
+
+    # Logic to fetch tokens from Clerk (simulated or real)
+    # real_token = await identity_port.get_oauth_token(current_user.id, provider)
+    
+    if "google" in provider:
+        # Mock Discovery for now - will integrate with real connectors in next step
+        discovery_results["google"] = [
+            {"id": "google-analytics", "name": "Google Analytics 4", "status": "detected", "requiresEnablement": False},
+            {"id": "google-ads", "name": "Google Ads", "status": "detected", "cost": "$$$", "requiresEnablement": True},
+            {"id": "google-business-profile", "name": "Google Business Profile", "status": "detected", "requiresEnablement": False}
+        ]
+        profile_updates = {
+            "companyName": current_user.name or "My Business",
+            "industry": "Marketing"
+        }
+    elif "microsoft" in provider:
+        discovery_results["microsoft"] = [
+            {"id": "microsoft-clarity", "name": "Microsoft Clarity", "status": "detected", "requiresEnablement": False},
+            {"id": "bing-webmaster", "name": "Bing Webmaster Tools", "status": "not_detected", "requiresEnablement": True}
+        ]
+
+    return {
+        "status": "success",
+        "discovery": discovery_results,
+        "profile": profile_updates
+    }
 
 @router.post("/goals")
 async def save_goals(goals: CampaignGoals):

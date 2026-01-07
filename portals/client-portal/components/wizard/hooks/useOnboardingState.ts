@@ -56,6 +56,14 @@ export function useOnboardingState() {
         setState(prev => ({ ...prev, agent: { ...prev.agent, ...agent } }));
     };
 
+    const updateDiscovery = (discovery: Partial<OnboardingState['discovery']>) => {
+        setState(prev => ({ ...prev, discovery: { ...prev.discovery, ...discovery } }));
+    };
+
+    const setSocialLogin = (social: OnboardingState['socialLogin']) => {
+        setState(prev => ({ ...prev, socialLogin: social }));
+    };
+
     const nextStep = () => {
         setState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
     };
@@ -74,11 +82,13 @@ export function useOnboardingState() {
         isLoaded,
         updateProfile,
         updateDigitalPresence,
+        updateDiscovery,
         updateAnalytics,
         updateSocialMedia,
         updateGoals,
         updateTools,
         updateAgent,
+        setSocialLogin,
         nextStep,
         prevStep,
         resetOnboarding

@@ -11,11 +11,15 @@ import {
     Plug,
     Rocket,
     Megaphone,
-    Bot
+    Bot,
+    Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOnboardingState } from './hooks/useOnboardingState';
+import { useUser } from '@clerk/nextjs';
+import { OnboardingState } from './types/onboarding';
+import { useEffect } from 'react';
 
 // Step Components
 import { CompanyIdentityStep } from './OnboardingSteps/CompanyIdentityStep';
@@ -26,11 +30,13 @@ import { CampaignGoalsStep } from './OnboardingSteps/CampaignGoalsStep';
 import { CategorizedToolSelectionStep } from './OnboardingSteps/CategorizedToolSelectionStep';
 import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
+import { AIAssistantIntroStep } from './OnboardingSteps/AIAssistantIntroStep';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
     { id: 'presence', title: 'Presence', icon: Globe },
-    { id: 'tools', title: 'Select Tools', icon: Plug }, // New Step
+    { id: 'tools', title: 'Select Tools', icon: Plug },
+    { id: 'ai_intro', title: 'AI Team', icon: Sparkles }, // New Step
     { id: 'analytics', title: 'Analytics', icon: BarChart3 },
     { id: 'social', title: 'Social', icon: Share2 },
     { id: 'goals', title: 'Goals', icon: Target },
@@ -40,23 +46,72 @@ const STEPS = [
 
 export function OnboardingWizard() {
     const router = useRouter();
+    const { user, isLoaded: isClerkLoaded } = useUser();
     const {
         state,
         updateProfile,
         updateDigitalPresence,
+        updateDiscovery,
         updateAnalytics,
         updateSocialMedia,
         updateGoals,
         updateTools,
         updateAgent,
+        setSocialLogin,
         nextStep,
         prevStep,
         isLoaded
     } = useOnboardingState();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDiscovering, setIsDiscovering] = useState(false);
 
-    if (!isLoaded) return null;
+    // Sync Clerk user with onboarding state
+    useEffect(() => {
+        if (isClerkLoaded && user && !state.socialLogin) {
+            const primaryEmail = user.primaryEmailAddress?.emailAddress || "";
+            const provider = user.externalAccounts[0]?.provider || 'none';
+
+            setSocialLogin({
+                provider: provider.includes('google') ? 'google' :
+                    provider.includes('microsoft') ? 'microsoft' :
+                        provider.includes('facebook') ? 'facebook' : 'none',
+                email: primaryEmail,
+                name: user.fullName || undefined,
+                profileImageUrl: user.imageUrl
+            });
+
+            // If we have a provider, trigger initial discovery
+            if (provider !== 'none') {
+                triggerDiscovery(primaryEmail, provider);
+            }
+        }
+    }, [isClerkLoaded, user, state.socialLogin, setSocialLogin]);
+
+    const triggerDiscovery = async (email: string, provider: string) => {
+        setIsDiscovering(true);
+        try {
+            const res = await fetch('/api/brain/onboarding/discover', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, provider })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                updateDiscovery(data.discovery);
+                // Also update profile if names/details were found
+                if (data.profile) {
+                    updateProfile(data.profile);
+                }
+            }
+        } catch (e) {
+            console.error("Discovery failed", e);
+        } finally {
+            setIsDiscovering(false);
+        }
+    };
+
+    if (!isLoaded || !isClerkLoaded) return null;
 
     const handleNext = () => {
         // Basic validation could go here
@@ -91,7 +146,12 @@ export function OnboardingWizard() {
     const renderStepContent = () => {
         switch (state.currentStep) {
             case 0:
-                return <CompanyIdentityStep data={state.profile} onUpdate={updateProfile} />;
+                return <CompanyIdentityStep
+                    data={state.profile}
+                    onUpdate={updateProfile}
+                    discovery={state.discovery}
+                    isDiscovering={isDiscovering}
+                />;
             case 1:
                 return <DigitalPresenceStep
                     data={state.digitalPresence}
@@ -101,14 +161,23 @@ export function OnboardingWizard() {
             case 2: // New Tools Step
                 return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
             case 3:
-                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
+                return (
+                    <AIAssistantIntroStep
+                        discovery={state.discovery}
+                        agent={state.agent}
+                        onUpdate={updateAgent}
+                        onNext={nextStep}
+                    />
+                );
             case 4:
-                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
+                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
             case 5:
-                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
+                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
             case 6:
-                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
             case 7:
+                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+            case 8:
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;

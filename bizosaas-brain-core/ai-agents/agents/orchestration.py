@@ -20,6 +20,7 @@ from .analytics_agents import *
 from .operations_agents import *
 from .workflow_crews import *
 from .crm_agents import *
+from .impact_analysis_agent import ImpactAnalysisAgent
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +130,8 @@ class HierarchicalCrewOrchestrator:
             # Workflow Crews
             DigitalAuditCrew, CampaignLaunchCrew, ProductLaunchCrew,
             CompetitorAnalysisCrew, MarketResearchCrew, ContentStrategyCrew,
-            ReputationManagementCrew, LeadQualificationCrew
+            ReputationManagementCrew, LeadQualificationCrew,
+            ImpactAnalysisAgent
         ]
         
         for agent_class in agent_classes:
@@ -196,6 +198,15 @@ class HierarchicalCrewOrchestrator:
                 orchestration_mode=OrchestrationMode.HIERARCHICAL,
                 priority=WorkflowPriority.HIGH,
                 timeout_minutes=150
+            ),
+            "impact_analysis": WorkflowDefinition(
+                workflow_id="impact_analysis",
+                name="Impact Analysis workflow",
+                description="Monitors and predicts impact of marketing configurations",
+                agent_sequence=["impact_analysis"],
+                orchestration_mode=OrchestrationMode.SEQUENTIAL,
+                priority=WorkflowPriority.NORMAL,
+                timeout_minutes=30
             )
         }
     
