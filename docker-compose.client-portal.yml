@@ -52,7 +52,7 @@ services:
 
       # Environment
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
+      PORT: ${PORT:-3003}
     networks:
       - dokploy-network
     deploy:
@@ -73,7 +73,7 @@ services:
       - "traefik.http.routers.client-portal.tls=true"
       - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
       # Service
-      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3003"
       # Middleware for HTTPS redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"

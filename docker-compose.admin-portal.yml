@@ -54,7 +54,7 @@ services:
       CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NEXT_PUBLIC_CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
+      PORT: ${PORT:-3004}
     networks:
       - dokploy-network
     deploy:
@@ -63,7 +63,7 @@ services:
           cpus: '0.4'
           memory: 512M
     healthcheck:
-      test: [ "CMD", "curl", "-s", "--retry", "1", "-f", "http://localhost:3000/api/health" ]
+      test: [ "CMD", "curl", "-s", "--retry", "1", "-f", "http://localhost:3004/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -81,7 +81,7 @@ services:
       - "traefik.http.routers.admin-dashboard.tls=true"
       - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
       # Service
-      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3004"
       # Middleware for HTTPS redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
