@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 import { Providers } from './providers';
+import { PWAInstallPrompt, PWAProvider } from '@/components/PWAInstallPrompt';
+import { OfflineBanner } from '@/components/OfflineBanner';
 
 // Using system fonts to avoid network calls during Docker build
 const inter = { className: 'font-sans' };
@@ -43,12 +45,16 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <Providers>
-          {/* Main Content Area */}
-          <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
-            <main className="flex-1 overflow-y-auto p-0">
-              {children}
-            </main>
-          </div>
+          <PWAProvider>
+            <OfflineBanner />
+            {/* Main Content Area */}
+            <div className="flex flex-1 flex-col overflow-hidden h-screen bg-gray-50 dark:bg-gray-900">
+              <main className="flex-1 overflow-y-auto p-0">
+                {children}
+              </main>
+            </div>
+            <PWAInstallPrompt />
+          </PWAProvider>
         </Providers>
       </body>
     </html>

@@ -138,7 +138,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 ))}
               </div>
             }>
-              <ComprehensiveNavigation isCollapsed={isCollapsed} />
+              <ComprehensiveNavigation
+                isCollapsed={isCollapsed}
+                onNavigate={() => {
+                  if (window.innerWidth < 1024) {
+                    setIsSidebarOpen(false);
+                  }
+                }}
+              />
             </Suspense>
           </div>
 

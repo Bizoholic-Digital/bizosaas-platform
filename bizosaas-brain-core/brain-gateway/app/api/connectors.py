@@ -181,7 +181,30 @@ async def sync_resource(
 async def discover_resources(
     connector_id: str,
     resource: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
     """Alias for sync_data to discover resources like properties or accounts"""
-    return await sync_resource(connector_id, resource, user)
+    return await sync_resource(connector_id, resource, user, secret_service)
+
+@router.get("/{connector_id}/plugins")
+async def discover_plugins(
+    connector_id: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    """Discover plugins for a connected WordPress site"""
+    if connector_id != "wordpress":
+        raise HTTPException(status_code=400, detail="Plugin discovery only supported for WordPress")
+    
+    tenant_id = user.tenant_id or "default_tenant"
+    credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
+    
+    if not credentials:
+        raise HTTPException(status_code=404, detail="WordPress not connected")
+        
+    from app.connectors.wordpress import WordPressConnector
+    connector = WordPressConnector(tenant_id=tenant_id, credentials=credentials)
+    plugins = await connector.discover_plugins()
+    
+    return {"plugins": plugins}

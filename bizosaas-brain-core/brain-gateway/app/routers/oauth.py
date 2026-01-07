@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import logging
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.oauth_mixin import OAuthMixin
+from app.dependencies import get_secret_service
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,10 @@ async def authorize_connector(connector_id: str, tenant_id: str, redirect_uri: s
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/callback")
-async def oauth_callback(params: OAuthCallbackParams):
+async def oauth_callback(
+    params: OAuthCallbackParams,
+    secret_service = Depends(get_secret_service)
+):
     """
     Handle OAuth callback code exchange.
     1. Verify state (simple check for now)
@@ -72,23 +76,29 @@ async def oauth_callback(params: OAuthCallbackParams):
         connector = connector_cls(tenant_id=params.tenant_id, credentials={})
         token_data = await connector.exchange_code(code=params.code, redirect_uri=params.redirect_uri)
         
-        # TODO: Save credentials to DB/Vault
-        # Save logic logic would go here:
-        # await secure_storage.save_credentials(params.tenant_id, params.connector_id, token_data)
+        # Save credentials to DB/Vault
+        success = await secret_service.store_connector_credentials(
+            tenant_id=params.tenant_id,
+            connector_id=params.connector_id,
+            credentials=token_data,
+            metadata={"oauth_connected": True, "provider": params.connector_id}
+        )
+        
+        if not success:
+            logger.error(f"Failed to store credentials for {params.connector_id}")
+            raise HTTPException(status_code=500, detail="Failed to store credentials securely")
         
         logger.info(f"Successfully connected {params.connector_id} for {params.tenant_id}")
         
         # Check if this is an onboarding discovery request
         if params.state.endswith(":onboarding"):
-             # For onboarding, we might want to trigger a full discovery
-             # This could be done by calling the discovery service
              logger.info("Triggering automatic discovery for onboarding...")
-             # In a real app, you'd call a service function here
+             # Future: trigger discovery tasks
         
         return {
             "status": "success", 
-            "message": "Connected successfully",
-            "credentials": token_data # In prod, DONT return full credentials to frontend, just status
+            "message": "Connected successfully"
+            # Removed raw credentials return for security
         }
         
     except Exception as e:

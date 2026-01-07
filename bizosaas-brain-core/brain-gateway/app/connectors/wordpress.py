@@ -294,3 +294,59 @@ class WordPressConnector(BaseConnector, CMSPort):
                 params={"force": "true"}
             )
             return response.status_code in [200, 204]
+
+    async def discover_plugins(self) -> List[Dict[str, Any]]:
+        """
+        Discover installed plugins on the WordPress site.
+        Returns list of plugins with connection suggestions.
+        """
+        KNOWN_PLUGINS = {
+            "fluent-crm": {"id": "fluentcrm", "name": "FluentCRM", "connector_id": "fluentcrm"},
+            "woocommerce": {"id": "woocommerce", "name": "WooCommerce", "connector_id": "woocommerce"},
+            "elementor": {"id": "elementor", "name": "Elementor Builder", "connector_id": "elementor"},
+            "contact-form-7": {"id": "cf7", "name": "Contact Form 7", "connector_id": "cf7"},
+            "wpforms-lite": {"id": "wpforms", "name": "WPForms", "connector_id": "wpforms"},
+            "yoast-seo": {"id": "yoast", "name": "Yoast SEO", "connector_id": "yoast"},
+        }
+
+        async with httpx.AsyncClient() as client:
+            try:
+                # The 'plugins' endpoint requires administrative permissions
+                # It might not be enabled on all WP installations by default without a specific plugin/config
+                response = await client.get(
+                    self._get_api_url("plugins"), # Note: path might need adjustment for some WP versions
+                    headers=self._get_auth_header(),
+                    timeout=15.0
+                )
+                
+                # Fallback: if 'plugins' endpoint is not found, we return an empty list or try scanning
+                if response.status_code == 404:
+                    logger.warning("WordPress 'plugins' endpoint not found. Discovery limited.")
+                    return []
+                
+                response.raise_for_status()
+                data = response.json()
+                
+                discovered = []
+                for p in data:
+                    # WordPress returns plugin info in various formats depending on version
+                    # Usually 'textdomain' or 'name' can be used
+                    slug = p.get("textdomain") or p.get("plugin", "").split("/")[0].lower()
+                    
+                    plugin_info = {
+                        "id": slug,
+                        "name": p.get("name"),
+                        "status": p.get("status"),
+                        "version": p.get("version"),
+                        "can_auto_connect": slug in KNOWN_PLUGINS
+                    }
+                    
+                    if slug in KNOWN_PLUGINS:
+                        plugin_info.update(KNOWN_PLUGINS[slug])
+                        
+                    discovered.append(plugin_info)
+                    
+                return discovered
+            except Exception as e:
+                logger.error(f"WordPress plugin discovery failed: {e}")
+                return []

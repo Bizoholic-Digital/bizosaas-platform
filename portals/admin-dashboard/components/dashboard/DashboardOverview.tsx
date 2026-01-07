@@ -156,7 +156,7 @@ export default function DashboardOverview() {
               </div>
             </div>
 
-            <div className="pt-4 grid grid-cols-2 gap-4">
+            <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm text-center">
                 <div className="text-2xl font-black text-blue-400">99.99%</div>
                 <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Uptime</div>
