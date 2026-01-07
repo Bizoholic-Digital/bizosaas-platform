@@ -54,7 +54,7 @@ services:
       CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NEXT_PUBLIC_CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
       NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3004}
+      PORT: ${PORT:-3000}
     networks:
       - dokploy-network
     deploy:
