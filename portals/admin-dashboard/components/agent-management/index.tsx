@@ -145,13 +145,13 @@ export default function AgentManagementInterface() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Bot className="w-8 h-8 text-blue-600" />
+                <Bot className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    BizOSaaS Agent Management Center
+                  <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
+                    Agent Hub
                   </h1>
-                  <p className="text-gray-600">
-                    Comprehensive AI Agent Ecosystem Control Panel
+                  <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                    Core Autonomous Ecosystem
                   </p>
                 </div>
               </div>
@@ -187,8 +187,8 @@ export default function AgentManagementInterface() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white border-b border-gray-200 px-6">
-          <TabsList className="bg-transparent border-b-0 h-auto p-0">
+        <div className="bg-white border-b border-gray-200 px-4 md:px-6 overflow-x-auto no-scrollbar">
+          <TabsList className="bg-transparent border-b-0 h-auto p-0 flex whitespace-nowrap">
             {availableComponents.map((component) => {
               const Icon = component.icon;
               return (
@@ -210,10 +210,10 @@ export default function AgentManagementInterface() {
           <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <currentComponent.icon className="w-5 h-5 text-blue-600" />
-                <div>
-                  <h2 className="font-medium text-blue-900">{currentComponent.name}</h2>
-                  <p className="text-sm text-blue-700">{currentComponent.description}</p>
+                <currentComponent.icon className="w-4 h-4 md:w-5 md:h-5 text-blue-600 shrink-0" />
+                <div className="min-w-0">
+                  <h2 className="font-bold text-sm md:text-base text-blue-900 truncate">{currentComponent.name}</h2>
+                  <p className="text-[10px] md:text-sm text-blue-700/80 truncate">{currentComponent.description}</p>
                 </div>
               </div>
 
@@ -224,7 +224,7 @@ export default function AgentManagementInterface() {
                   <select
                     value={selectedAgentId}
                     onChange={(e) => setSelectedAgentId(e.target.value)}
-                    className="px-3 py-1 border border-blue-300 rounded-md bg-white text-blue-900 text-sm"
+                    className="px-2 py-1 border border-blue-300 rounded-lg bg-white text-blue-900 text-[10px] md:text-sm outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="lead-scoring-agent">Lead Scoring Agent</option>
                     <option value="content-creation-agent">Content Creation Agent</option>
@@ -240,7 +240,7 @@ export default function AgentManagementInterface() {
         )}
 
         {/* Main Content Area */}
-        <div className="p-6 flex-1">
+        <div className="p-2 md:p-6 flex-1 overflow-x-hidden">
           {availableComponents.map((component) => (
             <TabsContent key={component.id} value={component.id} className="mt-0 h-full">
               {activeComponent === component.id && renderComponent()}
@@ -252,12 +252,12 @@ export default function AgentManagementInterface() {
       {/* Footer */}
       <div className="bg-white border-t border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center space-x-4">
-            <span>BizOSaaS Agent Management v2.1.0</span>
-            <span>•</span>
-            <span>88 Agents Across 6 Domains</span>
-            <span>•</span>
-            <span>Master Orchestration + Domain Supervisors + Specialist Agents</span>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:space-x-4">
+            <span className="text-[10px] md:text-xs">Agent Mesh v2.1.0</span>
+            <span className="hidden md:inline">•</span>
+            <Badge variant="outline" className="bg-green-100 text-green-800 text-[9px] border-0">
+              System Healthy
+            </Badge>
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="outline" className="bg-green-100 text-green-800">

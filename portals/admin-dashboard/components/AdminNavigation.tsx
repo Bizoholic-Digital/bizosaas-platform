@@ -193,7 +193,7 @@ export function AdminNavigation({ children }: AdminNavigationProps) {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <Database className="w-5 h-5 text-white" />
             </div>
-            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">BizOSaaS</span>
+            <span className="ml-2 text-lg font-bold text-gray-900 dark:text-white">Bizo Admin</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}

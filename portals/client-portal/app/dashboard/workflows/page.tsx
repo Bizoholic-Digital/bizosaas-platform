@@ -95,52 +95,52 @@ export default function WorkflowsPage() {
             title="Workflow Orchestration"
             description="Manage and monitor your long-running automations powered by Temporal."
         >
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="p-3 md:p-6 space-y-4 md:space-y-6 max-w-7xl mx-auto overflow-x-hidden">
                 {/* Status Bar */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
                             {[1, 2, 3].map(i => (
-                                <div key={i} className="h-8 w-8 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                    <Cpu className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                <div key={i} className="h-6 w-6 md:h-8 md:w-8 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                    <Cpu className="h-3 w-3 md:h-4 md:w-4 text-emerald-600 dark:text-emerald-400" />
                                 </div>
                             ))}
                         </div>
-                        <div className="text-sm font-medium">
+                        <div className="text-[10px] md:text-sm font-medium">
                             <span className="text-emerald-600 dark:text-emerald-400">3 Active Workers</span>
-                            <span className="text-slate-400 mx-2">|</span>
-                            <span>System Healthy</span>
+                            <span className="text-slate-400 mx-2 md:mx-4 tracking-tighter">|</span>
+                            <span className="text-slate-500">System Healthy</span>
                         </div>
                     </div>
 
-                    <div className="flex gap-2 w-full md:w-auto">
-                        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
-                            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                            Refresh Status
+                    <div className="grid grid-cols-2 md:flex gap-2 w-full md:w-auto">
+                        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="text-[10px] md:text-xs">
+                            <RefreshCw className={`mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                            Refresh
                         </Button>
-                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                            <Zap className="mr-2 h-4 w-4" />
-                            New Automation
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-[10px] md:text-xs">
+                            <Zap className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                            New Workflow
                         </Button>
                     </div>
                 </div>
 
                 {/* Summary Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Total Workflows', value: '24', icon: Activity, color: 'text-blue-600' },
-                        { label: 'Successful (24h)', value: '1.2k', icon: CheckCircle2, color: 'text-emerald-600' },
-                        { label: 'Failed (24h)', value: '3', icon: AlertCircle, color: 'text-red-600' },
-                        { label: 'Avg Latency', value: '45ms', icon: Clock, color: 'text-purple-600' },
+                        { label: 'Total', value: '24', icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Success', value: '1.2k', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Errors', value: '3', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
+                        { label: 'Latency', value: '45ms', icon: Clock, color: 'text-purple-600', bg: 'bg-purple-50' },
                     ].map((m, i) => (
                         <Card key={i} className="border-none shadow-sm bg-white dark:bg-slate-900/50">
-                            <CardContent className="p-6 flex items-center justify-between">
+                            <CardContent className="p-3 md:p-6 flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">{m.label}</p>
-                                    <h3 className="text-2xl font-bold mt-1">{m.value}</h3>
+                                    <p className="text-[10px] md:text-sm text-muted-foreground font-bold uppercase tracking-tight">{m.label}</p>
+                                    <h3 className="text-lg md:text-2xl font-black mt-1 leading-none">{m.value}</h3>
                                 </div>
-                                <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 ${m.color}`}>
-                                    <m.icon className="h-5 w-5" />
+                                <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${m.bg} dark:bg-slate-800 ${m.color}`}>
+                                    <m.icon className="h-4 w-4 md:h-5 md:w-5" />
                                 </div>
                             </CardContent>
                         </Card>
@@ -148,21 +148,21 @@ export default function WorkflowsPage() {
                 </div>
 
                 <Tabs defaultValue="active" className="w-full">
-                    <div className="flex justify-between items-center mb-4">
-                        <TabsList>
-                            <TabsTrigger value="active">Active Automations</TabsTrigger>
-                            <TabsTrigger value="history">Execution History</TabsTrigger>
-                            <TabsTrigger value="workers">Worker Nodes</TabsTrigger>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                        <TabsList className="bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
+                            <TabsTrigger value="active" className="text-xs md:text-sm rounded-lg">Active</TabsTrigger>
+                            <TabsTrigger value="history" className="text-xs md:text-sm rounded-lg">History</TabsTrigger>
+                            <TabsTrigger value="workers" className="text-xs md:text-sm rounded-lg">Nodes</TabsTrigger>
                         </TabsList>
 
                         <a
                             href="https://temporal.bizoholic.net"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-purple-600 hover:text-purple-700 flex items-center gap-1 font-medium bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-full"
+                            className="text-[10px] text-purple-600 hover:text-purple-700 flex items-center gap-1.5 font-bold bg-purple-50 dark:bg-purple-900/20 px-3 py-2 rounded-lg transition-colors"
                         >
                             <Shield className="h-3 w-3" />
-                            Temporal Cloud Access
+                            Temporal Cloud
                             <ExternalLink className="h-3 w-3" />
                         </a>
                     </div>
@@ -173,11 +173,11 @@ export default function WorkflowsPage() {
                                 <Card key={wf.id} className="group hover:shadow-md transition-all border-slate-100 dark:border-slate-800">
                                     <CardContent className="p-0">
                                         <div className="flex flex-col md:flex-row items-center p-5 gap-6">
-                                            <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${wf.status === 'running'
-                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600'
-                                                    : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600'
+                                            <div className={`h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 ${wf.status === 'running'
+                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600'
+                                                : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600'
                                                 }`}>
-                                                {wf.status === 'running' ? <RefreshCw className="h-6 w-6 animate-[spin_4s_linear_infinite]" /> : <Pause className="h-6 w-6" />}
+                                                {wf.status === 'running' ? <RefreshCw className="h-5 w-5 md:h-6 md:w-6 animate-[spin_4s_linear_infinite]" /> : <Pause className="h-5 w-5 md:h-6 md:w-6" />}
                                             </div>
 
                                             <div className="flex-1 space-y-1">

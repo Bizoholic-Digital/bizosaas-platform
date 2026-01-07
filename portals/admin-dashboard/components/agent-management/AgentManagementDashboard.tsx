@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
+import {
   Activity,
   Bot,
   Brain,
@@ -514,7 +514,7 @@ const AgentCard: React.FC<{ agent: Agent; onManage: (agent: Agent) => void }> = 
           <StatusBadge status={agent.status} />
           <PriorityBadge priority={agent.priority} />
         </div>
-        
+
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
             <p className="text-gray-500">Success Rate</p>
@@ -532,7 +532,7 @@ const AgentCard: React.FC<{ agent: Agent; onManage: (agent: Agent) => void }> = 
             <span>{agent.resources.cpuUsage}%</span>
           </div>
           <Progress value={agent.resources.cpuUsage} className="h-1" />
-          
+
           <div className="flex justify-between text-xs">
             <span>Memory</span>
             <span>{agent.resources.memoryUsage}%</span>
@@ -550,8 +550,8 @@ const AgentCard: React.FC<{ agent: Agent; onManage: (agent: Agent) => void }> = 
 };
 
 // Domain supervisor card component
-const DomainCard: React.FC<{ 
-  supervisor: DomainSupervisor; 
+const DomainCard: React.FC<{
+  supervisor: DomainSupervisor;
   expanded: boolean;
   onToggle: () => void;
   onManageAgent: (agent: Agent) => void;
@@ -573,24 +573,24 @@ const DomainCard: React.FC<{
           <StatusBadge status={supervisor.status} />
         </div>
       </CardHeader>
-      
+
       <CardContent>
-        <div className="grid grid-cols-4 gap-4 mb-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{supervisor.performance.overallHealth}%</p>
-            <p className="text-xs text-gray-500">Health</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="text-center bg-gray-50 dark:bg-slate-800 p-2 rounded-lg">
+            <p className="text-lg md:text-2xl font-bold text-green-600">{supervisor.performance.overallHealth}%</p>
+            <p className="text-[10px] uppercase font-bold text-gray-400">Health</p>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600">{supervisor.performance.activeAgents}</p>
-            <p className="text-xs text-gray-500">Active Agents</p>
+          <div className="text-center bg-gray-50 dark:bg-slate-800 p-2 rounded-lg">
+            <p className="text-lg md:text-2xl font-bold text-blue-600">{supervisor.performance.activeAgents}</p>
+            <p className="text-[10px] uppercase font-bold text-gray-400">Active</p>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-purple-600">{supervisor.performance.totalTasks}</p>
-            <p className="text-xs text-gray-500">Total Tasks</p>
+          <div className="text-center bg-gray-50 dark:bg-slate-800 p-2 rounded-lg">
+            <p className="text-lg md:text-2xl font-bold text-purple-600">{supervisor.performance.totalTasks}</p>
+            <p className="text-[10px] uppercase font-bold text-gray-400">Tasks</p>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600">{supervisor.performance.successRate}%</p>
-            <p className="text-xs text-gray-500">Success Rate</p>
+          <div className="text-center bg-gray-50 dark:bg-slate-800 p-2 rounded-lg">
+            <p className="text-lg md:text-2xl font-bold text-orange-600">{supervisor.performance.successRate}%</p>
+            <p className="text-[10px] uppercase font-bold text-gray-400">Success</p>
           </div>
         </div>
 
@@ -653,79 +653,79 @@ export default function AgentManagementDashboard() {
 
   // Calculate overall statistics
   const totalAgents = agentData.domainSupervisors.reduce((sum, supervisor) => sum + supervisor.specialistAgents.length, 0) + 1; // +1 for CEO
-  const activeAgents = agentData.domainSupervisors.reduce((sum, supervisor) => 
+  const activeAgents = agentData.domainSupervisors.reduce((sum, supervisor) =>
     sum + supervisor.specialistAgents.filter(agent => agent.status === 'active').length, 0
   ) + (agentData.ceoAgent.status === 'active' ? 1 : 0);
-  const errorAgents = agentData.domainSupervisors.reduce((sum, supervisor) => 
+  const errorAgents = agentData.domainSupervisors.reduce((sum, supervisor) =>
     sum + supervisor.specialistAgents.filter(agent => agent.status === 'error').length, 0
   );
   const averageSuccessRate = agentData.domainSupervisors.reduce((sum, supervisor) => sum + supervisor.performance.successRate, 0) / agentData.domainSupervisors.length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6 max-w-[100vw] overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Agent Management Dashboard</h1>
-          <p className="text-gray-600">Monitor and manage your 88-agent BizOSaaS ecosystem</p>
+          <h1 className="text-xl md:text-3xl font-bold">Agent Dashboard</h1>
+          <p className="text-sm text-gray-500">Global status of the 88-agent autonomous mesh</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={() => setLastUpdate(new Date())}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setLastUpdate(new Date())} className="h-8">
+            <RefreshCw className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+            <span className="hidden md:inline">Refresh</span>
           </Button>
-          <span className="text-xs text-gray-500">
-            Last updated: {lastUpdate.toLocaleTimeString()}
+          <span className="text-[10px] text-gray-400">
+            Updated: {lastUpdate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <Card className="shadow-sm border-none bg-blue-50/50 dark:bg-blue-900/10">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Agents</p>
-                <p className="text-2xl font-bold">{totalAgents}</p>
+                <p className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Total</p>
+                <p className="text-xl md:text-2xl font-black">{totalAgents}</p>
               </div>
-              <Bot className="w-8 h-8 text-blue-600" />
+              <Bot className="w-6 h-6 md:w-8 md:h-8 text-blue-600 opacity-20" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        <Card className="shadow-sm border-none bg-green-50/50 dark:bg-green-900/10">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Active Agents</p>
-                <p className="text-2xl font-bold text-green-600">{activeAgents}</p>
+                <p className="text-[10px] uppercase font-bold text-green-600 tracking-wider">Active</p>
+                <p className="text-xl md:text-2xl font-black text-green-600">{activeAgents}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600 opacity-20" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        <Card className="shadow-sm border-none bg-red-50/50 dark:bg-red-900/10">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Error Agents</p>
-                <p className="text-2xl font-bold text-red-600">{errorAgents}</p>
+                <p className="text-[10px] uppercase font-bold text-red-600 tracking-wider">Errors</p>
+                <p className="text-xl md:text-2xl font-black text-red-600">{errorAgents}</p>
               </div>
-              <AlertCircle className="w-8 h-8 text-red-600" />
+              <AlertCircle className="w-6 h-6 md:w-8 md:h-8 text-red-600 opacity-20" />
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
+
+        <Card className="shadow-sm border-none bg-purple-50/50 dark:bg-purple-900/10">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Avg Success Rate</p>
-                <p className="text-2xl font-bold text-purple-600">{averageSuccessRate.toFixed(1)}%</p>
+                <p className="text-[10px] uppercase font-bold text-purple-600 tracking-wider">ROI/Success</p>
+                <p className="text-xl md:text-2xl font-black text-purple-600">{averageSuccessRate.toFixed(1)}%</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-purple-600" />
+              <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-purple-600 opacity-20" />
             </div>
           </CardContent>
         </Card>
@@ -774,18 +774,18 @@ export default function AgentManagementDashboard() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{agentData.ceoAgent.performance.successRate}%</p>
-              <p className="text-xs text-gray-500">Success Rate</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center p-3 rounded-xl bg-purple-50/50">
+              <p className="text-xl md:text-3xl font-black text-purple-600">{agentData.ceoAgent.performance.successRate}%</p>
+              <p className="text-[10px] uppercase font-bold text-gray-400">Success</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{agentData.ceoAgent.performance.tasksCompleted}</p>
-              <p className="text-xs text-gray-500">Tasks Completed</p>
+            <div className="text-center p-3 rounded-xl bg-blue-50/50">
+              <p className="text-xl md:text-3xl font-black text-blue-600">{agentData.ceoAgent.performance.tasksCompleted}</p>
+              <p className="text-[10px] uppercase font-bold text-gray-400">Tasks</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-orange-600">{agentData.ceoAgent.performance.averageResponseTime}ms</p>
-              <p className="text-xs text-gray-500">Avg Response Time</p>
+            <div className="text-center p-3 rounded-xl bg-orange-50/50">
+              <p className="text-xl md:text-3xl font-black text-orange-600">{agentData.ceoAgent.performance.averageResponseTime}ms</p>
+              <p className="text-[10px] uppercase font-bold text-gray-400">Latency</p>
             </div>
           </div>
         </CardContent>
@@ -797,7 +797,7 @@ export default function AgentManagementDashboard() {
           <Brain className="w-6 h-6 mr-2" />
           Domain Supervisors ({agentData.domainSupervisors.length})
         </h2>
-        
+
         {filteredSupervisors.map((supervisor) => (
           <DomainCard
             key={supervisor.id}

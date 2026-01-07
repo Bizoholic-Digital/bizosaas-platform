@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Menu, X, Bell, Moon, Sun, Search,
   Wifi, AlertCircle, CheckCircle, Clock,
-  Settings, LogOut, Activity
+  Settings, LogOut, Activity, Home, Zap, Bot, BarChart
 } from 'lucide-react';
 import ComprehensiveNavigation from './comprehensive-navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
@@ -66,6 +66,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
+  const BottomNav = () => (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom shadow-lg">
+      <button onClick={() => router.push('/dashboard')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Home className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Home</span>
+      </button>
+      <button onClick={() => router.push('/dashboard/workflows')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/workflows' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Zap className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Work</span>
+      </button>
+      <button onClick={() => router.push('/dashboard/marketing')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/marketing' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <BarChart className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Growth</span>
+      </button>
+      <button onClick={() => router.push('/dashboard/ai-assistant')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/ai-assistant' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Bot className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">AI</span>
+      </button>
+      <button onClick={toggleSidebar} className="flex flex-col items-center p-2 text-gray-400 active:text-blue-600 transition-all">
+        <Menu className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Menu</span>
+      </button>
+    </div>
+  );
+
+  const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex h-screen overflow-hidden">
@@ -86,25 +113,29 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             ${isCollapsed ? 'lg:w-20' : 'w-80'}
           `}
         >
-          <div className={`p-6 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
-            <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
+          <div className={`p-4 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
+            <div className={`flex items-center justify-between mb-4 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
-                <div>
-                  <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate">BizOSaaS</h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Portal Control</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <span className="text-white font-black text-xs">B</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <h1 className="font-black text-sm text-gray-900 dark:text-white truncate tracking-tighter uppercase">Bizo Portal</h1>
+                    <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 leading-none">Control v5</p>
+                  </div>
                 </div>
               )}
               {isCollapsed && (
-                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20">
                   B
                 </div>
               )}
               <button
                 onClick={toggleSidebar}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               >
-                {isSidebarOpen || !isCollapsed ? <X className="w-5 h-5 text-gray-600 dark:text-gray-300 lg:hidden" /> : null}
                 <Menu className={`w-5 h-5 text-gray-600 dark:text-gray-300 ${isSidebarOpen || !isCollapsed ? 'hidden lg:block' : 'block'}`} />
               </button>
             </div>
@@ -193,20 +224,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 py-3 z-10">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={toggleSidebar}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden active:scale-90"
                 >
                   <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">{title}</h1>
+                <div className="min-w-0">
+                  <h1 className="text-base md:text-xl font-black text-gray-900 dark:text-white truncate tracking-tight uppercase">{title}</h1>
                   {description && (
-                    <p className="text-gray-600 dark:text-gray-300 mt-1 hidden sm:block">{description}</p>
+                    <p className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400 mt-0.5 hidden sm:block line-clamp-1">{description}</p>
                   )}
                 </div>
               </div>
@@ -246,11 +277,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto w-full">
+          <div className="flex-1 overflow-y-auto w-full pb-20 lg:pb-0">
             {children}
           </div>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 };

@@ -15,7 +15,7 @@ export default function PersonalAIAssistantPage() {
                         <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
                         AI Command Center
                     </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">Orchestrating 93+ BizOSaaS Agents</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Orchestrating 93+ Specialist Agents</p>
                 </div>
             </div>
 

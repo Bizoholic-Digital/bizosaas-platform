@@ -38,8 +38,17 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
     { id: 3, title: 'Backup completed successfully', type: 'success', time: '1 hour ago' }
   ]);
 
+  interface NotificationItem {
+    total: number;
+    items: { [key: string]: number };
+  }
+
+  interface NotificationCounts {
+    [key: string]: NotificationItem;
+  }
+
   // Notification counts for sections and individual items
-  const notificationCounts = {
+  const notificationCounts: NotificationCounts = {
     'management': { total: 3, items: { 'tenants': 2, 'users': 1, 'revenue': 0 } },
     'ecommerce': { total: 1, items: { 'dropshipping': 1, 'products': 0, 'orders': 0 } },
     'ai': { total: 2, items: { 'workflows': 1, 'ai-agents': 1, 'chat': 0 } },
@@ -156,113 +165,48 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
     }
   ];
 
-  const renderSidebarItem = (item: any) => {
-    const isExpanded = expandedSections[item.id];
-    const hasChildren = item.children && item.children.length > 0;
-    const isActive = activeTab === item.id || item.children?.some((child: any) => activeTab === child.id);
-
-    if (!hasChildren) {
-      return (
-        <Link
-          key={item.id}
-          href={item.href || `/${item.id}`}
-          onClick={() => setActiveTab(item.id)}
-          className={cn(
-            "flex items-center w-full text-left px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
-            isActive
-              ? "bg-blue-50 text-blue-700 border-r-4 border-blue-500"
-              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          )}
-        >
-          <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-          {item.label}
-        </Link>
-      );
-    }
-
-    return (
-      <div key={item.id}>
-        <button
-          onClick={() => toggleSection(item.id)}
-          className={cn(
-            "flex items-center justify-between w-full text-left px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
-            isActive
-              ? "bg-blue-50 text-blue-700"
-              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-          )}
-        >
-          <div className="flex items-center">
-            <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-            {item.label}
-          </div>
-          <div className="flex items-center space-x-2">
-            {/* Show total notifications when collapsed, or individual when expanded */}
-            {!isExpanded && notificationCounts[item.id]?.total > 0 && (
-              <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                {notificationCounts[item.id].total}
-              </span>
-            )}
-            {isExpanded ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </div>
-        </button>
-
-        {isExpanded && (
-          <div className="ml-6 mt-2 space-y-1">
-            {item.children.map((child: any) => (
-              <Link
-                key={child.id}
-                href={child.href}
-                onClick={() => setActiveTab(child.id)}
-                className={cn(
-                  "flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200",
-                  activeTab === child.id
-                    ? "bg-blue-100 text-blue-800 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                )}
-              >
-                <child.icon className="h-4 w-4 mr-3 flex-shrink-0" />
-                {child.label}
-                {/* Show individual notification counts */}
-                {notificationCounts[item.id]?.items[child.id] > 0 && (
-                  <span className="ml-auto inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                    {notificationCounts[item.id].items[child.id]}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const BottomNav = () => (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom">
+      <Link href="/" onClick={() => setActiveTab('dashboard')} className={cn("flex flex-col items-center p-2", activeTab === 'dashboard' ? "text-blue-600" : "text-gray-400")}>
+        <Home className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-medium">Home</span>
+      </Link>
+      <Link href="/dashboard/workflows" onClick={() => setActiveTab('workflows')} className={cn("flex flex-col items-center p-2", activeTab === 'workflows' ? "text-blue-600" : "text-gray-400")}>
+        <Zap className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-medium">Workflows</span>
+      </Link>
+      <Link href="/ai-agents" onClick={() => setActiveTab('ai-agents')} className={cn("flex flex-col items-center p-2", activeTab === 'ai-agents' ? "text-blue-600" : "text-gray-400")}>
+        <Bot className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-medium">Agents</span>
+      </Link>
+      <Link href="/system-health" onClick={() => setActiveTab('system-health')} className={cn("flex flex-col items-center p-2", activeTab === 'system-health' ? "text-blue-600" : "text-gray-400")}>
+        <Activity className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-medium">Monitor</span>
+      </Link>
+      <button onClick={() => setIsSidebarOpen(true)} className="flex flex-col items-center p-2 text-gray-400">
+        <Menu className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-medium">Menu</span>
+      </button>
+    </div>
+  );
 
   return (
     <div className={cn("min-h-screen", theme === "dark" ? "dark bg-gray-900" : "bg-gray-50")}>
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
-        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-16">
+      <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 h-14">
           <div className="flex items-center">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-            <div className="flex items-center ml-4 lg:ml-0">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Database className="w-5 h-5 text-white" />
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Database className="w-4 h-4 text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-gray-900 dark:text-white">BizOSaaS Admin</span>
+              <span className="ml-3 text-lg font-black tracking-tighter text-gray-900 dark:text-white uppercase">Bizo Admin</span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             {/* Search */}
-            <button className="p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
+            <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-gray-700 rounded-xl transition-all">
               <Search className="h-5 w-5" />
             </button>
 
@@ -304,8 +248,90 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-            {sidebarItems.map(renderSidebarItem)}
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto no-scrollbar">
+            {sidebarItems.map((item) => {
+              const isExpanded = expandedSections[item.id];
+              const hasChildren = item.children && item.children.length > 0;
+              const isActive = activeTab === item.id || item.children?.some((child: any) => activeTab === child.id);
+
+              if (!hasChildren) {
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href || `/${item.id}`}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center w-full px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 mb-1",
+                      isActive
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                        : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700/50"
+                    )}
+                  >
+                    <item.icon className={cn("h-5 w-5 mr-3 flex-shrink-0 transition-colors", isActive ? "text-white" : "text-gray-400")} />
+                    {item.label}
+                  </Link>
+                );
+              }
+
+              return (
+                <div key={item.id} className="mb-1">
+                  <button
+                    onClick={() => toggleSection(item.id)}
+                    className={cn(
+                      "flex items-center justify-between w-full px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                        : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700/50"
+                    )}
+                  >
+                    <div className="flex items-center">
+                      <item.icon className={cn("h-5 w-5 mr-3 flex-shrink-0", isActive ? "text-blue-600" : "text-gray-400")} />
+                      {item.label}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {!isExpanded && notificationCounts[item.id]?.total > 0 && (
+                        <span className="inline-flex items-center justify-center h-5 w-5 text-[10px] font-black text-white bg-red-500 rounded-full scale-90">
+                          {notificationCounts[item.id].total}
+                        </span>
+                      )}
+                      {isExpanded ? <ChevronDown className="h-4 w-4 opacity-50" /> : <ChevronRight className="h-4 w-4 opacity-50" />}
+                    </div>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-100 dark:border-gray-700 pl-2">
+                      {item.children.map((child: any) => (
+                        <Link
+                          key={child.id}
+                          href={child.href}
+                          onClick={() => {
+                            setActiveTab(child.id);
+                            if (window.innerWidth < 1024) setIsSidebarOpen(false);
+                          }}
+                          className={cn(
+                            "flex items-center px-4 py-2.5 text-xs font-bold rounded-lg transition-all duration-200",
+                            activeTab === child.id
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                              : "text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
+                          )}
+                        >
+                          <child.icon className={cn("h-4 w-4 mr-3", activeTab === child.id ? "text-blue-600" : "text-gray-400")} />
+                          {child.label}
+                          {notificationCounts[item.id]?.items[child.id] > 0 && (
+                            <span className="ml-auto inline-flex items-center justify-center h-4 w-4 text-[9px] font-black text-white bg-red-400 rounded-full">
+                              {notificationCounts[item.id].items[child.id]}
+                            </span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
           {/* User info */}
@@ -341,6 +367,7 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
+      <BottomNav />
     </div>
   );
 }

@@ -21,54 +21,54 @@ export default function DashboardPage() {
   const { tenantId } = userInfo;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <MagicDiscovery />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <Plug className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <Plug className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Connectors</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">3</p>
+            <div className="ml-3 md:ml-4">
+              <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Connectors</p>
+              <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">3</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+              <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-green-600 dark:text-green-400" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">AI Tasks</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">128</p>
+            <div className="ml-3 md:ml-4">
+              <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">AI Tasks</p>
+              <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">128</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-purple-600 dark:text-purple-400" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Traffic</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">12.5k</p>
+            <div className="ml-3 md:ml-4">
+              <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Traffic</p>
+              <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">12.5k</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600 dark:text-orange-400" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Conversions</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">4.2%</p>
+            <div className="ml-3 md:ml-4">
+              <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Conv.</p>
+              <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">4.2%</p>
             </div>
           </div>
         </div>
@@ -102,10 +102,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Welcome to BizOSaaS</h3>
-        <p className="text-gray-600 dark:text-gray-400">
-          Your central hub for managing your digital presence. Connect your existing platforms, leverage AI agents, and grow your business.
+      <div className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Welcome to Bizo</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+          Your central hub for managing your digital presence. Connect your platforms, activate AI agents, and scale your business effortlessly.
         </p>
       </div>
     </div>

@@ -171,7 +171,7 @@ export default function IntegrationsPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-white">Integrations</h1>
                     <p className="text-muted-foreground mt-2">
-                        Connect your tools to BizOSaaS and unlock the power of AI Agents.
+                        Connect your tools to Bizo and unlock the power of Specialist Agents.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ export default function IntegrationsPage() {
                                             <DialogHeader>
                                                 <DialogTitle>Connect {integration.name}</DialogTitle>
                                                 <DialogDescription className="text-slate-400">
-                                                    Enter your credentials to connect {integration.name} to BizOSaaS.
+                                                    Enter your credentials to connect {integration.name} to Bizo.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="grid gap-4 py-4">

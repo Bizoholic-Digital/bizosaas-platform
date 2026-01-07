@@ -1,6 +1,6 @@
 {
-  "name": "BizOSaaS Platform",
-  "short_name": "BizOSaaS",
+  "name": "Bizo Client Portal",
+  "short_name": "Bizo Portal",
   "description": "Unified Enterprise SaaS Platform",
   "start_url": "/",
   "display": "standalone",

@@ -10,8 +10,8 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 const inter = { className: 'font-sans' };
 
 export const metadata: Metadata = {
-  title: 'BizOSaaS Admin v5 [LIVE]',
-  description: 'Super Admin Dashboard for BizOSaaS Multi-Tenant Platform - Workflow Management & AI Agent Control',
+  title: 'Bizo Admin Hub [LIVE]',
+  description: 'Elite Enterprise Platform Control Hub - Super Admin v5',
   keywords: ['BizOSaaS', 'Admin', 'Platform', 'Management', 'Multi-tenant', 'AI Workflows', 'Super Admin'],
   authors: [{ name: 'BizOSaaS Team' }],
   robots: 'noindex, nofollow', // Admin dashboard should not be indexed
@@ -29,7 +29,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#3b82f6',
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#2563eb',
 };
 
 // Force dynamic rendering for all pages - prevents static generation errors

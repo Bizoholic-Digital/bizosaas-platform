@@ -8,8 +8,8 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 const inter = { className: 'font-sans' };
 
 export const metadata: Metadata = {
-  title: 'BizOSaaS Platform',
-  description: 'Unified Enterprise SaaS Platform',
+  title: 'Bizo Portal Hub',
+  description: 'Elite Enterprise Platform Control Hub',
   manifest: '/manifest.json',
 };
 
