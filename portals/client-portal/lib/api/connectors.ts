@@ -66,6 +66,34 @@ export class ConnectorsApi {
     async syncConnector(connectorId: string, resource?: string): Promise<ApiResponse<{ jobId: string; status: string }>> {
         return brainApi.post<{ jobId: string; status: string }>(`/api/brain/connectors/${connectorId}/sync`, { resource });
     }
+
+    /**
+     * Discover plugins for a connected WordPress site
+     */
+    async discoverPlugins(connectorId: string): Promise<ApiResponse<{ plugins: any[] }>> {
+        return brainApi.get<{ plugins: any[] }>(`/api/brain/connectors/${connectorId}/plugins`);
+    }
+
+    /**
+     * Auto-connect discovered plugins
+     */
+    async autoConnectPlugins(connectorId: string, pluginSlugs: string[]): Promise<ApiResponse<{ status: string; connected: string[]; errors: any[] }>> {
+        return brainApi.post<any>(`/api/brain/connectors/${connectorId}/auto-connect-plugins`, pluginSlugs);
+    }
+
+    /**
+     * Get marketplace plugins for a platform
+     */
+    async getMarketplacePlugins(platform: string = 'wordpress'): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>(`/api/brain/connectors/marketplace/plugins?platform=${platform}`);
+    }
+
+    /**
+     * Track user interest in a plugin
+     */
+    async trackPluginInterest(pluginSlug: string, action: string, platform: string = 'wordpress'): Promise<ApiResponse<any>> {
+        return brainApi.post<any>(`/api/brain/connectors/marketplace/track-interest`, { plugin_slug: pluginSlug, action, platform });
+    }
 }
 
 export const connectorsApi = new ConnectorsApi();

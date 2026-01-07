@@ -38,13 +38,35 @@ export function ConnectorsContent() {
     const searchParams = useSearchParams();
     const activeCategory = searchParams.get('category');
     const [connectors, setConnectors] = useState<ConnectorConfig[]>([]);
+    const [marketplacePlugins, setMarketplacePlugins] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingMarketplace, setLoadingMarketplace] = useState(false);
     const [selectedConnector, setSelectedConnector] = useState<ConnectorConfig | null>(null);
     const [credentials, setCredentials] = useState<ConnectorCredentials>({});
     const [isConnecting, setIsConnecting] = useState(false);
     const [isValidating, setIsValidating] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+
+    const categoryTitles: Record<string, string> = {
+        crm: 'CRM & Marketing Automation',
+        cms: 'Content Management Systems',
+        ecommerce: 'E-commerce Platforms',
+        analytics: 'Analytics & Search Console',
+        marketing: 'Digital Marketing & Ads',
+        marketplace: 'Plugin Marketplace',
+        all: 'All Data Connectors'
+    };
+
+    const categoryDescription: Record<string, string> = {
+        crm: 'Manage your sales pipelines, contacts, and marketing automation.',
+        cms: 'Connect your websites and blogs to sync content and media.',
+        ecommerce: 'Sync products, orders, and customers from your online stores.',
+        analytics: 'Monitor your website performance and SEO intelligence.',
+        marketing: 'Manage your ad campaigns and social media presence.',
+        marketplace: 'Browse and request specialized plugins. Your interest helps us secure better deals for you!',
+        all: 'Manage your integrations with external CMS, CRM, and E-commerce platforms.'
+    };
 
 
     // Mock data for initial development - Replace with API call later
@@ -260,37 +282,53 @@ export function ConnectorsContent() {
         }
     ];
 
-    // Filtered list for display
     const filteredConnectors = connectors.filter(c => {
         if (!activeCategory || activeCategory === 'all') return true;
         return c.type === activeCategory;
     });
 
-    const categoryTitles: Record<string, string> = {
-        crm: 'CRM & Marketing Automation',
-        cms: 'Content Management Systems',
-        ecommerce: 'E-commerce Platforms',
-        analytics: 'Analytics & Search Console',
-        marketing: 'Digital Marketing & Ads',
-        all: 'All Data Connectors'
-    };
-
-    const categoryDescription: Record<string, string> = {
-        crm: 'Manage your sales pipelines, contacts, and marketing automation.',
-        cms: 'Connect your websites and blogs to sync content and media.',
-        ecommerce: 'Sync products, orders, and customers from your online stores.',
-        analytics: 'Monitor your website performance and SEO intelligence.',
-        marketing: 'Manage your ad campaigns and social media presence.',
-        all: 'Manage your integrations with external CMS, CRM, and E-commerce platforms.'
-    };
-
     const currentTitle = activeCategory ? (categoryTitles[activeCategory] || 'Connectors') : 'Data Connectors';
     const currentDesc = activeCategory ? (categoryDescription[activeCategory] || 'Manage your integrations.') : 'Manage your integrations with external CMS, CRM, and E-commerce platforms.';
-
 
     useEffect(() => {
         loadConnectors();
     }, []);
+
+    useEffect(() => {
+        if (activeCategory === 'marketplace') {
+            loadMarketplace();
+        }
+    }, [activeCategory]);
+
+    const loadMarketplace = async () => {
+        setLoadingMarketplace(true);
+        try {
+            const res = await connectorsApi.getMarketplacePlugins();
+            if (res.data) {
+                setMarketplacePlugins(res.data);
+                // Track impressions for all plugins
+                res.data.forEach((p: any) => {
+                    connectorsApi.trackPluginInterest(p.slug, 'view');
+                });
+            }
+        } catch (error) {
+            console.error("Failed to load marketplace", error);
+        } finally {
+            setLoadingMarketplace(false);
+        }
+    };
+
+    const handleMarketplaceAction = async (plugin: any, action: string) => {
+        try {
+            await connectorsApi.trackPluginInterest(plugin.slug, action);
+            if (action === 'click') {
+                toast.success(`Demand tracked for ${plugin.name}. We are working on specialized deals for this plugin!`);
+            }
+        } catch (error) {
+            console.error("Tracking interest failed", error);
+        }
+    };
+
 
     const loadConnectors = async () => {
         setLoading(true);
@@ -393,7 +431,7 @@ export function ConnectorsContent() {
         }
     };
 
-    if (loading) return (
+    if (loading || (activeCategory === 'marketplace' && loadingMarketplace)) return (
         <div className="flex items-center justify-center p-12">
             <RefreshCw className="h-8 w-8 animate-spin text-primary" />
         </div>
@@ -406,79 +444,132 @@ export function ConnectorsContent() {
                     <h2 className="text-2xl font-bold tracking-tight">{currentTitle}</h2>
                     <p className="text-muted-foreground">{currentDesc}</p>
                 </div>
-                <Button variant="outline" onClick={loadConnectors}>
+                <Button variant="outline" onClick={activeCategory === 'marketplace' ? loadMarketplace : loadConnectors}>
                     <RefreshCw className="mr-2 h-4 w-4" /> Refresh
                 </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredConnectors.map(c => {
-
-                    const Icon = ICONS[c.icon] || ICONS.default;
-                    const isConnected = c.status === 'connected' || c.status === 'syncing';
-
-                    return (
-                        <Card key={c.id} className={`relative overflow-hidden transition-all ${isConnected ? 'border-primary/50 bg-primary/5' : ''}`}>
-                            {isConnected && (
-                                <div className="absolute top-0 right-0 p-3">
-                                    <Badge variant="default" className="bg-green-600 hover:bg-green-700">
-                                        <Check className="h-3 w-3 mr-1" /> Connected
-                                    </Badge>
-                                </div>
-                            )}
-                            <CardHeader>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className={`p-2 rounded-lg ${isConnected ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                                        <Icon className="h-6 w-6" />
-                                    </div>
-                                    <CardTitle>{c.name}</CardTitle>
-                                </div>
-                                <CardDescription className="h-10 line-clamp-2">
-                                    {c.description}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-muted-foreground">Version</span>
-                                        <span className="font-mono">{c.version}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-muted-foreground">Status</span>
-                                        <span className={`font-medium ${c.status === 'connected' ? 'text-green-600' :
-                                            c.status === 'syncing' ? 'text-blue-600 animate-pulse' : 'text-gray-500'
-                                            }`}>
-                                            {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
-                                        </span>
-                                    </div>
-                                    {c.lastSync && (
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <span>Last Synced</span>
-                                            <span>{new Date(c.lastSync).toLocaleDateString()}</span>
+                {activeCategory === 'marketplace' ? (
+                    marketplacePlugins.map((p: any) => {
+                        const Icon = ICONS[p.icon] || ICONS.default;
+                        return (
+                            <Card key={p.slug} className="flex flex-col relative overflow-hidden group border-blue-100 dark:border-blue-900/20">
+                                <CardHeader>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                                            <Icon className="h-6 w-6" />
                                         </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                            <CardFooter className="flex gap-2">
-                                {isConnected ? (
-                                    <>
-                                        <Button variant="outline" className="w-full" onClick={() => handleSync(c)} disabled={c.status === 'syncing'}>
-                                            <RefreshCw className={`mr-2 h-4 w-4 ${c.status === 'syncing' ? 'animate-spin' : ''}`} />
-                                            Sync
-                                        </Button>
-                                        <Button variant="destructive" size="icon" onClick={() => handleDisconnect(c)}>
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <Button className="w-full" onClick={() => handleOpenConnect(c)}>
-                                        Connect
+                                        <div>
+                                            <CardTitle className="text-lg">{p.name}</CardTitle>
+                                            <Badge variant="secondary" className="mt-1 text-[10px]">{p.category}</Badge>
+                                        </div>
+                                    </div>
+                                    <CardDescription className="h-20 line-clamp-3">
+                                        {p.description}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-1">
+                                    <div className="space-y-3">
+                                        {p.partner_deal && (
+                                            <div className="p-3 bg-green-50 dark:bg-green-900/10 text-green-700 dark:text-green-400 text-xs rounded-xl border border-green-100 dark:border-green-900/20 font-medium animate-pulse-subtle">
+                                                <Star className="inline h-3 w-3 mr-1 mb-0.5" />
+                                                Deal: {p.partner_deal}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                            <span>Compatibility</span>
+                                            <span className="text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                                                <CheckCircle2 className="h-3 w-3" /> Verified
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                            <span>Status</span>
+                                            <span>{p.status || (p.supported ? 'Production Ready' : 'In Backlog')}</span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                                <CardFooter>
+                                    <Button
+                                        className="w-full font-bold shadow-lg"
+                                        variant={p.supported ? "default" : "outline"}
+                                        onClick={() => handleMarketplaceAction(p, 'click')}
+                                    >
+                                        {p.supported ? 'Add to Strategy' : 'Request Access'}
                                     </Button>
+                                </CardFooter>
+                            </Card>
+                        );
+                    })
+                ) : (
+                    filteredConnectors.map(c => {
+
+                        const Icon = ICONS[c.icon] || ICONS.default;
+                        const isConnected = c.status === 'connected' || c.status === 'syncing';
+
+                        return (
+                            <Card key={c.id} className={`relative overflow-hidden transition-all ${isConnected ? 'border-primary/50 bg-primary/5' : ''}`}>
+                                {isConnected && (
+                                    <div className="absolute top-0 right-0 p-3">
+                                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                            <Check className="h-3 w-3 mr-1" /> Connected
+                                        </Badge>
+                                    </div>
                                 )}
-                            </CardFooter>
-                        </Card>
-                    );
-                })}
+                                <CardHeader>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className={`p-2 rounded-lg ${isConnected ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                                            <Icon className="h-6 w-6" />
+                                        </div>
+                                        <CardTitle>{c.name}</CardTitle>
+                                    </div>
+                                    <CardDescription className="h-10 line-clamp-2">
+                                        {c.description}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-muted-foreground">Version</span>
+                                            <span className="font-mono">{c.version}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-muted-foreground">Status</span>
+                                            <span className={`font-medium ${c.status === 'connected' ? 'text-green-600' :
+                                                c.status === 'syncing' ? 'text-blue-600 animate-pulse' : 'text-gray-500'
+                                                }`}>
+                                                {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
+                                            </span>
+                                        </div>
+                                        {c.lastSync && (
+                                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                                <span>Last Synced</span>
+                                                <span>{new Date(c.lastSync).toLocaleDateString()}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                                <CardFooter className="flex gap-2">
+                                    {isConnected ? (
+                                        <>
+                                            <Button variant="outline" className="w-full" onClick={() => handleSync(c)} disabled={c.status === 'syncing'}>
+                                                <RefreshCw className={`mr-2 h-4 w-4 ${c.status === 'syncing' ? 'animate-spin' : ''}`} />
+                                                Sync
+                                            </Button>
+                                            <Button variant="destructive" size="icon" onClick={() => handleDisconnect(c)}>
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button className="w-full" onClick={() => handleOpenConnect(c)}>
+                                            Connect
+                                        </Button>
+                                    )}
+                                </CardFooter>
+                            </Card>
+                        );
+                    })
+                )}
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

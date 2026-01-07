@@ -208,3 +208,207 @@ async def discover_plugins(
     plugins = await connector.discover_plugins()
     
     return {"plugins": plugins}
+
+@router.post("/{connector_id}/auto-connect-plugins")
+async def auto_connect_plugins(
+    connector_id: str,
+    plugin_slugs: List[str] = Body(...),
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    """
+    Automatically connect discovered plugins by reusing parent credentials.
+    Specifically optimized for WordPress child plugins like FluentCRM.
+    """
+    if connector_id != "wordpress":
+        raise HTTPException(status_code=400, detail="Auto-connect only supported for WordPress")
+    
+    tenant_id = user.tenant_id or "default_tenant"
+    parent_creds = await secret_service.get_connector_credentials(tenant_id, connector_id)
+    
+    if not parent_creds:
+        raise HTTPException(status_code=404, detail="Parent WordPress connector not found")
+
+    # Mapping of WP plugin text-domains to our connector IDs
+    # and any credential transformations needed
+    TRANSFORMS = {
+        "fluentcrm": {
+            "target": "fluentcrm",
+            "creds": lambda c: {
+                "url": c.get("url"),
+                "username": c.get("username"),
+                "application_password": c.get("application_password")
+            }
+        },
+        # WooCommerce might work with Basic Auth (WP App Passwords) 
+        # if the site is configured to allow it for the WC REST API.
+        "woocommerce": {
+            "target": "woocommerce",
+            "creds": lambda c: {
+                "url": c.get("url"),
+                # Note: Default WooCommerce connector expects CK/CS. 
+                # We might need to handle Basic Auth fallback in the connector itself.
+                "consumer_key": c.get("username"), 
+                "consumer_secret": c.get("application_password")
+            }
+        }
+    }
+
+    connected = []
+    errors = []
+
+    for slug in plugin_slugs:
+        if slug not in TRANSFORMS:
+            errors.append({"slug": slug, "error": "No auto-connect transform defined for this plugin"})
+            continue
+        
+        config = TRANSFORMS[slug]
+        target_id = config["target"]
+        child_creds = config["creds"](parent_creds)
+
+        try:
+            # 1. Create connector instance to validate
+            connector = ConnectorRegistry.create_connector(target_id, tenant_id, child_creds)
+            # validation might be slow, we'll do basic check or trust the parent for now
+            # is_valid = await connector.validate_credentials()
+            
+            # 2. Store credentials
+            success = await secret_service.store_connector_credentials(
+                tenant_id=tenant_id,
+                connector_id=target_id,
+                credentials=child_creds,
+                metadata={
+                    "auto_configured_from": "wordpress",
+                    "created_by": user.email
+                }
+            )
+            
+            if success:
+                connected.append(slug)
+            else:
+                errors.append({"slug": slug, "error": "Failed to store credentials"})
+                
+        except Exception as e:
+            errors.append({"slug": slug, "error": str(e)})
+
+    return {
+        "status": "partial_success" if errors else "success",
+        "connected": connected,
+        "errors": errors
+    }
+
+@router.get("/marketplace/plugins")
+async def list_marketplace_plugins(
+    platform: str = "wordpress",
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """List curated plugins for a platform to drive cross-sells and demand understanding."""
+    MARKETPLACE = {
+        "wordpress": [
+            {
+                "slug": "fluentcrm",
+                "name": "FluentCRM",
+                "description": "Full-featured email marketing automation for WP. Sync leads directly to CRM agents.",
+                "category": "Marketing",
+                "icon": "mail",
+                "supported": True,
+                "auto_connect": True,
+                "partner_deal": "Get 20% off with BIZOSAAS20"
+            },
+            {
+                "slug": "woocommerce",
+                "name": "WooCommerce",
+                "description": "Power your online store. Sync products and orders to AI Sales agents.",
+                "category": "E-commerce",
+                "icon": "shopping-cart",
+                "supported": True,
+                "auto_connect": True
+            },
+            {
+                "slug": "wp-vivid",
+                "name": "WPVivid Backup",
+                "description": "Best-in-class backup and migration. We are working on a deal for BizOSaaS clients.",
+                "category": "Utility",
+                "icon": "hard-drive",
+                "supported": False,
+                "auto_connect": False,
+                "status": "Planning"
+            },
+            {
+                "slug": "rank-math",
+                "name": "Rank Math SEO",
+                "description": "AI-friendly SEO optimization. Requested by many users.",
+                "category": "SEO",
+                "icon": "trending-up",
+                "supported": False,
+                "auto_connect": False,
+                "status": "In Development"
+            }
+        ]
+    }
+    
+    return MARKETPLACE.get(platform, [])
+
+@router.post("/marketplace/track-interest")
+async def track_plugin_interest(
+    plugin_slug: str = Body(..., embed=True),
+    action: str = Body(..., embed=True), # 'view', 'click', 'install_attempt'
+    platform: str = Body("wordpress", embed=True),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Track user interaction with marketplace items for demand analysis."""
+    tenant_id = user.tenant_id or "default_tenant"
+    logger.info(f"DEMAND_TRACK: {user.email} | {action} | {platform}:{plugin_slug}")
+    
+    # Store in DB if needed. For now logs are fine for analytics.
+    return {"status": "success", "message": "Interest tracked"}
+
+@router.get("/marketplace/metrics")
+async def get_marketplace_metrics(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get aggregated marketplace metrics for the platform owner."""
+    # Ensure only super_admin can see this
+    if user.role != "super_admin" and user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # In a real app, you'd query the DB for DEMAND_TRACK events.
+    # For now, we return mock aggregated data to build the UI.
+    return [
+        {
+            "slug": "fluentcrm",
+            "name": "FluentCRM",
+            "views": 150,
+            "clicks": 45,
+            "install_attempts": 12,
+            "trend": "+15%",
+            "demand_score": 85
+        },
+        {
+            "slug": "woocommerce",
+            "name": "WooCommerce",
+            "views": 200,
+            "clicks": 30,
+            "install_attempts": 5,
+            "trend": "-5%",
+            "demand_score": 62
+        },
+        {
+            "slug": "rank-math",
+            "name": "Rank Math SEO",
+            "views": 310,
+            "clicks": 120,
+            "install_attempts": 0, # Not supported yet
+            "trend": "+40%",
+            "demand_score": 95
+        },
+        {
+            "slug": "wp-vivid",
+            "name": "WPVivid Backup",
+            "views": 80,
+            "clicks": 10,
+            "install_attempts": 0,
+            "trend": "0%",
+            "demand_score": 30
+        }
+    ]

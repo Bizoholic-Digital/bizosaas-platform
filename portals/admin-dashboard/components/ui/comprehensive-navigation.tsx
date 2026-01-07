@@ -107,6 +107,14 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/users',
           icon: <Users className="w-4 h-4" />,
           active: pathname === '/dashboard/users'
+        },
+        {
+          id: 'plugin-analytics',
+          name: 'Marketplace Demand',
+          href: '/dashboard/plugin-analytics',
+          icon: <BarChart3 className="w-4 h-4 text-emerald-500" />,
+          badge: isCollapsed ? undefined : 'GROWTH',
+          active: pathname === '/dashboard/plugin-analytics'
         }
       ]
     },

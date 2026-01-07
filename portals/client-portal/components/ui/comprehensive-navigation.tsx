@@ -222,6 +222,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/connectors',
           icon: <RefreshCw className="w-4 h-4 text-emerald-500" />,
           active: pathname === '/dashboard/connectors'
+        },
+        {
+          id: 'plugin-marketplace',
+          name: 'Plugin Marketplace',
+          href: '/dashboard/connectors?category=marketplace',
+          icon: <ShoppingCart className="w-4 h-4 text-blue-500" />,
+          active: searchParams.get('category') === 'marketplace'
         }
       ]
     },

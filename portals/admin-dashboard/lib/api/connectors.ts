@@ -48,6 +48,10 @@ export class ConnectorsApi {
     async syncConnector(connectorId: string, resource?: string): Promise<ApiResponse<{ jobId: string; status: string }>> {
         return brainApi.post<{ jobId: string; status: string }>(`/connectors/${connectorId}/sync`, { resource });
     }
+
+    async getMarketplaceMetrics(): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>('/connectors/marketplace/metrics');
+    }
 }
 
 export const connectorsApi = new ConnectorsApi();
