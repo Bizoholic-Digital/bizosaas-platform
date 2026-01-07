@@ -3,6 +3,7 @@
 import { AgentRoleManagement } from './AgentRoleManagement';
 import { AgentPerformancePanel } from './AgentPerformancePanel';
 import { AgentOptimizationQueue } from './AgentOptimizationQueue';
+import PlaygroundManager from './PlaygroundManager';
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +25,7 @@ import {
     Settings, Bot, Cpu, HardDrive, Network, Zap, Shield, Clock, Target,
     AlertCircle, CheckCircle, Save, RotateCcw, Copy, Download, Upload, Play, Pause,
     Square, Trash2, Plus, Edit, Key, Database, Globe, Lock, Unlock, Eye,
-    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users, Sparkles, Server
+    EyeOff, Code, FileJson, Terminal, X, Power, Activity, RefreshCw, Users, Sparkles, Server, FlaskConical
 } from 'lucide-react';
 
 interface AgentManagementControlsProps {
@@ -303,6 +304,7 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                             <NavButton id="performance" label="Performance" icon={Zap} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="optimizations" label="Optimizations" icon={Sparkles} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="ai" label="AI Configuration" icon={Bot} active={activeTab} onClick={setActiveTab} />
+                            <NavButton id="playground" label="Playground" icon={FlaskConical} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="integrations" label="Integrations" icon={Globe} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="security" label="Security" icon={Shield} active={activeTab} onClick={setActiveTab} />
                             <NavButton id="monitoring" label="Monitoring" icon={Target} active={activeTab} onClick={setActiveTab} />
@@ -497,6 +499,10 @@ export function AgentManagementControls({ agentId, onClose }: AgentManagementCon
                                     </div>
                                 </div>
                             </div>
+                        )}
+
+                        {activeTab === 'playground' && (
+                            <PlaygroundManager agentId={agentId} />
                         )}
 
                         {(activeTab === 'resources' || activeTab === 'integrations' || activeTab === 'security' || activeTab === 'monitoring') && (

@@ -85,6 +85,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           icon: <Sparkles className="w-4 h-4 text-indigo-500" />,
           badge: isCollapsed ? undefined : 'AI',
           active: pathname === '/dashboard/ai-assistant'
+        },
+        {
+          id: 'ai-agents',
+          name: 'AI Agent Monitor',
+          href: '/dashboard/ai-agents',
+          icon: <Bot className="w-4 h-4 text-blue-500" />,
+          active: pathname === '/dashboard/ai-agents'
         }
       ]
     },

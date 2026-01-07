@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Activity, Brain, CheckCircle, XCircle, Clock, AlertTriangle, Zap, Target, Users, BarChart3, Settings } from 'lucide-react'
-import { AgentManagementControls } from '../../components/agent-management/AgentManagementControls'
+import { AgentManagementControls } from '../../../components/agent-management/AgentManagementControls'
 
 interface AgentStatus {
   id: string
@@ -326,8 +326,8 @@ export default function AIAgentsPage() {
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500">Status:</span>
                           <span className={`font-medium capitalize ${agent.status === 'active' ? 'text-green-600' :
-                              agent.status === 'error' ? 'text-red-600' :
-                                agent.status === 'processing' ? 'text-blue-600' : 'text-gray-600'
+                            agent.status === 'error' ? 'text-red-600' :
+                              agent.status === 'processing' ? 'text-blue-600' : 'text-gray-600'
                             }`}>
                             {agent.status}
                           </span>

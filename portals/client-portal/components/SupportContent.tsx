@@ -15,7 +15,7 @@ import {
     AlertCircle,
     Search
 } from 'lucide-react';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 
 export default function SupportContent() {
     const [tickets, setTickets] = useState<any[]>([]);
@@ -46,7 +46,8 @@ export default function SupportContent() {
             setLoading(false);
             setShowCreate(false);
             setNewTicket({ subject: '', description: '', priority: 'medium' });
-            toast.success("Ticket created successfully! Our AI agent is analyzing it.");
+            // toast.success("Ticket created successfully! Our AI agent is analyzing it.");
+            alert("Ticket created successfully! Our AI agent is analyzing it.");
         }, 1000);
     };
 
