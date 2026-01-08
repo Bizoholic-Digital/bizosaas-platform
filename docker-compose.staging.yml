@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Base Infrastructure
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=test_db
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # Brain Gateway
+  brain-gateway:
+    build:
+      context: ./bizosaas-brain-core/brain-gateway
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://test:test@postgres:5432/test_db
+      - REDIS_URL=redis://redis:6379/0
+      - DISABLE_AUTH=true
+      - VECTOR_DB_URL=postgresql://test:test@postgres:5432/test_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  # Client Portal (port 3003)
+  client-portal:
+    build:
+      context: ./portals/client-portal
+      dockerfile: Dockerfile.dev
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3003:3003"
+    depends_on:
+      - brain-gateway
+
+  # Admin Dashboard (port 3004)
+  admin-dashboard:
+    build:
+      context: ./portals/admin-dashboard
+      dockerfile: Dockerfile.dev
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3004:3004"
+    depends_on:
+      - brain-gateway
