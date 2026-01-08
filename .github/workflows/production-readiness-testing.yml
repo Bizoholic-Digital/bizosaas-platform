@@ -142,7 +142,7 @@ jobs:
         run: |
           cd bizosaas-brain-core/brain-gateway
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          pip install pytest pytest-asyncio redis hvac
       
       - name: Run integration tests
         env:
@@ -176,7 +176,7 @@ jobs:
       - name: Start services
         run: |
           docker-compose -f docker-compose.staging.yml up -d
-          sleep 30  # Wait for services to be ready
+          sleep 60  # Wait for services to be ready
       
       - name: Run E2E tests
         env:
@@ -235,6 +235,11 @@ jobs:
         with:
           args: --severity-threshold=high
       
+      - name: Start services
+        run: |
+          docker-compose -f docker-compose.staging.yml up -d
+          sleep 60
+
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.7.0
         with:
@@ -262,7 +267,7 @@ jobs:
       - name: Start services
         run: |
           docker-compose -f docker-compose.staging.yml up -d
-          sleep 30
+          sleep 60
       
       - name: Run performance tests
         env:
@@ -295,7 +300,7 @@ jobs:
       - name: Start services
         run: |
           docker-compose -f docker-compose.staging.yml up -d
-          sleep 30
+          sleep 60
       
       - name: Run accessibility tests
         env:
