@@ -63,7 +63,9 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/bizosaas-brain-core/brain-gateway
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          VECTOR_DB_URL: postgresql://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
+          DISABLE_AUTH: "true"
         run: |
           cd testing/backend
           pytest test_brain_gateway.py -v --cov=app --cov-report=xml --cov-report=term
@@ -148,6 +150,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/bizosaas-brain-core/brain-gateway
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          VECTOR_DB_URL: postgresql://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
           DISABLE_AUTH: "true"
         run: |
