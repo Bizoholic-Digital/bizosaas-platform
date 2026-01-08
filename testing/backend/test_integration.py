@@ -20,13 +20,25 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="session")
 def test_db():
-    """Create test database"""
+    """Create test database and seed default tenant"""
     # Import Base from where it's actually defined
-    from app.models.user import Base
-    # Also import other models to ensure they are registered with Base
+    from app.models.user import Base, Tenant
     from app.models.campaign import Campaign
+    import uuid
     
     Base.metadata.create_all(bind=engine)
+    
+    # Seed default tenant for auth-bypass (used by api/campaigns.py)
+    session = TestingSessionLocal()
+    try:
+        default_tenant_id = uuid.UUID("00000000-0000-0000-0000-000000000000")
+        if not session.query(Tenant).filter_by(id=default_tenant_id).first():
+            tenant = Tenant(id=default_tenant_id, name="Default Tenant", slug="default")
+            session.add(tenant)
+            session.commit()
+    finally:
+        session.close()
+
     yield
     Base.metadata.drop_all(bind=engine)
 
