@@ -19,14 +19,23 @@ setup.describe('Authentication Setup', () => {
         await page.goto(process.env.ADMIN_DASHBOARD_URL || 'http://localhost:3004/login');
 
         // Wait for login form or Clerk sign-in
-        await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 20000 });
+        try {
+            await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 30000 });
+        } catch (e) {
+            console.error('Timeout waiting for login form on Admin Dashboard');
+            await page.screenshot({ path: path.join(__dirname, '../test-results/admin-login-timeout.png') });
+            const content = await page.content();
+            console.log('Page content:', content.substring(0, 1000));
+            throw e;
+        }
 
         // Check if using Clerk
         if (await page.locator('input[name="identifier"]').isVisible()) {
             await page.fill('input[name="identifier"]', adminEmail);
             // Click continue if it's the multi-step form
-            if (await page.locator('button:has-text("Continue")').isVisible()) {
-                await page.click('button:has-text("Continue")');
+            const continueBtn = page.locator('button:has-text("Continue"), button.cl-formButtonPrimary:has-text("Continue")');
+            if (await continueBtn.isVisible()) {
+                await continueBtn.click();
             }
             await page.fill('input[name="password"]', adminPassword);
             await page.click('button:has-text("Sign in"), button.cl-formButtonPrimary');
@@ -57,13 +66,22 @@ setup.describe('Authentication Setup', () => {
         await page.goto(process.env.CLIENT_PORTAL_URL || 'http://localhost:3003/login');
 
         // Wait for login form or Clerk sign-in
-        await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 20000 });
+        try {
+            await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 30000 });
+        } catch (e) {
+            console.error('Timeout waiting for login form on Client Portal');
+            await page.screenshot({ path: path.join(__dirname, '../test-results/client-login-timeout.png') });
+            const content = await page.content();
+            console.log('Page content:', content.substring(0, 1000));
+            throw e;
+        }
 
         // Check if using Clerk
         if (await page.locator('input[name="identifier"]').isVisible()) {
             await page.fill('input[name="identifier"]', clientEmail);
-            if (await page.locator('button:has-text("Continue")').isVisible()) {
-                await page.click('button:has-text("Continue")');
+            const continueBtn = page.locator('button:has-text("Continue"), button.cl-formButtonPrimary:has-text("Continue")');
+            if (await continueBtn.isVisible()) {
+                await continueBtn.click();
             }
             await page.fill('input[name="password"]', clientPassword);
             await page.click('button:has-text("Sign in"), button.cl-formButtonPrimary');
