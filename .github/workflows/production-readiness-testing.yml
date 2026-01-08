@@ -61,6 +61,7 @@ jobs:
       
       - name: Run unit tests
         env:
+          PYTHONPATH: ${{ github.workspace }}/bizosaas-brain-core/brain-gateway
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
         run: |
@@ -94,7 +95,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd portals/${{ matrix.portal }}
-          npm ci
+          npm ci --legacy-peer-deps
       
       - name: Run tests
         run: |
@@ -145,6 +146,7 @@ jobs:
       
       - name: Run integration tests
         env:
+          PYTHONPATH: ${{ github.workspace }}/bizosaas-brain-core/brain-gateway
           DATABASE_URL: postgresql://test:test@localhost:5432/test_db
           REDIS_URL: redis://localhost:6379/0
         run: |

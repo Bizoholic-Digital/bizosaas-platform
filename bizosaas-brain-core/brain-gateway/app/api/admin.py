@@ -118,6 +118,7 @@ async def get_api_analytics(
         "response_time_avg": 0,
         "error_rate": 0.0,
         "active_sessions": 0,
+        "llm_requests": 0,
         "timestamp": time.time()
     }
 
@@ -138,27 +139,35 @@ async def get_api_analytics(
                 duration_sum = 0.0
                 
                 for line in text.splitlines():
+                    # Total Requests
                     if line.startswith("http_request_duration_seconds_count"):
                         try:
-                            req_count += float(line.split()[-1])
+                            val = float(line.split()[-1])
+                            req_count += val
+                            # Check if this metric line contains agent routes
+                            if '/api/brain/agents' in line or '/tasks' in line:
+                                metrics["llm_requests"] = metrics.get("llm_requests", 0) + int(val)
                         except: pass
+                    
+                    # Total Duration
                     elif line.startswith("http_request_duration_seconds_sum"):
                         try:
                             duration_sum += float(line.split()[-1])
                         except: pass
+                    
+                    # Errors
                     elif 'status="5' in line or 'status="4' in line:
                          if "_count" in line:
                             try:
                                 error_count += float(line.split()[-1])
                             except: pass
 
-                # Calculate averages (Note: these are cumulative since startup)
-                # To get "per minute" we'd need to store previous state, 
-                # but for MVP overview we'll use total counts scaled or latest.
-                metrics["requests_per_minute"] = int(req_count / 10) if req_count > 0 else 0 # Dummy scaling
+                # Calculate averages
+                metrics["requests_per_minute"] = int(req_count / 10) if req_count > 0 else 0
                 metrics["response_time_avg"] = int((duration_sum / req_count) * 1000) if req_count > 0 else 0
                 metrics["error_rate"] = round((error_count / req_count) * 100, 2) if req_count > 0 else 0.0
-                metrics["active_sessions"] = int(req_count / 100) # Placeholder
+                metrics["active_sessions"] = int(req_count / 100)
+                if "llm_requests" not in metrics: metrics["llm_requests"] = 0
                 
     except Exception as e:
         print(f"Error fetching Prometheus metrics: {e}")
