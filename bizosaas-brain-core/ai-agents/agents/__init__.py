@@ -10,9 +10,62 @@ from .marketing_agents import (
     SocialMediaAgent,
     BrandPositioningAgent,
     CompetitiveAnalysisAgent,
-    MarketResearchAgent,
-    GEOAgent,
-    InfluencerMarketingAgent
+    # LegacyMarketResearchAgent as MarketResearchAgent, 
+)
+
+from .business_intelligence_agents import (
+    MarketResearchAgent as RefinedMarketResearchAgent,
+    DataAnalyticsAgent as RefinedDataAnalyticsAgent,
+    StrategicPlanningAgent as RefinedStrategicPlanningAgent,
+    CompetitiveIntelligenceAgent as RefinedCompetitiveIntelligenceAgent
+)
+
+from .content_creative_agents import (
+    ContentGenerationAgent as RefinedContentGenerationAgent,
+    CreativeDesignAgent as RefinedCreativeDesignAgent,
+    SEOOptimizationAgent as RefinedSEOOptimizationAgent,
+    VideoMarketingAgent as RefinedVideoMarketingAgent
+)
+
+from .marketing_growth_agents import (
+    CampaignOrchestrationAgent as RefinedCampaignOrchestrationAgent,
+    ConversionOptimizationAgent as RefinedConversionOptimizationAgent,
+    SocialMediaManagementAgent as RefinedSocialMediaManagementAgent
+)
+
+from .technical_agents import (
+    CodeGenerationAgent as RefinedCodeGenerationAgent,
+    DevOpsAutomationAgent as RefinedDevOpsAutomationAgent,
+    TechnicalDocumentationAgent as RefinedTechnicalDocumentationAgent
+)
+
+from .customer_crm_agents import (
+    CustomerEngagementAgent as RefinedCustomerEngagementAgent,
+    SalesIntelligenceAgent as RefinedSalesIntelligenceAgent
+)
+
+from .quanttrade_agents import (
+    TradingStrategyAgent as RefinedTradingStrategyAgent,
+    FinancialAnalyticsAgent as RefinedFinancialAnalyticsAgent
+)
+
+from .thrillring_agents import (
+    GamingExperienceAgent as RefinedGamingExperienceAgent,
+    CommunityManagementAgent as RefinedCommunityManagementAgent
+)
+
+from .master_orchestrator import (
+    MasterOrchestratorAgent as RefinedMasterOrchestratorAgent
+)
+
+from .refined_ecommerce_agents import (
+    RefinedProductSourcingAgent,
+    RefinedInventoryManagementAgent,
+    RefinedOrderOrchestrationAgent
+)
+
+from .quality_assurance_agent import (
+    RefinedQualityAssuranceAgent
 )
 
 from .ecommerce_agents import (
@@ -43,33 +96,30 @@ from .analytics_agents import (
 )
 
 from .operations_agents import (
-    LeadQualificationAgent,
-    ClientOnboardingAgent,
-    ProjectCoordinationAgent,
-    CommunicationManagementAgent,
-    QualityAssuranceAgent,
-    SupportAutomationAgent,
+    CustomerSupportAgent,
+    ComplianceAuditAgent,
     WorkflowOptimizationAgent,
-    PartnerPerformanceMonitoringAgent
+    ResourcePlanningAgent,
+    QualityAssuranceAgent,
+    IncidentManagementAgent,
+    KnowledgeManagementAgent,
+    ProcessAutomationAgent
 )
 
 from .workflow_crews import (
-    OnboardingCrew,
-    CampaignStrategyCrew,
-    CampaignExecutionCrew,
-    ContentApprovalCrew,
-    DataOptimizationCrew,
-    ConservativeEstimationCrew,
-    UserJourneyOptimizationCrew,
-    SelfMarketingCrew,
-    ClassificationCrew,
-    KeywordResearchCrew
+    DigitalAuditCrew,
+    CampaignLaunchCrew,
+    ProductLaunchCrew,
+    CompetitorAnalysisCrew,
+    MarketResearchCrew,
+    ContentStrategyCrew,
+    ReputationManagementCrew,
+    LeadQualificationCrew
 )
 
 from .orchestration import (
     HierarchicalCrewOrchestrator,
-    WorkflowEngine,
-    AgentCoordinator
+    WorkflowEngine
 )
 
 # Import Advanced CRM Agents
@@ -81,6 +131,22 @@ from .crm_agents import (
     EscalationPredictorAgent,
     PersonalizationAgent,
     PipelineManagementAgent
+)
+
+from .workflow_templates import (
+    ContentCreationWorkflow,
+    MarketingCampaignWorkflow,
+    CompetitiveAnalysisWorkflow,
+    DevelopmentSprintWorkflow,
+    TradingStrategyWorkflow,
+    GamingEventWorkflow,
+    ECommerceSourcingWorkflow,
+    ECommerceOperationsWorkflow,
+    ECommerceInventoryLogisticsWorkflow,
+    FullDigitalMarketing360Workflow,
+    VideoContentMachineWorkflow,
+    SEMAdCampaignWorkflow,
+    OnboardingStrategyWorkflow
 )
 
 __all__ = [
@@ -121,31 +187,28 @@ __all__ = [
     "PredictiveAnalyticsAgent",
     
     # Operations Agents
-    "LeadQualificationAgent",
-    "ClientOnboardingAgent",
-    "ProjectCoordinationAgent",
-    "CommunicationManagementAgent",
-    "QualityAssuranceAgent",
-    "SupportAutomationAgent",
+    "CustomerSupportAgent",
+    "ComplianceAuditAgent",
     "WorkflowOptimizationAgent",
-    "PartnerPerformanceMonitoringAgent",
+    "ResourcePlanningAgent",
+    "QualityAssuranceAgent",
+    "IncidentManagementAgent",
+    "KnowledgeManagementAgent",
+    "ProcessAutomationAgent",
     
     # Workflow Crews
-    "OnboardingCrew",
-    "CampaignStrategyCrew",
-    "CampaignExecutionCrew",
-    "ContentApprovalCrew",
-    "DataOptimizationCrew",
-    "ConservativeEstimationCrew",
-    "UserJourneyOptimizationCrew",
-    "SelfMarketingCrew",
-    "ClassificationCrew",
-    "KeywordResearchCrew",
+    "DigitalAuditCrew",
+    "CampaignLaunchCrew",
+    "ProductLaunchCrew",
+    "CompetitorAnalysisCrew",
+    "MarketResearchCrew",
+    "ContentStrategyCrew",
+    "ReputationManagementCrew",
+    "LeadQualificationCrew",
     
     # Orchestration
     "HierarchicalCrewOrchestrator",
     "WorkflowEngine",
-    "AgentCoordinator",
     
     # Advanced CRM Agents
     "ContactIntelligenceAgent",
@@ -154,5 +217,64 @@ __all__ = [
     "SentimentAnalysisAgent",
     "EscalationPredictorAgent",
     "PersonalizationAgent",
-    "PipelineManagementAgent"
+    "PipelineManagementAgent",
+    
+    # Refined AI Ecosystem - Category 1
+    "RefinedMarketResearchAgent",
+    "RefinedDataAnalyticsAgent",
+    "RefinedStrategicPlanningAgent",
+    "RefinedCompetitiveIntelligenceAgent",
+
+    # Refined AI Ecosystem - Category 2
+    "RefinedContentGenerationAgent",
+    "RefinedCreativeDesignAgent",
+    "RefinedSEOOptimizationAgent",
+    "RefinedVideoMarketingAgent",
+
+    # Refined AI Ecosystem - Category 3
+    "RefinedCampaignOrchestrationAgent",
+    "RefinedConversionOptimizationAgent",
+    "RefinedSocialMediaManagementAgent",
+
+    # Refined AI Ecosystem - Category 4
+    "RefinedCodeGenerationAgent",
+    "RefinedDevOpsAutomationAgent",
+    "RefinedTechnicalDocumentationAgent",
+
+    # Refined AI Ecosystem - Category 5
+    "RefinedCustomerEngagementAgent",
+    "RefinedSalesIntelligenceAgent",
+
+    # Refined AI Ecosystem - Category 6
+    "RefinedTradingStrategyAgent",
+    "RefinedFinancialAnalyticsAgent",
+
+    # Refined AI Ecosystem - Category 7
+    "RefinedGamingExperienceAgent",
+    "RefinedCommunityManagementAgent",
+
+    # Refined AI Ecosystem - Category 8 (Master)
+    "RefinedMasterOrchestratorAgent",
+    
+    # Refined AI Ecosystem - Category 9 (E-commerce)
+    "RefinedProductSourcingAgent",
+    "RefinedInventoryManagementAgent",
+    "RefinedOrderOrchestrationAgent",
+
+    # Refined AI Ecosystem - Category 10 (QA)
+    "RefinedQualityAssuranceAgent",
+    
+    # Refined Workflows
+    "ContentCreationWorkflow",
+    "MarketingCampaignWorkflow",
+    "CompetitiveAnalysisWorkflow",
+    "DevelopmentSprintWorkflow",
+    "TradingStrategyWorkflow",
+    "GamingEventWorkflow",
+    "ECommerceSourcingWorkflow",
+    "ECommerceOperationsWorkflow",
+    "ECommerceInventoryLogisticsWorkflow",
+    "FullDigitalMarketing360Workflow",
+    "VideoContentMachineWorkflow",
+    "SEMAdCampaignWorkflow"
 ]

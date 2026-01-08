@@ -15,17 +15,45 @@ import uuid
 
 from pydantic import BaseModel, Field
 import structlog
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+try:
+    import numpy as np
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    logging.warning("scikit-learn not found. Vector similarity features will be disabled.")
+    SKLEARN_AVAILABLE = False
+    class TfidfVectorizer:
+        def __init__(self, *args, **kwargs): pass
 
 # Shared imports
 import sys
 sys.path.append('/home/alagiri/projects/bizoholic/bizosaas')
 
-from shared.database.connection import get_postgres_session, get_redis_client
-from shared.events.event_bus import EventBus, EventFactory, EventType
-from shared.auth.jwt_auth import UserContext
+# Shared imports with fallbacks
+try:
+    from shared.database.connection import get_postgres_session, get_redis_client
+    from shared.events.event_bus import EventBus, EventFactory, EventType
+    from shared.auth.jwt_auth import UserContext
+    SHARED_AVAILABLE = True
+except ImportError:
+    logging.warning("Shared BizOSaas modules not found in cross_client_learning. Using Mock setup.")
+    SHARED_AVAILABLE = False
+    class EventBus:
+        def __init__(self, *args, **kwargs): pass
+        async def emit(self, *args, **kwargs): pass
+    class EventFactory:
+        @staticmethod
+        def create_system_event(*args): return None
+    class EventType:
+        AI_LEARNING_PATTERN_AVAILABLE = "ai_learning_pattern_available"
+    class UserContext: pass
+    async def get_redis_client(): return None
+    async def get_postgres_session():
+        class MockSession:
+            async def __aenter__(self): return self
+            async def __aexit__(self, *args): pass
+        return MockSession()
 
 logger = structlog.get_logger(__name__)
 

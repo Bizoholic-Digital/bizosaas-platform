@@ -12,10 +12,16 @@ class MockIdentityAdapter(IdentityPort):
         return AuthenticatedUser(
             id="dev-user-id",
             email="dev@bizoholic.net",
-            username="dev_admin",
+            name="dev_admin",
             roles=["Super Admin", "Admin"],
             tenant_id="default_tenant"
         )
+
+    async def has_permission(self, user: AuthenticatedUser, permission: str) -> bool:
+        """Mock permission check - always returns True for admin roles"""
+        if "Admin" in user.roles or "Super Admin" in user.roles:
+            return True
+        return permission in user.permissions
 
     async def get_login_url(self, state: str) -> str:
         return "http://localhost:3000/mock-login"

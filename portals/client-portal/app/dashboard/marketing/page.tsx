@@ -95,15 +95,7 @@ export default function MarketingPage() {
     return (
         <div className="p-6 space-y-6">
             {/* Header section with Premium feel */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white flex items-center gap-3">
-                        <Megaphone className="w-8 h-8 text-blue-600" />
-                        Campaign Management Hub
-                        <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none px-3">ENTERPRISE</Badge>
-                    </h1>
-                    <p className="text-muted-foreground mt-1 text-lg">Cross-platform orchestration powered by BizOS AI Agents.</p>
-                </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" className="gap-2 h-11" onClick={loadData}>
                         <RefreshCw className={`w-4 h-4 ${isLoadingData ? 'animate-spin' : ''}`} />
@@ -166,15 +158,17 @@ export default function MarketingPage() {
 
             {/* Main Content Tabs */}
             <Tabs defaultValue="hub" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:w-[750px] mb-8 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
-                    <TabsTrigger value="hub" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">The Hub</TabsTrigger>
-                    <TabsTrigger value="active" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">Live Campaigns</TabsTrigger>
-                    <TabsTrigger value="ai-audit" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-blue-500" /> AI Insights
-                    </TabsTrigger>
-                    <TabsTrigger value="audiences" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">Audiences</TabsTrigger>
-                    <TabsTrigger value="connectors" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700">Platforms</TabsTrigger>
-                </TabsList>
+                <div className="overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+                    <TabsList className="flex w-max md:w-full md:grid md:grid-cols-5 lg:w-[750px] mb-8 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl">
+                        <TabsTrigger value="hub" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 whitespace-nowrap px-6 md:px-3">The Hub</TabsTrigger>
+                        <TabsTrigger value="active" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 whitespace-nowrap px-6 md:px-3">Live Campaigns</TabsTrigger>
+                        <TabsTrigger value="ai-audit" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 flex items-center gap-1 whitespace-nowrap px-6 md:px-3">
+                            <Sparkles className="w-3.5 h-3.5 text-blue-500" /> AI Insights
+                        </TabsTrigger>
+                        <TabsTrigger value="audiences" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 whitespace-nowrap px-6 md:px-3">Audiences</TabsTrigger>
+                        <TabsTrigger value="connectors" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 whitespace-nowrap px-6 md:px-3">Platforms</TabsTrigger>
+                    </TabsList>
+                </div>
 
                 {/* Hub View Content */}
                 <TabsContent value="hub" className="space-y-6 animate-in fade-in duration-500">

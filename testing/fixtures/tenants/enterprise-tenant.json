@@ -1,0 +1,134 @@
+{
+    "tenant": {
+        "id": "tenant-enterprise-001",
+        "name": "Enterprise Corp",
+        "slug": "enterprise-corp",
+        "plan": "enterprise",
+        "status": "active",
+        "settings": {
+            "maxUsers": 500,
+            "maxAssets": 10000,
+            "maxCampaigns": 1000,
+            "features": {
+                "aiAgents": true,
+                "advancedAnalytics": true,
+                "customBranding": true,
+                "apiAccess": true,
+                "ssoEnabled": true,
+                "auditLogs": true,
+                "prioritySupport": true
+            }
+        },
+        "billing": {
+            "planId": "plan-enterprise-annual",
+            "amount": 999.99,
+            "currency": "USD",
+            "billingCycle": "annual",
+            "trialEndsAt": null
+        },
+        "createdAt": "2024-06-15T00:00:00Z"
+    },
+    "users": [
+        {
+            "id": "user-ent-superadmin-001",
+            "email": "superadmin@enterprise-corp.test",
+            "firstName": "Super",
+            "lastName": "Admin",
+            "role": "superadmin",
+            "mfaEnabled": true,
+            "status": "active"
+        },
+        {
+            "id": "user-ent-admin-001",
+            "email": "admin@enterprise-corp.test",
+            "firstName": "Admin",
+            "lastName": "User",
+            "role": "admin",
+            "mfaEnabled": true,
+            "status": "active"
+        },
+        {
+            "id": "user-ent-billing-001",
+            "email": "billing@enterprise-corp.test",
+            "firstName": "Billing",
+            "lastName": "Admin",
+            "role": "billing_admin",
+            "mfaEnabled": true,
+            "status": "active"
+        },
+        {
+            "id": "user-ent-manager-001",
+            "email": "manager@enterprise-corp.test",
+            "firstName": "Team",
+            "lastName": "Manager",
+            "role": "manager",
+            "mfaEnabled": false,
+            "status": "active"
+        },
+        {
+            "id": "user-ent-client-001",
+            "email": "client1@enterprise-corp.test",
+            "firstName": "Client",
+            "lastName": "One",
+            "role": "client",
+            "mfaEnabled": false,
+            "status": "active"
+        }
+    ],
+    "campaigns": [
+        {
+            "id": "camp-ent-001",
+            "name": "Q1 Brand Awareness",
+            "status": "active",
+            "type": "multi-channel",
+            "budget": 50000,
+            "channels": [
+                "google_ads",
+                "facebook",
+                "linkedin"
+            ],
+            "startDate": "2025-01-01",
+            "endDate": "2025-03-31"
+        },
+        {
+            "id": "camp-ent-002",
+            "name": "Product Launch",
+            "status": "draft",
+            "type": "multi-channel",
+            "budget": 100000,
+            "channels": [
+                "google_ads",
+                "facebook",
+                "instagram",
+                "youtube"
+            ],
+            "startDate": "2025-04-01",
+            "endDate": "2025-04-30"
+        }
+    ],
+    "assets": [],
+    "agentTasks": [
+        {
+            "id": "task-ent-001",
+            "agentId": "content-optimizer",
+            "status": "completed",
+            "result": "success"
+        },
+        {
+            "id": "task-ent-002",
+            "agentId": "seo-analyzer",
+            "status": "running",
+            "result": null
+        }
+    ],
+    "auditLogs": [
+        {
+            "id": "audit-001",
+            "action": "user.created",
+            "userId": "user-ent-superadmin-001",
+            "targetId": "user-ent-client-001",
+            "timestamp": "2025-01-05T10:30:00Z",
+            "metadata": {}
+        }
+    ]
+}

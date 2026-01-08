@@ -10,10 +10,16 @@
   "scripts": {
     "build:packages": "npm run build -w packages/ui-components -w packages/auth -w packages/api-client -w packages/hooks -w packages/utils -w packages/animated-components",
     "build:bizoholic": "npm run build -w bizosaas/misc/services/bizoholic-frontend",
-    "dev:bizoholic": "npm run dev -w bizosaas/misc/services/bizoholic-frontend"
+    "dev:bizoholic": "npm run dev -w bizosaas/misc/services/bizoholic-frontend",
+    "test:backend": "export PYTHONPATH=$PYTHONPATH:$(pwd)/bizosaas-brain-core/brain-gateway && ./.venv/bin/python3 -m pytest testing/backend/test_brain_gateway.py",
+    "test:e2e": "cd testing && npx playwright test"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "playwright": "^1.57.0"
   }
 }

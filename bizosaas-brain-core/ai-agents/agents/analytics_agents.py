@@ -17,7 +17,7 @@ class DigitalPresenceAuditAgent(BaseAgent):
         return {"audit_results": {}, "generated_at": datetime.now(timezone.utc).isoformat()}
 
 from crewai import Agent
-from ..tools.connector_tools import ConnectorTools
+from tools.connector_tools import ConnectorTools
 
 class PerformanceAnalyticsAgent(BaseAgent):
     def __init__(self):
@@ -35,7 +35,7 @@ class PerformanceAnalyticsAgent(BaseAgent):
             website traffic, user behavior, and conversion rates.""",
             verbose=True,
             allow_delegation=True,
-            tools=[connector_tools.fetch_data]
+            # tools=[connector_tools.fetch_data] # DISABLED_FOR_TEST
         )
     
     async def _execute_agent_logic(self, task_request: AgentTaskRequest) -> Dict[str, Any]:

@@ -1007,7 +1007,7 @@ See `AI_AGENT_IMPLEMENTATION_PLAN.md` for detailed tasks, timelines, and depende
 **LLM Providers:** OpenAI, Anthropic, Google Gemini  
 **Data Store:** PostgreSQL + Redis + Vector DB (Pinecone/Weaviate)  
 **Monitoring:** Grafana + Prometheus + Custom Dashboards  
-**Deployment:** Docker + Kubernetes  
+**Deployment:** Docker + Dokploy on Hostinger KVM2 VPS  
 **Frontend:** Next.js Admin Portal (existing)
 
 ---

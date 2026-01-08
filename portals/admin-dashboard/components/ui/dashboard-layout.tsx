@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Menu, X, Bell, User, Moon, Sun, Search, RefreshCw,
   Wifi, AlertCircle, CheckCircle, Clock,
-  Settings, LogOut, Activity, Download
+  Settings, LogOut, Activity, Download, Bot, Sparkles
 } from 'lucide-react';
 import ComprehensiveNavigation from '@/components/ui/comprehensive-navigation';
 import ErrorBoundary from '@/components/error-boundary';
@@ -13,6 +13,7 @@ import { useSystemStatus } from '@/lib/hooks/useSystemStatus';
 import { useAuth } from '@/shared/components/AuthProvider';
 import { useTheme } from 'next-themes';
 import { usePWAInstall } from '@/components/PWAInstallPrompt';
+import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -62,6 +63,31 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
+  const BottomNav = () => (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom shadow-lg">
+      <button onClick={() => router.push('/dashboard')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Activity className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Status</span>
+      </button>
+      <button onClick={() => router.push('/dashboard/agent-management')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/agent-management' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Bot className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Agents</span>
+      </button>
+      <button onClick={() => router.push('/dashboard/ai-assistant')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/ai-assistant' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Sparkles className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">AI</span>
+      </button>
+      <button onClick={() => router.push('/dashboard/settings')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/settings' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+        <Settings className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Config</span>
+      </button>
+      <button onClick={toggleSidebar} className="flex flex-col items-center p-2 text-gray-400 active:text-blue-600 transition-all">
+        <Menu className="h-5 w-5" />
+        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Menu</span>
+      </button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="flex h-screen overflow-hidden">
@@ -86,8 +112,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             <div className={`flex items-center justify-between mb-6 ${isCollapsed ? 'flex-col gap-4' : ''}`}>
               {!isCollapsed && (
                 <div>
-                  <h1 className="font-bold text-xl text-gray-900 dark:text-white truncate">BizOSaaS</h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Platform Administration</p>
+                  <h1 className="font-black text-2xl text-slate-900 dark:text-white truncate uppercase italic tracking-tighter">
+                    BizOS <span className="text-indigo-600">Admin</span>
+                  </h1>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-[0.2em] mt-0.5">Core Control System</p>
                 </div>
               )}
               {isCollapsed && (
@@ -199,7 +227,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 >
                   <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
-                <div className="min-w-0">
+                <div className="hidden lg:block min-w-0">
                   <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white truncate">{title}</h1>
                   {description && (
                     <p className="text-gray-600 dark:text-gray-300 mt-1 hidden lg:block truncate">{description}</p>
@@ -253,9 +281,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto w-full">
+          <div className="flex-1 overflow-y-auto w-full pb-20 lg:pb-0">
             {children}
           </div>
+          <BottomNav />
         </div>
       </div>
     </div>

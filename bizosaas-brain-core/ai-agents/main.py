@@ -15,21 +15,44 @@ import asyncio
 import json
 from enum import Enum
 
-# Shared imports
-import sys
-import os
-sys.path.append('/home/alagiri/projects/bizoholic/bizosaas')
-
-from shared.database.connection import get_postgres_session, get_redis_client, init_database
-from shared.events.event_bus import EventBus, EventFactory, EventType, event_handler
-from shared.auth.jwt_auth import get_current_user, UserContext, require_permission, Permission
+# Shared imports with fallbacks
+try:
+    from shared.database.connection import get_postgres_session, get_redis_client, init_database
+    from shared.events.event_bus import EventBus, EventFactory, EventType, event_handler
+    from shared.auth.jwt_auth import get_current_user, UserContext, require_permission, Permission
+    SHARED_AVAILABLE = True
+except ImportError:
+    logging.warning("Shared BizOSaas modules not found in main logic. Using Mock setup.")
+    SHARED_AVAILABLE = False
+    class EventBus:
+        def __init__(self, *args, **kwargs): pass
+        async def initialize(self): pass
+        async def start(self): pass
+    def get_redis_client(): return None
+    async def init_database(): pass
+    def get_current_user(): return None
+    class Permission:
+        AGENT_EXECUTE = "agent:execute"
+    class UserContext: pass
+    def require_permission(*args, **kwargs):
+        def decorator(func): return func
+        return decorator
+    def event_handler(*args, **kwargs):
+        def decorator(func): return func
+        return decorator
+    class EventFactory:
+        @staticmethod
+        def create_system_event(*args, **kwargs): return None
+    class EventType:
+        CAMPAIGN_STARTED = "campaign_started"
+        USER_CREATED = "user_created"
 
 # Import chat API
 try:
     from chat_api import chat_app, agent_registry, chat_manager
     CHAT_API_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"Chat API import failed: {e}. Chat functionality disabled.")
+    logging.warning(f"Chat API import failed: {e}. Chat functionality disabled.")
     CHAT_API_AVAILABLE = False
 
 # Centralized BizOSaas AI Agents - using unified business logic layer
@@ -40,12 +63,58 @@ try:
     from agents.analytics_agents import DigitalPresenceAuditAgent, PerformanceAnalyticsAgent
     from agents.operations_agents import CustomerSupportAgent
     from agents.workflow_crews import DigitalAuditCrew, CampaignLaunchCrew
+    
+    # Refined 20 Core Agents
+    from agents import (
+        RefinedMarketResearchAgent,
+        RefinedDataAnalyticsAgent,
+        RefinedStrategicPlanningAgent,
+        RefinedCompetitiveIntelligenceAgent,
+        RefinedContentGenerationAgent,
+        RefinedCreativeDesignAgent,
+        RefinedSEOOptimizationAgent,
+        RefinedVideoMarketingAgent,
+        RefinedCampaignOrchestrationAgent,
+        RefinedConversionOptimizationAgent,
+        RefinedSocialMediaManagementAgent,
+        RefinedCodeGenerationAgent,
+        RefinedDevOpsAutomationAgent,
+        RefinedTechnicalDocumentationAgent,
+        RefinedCustomerEngagementAgent,
+        RefinedSalesIntelligenceAgent,
+        RefinedTradingStrategyAgent,
+        RefinedFinancialAnalyticsAgent,
+        RefinedGamingExperienceAgent,
+        RefinedCommunityManagementAgent,
+        RefinedMasterOrchestratorAgent,
+        RefinedProductSourcingAgent,
+        RefinedInventoryManagementAgent,
+        RefinedOrderOrchestrationAgent,
+        ContentCreationWorkflow,
+        MarketingCampaignWorkflow,
+        CompetitiveAnalysisWorkflow,
+        DevelopmentSprintWorkflow,
+        TradingStrategyWorkflow,
+        GamingEventWorkflow,
+        ECommerceSourcingWorkflow,
+        ECommerceOperationsWorkflow,
+        ECommerceInventoryLogisticsWorkflow,
+        FullDigitalMarketing360Workflow,
+        VideoContentMachineWorkflow,
+        SEMAdCampaignWorkflow,
+        OnboardingStrategyWorkflow,
+        RefinedQualityAssuranceAgent
+    )
 except ImportError as e:
-    logger.warning(f"BizOSaas centralized agents import failed: {e}. Running in mock mode.")
+    logging.warning(f"BizOSaas centralized agents import failed: {e}. Running in mock mode.")
     WorkflowEngine = None
     HierarchicalCrewOrchestrator = None
     MarketingStrategistAgent = None
     EcommerceAgent = None
+
+# Configure logging (moved here so it's available for exception handlers below)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Cross-client learning imports
 try:
@@ -59,10 +128,6 @@ try:
 except ImportError as e:
     logger.warning(f"Cross-client learning import failed: {e}. Learning functionality disabled.")
     CROSS_CLIENT_LEARNING_AVAILABLE = False
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="BizoSaaS AI Agents",
@@ -94,8 +159,12 @@ digital_audit_crew = None
 marketing_strategist = None
 ecommerce_agent = None
 
+# Refined Agent Registry
+refined_agent_registry = {}
+
 # Enums
 class AgentType(str, Enum):
+    # Original Agents (Legacy)
     MARKETING_STRATEGIST = "marketing_strategist"
     CAMPAIGN_OPTIMIZER = "campaign_optimizer"
     CONTENT_CREATOR = "content_creator"
@@ -106,6 +175,52 @@ class AgentType(str, Enum):
     ECOMMERCE_SPECIALIST = "ecommerce_specialist"
     SELF_MARKETING = "self_marketing"
     EMAIL_MARKETING_SPECIALIST = "email_marketing_specialist"
+
+    # Refined 20 Core Agents (v2.0)
+    # Cat 1: Business Intelligence
+    MARKET_RESEARCH = "market_research"
+    DATA_ANALYTICS = "data_analytics"
+    STRATEGIC_PLANNING = "strategic_planning"
+    COMPETITIVE_INTELLIGENCE = "competitive_intelligence"
+
+    # Cat 2: Content & Creative
+    CONTENT_GENERATION = "content_generation"
+    CREATIVE_DESIGN = "creative_design"
+    SEO_OPTIMIZATION = "seo_optimization"
+    VIDEO_MARKETING = "video_marketing"
+
+    # Cat 3: Marketing & Growth
+    CAMPAIGN_ORCHESTRATION = "campaign_orchestration"
+    CONVERSION_OPTIMIZATION = "conversion_optimization"
+    SOCIAL_MEDIA_MANAGEMENT = "social_media_management"
+
+    # Cat 4: Technical
+    CODE_GENERATION = "code_generation"
+    DEVOPS_AUTOMATION = "devops_automation"
+    TECHNICAL_DOCUMENTATION = "technical_documentation"
+
+    # Cat 5: Customer & CRM
+    CUSTOMER_ENGAGEMENT = "customer_engagement"
+    SALES_INTELLIGENCE = "sales_intelligence"
+
+    # Cat 6: Finance & Trading
+    TRADING_STRATEGY = "trading_strategy"
+    FINANCIAL_ANALYTICS = "financial_analytics"
+
+    # Cat 7: Gaming & Community
+    GAMING_EXPERIENCE = "gaming_experience"
+    COMMUNITY_MANAGEMENT = "community_management"
+
+    # Cat 8: Master
+    MASTER_ORCHESTRATOR = "master_orchestrator"
+    
+    # E-commerce Refined
+    ECOMM_SOURCING = "ecommerce_sourcing"
+    ECOMM_INVENTORY = "ecommerce_inventory"
+    ECOMM_ORDER_ORCHESTRATOR = "ecommerce_order_orchestrator"
+
+    # Cat 10: Quality Assurance
+    QUALITY_ASSURANCE = "quality_assurance"
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -254,16 +369,8 @@ async def startup_event():
         await event_bus.start()
         logger.info("Event bus initialized")
         
-        # Initialize centralized BizOSaas AI agents and orchestration systems
-        if WorkflowEngine:
-            workflow_engine = WorkflowEngine()
-            hierarchical_orchestrator = HierarchicalCrewOrchestrator()
-            digital_audit_crew = DigitalAuditCrew()
-            marketing_strategist = MarketingStrategistAgent()
-            ecommerce_agent = EcommerceAgent()
-            logger.info("BizOSaas centralized agents initialized successfully")
-        else:
-            logger.warning("Running in mock mode - BizOSaas centralized agents not available")
+        # Initialize agents
+        await setup_centralized_agents()
         
         # Start background task processor
         asyncio.create_task(process_agent_tasks())
@@ -271,6 +378,70 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Startup failed: {e}")
         raise
+
+async def setup_centralized_agents():
+    """Initialize all centralized and refined agents in the registry"""
+    global workflow_engine, hierarchical_orchestrator, digital_audit_crew, marketing_strategist, ecommerce_agent
+    if WorkflowEngine:
+        try:
+            workflow_engine = WorkflowEngine()
+            hierarchical_orchestrator = HierarchicalCrewOrchestrator()
+            digital_audit_crew = DigitalAuditCrew()
+            marketing_strategist = MarketingStrategistAgent()
+            ecommerce_agent = EcommerceAgent()
+            
+            # Initialize Refined 24 Core Agents
+            refined_agent_registry[AgentType.MARKET_RESEARCH.value] = RefinedMarketResearchAgent()
+            refined_agent_registry[AgentType.DATA_ANALYTICS.value] = RefinedDataAnalyticsAgent()
+            refined_agent_registry[AgentType.STRATEGIC_PLANNING.value] = RefinedStrategicPlanningAgent()
+            refined_agent_registry[AgentType.COMPETITIVE_INTELLIGENCE.value] = RefinedCompetitiveIntelligenceAgent()
+            refined_agent_registry[AgentType.CONTENT_GENERATION.value] = RefinedContentGenerationAgent()
+            refined_agent_registry[AgentType.CREATIVE_DESIGN.value] = RefinedCreativeDesignAgent()
+            refined_agent_registry[AgentType.SEO_OPTIMIZATION.value] = RefinedSEOOptimizationAgent()
+            refined_agent_registry[AgentType.VIDEO_MARKETING.value] = RefinedVideoMarketingAgent()
+            refined_agent_registry[AgentType.CAMPAIGN_ORCHESTRATION.value] = RefinedCampaignOrchestrationAgent()
+            refined_agent_registry[AgentType.CONVERSION_OPTIMIZATION.value] = RefinedConversionOptimizationAgent()
+            refined_agent_registry[AgentType.SOCIAL_MEDIA_MANAGEMENT.value] = RefinedSocialMediaManagementAgent()
+            refined_agent_registry[AgentType.CODE_GENERATION.value] = RefinedCodeGenerationAgent()
+            refined_agent_registry[AgentType.DEVOPS_AUTOMATION.value] = RefinedDevOpsAutomationAgent()
+            refined_agent_registry[AgentType.TECHNICAL_DOCUMENTATION.value] = RefinedTechnicalDocumentationAgent()
+            refined_agent_registry[AgentType.CUSTOMER_ENGAGEMENT.value] = RefinedCustomerEngagementAgent()
+            refined_agent_registry[AgentType.SALES_INTELLIGENCE.value] = RefinedSalesIntelligenceAgent()
+            refined_agent_registry[AgentType.TRADING_STRATEGY.value] = RefinedTradingStrategyAgent()
+            refined_agent_registry[AgentType.FINANCIAL_ANALYTICS.value] = RefinedFinancialAnalyticsAgent()
+            refined_agent_registry[AgentType.GAMING_EXPERIENCE.value] = RefinedGamingExperienceAgent()
+            refined_agent_registry[AgentType.COMMUNITY_MANAGEMENT.value] = RefinedCommunityManagementAgent()
+            refined_agent_registry[AgentType.MASTER_ORCHESTRATOR.value] = RefinedMasterOrchestratorAgent()
+            
+            # Register E-commerce Refined Agents
+            refined_agent_registry[AgentType.ECOMM_SOURCING.value] = RefinedProductSourcingAgent()
+            refined_agent_registry[AgentType.ECOMM_INVENTORY.value] = RefinedInventoryManagementAgent()
+            refined_agent_registry[AgentType.ECOMM_ORDER_ORCHESTRATOR.value] = RefinedOrderOrchestrationAgent()
+            
+            # Register QA Agent
+            refined_agent_registry[AgentType.QUALITY_ASSURANCE.value] = RefinedQualityAssuranceAgent()
+            
+            # Register Refined Workflows
+            refined_agent_registry["content_creation_workflow"] = ContentCreationWorkflow()
+            refined_agent_registry["marketing_campaign_workflow"] = MarketingCampaignWorkflow()
+            refined_agent_registry["competitive_analysis_workflow"] = CompetitiveAnalysisWorkflow()
+            refined_agent_registry["development_sprint_workflow"] = DevelopmentSprintWorkflow()
+            refined_agent_registry["trading_strategy_workflow"] = TradingStrategyWorkflow()
+            refined_agent_registry["gaming_event_workflow"] = GamingEventWorkflow()
+            refined_agent_registry["ecommerce_sourcing_workflow"] = ECommerceSourcingWorkflow()
+            refined_agent_registry["ecommerce_operations_workflow"] = ECommerceOperationsWorkflow()
+            refined_agent_registry["ecommerce_inventory_workflow"] = ECommerceInventoryLogisticsWorkflow()
+            refined_agent_registry["digital_marketing_360_workflow"] = FullDigitalMarketing360Workflow()
+            refined_agent_registry["video_content_machine_workflow"] = VideoContentMachineWorkflow()
+            refined_agent_registry["sem_ad_campaign_workflow"] = SEMAdCampaignWorkflow()
+            refined_agent_registry["onboarding_strategy_workflow"] = OnboardingStrategyWorkflow()
+            
+            logger.info("BizOSaas centralized and refined agents initialized successfully")
+        except Exception as e:
+            logger.error(f"Agent initialization failed: {e}")
+            raise
+    else:
+        logging.warning("Running in mock mode - BizOSaas centralized agents not available")
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -1197,6 +1368,25 @@ async def process_single_task(task_id: str):
             result = await execute_content_creation_task(input_data)
         elif agent_type == AgentType.EMAIL_MARKETING_SPECIALIST.value:
             result = await execute_email_marketing_task(input_data)
+        elif agent_type in refined_agent_registry:
+            # Use the unified execution method from BaseAgent
+            from agents.base_agent import AgentTaskRequest as BaseAgentTaskRequest
+            refined_agent = refined_agent_registry[agent_type]
+            
+            # Prepare task request for refined agent
+            refined_request = BaseAgentTaskRequest(
+                agent_type=agent_type,
+                task_description=task_data.get("task_description", "Task execution"),
+                input_data=input_data,
+                tenant_id=task_data.get("tenant_id")
+            )
+            
+            try:
+                agent_result = await refined_agent.execute_task(refined_request)
+                result = {"success": True, "data": agent_result, "cost": 0.50}
+            except Exception as e:
+                logger.error(f"Refined agent execution failed: {e}")
+                result = {"success": False, "error": str(e), "data": {}}
         else:
             result = await execute_mock_task(agent_type, input_data)
         

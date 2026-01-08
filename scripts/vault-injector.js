@@ -1,27 +1,29 @@
 /**
- * vault-injector.js
- * Fetches secrets from HashiCorp Vault and prints them as export commands.
- * Usage: eval $(node scripts/vault-injector.js)
+ * BizOSaaS Vault Secret Injector
+ * 
+ * This script connects to HashiCorp Vault, retrieves secrets for a specific path,
+ * and outputs them in a format that can be used by `eval` to set environment variables.
+ * 
+ * Usage in Dockerfile:
+ * CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && npm start"]
  */
 
-const http = require('http');
 const https = require('https');
 
-const vaultAddr = process.env.VAULT_ADDR || 'http://127.0.0.1:8200';
+// Configuration from environment
+const vaultAddr = process.env.VAULT_ADDR || 'http://vault.bizoholic.net:8200';
 const vaultToken = process.env.VAULT_TOKEN;
-const secretPath = process.env.VAULT_SECRET_PATH; // e.g., 'bizosaas/stg/client-portal'
-const mountPoint = process.env.VAULT_MOUNT_POINT || 'secret';
+const secretPath = process.env.VAULT_SECRET_PATH; // e.g., 'secret/data/bizosaas/portals/client-portal'
 
 if (!vaultToken || !secretPath) {
-    // Vault not configured - exit silently without error message
-    // This allows the app to start normally without Vault
-    process.exit(0);
+    console.error('Error: VAULT_TOKEN and VAULT_SECRET_PATH must be set');
+    process.exit(1);
 }
 
-const url = new URL(`${vaultAddr}/v1/${mountPoint}/data/${secretPath}`);
-const client = url.protocol === 'https:' ? https : http;
-
 const options = {
+    hostname: new URL(vaultAddr).hostname,
+    port: new URL(vaultAddr).port || (vaultAddr.startsWith('https') ? 443 : 80),
+    path: `/v1/${secretPath}`,
     method: 'GET',
     headers: {
         'X-Vault-Token': vaultToken,
@@ -29,7 +31,7 @@ const options = {
     }
 };
 
-const req = client.request(url, options, (res) => {
+const req = https.request(options, (res) => {
     let data = '';
 
     res.on('data', (chunk) => {
@@ -39,26 +41,35 @@ const req = client.request(url, options, (res) => {
     res.on('end', () => {
         if (res.statusCode === 200) {
             try {
-                const json = JSON.parse(data);
-                const secrets = json.data.data;
+                const response = JSON.parse(data);
+                const secrets = response.data.data; // KV V2 uses .data.data
 
+                if (!secrets) {
+                    console.error('Error: No secrets found in response');
+                    process.exit(1);
+                }
+
+                // Output exports for eval
                 Object.entries(secrets).forEach(([key, value]) => {
-                    // Escape values for shell
+                    // Escape double quotes in value
                     const escapedValue = String(value).replace(/"/g, '\\"');
                     console.log(`export ${key}="${escapedValue}"`);
                 });
-            } catch (e) {
-                console.error('Error parsing Vault response:', e.message);
+            } catch (err) {
+                console.error('Error parsing Vault response:', err.message);
+                process.exit(1);
             }
         } else {
-            console.error(`Error fetching secrets: Vault returned ${res.statusCode}`);
-            console.error(data);
+            console.error(`Error: Vault returned status code ${res.statusCode}`);
+            console.error('Response:', data);
+            process.exit(1);
         }
     });
 });
 
-req.on('error', (e) => {
-    console.error(`Problem with Vault request: ${e.message}`);
+req.on('error', (err) => {
+    console.error('Error connecting to Vault:', err.message);
+    process.exit(1);
 });
 
 req.end();

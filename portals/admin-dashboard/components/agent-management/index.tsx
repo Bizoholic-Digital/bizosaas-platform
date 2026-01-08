@@ -139,19 +139,19 @@ export default function AgentManagementInterface() {
   const stats = getComponentStats();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-full bg-slate-50 dark:bg-slate-950 flex flex-col animate-in fade-in duration-500">
       <Tabs value={activeComponent} onValueChange={setActiveComponent} className="flex flex-col flex-1 w-full">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        {/* Header - Standardized with Premium Aesthetics */}
+        <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Bot className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
+                <Bot className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
                 <div>
-                  <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-tight">
-                    Agent Hub
+                  <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight uppercase italic">
+                    Agent <span className="text-indigo-600">Hub</span>
                   </h1>
-                  <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider font-semibold">
+                  <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] font-bold">
                     Core Autonomous Ecosystem
                   </p>
                 </div>
@@ -159,73 +159,75 @@ export default function AgentManagementInterface() {
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Quick Stats */}
-              <div className="hidden md:flex items-center space-x-6 text-sm">
-                <div className="text-center">
-                  <p className="font-semibold text-gray-900">{stats.totalAgents}</p>
-                  <p className="text-gray-500">Total Agents</p>
+              {/* Quick Stats - Premium Cards Style */}
+              <div className="hidden lg:flex items-center space-x-6 text-sm">
+                <div className="text-center bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <p className="font-black text-slate-900 dark:text-white">{stats.totalAgents}</p>
+                  <p className="text-[10px] uppercase font-bold text-slate-500">Total</p>
                 </div>
-                <div className="text-center">
-                  <p className="font-semibold text-green-600">{stats.activeAgents}</p>
-                  <p className="text-gray-500">Active</p>
+                <div className="text-center bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                  <p className="font-black text-emerald-600 dark:text-emerald-400">{stats.activeAgents}</p>
+                  <p className="text-[10px] uppercase font-bold text-emerald-500">Active</p>
                 </div>
-                <div className="text-center">
-                  <p className="font-semibold text-blue-600">{stats.domainsManaged}</p>
-                  <p className="text-gray-500">Domains</p>
+                <div className="text-center bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                  <p className="font-black text-blue-600 dark:text-blue-400">{stats.domainsManaged}</p>
+                  <p className="text-[10px] uppercase font-bold text-blue-500">Domains</p>
                 </div>
-                <div className="text-center">
-                  <p className="font-semibold text-orange-600">{stats.tasksInProgress}</p>
-                  <p className="text-gray-500">Tasks</p>
+                <div className="text-center bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-lg border border-amber-100 dark:border-amber-900/30">
+                  <p className="font-black text-amber-600 dark:text-amber-400">{stats.tasksInProgress}</p>
+                  <p className="text-[10px] uppercase font-bold text-amber-500">Tasks</p>
                 </div>
               </div>
 
               {/* Current user indicator */}
-              <Badge variant="outline" className="bg-green-100 text-green-800">
+              <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-none font-bold italic tracking-tighter">
                 Super Admin
               </Badge>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="bg-white border-b border-gray-200 px-4 md:px-6 overflow-x-auto no-scrollbar">
-          <TabsList className="bg-transparent border-b-0 h-auto p-0 flex whitespace-nowrap">
+        {/* Navigation Tabs - Mobile App Style */}
+        <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 overflow-x-auto scrollbar-hide">
+          <TabsList className="bg-transparent border-b-0 h-auto p-0 flex whitespace-nowrap space-x-1 py-1">
             {availableComponents.map((component) => {
               const Icon = component.icon;
               return (
                 <TabsTrigger
                   key={component.id}
                   value={component.id}
-                  className="flex items-center space-x-2 px-4 py-3 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-2 px-6 py-3 rounded-t-xl border-b-2 border-transparent data-[state=active]:border-indigo-500 data-[state=active]:bg-indigo-50 dark:data-[state=active]:bg-indigo-900/20 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 hover:text-indigo-600 transition-all font-black uppercase text-[10px] tracking-widest"
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{component.name}</span>
+                  <span>{component.name}</span>
                 </TabsTrigger>
               );
             })}
           </TabsList>
         </div>
 
-        {/* Current Component Info */}
+        {/* Current Component Info - Premium Context Bar */}
         {currentComponent && (
-          <div className="bg-blue-50 border-b border-blue-200 px-6 py-3">
+          <div className="bg-slate-100/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 px-6 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <currentComponent.icon className="w-4 h-4 md:w-5 md:h-5 text-blue-600 shrink-0" />
+                <div className="p-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
+                  <currentComponent.icon className="w-4 h-4 md:w-5 md:h-5 text-indigo-600 shrink-0" />
+                </div>
                 <div className="min-w-0">
-                  <h2 className="font-bold text-sm md:text-base text-blue-900 truncate">{currentComponent.name}</h2>
-                  <p className="text-[10px] md:text-sm text-blue-700/80 truncate">{currentComponent.description}</p>
+                  <h2 className="font-black text-xs md:text-sm text-slate-900 dark:text-white uppercase tracking-wider">{currentComponent.name}</h2>
+                  <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate font-medium">{currentComponent.description}</p>
                 </div>
               </div>
 
               {/* Agent selector for agent-specific components */}
               {currentComponent.requiresAgentId && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-blue-700">Viewing:</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400">Viewing:</span>
                   <select
                     value={selectedAgentId}
                     onChange={(e) => setSelectedAgentId(e.target.value)}
-                    className="px-2 py-1 border border-blue-300 rounded-lg bg-white text-blue-900 text-[10px] md:text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-[10px] md:text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
                   >
                     <option value="lead-scoring-agent">Lead Scoring Agent</option>
                     <option value="content-creation-agent">Content Creation Agent</option>

@@ -39,18 +39,13 @@ class ChatResponse(BaseModel):
 
 # Define the 7 specialized AI agents
 AGENTS = [
+    # Legacy Agents (Categorized)
     AgentConfig(
         id="marketing-strategist",
         name="Marketing Strategist",
         description="Analyzes campaigns, suggests improvements, and creates marketing strategies",
         role="Marketing & Growth Expert",
-        capabilities=[
-            "Campaign analysis",
-            "A/B testing recommendations",
-            "Audience segmentation",
-            "Content strategy",
-            "ROI optimization"
-        ],
+        capabilities=["Campaign analysis", "A/B testing recommendations", "Audience segmentation", "Content strategy", "ROI optimization"],
         tools=["google-ads", "facebook-ads", "google-analytics", "mailchimp"],
         icon="📊",
         color="#FF6B6B"
@@ -60,13 +55,7 @@ AGENTS = [
         name="Content Creator",
         description="Generates blog posts, social media content, and marketing copy",
         role="Content Generation Specialist",
-        capabilities=[
-            "Blog post writing",
-            "Social media content",
-            "Email campaigns",
-            "SEO optimization",
-            "Content calendars"
-        ],
+        capabilities=["Blog post writing", "Social media content", "Email campaigns", "SEO optimization", "Content calendars"],
         tools=["wordpress", "mailchimp", "google-docs"],
         icon="✍️",
         color="#4ECDC4"
@@ -76,13 +65,7 @@ AGENTS = [
         name="Sales Assistant",
         description="Manages leads, tracks deals, and provides sales insights",
         role="Sales & CRM Expert",
-        capabilities=[
-            "Lead qualification",
-            "Deal tracking",
-            "Sales forecasting",
-            "Pipeline management",
-            "Follow-up automation"
-        ],
+        capabilities=["Lead qualification", "Deal tracking", "Sales forecasting", "Pipeline management", "Follow-up automation"],
         tools=["fluentcrm", "zoho-crm", "pipedrive"],
         icon="💼",
         color="#95E1D3"
@@ -92,13 +75,7 @@ AGENTS = [
         name="Customer Support",
         description="Handles customer inquiries and provides support recommendations",
         role="Customer Success Specialist",
-        capabilities=[
-            "Ticket triage",
-            "Response suggestions",
-            "Knowledge base search",
-            "Sentiment analysis",
-            "Escalation detection"
-        ],
+        capabilities=["Ticket triage", "Response suggestions", "Knowledge base search", "Sentiment analysis", "Escalation detection"],
         tools=["zendesk", "intercom", "freshdesk"],
         icon="🎧",
         color="#A8E6CF"
@@ -108,13 +85,7 @@ AGENTS = [
         name="Data Analyst",
         description="Analyzes business data and provides actionable insights",
         role="Business Intelligence Expert",
-        capabilities=[
-            "Data visualization",
-            "Trend analysis",
-            "Performance metrics",
-            "Predictive analytics",
-            "Custom reports"
-        ],
+        capabilities=["Data visualization", "Trend analysis", "Performance metrics", "Predictive analytics", "Custom reports"],
         tools=["google-analytics", "google-sheets", "stripe"],
         icon="📈",
         color="#FFD93D"
@@ -124,13 +95,7 @@ AGENTS = [
         name="E-commerce Optimizer",
         description="Optimizes product listings, pricing, and inventory",
         role="E-commerce Specialist",
-        capabilities=[
-            "Product optimization",
-            "Pricing strategies",
-            "Inventory management",
-            "Conversion optimization",
-            "Abandoned cart recovery"
-        ],
+        capabilities=["Product optimization", "Pricing strategies", "Inventory management", "Conversion optimization", "Abandoned cart recovery"],
         tools=["woocommerce", "shopify", "stripe"],
         icon="🛒",
         color="#C7CEEA"
@@ -140,16 +105,243 @@ AGENTS = [
         name="Workflow Automator",
         description="Creates and manages automated workflows across platforms",
         role="Automation Specialist",
-        capabilities=[
-            "Workflow design",
-            "Integration setup",
-            "Task automation",
-            "Trigger configuration",
-            "Process optimization"
-        ],
+        capabilities=["Workflow design", "Integration setup", "Task automation", "Trigger configuration", "Process optimization"],
         tools=["zapier", "make", "n8n", "temporal"],
         icon="⚙️",
         color="#B4A7D6"
+    ),
+
+    # Refined 20 Core Agents (v2.0)
+    AgentConfig(
+        id="market_research",
+        name="Market Research",
+        description="Deep market analysis, competitive research, and industry trends",
+        role="Market Intelligence Expert",
+        capabilities=["Market Depth", "Trend Spotting", "Competitor SOS", "SWOT Analysis"],
+        tools=["serper", "semrush", "ahrefs"],
+        icon="🔍",
+        color="#3B82F6"
+    ),
+    AgentConfig(
+        id="data_analytics",
+        name="Data Analytics",
+        description="Complex data sets analysis and actionable insight generation",
+        role="Intelligence Analyst",
+        capabilities=["Metric Interpretation", "Anomaly Detection", "Forecasting"],
+        tools=["pandas", "numpy", "matplotlib"],
+        icon="📊",
+        color="#10B981"
+    ),
+    AgentConfig(
+        id="strategic_planning",
+        name="Strategic Planning",
+        description="Long-term business planning and scenario modeling",
+        role="Business Strategist",
+        capabilities=["Roadmap Design", "Scenario Planning", "Budget Allocation"],
+        tools=["notion", "spreadsheet"],
+        icon="🎯",
+        color="#F59E0B"
+    ),
+    AgentConfig(
+        id="competitive_intelligence",
+        name="Competitive Intel",
+        description="Passive and active monitoring of competitors",
+        role="Intelligence Architect",
+        capabilities=["Price Tracking", "Feature Analysis", "Market Share Monitoring"],
+        tools=["scrape-web"],
+        icon="🕵️",
+        color="#EF4444"
+    ),
+    AgentConfig(
+        id="content_generation",
+        name="Content Generation",
+        description="Automated high-quality content production across formats",
+        role="Content Specialist",
+        capabilities=["Blog Writing", "Social Copy", "Ad Creation", "Whitepapers"],
+        tools=["openai", "anthropic"],
+        icon="📝",
+        color="#8B5CF6"
+    ),
+    AgentConfig(
+        id="creative_design",
+        name="Creative Design",
+        description="Visual concept generation and design prompt engineering",
+        role="Creative Director",
+        capabilities=["Ad Visuals", "UI/UX Mockups", "Brand Identity"],
+        tools=["dall-e", "midjourney"],
+        icon="🎨",
+        color="#EC4899"
+    ),
+    AgentConfig(
+        id="seo_optimization",
+        name="SEO Optimization",
+        description="On-page, technical, and off-page SEO automation",
+        role="SEO Architect",
+        capabilities=["Keyword Research", "Tech SEO Audit", "Content Optimization"],
+        tools=["screaming-frog", "semrush"],
+        icon="🚀",
+        color="#06B6D4"
+    ),
+    AgentConfig(
+        id="campaign_orchestration",
+        name="Campaign Orchestrator",
+        description="Cross-channel campaign synchronization and management",
+        role="Marketing Manager",
+        capabilities=["Multi-channel Sync", "Budget Mgmt", "Timeline Tracking"],
+        tools=["google-ads", "meta-ads"],
+        icon="🎺",
+        color="#6366F1"
+    ),
+    AgentConfig(
+        id="conversion_optimization",
+        name="CRO Expert",
+        description="Funnel analysis and conversion rate optimization",
+        role="CRO Specialist",
+        capabilities=["A/B Testing", "Funnel Analysis", "LPO"],
+        tools=["optimizely", "hotjar"],
+        icon="📈",
+        color="#10B981"
+    ),
+    AgentConfig(
+        id="social_media_management",
+        name="Social Media Manager",
+        description="Automated posting, engagement, and monitoring",
+        role="Community Manager",
+        capabilities=["Scheduling", "Engagement", "Brand Monitoring"],
+        tools=["buffer", "hootsuite"],
+        icon="📱",
+        color="#1D4ED8"
+    ),
+    AgentConfig(
+        id="code_generation",
+        name="Code Generation",
+        description="Automated feature development and bug fixing",
+        role="Senior Engineer",
+        capabilities=["Feature Dev", "Bug Fixing", "Code Review"],
+        tools=["github", "vscode"],
+        icon="💻",
+        color="#000000"
+    ),
+    AgentConfig(
+        id="devops_automation",
+        name="DevOps Automation",
+        description="Infrastructure as Code and deployment automation",
+        role="DevOps Engineer",
+        capabilities=["IaC Setup", "CI/CD", "Security Hardening"],
+        tools=["terraform", "docker", "k8s"],
+        icon="♾️",
+        color="#00ADEE"
+    ),
+    AgentConfig(
+        id="technical_documentation",
+        name="Tech Documentation",
+        description="API docs and system architecture documentation",
+        role="Technical Writer",
+        capabilities=["API Docs", "User Guides", "System Diagrams"],
+        tools=["swagger", "docusaurus"],
+        icon="📚",
+        color="#64748B"
+    ),
+    AgentConfig(
+        id="customer_engagement",
+        name="Customer Engagement",
+        description="Lead nurturing and customer success automation",
+        role="CS Manager",
+        capabilities=["Nurturing", "Onboarding", "Retention"],
+        tools=["hubspot", "customer.io"],
+        icon="🤝",
+        color="#F8FAFC"
+    ),
+    AgentConfig(
+        id="sales_intelligence",
+        name="Sales Intelligence",
+        description="Lead scoring and sales pipeline optimization",
+        role="Sales Ops",
+        capabilities=["Lead Scoring", "Forecasting", "Pipeline Health"],
+        tools=["salesforce", "zoho"],
+        icon="💰",
+        color="#22C55E"
+    ),
+    AgentConfig(
+        id="trading_strategy",
+        name="Trading Strategy",
+        description="Algorithmic trading strategy development & backtesting",
+        role="Quant Strategist",
+        capabilities=["Backtesting", "Alpha Finding", "Risk Mgmt"],
+        tools=["alpaca", "tradingview"],
+        icon="💹",
+        color="#0EA5E9"
+    ),
+    AgentConfig(
+        id="financial_analytics",
+        name="Financial Analytics",
+        description="Revenue forecasting and ROI optimization",
+        role="CFO Assistant",
+        capabilities=["Forecasting", "Budgeting", "ROI Analysis"],
+        tools=["quickbooks", "xero"],
+        icon="💵",
+        color="#16A34A"
+    ),
+    AgentConfig(
+        id="gaming_experience",
+        name="Gaming Experience",
+        description="Leaderboard and achievement system management",
+        role="Game Director",
+        capabilities=["Progression", "Balancing", "Rewards"],
+        tools=["unity", "epic"],
+        icon="🎮",
+        color="#F43F5E"
+    ),
+    AgentConfig(
+        id="community_management",
+        name="Community Manager",
+        description="Intelligent community moderation and engagement",
+        role="Community Head",
+        capabilities=["Moderation", "Events", "Sentiment"],
+        tools=["discord", "telegram"],
+        icon="💬",
+        color="#5865F2"
+    ),
+    AgentConfig(
+        id="master_orchestrator",
+        name="Master Orchestrator",
+        description="Central intelligence coordinating all BizOSaas agents",
+        role="The Brain",
+        capabilities=["Orchestration", "Global Strategy", "Task Delegation"],
+        tools=["all-agents"],
+        icon="🧠",
+        color="#7C3AED"
+    ),
+    # Category 9: E-commerce Refined
+    AgentConfig(
+        id="ecommerce_sourcing",
+        name="Product Sourcing Specialist",
+        description="Global product discovery, supplier validation, and feasibility for Coreldove",
+        role="Sourcing Strategist",
+        capabilities=["Supplier Validation", "Margin Analysis", "Global Search"],
+        tools=["serper", "alibaba", "connector"],
+        icon="📦",
+        color="#F97316"
+    ),
+    AgentConfig(
+        id="ecommerce_inventory",
+        name="Inventory Manager",
+        description="AI-driven stock tracking, demand forecasting, and logistics optimization",
+        role="Supply Chain Optimizer",
+        capabilities=["Demand Forecasting", "Reorder Automation", "Logistics Analysis"],
+        tools=["shopify", "analytics", "connector"],
+        icon="🏗️",
+        color="#10B981"
+    ),
+    AgentConfig(
+        id="ecommerce_order_orchestrator",
+        name="Order Orchestrator",
+        description="360-degree autonomous order processing, fraud detection, and multi-channel fulfillment",
+        role="Fulfillment Architect",
+        capabilities=["Fraud Detection", "Routing Optimization", "Status Sync"],
+        tools=["all-connectors", "fraud-check"],
+        icon="🚚",
+        color="#3B82F6"
     )
 ]
 
