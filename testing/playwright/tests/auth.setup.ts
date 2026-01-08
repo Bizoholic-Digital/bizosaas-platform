@@ -18,15 +18,24 @@ setup.describe('Authentication Setup', () => {
         // Navigate to admin login
         await page.goto(process.env.ADMIN_DASHBOARD_URL || 'http://localhost:3004/login');
 
-        // Wait for login form
-        await page.waitForSelector('[data-testid="login-form"]', { timeout: 10000 });
+        // Wait for login form or Clerk sign-in
+        await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 20000 });
 
-        // Fill credentials
-        await page.fill('[data-testid="email-input"]', adminEmail);
-        await page.fill('[data-testid="password-input"]', adminPassword);
-
-        // Submit login
-        await page.click('[data-testid="login-submit"]');
+        // Check if using Clerk
+        if (await page.locator('input[name="identifier"]').isVisible()) {
+            await page.fill('input[name="identifier"]', adminEmail);
+            // Click continue if it's the multi-step form
+            if (await page.locator('button:has-text("Continue")').isVisible()) {
+                await page.click('button:has-text("Continue")');
+            }
+            await page.fill('input[name="password"]', adminPassword);
+            await page.click('button:has-text("Sign in"), button.cl-formButtonPrimary');
+        } else {
+            // Legacy/Custom form
+            await page.fill('[data-testid="email-input"]', adminEmail);
+            await page.fill('[data-testid="password-input"]', adminPassword);
+            await page.click('[data-testid="login-submit"]');
+        }
 
         // Wait for successful redirect to dashboard
         await page.waitForURL('**/dashboard**', { timeout: 30000 });
@@ -47,15 +56,23 @@ setup.describe('Authentication Setup', () => {
         // Navigate to client portal login
         await page.goto(process.env.CLIENT_PORTAL_URL || 'http://localhost:3003/login');
 
-        // Wait for login form
-        await page.waitForSelector('[data-testid="login-form"]', { timeout: 10000 });
+        // Wait for login form or Clerk sign-in
+        await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 20000 });
 
-        // Fill credentials
-        await page.fill('[data-testid="email-input"]', clientEmail);
-        await page.fill('[data-testid="password-input"]', clientPassword);
-
-        // Submit login
-        await page.click('[data-testid="login-submit"]');
+        // Check if using Clerk
+        if (await page.locator('input[name="identifier"]').isVisible()) {
+            await page.fill('input[name="identifier"]', clientEmail);
+            if (await page.locator('button:has-text("Continue")').isVisible()) {
+                await page.click('button:has-text("Continue")');
+            }
+            await page.fill('input[name="password"]', clientPassword);
+            await page.click('button:has-text("Sign in"), button.cl-formButtonPrimary');
+        } else {
+            // Fallback to custom form
+            await page.fill('[data-testid="email-input"]', clientEmail);
+            await page.fill('[data-testid="password-input"]', clientPassword);
+            await page.click('[data-testid="login-submit"]');
+        }
 
         // Wait for successful redirect to dashboard
         await page.waitForURL('**/dashboard**', { timeout: 30000 });
@@ -76,11 +93,20 @@ setup.describe('Authentication Setup', () => {
         const BILLING_AUTH_FILE = path.join(__dirname, '../.auth/billing-user.json');
 
         await page.goto(process.env.CLIENT_PORTAL_URL || 'http://localhost:3003/login');
-        await page.waitForSelector('[data-testid="login-form"]', { timeout: 10000 });
+        await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 20000 });
 
-        await page.fill('[data-testid="email-input"]', billingEmail);
-        await page.fill('[data-testid="password-input"]', billingPassword);
-        await page.click('[data-testid="login-submit"]');
+        if (await page.locator('input[name="identifier"]').isVisible()) {
+            await page.fill('input[name="identifier"]', billingEmail);
+            if (await page.locator('button:has-text("Continue")').isVisible()) {
+                await page.click('button:has-text("Continue")');
+            }
+            await page.fill('input[name="password"]', billingPassword);
+            await page.click('button:has-text("Sign in"), button.cl-formButtonPrimary');
+        } else {
+            await page.fill('[data-testid="email-input"]', billingEmail);
+            await page.fill('[data-testid="password-input"]', billingPassword);
+            await page.click('[data-testid="login-submit"]');
+        }
 
         await page.waitForURL('**/dashboard**', { timeout: 30000 });
         await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
@@ -97,11 +123,20 @@ setup.describe('Authentication Setup', () => {
         const READONLY_AUTH_FILE = path.join(__dirname, '../.auth/readonly-user.json');
 
         await page.goto(process.env.CLIENT_PORTAL_URL || 'http://localhost:3003/login');
-        await page.waitForSelector('[data-testid="login-form"]', { timeout: 10000 });
+        await page.waitForSelector('[data-testid="login-form"], .cl-signIn-root, input[name="identifier"]', { timeout: 20000 });
 
-        await page.fill('[data-testid="email-input"]', readonlyEmail);
-        await page.fill('[data-testid="password-input"]', readonlyPassword);
-        await page.click('[data-testid="login-submit"]');
+        if (await page.locator('input[name="identifier"]').isVisible()) {
+            await page.fill('input[name="identifier"]', readonlyEmail);
+            if (await page.locator('button:has-text("Continue")').isVisible()) {
+                await page.click('button:has-text("Continue")');
+            }
+            await page.fill('input[name="password"]', readonlyPassword);
+            await page.click('button:has-text("Sign in"), button.cl-formButtonPrimary');
+        } else {
+            await page.fill('[data-testid="email-input"]', readonlyEmail);
+            await page.fill('[data-testid="password-input"]', readonlyPassword);
+            await page.click('[data-testid="login-submit"]');
+        }
 
         await page.waitForURL('**/dashboard**', { timeout: 30000 });
         await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();

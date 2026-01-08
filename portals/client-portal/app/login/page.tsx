@@ -18,7 +18,7 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="z-10">
+      <div className="z-10" data-testid="login-form">
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
           <SignIn redirectUrl="/dashboard" signUpUrl="/signup" />
         </Suspense>

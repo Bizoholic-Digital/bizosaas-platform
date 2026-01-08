@@ -39,8 +39,12 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
+      - CLERK_SECRET_KEY=sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
+      - PORT=3003
     ports:
       - "3003:3003"
+    command: npx next dev -p 3003 -H 0.0.0.0
     depends_on:
       - brain-gateway
 
@@ -51,7 +55,11 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
+      - CLERK_SECRET_KEY=sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
+      - PORT=3004
     ports:
       - "3004:3004"
+    command: npx next dev -p 3004 --hostname 0.0.0.0
     depends_on:
       - brain-gateway

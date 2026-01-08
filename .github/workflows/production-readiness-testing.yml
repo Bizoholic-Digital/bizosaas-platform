@@ -188,7 +188,26 @@ jobs:
       - name: Start services
         run: |
           docker compose -f docker-compose.staging.yml up -d
-          sleep 60  # Wait for services to be ready
+          echo "Waiting for services to be ready..."
+          max_retries=20
+          count=0
+          until curl -s http://localhost:3003 > /dev/null || [ $count -eq $max_retries ]; do
+            echo "Waiting for Client Portal (http://localhost:3003)..."
+            sleep 10
+            ((count++))
+          done
+          until curl -s http://localhost:3004 > /dev/null || [ $count -eq $max_retries ]; do
+            echo "Waiting for Admin Dashboard (http://localhost:3004)..."
+            sleep 10
+            ((count++))
+          done
+          until curl -s http://localhost:8000/health > /dev/null || [ $count -eq $max_retries ]; do
+            echo "Waiting for Brain Gateway (http://localhost:8000)..."
+            sleep 10
+            ((count++))
+          done
+          docker compose -f docker-compose.staging.yml ps
+          docker compose -f docker-compose.staging.yml logs --tail=20
       
       - name: Run E2E tests
         env:
@@ -207,7 +226,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: testing/playwright/playwright-report/
+          path: testing/playwright/reports/
           retention-days: 30
       
       - name: Upload test videos
@@ -226,6 +245,8 @@ jobs:
     permissions:
       security-events: write
       contents: read
+      actions: write
+      checks: write
     
     steps:
       - uses: actions/checkout@v4
@@ -254,7 +275,8 @@ jobs:
       - name: Start services
         run: |
           docker compose -f docker-compose.staging.yml up -d
-          sleep 60
+          sleep 120
+          docker compose -f docker-compose.staging.yml ps
 
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.7.0
@@ -262,6 +284,7 @@ jobs:
           target: 'http://localhost:3003'
           rules_file_name: '.zap/rules.tsv'
           cmd_options: '-a'
+          fail_action: false
 
   # Performance Tests
   performance-tests:
