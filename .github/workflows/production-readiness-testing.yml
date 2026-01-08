@@ -194,17 +194,19 @@ jobs:
           until curl -s http://localhost:3003 > /dev/null || [ $count -eq $max_retries ]; do
             echo "Waiting for Client Portal (http://localhost:3003)..."
             sleep 10
-            ((count++))
+            count=$((count + 1))
           done
+          count=0
           until curl -s http://localhost:3004 > /dev/null || [ $count -eq $max_retries ]; do
             echo "Waiting for Admin Dashboard (http://localhost:3004)..."
             sleep 10
-            ((count++))
+            count=$((count + 1))
           done
+          count=0
           until curl -s http://localhost:8000/health > /dev/null || [ $count -eq $max_retries ]; do
             echo "Waiting for Brain Gateway (http://localhost:8000)..."
             sleep 10
-            ((count++))
+            count=$((count + 1))
           done
           docker compose -f docker-compose.staging.yml ps
           docker compose -f docker-compose.staging.yml logs --tail=20
@@ -280,7 +282,7 @@ jobs:
           docker compose -f docker-compose.staging.yml ps
 
       - name: OWASP ZAP Scan
-        uses: zaproxy/action-baseline@v0.7.0
+        uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'http://localhost:3003'
           rules_file_name: '.zap/rules.tsv'

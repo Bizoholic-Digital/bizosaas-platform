@@ -67,7 +67,7 @@ export default defineConfig({
             use: {
                 ...devices['Desktop Chrome'],
                 baseURL: process.env.CLIENT_PORTAL_URL || 'http://localhost:3003',
-                storageState: 'playwright/.auth/client-user.json',
+                storageState: '.auth/client-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/client-portal',
@@ -77,7 +77,7 @@ export default defineConfig({
             use: {
                 ...devices['Desktop Firefox'],
                 baseURL: process.env.CLIENT_PORTAL_URL || 'http://localhost:3003',
-                storageState: 'playwright/.auth/client-user.json',
+                storageState: '.auth/client-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/client-portal',
@@ -87,7 +87,7 @@ export default defineConfig({
             use: {
                 ...devices['Desktop Safari'],
                 baseURL: process.env.CLIENT_PORTAL_URL || 'http://localhost:3003',
-                storageState: 'playwright/.auth/client-user.json',
+                storageState: '.auth/client-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/client-portal',
@@ -99,7 +99,7 @@ export default defineConfig({
             use: {
                 ...devices['Desktop Chrome'],
                 baseURL: process.env.ADMIN_DASHBOARD_URL || 'http://localhost:3004',
-                storageState: 'playwright/.auth/admin-user.json',
+                storageState: '.auth/admin-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/admin-dashboard',
@@ -111,7 +111,7 @@ export default defineConfig({
             use: {
                 ...devices['Pixel 5'],
                 baseURL: process.env.CLIENT_PORTAL_URL || 'http://localhost:3003',
-                storageState: 'playwright/.auth/client-user.json',
+                storageState: '.auth/client-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/client-portal',
@@ -121,7 +121,7 @@ export default defineConfig({
             use: {
                 ...devices['iPhone 12'],
                 baseURL: process.env.CLIENT_PORTAL_URL || 'http://localhost:3003',
-                storageState: 'playwright/.auth/client-user.json',
+                storageState: '.auth/client-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/client-portal',
@@ -141,7 +141,7 @@ export default defineConfig({
             name: 'accessibility',
             use: {
                 ...devices['Desktop Chrome'],
-                storageState: 'playwright/.auth/client-user.json',
+                storageState: '.auth/client-user.json',
             },
             dependencies: ['setup'],
             testDir: './tests/accessibility',
