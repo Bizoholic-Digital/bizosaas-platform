@@ -43,8 +43,8 @@ def db_session(test_db):
 
 
 @pytest.fixture
-def test_client():
-    """Create test client"""
+def test_client(test_db):
+    """Create test client (depends on test_db to ensure tables exist)"""
     from main import app
     return TestClient(app)
 
