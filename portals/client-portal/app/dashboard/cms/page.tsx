@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { FileText, File, Image as ImageIcon, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink } from 'lucide-react';
+import { FileText, File, Image as ImageIcon, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink, FolderOpen, Upload } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -29,12 +29,29 @@ interface Page {
     title: string;
     slug: string;
     status: string;
+    view_count?: number;
+}
+
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+    count: number;
+}
+
+interface MediaItem {
+    id: string;
+    title: string;
+    source_url: string;
+    mime_type: string;
 }
 
 export default function CMSPage() {
     const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('wordpress', 'cms');
     const [posts, setPosts] = useState<Post[]>([]);
     const [pages, setPages] = useState<Page[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [media, setMedia] = useState<MediaItem[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
 
     const [activeTab, setActiveTab] = useState('posts');
@@ -45,7 +62,9 @@ export default function CMSPage() {
         title: '',
         content: '',
         status: 'draft',
-        slug: ''
+        slug: '',
+        description: '', // for categories
+        file: null as File | null
     });
 
     useEffect(() => {
@@ -57,13 +76,17 @@ export default function CMSPage() {
     const loadData = async () => {
         setIsLoadingData(true);
         try {
-            const [postsData, pagesData] = await Promise.all([
+            const [postsData, pagesData, categoriesData, mediaData] = await Promise.all([
                 brainApi.cms.getPosts().catch(() => []),
-                brainApi.cms.getPages().catch(() => [])
+                brainApi.cms.getPages().catch(() => []),
+                brainApi.cms.getCategories().catch(() => []),
+                brainApi.cms.listMedia().catch(() => [])
             ]);
 
             setPosts(postsData || []);
             setPages(pagesData || []);
+            setCategories(categoriesData || []);
+            setMedia(mediaData || []);
         } catch (error) {
             console.error('Failed to load CMS data:', error);
             toast.error('Failed to load CMS data');
@@ -77,15 +100,30 @@ export default function CMSPage() {
             if (activeTab === 'posts') {
                 await brainApi.cms.createPost(formData);
                 toast.success('Post created successfully');
-            } else {
+            } else if (activeTab === 'pages') {
                 await brainApi.cms.createPage(formData);
                 toast.success('Page created successfully');
+            } else if (activeTab === 'categories') {
+                await brainApi.cms.createCategory(formData);
+                toast.success('Category created successfully');
+            } else if (activeTab === 'media') {
+                if (formData.file) {
+                    const data = new FormData();
+                    data.append('file', formData.file);
+                    // data.append('title', formData.title);
+                    await brainApi.cms.uploadMedia(data);
+                    toast.success('Media uploaded successfully');
+                } else {
+                    toast.error('Please select a file');
+                    return;
+                }
             }
             setIsCreateDialogOpen(false);
             resetForm();
             loadData();
         } catch (error) {
             toast.error('Failed to create content');
+            console.error(error);
         }
     };
 
@@ -94,10 +132,14 @@ export default function CMSPage() {
             if (activeTab === 'posts') {
                 await brainApi.cms.updatePost(selectedItem.id, formData);
                 toast.success('Post updated successfully');
-            } else {
+            } else if (activeTab === 'pages') {
                 await brainApi.cms.updatePage(selectedItem.id, formData);
                 toast.success('Page updated successfully');
+            } else if (activeTab === 'categories') {
+                await brainApi.cms.updateCategory(selectedItem.id, formData);
+                toast.success('Category updated successfully');
             }
+            // Media update not supported deeply yet
             setIsCreateDialogOpen(false);
             resetForm();
             loadData();
@@ -106,14 +148,18 @@ export default function CMSPage() {
         }
     };
 
-    const handleDelete = async (id: string, type: 'posts' | 'pages') => {
+    const handleDelete = async (id: string, type: 'posts' | 'pages' | 'categories' | 'media') => {
         if (!confirm('Are you sure you want to delete this content?')) return;
 
         try {
             if (type === 'posts') {
                 await brainApi.cms.deletePost(id);
-            } else {
+            } else if (type === 'pages') {
                 await brainApi.cms.deletePage(id);
+            } else if (type === 'categories') {
+                await brainApi.cms.deleteCategory(id);
+            } else if (type === 'media') {
+                await brainApi.cms.deleteMedia(id);
             }
             toast.success('Content deleted successfully');
             loadData();
@@ -123,7 +169,7 @@ export default function CMSPage() {
     };
 
     const resetForm = () => {
-        setFormData({ title: '', content: '', status: 'draft', slug: '' });
+        setFormData({ title: '', content: '', status: 'draft', slug: '', description: '', file: null });
         setIsEditing(false);
         setSelectedItem(null);
     };
@@ -131,10 +177,12 @@ export default function CMSPage() {
     const openEdit = (item: any) => {
         setSelectedItem(item);
         setFormData({
-            title: item.title,
+            title: item.title || item.name || '',
             content: item.content || '',
-            status: item.status,
-            slug: item.slug
+            status: item.status || 'draft',
+            slug: item.slug || '',
+            description: item.description || '',
+            file: null
         });
         setIsEditing(true);
         setIsCreateDialogOpen(true);
@@ -171,7 +219,7 @@ export default function CMSPage() {
                 </Badge>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
@@ -194,11 +242,21 @@ export default function CMSPage() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Categories</CardTitle>
+                        <FolderOpen className="w-4 h-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{categories.length}</div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Media</CardTitle>
                         <ImageIcon className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">-</div>
+                        <div className="text-2xl font-bold">{media.length}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -214,60 +272,87 @@ export default function CMSPage() {
                             <DialogTrigger asChild>
                                 <Button>
                                     <Plus className="w-4 h-4 mr-2" />
-                                    New {activeTab === 'posts' ? 'Post' : 'Page'}
+                                    New {activeTab === 'posts' ? 'Post' : activeTab === 'pages' ? 'Page' : activeTab === 'categories' ? 'Category' : 'Media'}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[600px]">
                                 <DialogHeader>
-                                    <DialogTitle>{isEditing ? 'Edit' : 'Create New'} {activeTab === 'posts' ? 'Post' : 'Page'}</DialogTitle>
+                                    <DialogTitle>{isEditing ? 'Edit' : 'Create New'} {activeTab.slice(0, -1)}</DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Title</label>
-                                        <Input
-                                            placeholder="Enter title..."
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Slug</label>
-                                        <Input
-                                            placeholder="url-friendly-slug"
-                                            value={formData.slug}
-                                            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Status</label>
-                                        <Select
-                                            value={formData.status}
-                                            onValueChange={(val) => setFormData({ ...formData, status: val })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="publish">Published</SelectItem>
-                                                <SelectItem value="draft">Draft</SelectItem>
-                                                <SelectItem value="pending">Pending</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Content</label>
-                                        <Textarea
-                                            placeholder="Write your content here..."
-                                            className="min-h-[200px]"
-                                            value={formData.content}
-                                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        />
-                                    </div>
+                                    {activeTab === 'media' ? (
+                                        <>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">File</label>
+                                                <Input
+                                                    type="file"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) setFormData({ ...formData, file: file });
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Title (Optional)</label>
+                                                <Input
+                                                    placeholder="Enter media title..."
+                                                    value={formData.title}
+                                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Title/Name</label>
+                                                <Input
+                                                    placeholder="Enter title..."
+                                                    value={formData.title}
+                                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Slug</label>
+                                                <Input
+                                                    placeholder="url-friendly-slug"
+                                                    value={formData.slug}
+                                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                                />
+                                            </div>
+                                            {activeTab !== 'categories' && (
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-medium">Status</label>
+                                                    <Select
+                                                        value={formData.status}
+                                                        onValueChange={(val) => setFormData({ ...formData, status: val })}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="publish">Published</SelectItem>
+                                                            <SelectItem value="draft">Draft</SelectItem>
+                                                            <SelectItem value="pending">Pending</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">{activeTab === 'categories' ? 'Description' : 'Content'}</label>
+                                                <Textarea
+                                                    placeholder={activeTab === 'categories' ? "Enter description..." : "Write your content here..."}
+                                                    className="min-h-[200px]"
+                                                    value={activeTab === 'categories' ? formData.description : formData.content}
+                                                    onChange={(e) => setFormData(activeTab === 'categories' ? { ...formData, description: e.target.value } : { ...formData, content: e.target.value })}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                                 <DialogFooter>
                                     <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
                                     <Button onClick={isEditing ? handleUpdate : handleCreate}>
-                                        {isEditing ? 'Update' : 'Create'}
+                                        {isEditing ? 'Update' : activeTab === 'media' ? 'Upload' : 'Create'}
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
@@ -276,7 +361,7 @@ export default function CMSPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-2 mb-4">
+                        <TabsList className="grid w-full grid-cols-4 mb-4">
                             <TabsTrigger value="posts">
                                 <FileText className="w-4 h-4 mr-2" />
                                 Posts ({posts.length})
@@ -284,6 +369,14 @@ export default function CMSPage() {
                             <TabsTrigger value="pages">
                                 <File className="w-4 h-4 mr-2" />
                                 Pages ({pages.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="categories">
+                                <FolderOpen className="w-4 h-4 mr-2" />
+                                Categories ({categories.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="media">
+                                <ImageIcon className="w-4 h-4 mr-2" />
+                                Media ({media.length})
                             </TabsTrigger>
                         </TabsList>
 
@@ -368,6 +461,79 @@ export default function CMSPage() {
                                         </div>
                                     </div>
                                 ))
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="categories" className="space-y-2">
+                            {isLoadingData ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                                </div>
+                            ) : categories.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground">No categories found</div>
+                            ) : (
+                                categories.map((cat) => (
+                                    <div key={cat.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800">
+                                        <div className="flex items-center gap-4">
+                                            <FolderOpen className="w-5 h-5 text-yellow-600" />
+                                            <div>
+                                                <p className="font-medium text-slate-900 dark:text-white">{cat.name}</p>
+                                                <p className="text-sm text-muted-foreground">/{cat.slug} • {cat.count} items</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => openEdit(cat)}>
+                                                        <Edit className="w-4 h-4 mr-2" /> Edit
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(cat.id, 'categories')}>
+                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="media" className="space-y-4">
+                            {isLoadingData ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                                </div>
+                            ) : media.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground">No media found</div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    {media.map((item) => (
+                                        <div key={item.id} className="group relative aspect-square rounded-lg border bg-slate-100 dark:bg-slate-800 overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all cursor-pointer">
+                                            {item.mime_type.startsWith('image/') ? (
+                                                <img src={item.source_url} alt={item.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
+                                                    <File className="w-8 h-8 text-slate-400 mb-2" />
+                                                    <p className="text-xs text-slate-500 truncate w-full">{item.title}</p>
+                                                </div>
+                                            )}
+
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                <a href={item.source_url} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full hover:bg-gray-100" onClick={(e) => e.stopPropagation()}>
+                                                    <ExternalLink className="w-4 h-4 text-black" />
+                                                </a>
+                                                <button className="p-2 bg-white rounded-full hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDelete(item.id, 'media'); }}>
+                                                    <Trash2 className="w-4 h-4 text-red-600" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </TabsContent>
                     </Tabs>

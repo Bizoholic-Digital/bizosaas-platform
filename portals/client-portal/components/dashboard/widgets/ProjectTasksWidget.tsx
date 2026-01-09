@@ -61,7 +61,7 @@ export function ProjectTasksWidget({ tenantId = "default-tenant" }: { tenantId?:
     }
 
     return (
-        <Card className="col-span-1 border-gray-200 dark:border-gray-800 h-full flex flex-col">
+        <Card className="col-span-1 border-gray-200 dark:border-gray-800 flex flex-col h-[450px] lg:h-full max-h-[500px] lg:max-h-none">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <ListTodo className="w-4 h-4 text-blue-500" />

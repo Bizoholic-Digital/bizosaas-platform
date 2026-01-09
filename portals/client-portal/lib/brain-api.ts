@@ -48,7 +48,7 @@ const apiFetch = async (endpoint: string, options: any = {}, token?: string) => 
     }
 
     const headers = {
-        'Content-Type': 'application/json',
+        ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         ...options.headers,
     };
@@ -239,6 +239,41 @@ export const brainApi = {
         },
         listMedia: async (token?: string) => {
             return apiFetch('/api/cms/media', {}, token);
+        },
+        uploadMedia: async (formData: FormData, token?: string) => {
+            // Note: FormData handling needs special care for headers usually, 
+            // but apiFetch handles JSON. For upload we might need to bypass content-type json.
+            // Assuming the gateway handles multipart/form-data if we don't set Content-Type.
+            return apiFetch('/api/cms/media', {
+                method: 'POST',
+                body: formData,
+                headers: {} // Let browser set boundary
+            }, token);
+        },
+        deleteMedia: async (id: string, token?: string) => {
+            return apiFetch(`/api/cms/media/${id}`, {
+                method: 'DELETE'
+            }, token);
+        },
+        getCategories: async (token?: string) => {
+            return apiFetch('/api/cms/categories', {}, token);
+        },
+        createCategory: async (category: any, token?: string) => {
+            return apiFetch('/api/cms/categories', {
+                method: 'POST',
+                body: JSON.stringify(category)
+            }, token);
+        },
+        updateCategory: async (id: string, category: any, token?: string) => {
+            return apiFetch(`/api/cms/categories/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(category)
+            }, token);
+        },
+        deleteCategory: async (id: string, token?: string) => {
+            return apiFetch(`/api/cms/categories/${id}`, {
+                method: 'DELETE'
+            }, token);
         }
     },
     crm: {
