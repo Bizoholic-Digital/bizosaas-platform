@@ -135,7 +135,6 @@ app.include_router(campaigns.router, prefix="/api/campaigns", tags=["campaigns"]
 app.include_router(billing.router, prefix="/api/billing", tags=["billing"])
 app.include_router(onboarding.router)
 app.include_router(support.router)
-# app.include_router(auth.router) # Deprecated
 app.include_router(admin.router)
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 app.include_router(users.router)
@@ -176,17 +175,17 @@ async def health_check():
     status_code = 200 if data["status"] == "healthy" else (503 if data["status"] == "unhealthy" else 200)
     return JSONResponse(content=data, status_code=status_code)
 
-@app.api_route("/api/brain/wagtail/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/brain/wagtail/{path:path}", methods=["GET", "POST", "PUT", "DELETE"], include_in_schema=False)
 async def proxy_wagtail(request: Request, path: str):
     url = f"{CMS_URL}/api/v2/{path}"
     return await proxy_request(request, url)
 
-@app.api_route("/api/brain/django-crm/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/brain/django-crm/{path:path}", methods=["GET", "POST", "PUT", "DELETE"], include_in_schema=False)
 async def proxy_crm(request: Request, path: str):
     url = f"{CRM_URL}/api/{path}"
     return await proxy_request(request, url)
 
-@app.api_route("/api/brain/integrations/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/brain/integrations/{path:path}", methods=["GET", "POST", "PUT", "DELETE"], include_in_schema=False)
 async def proxy_integrations(request: Request, path: str = ""):
     """Proxy for frontend integrations calls"""
     # Simply forward to the connectors router logic
@@ -198,7 +197,7 @@ async def proxy_integrations(request: Request, path: str = ""):
 #     url = f"{AUTH_URL}/{path}"
 #     return await proxy_request(request, url)
 
-@app.api_route("/api/brain/agents/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/brain/agents/{path:path}", methods=["GET", "POST", "PUT", "DELETE"], include_in_schema=False)
 async def proxy_agents(request: Request, path: str):
     """
     Proxy agents requests to the ai-agents service.
@@ -227,7 +226,7 @@ async def proxy_agents(request: Request, path: str):
     url = f"http://ai-agents:8000/{path}"
     return await proxy_request(request, url)
 
-@app.api_route("/api/brain/tasks/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.api_route("/api/brain/tasks/{path:path}", methods=["GET", "POST", "PUT", "DELETE"], include_in_schema=False)
 async def proxy_tasks(request: Request, path: str):
     # Mapping to ai-agents service tasks
     url = f"http://ai-agents:8000/tasks/{path}"
