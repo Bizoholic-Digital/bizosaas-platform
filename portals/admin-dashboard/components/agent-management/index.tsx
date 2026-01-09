@@ -12,7 +12,8 @@ import {
   BarChart3,
   Shield,
   FlaskConical,
-  ChevronLeft
+  ChevronLeft,
+  Network
 } from 'lucide-react';
 
 // Import all agent management components
@@ -23,6 +24,7 @@ import TaskManagementInterface from './TaskManagementInterface';
 import PerformanceAnalyticsDashboard from './PerformanceAnalyticsDashboard';
 import AgentAccessControl from './AgentAccessControl';
 import PlaygroundManager from './PlaygroundManager';
+import AgentMeshVisualizer from './AgentMeshVisualizer';
 import { AgentDashboard } from './agent-dashboard';
 
 // Component interface for dynamic loading
@@ -45,6 +47,14 @@ const AGENT_MANAGEMENT_COMPONENTS: AgentManagementComponent[] = [
     icon: Bot,
     component: AgentManagementDashboard,
     permissions: ['agent.view']
+  },
+  {
+    id: 'mesh',
+    name: 'Agent Mesh',
+    description: 'Real-time specialist agent interaction matrix and coordination visualizer',
+    icon: Network,
+    component: AgentMeshVisualizer,
+    permissions: ['mesh.view']
   },
   {
     id: 'monitoring',

@@ -24,7 +24,8 @@ import {
   X,
   Bot,
   MessageCircle,
-  FileText
+  FileText,
+  Network
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -48,11 +49,18 @@ const navigation: NavigationItem[] = [
     category: 'main'
   },
   {
-    name: 'System Health',
-    href: '/system-health',
+    name: 'System Overwatch',
+    href: '/dashboard/system-status',
     icon: Activity,
     description: 'Infrastructure and performance monitoring',
     category: 'main'
+  },
+  {
+    name: 'Infrastructure Commander',
+    href: '/dashboard/infrastructure',
+    icon: Network,
+    description: 'Cluster-level telemetry and resource orchestration',
+    category: 'monitoring'
   },
 
   // Platform Management
@@ -95,9 +103,16 @@ const navigation: NavigationItem[] = [
   },
   {
     name: 'Connectivity Hub',
-    href: '/integrations',
+    href: '/dashboard/connectors',
     icon: Globe,
     description: 'Third-party integration monitoring',
+    category: 'monitoring'
+  },
+  {
+    name: 'Connector Intelligence',
+    href: '/dashboard/connectors/analytics',
+    icon: Activity,
+    description: 'Integration traffic and reliability analytics',
     category: 'monitoring'
   },
   {

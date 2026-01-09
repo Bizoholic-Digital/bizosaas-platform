@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { WorkflowConfigModal } from '@/components/workflows/WorkflowConfigModal';
+import Link from 'next/link';
 
 // Mock workflow data
 const MOCK_WORKFLOWS = [
@@ -66,27 +68,69 @@ const MOCK_WORKFLOWS = [
     }
 ];
 
-export default function WorkflowsPage() {
-    const [workflows, setWorkflows] = useState(MOCK_WORKFLOWS);
-    const [isLoading, setIsLoading] = useState(false);
+import { brainApi } from '@/lib/brain-api';
+import { useAuth } from '@clerk/nextjs';
 
-    const handleToggleStatus = (id: string) => {
-        setWorkflows(prev => prev.map(wf => {
-            if (wf.id === id) {
-                const newStatus = wf.status === 'running' ? 'paused' : 'running';
-                toast.success(`${wf.name} ${newStatus === 'running' ? 'resumed' : 'paused'}`);
-                return { ...wf, status: newStatus };
-            }
-            return wf;
-        }));
+export default function WorkflowsPage() {
+    const { getToken } = useAuth();
+    const [workflows, setWorkflows] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
+    const [isConfigOpen, setIsConfigOpen] = useState(false);
+
+    const loadWorkflows = async () => {
+        setIsLoading(true);
+        try {
+            const token = await getToken();
+            const data = await brainApi.workflows.list(token as string);
+            setWorkflows(data);
+        } catch (error) {
+            console.error("Failed to load workflows:", error);
+            toast.error("Failed to load workflows");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        loadWorkflows();
+    }, []);
+
+    const handleToggleStatus = async (id: string) => {
+        try {
+            const token = await getToken();
+            const res = await brainApi.workflows.toggle(id, token as string);
+            setWorkflows(prev => prev.map(wf => {
+                if (wf.id === id) {
+                    return { ...wf, status: res.new_status };
+                }
+                return wf;
+            }));
+            toast.success(`Workflow ${res.new_status === 'running' ? 'resumed' : 'paused'}`);
+        } catch (error) {
+            toast.error("Failed to toggle workflow status");
+        }
     };
 
     const handleRefresh = () => {
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            toast.success("Workflow statuses updated");
-        }, 1000);
+        loadWorkflows();
+        toast.success("Workflow statuses updated");
+    };
+
+    const handleOpenConfig = (wf: any) => {
+        setSelectedWorkflow(wf);
+        setIsConfigOpen(true);
+    };
+
+    const handleSaveConfig = async (id: string, config: any) => {
+        try {
+            const token = await getToken();
+            await brainApi.workflows.updateConfig(id, config, token as string);
+            toast.success("Configuration saved successfully");
+            loadWorkflows();
+        } catch (error) {
+            toast.error("Failed to save configuration");
+        }
     };
 
     return (
@@ -207,10 +251,16 @@ export default function WorkflowsPage() {
                                             <Button size="sm" variant="ghost" onClick={() => handleToggleStatus(wf.id)}>
                                                 {wf.status === 'running' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                                             </Button>
-                                            <Button size="sm" variant="outline">
+                                            <Button size="sm" variant="outline" onClick={() => handleOpenConfig(wf)}>
                                                 <Settings2 className="h-4 w-4 mr-2" />
                                                 Config
                                             </Button>
+                                            <Link href={`/dashboard/workflows/${wf.id}`}>
+                                                <Button size="sm" variant="secondary">
+                                                    <Activity className="h-4 w-4 mr-2" />
+                                                    View
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -239,6 +289,13 @@ export default function WorkflowsPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            <WorkflowConfigModal
+                workflow={selectedWorkflow}
+                isOpen={isConfigOpen}
+                onClose={() => setIsConfigOpen(false)}
+                onSave={handleSaveConfig}
+            />
 
             {/* Recommendation Box */}
             <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/20 rounded-2xl p-6 mt-8">

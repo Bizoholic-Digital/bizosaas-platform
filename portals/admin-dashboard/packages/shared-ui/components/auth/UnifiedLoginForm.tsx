@@ -256,7 +256,7 @@ export function UnifiedLoginForm({
                 {/* Bottom Links */}
                 <div className="mt-10 text-center space-y-6">
                     <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">
-                        Don't have an account?{' '}
+                        Don&apos;t have an account?{' '}
                         <a href="#" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 underline decoration-2 underline-offset-4">
                             Get Started
                         </a>

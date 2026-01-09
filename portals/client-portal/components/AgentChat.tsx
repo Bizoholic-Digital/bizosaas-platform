@@ -21,9 +21,10 @@ interface AgentChatProps {
     agentName: string
     agentIcon: string
     agentColor: string
+    initialMessage?: string
 }
 
-export function AgentChat({ agentId, agentName, agentIcon, agentColor }: AgentChatProps) {
+export function AgentChat({ agentId, agentName, agentIcon, agentColor, initialMessage }: AgentChatProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [input, setInput] = useState('')
     const [loading, setLoading] = useState(false)
@@ -43,19 +44,43 @@ export function AgentChat({ agentId, agentName, agentIcon, agentColor }: AgentCh
                     })))
                 } else {
                     // Add welcome message if no history
-                    setMessages([{
+                    const welcomeMsg: ChatMessage = {
                         id: 'welcome',
                         role: 'assistant',
                         content: `Hello! I'm ${agentName}. How can I help you today?`,
                         timestamp: new Date()
-                    }])
+                    };
+
+                    if (initialMessage) {
+                        setMessages([
+                            welcomeMsg,
+                            {
+                                id: 'initial',
+                                role: 'user',
+                                content: initialMessage,
+                                timestamp: new Date()
+                            }
+                        ]);
+                        // Trigger AI response for initial message
+                        setLoading(true);
+                        brainApi.agents.chat(agentId, initialMessage).then(response => {
+                            setMessages(prev => [...prev, {
+                                id: Date.now().toString(),
+                                role: 'assistant',
+                                content: response.message,
+                                timestamp: new Date()
+                            }]);
+                        }).finally(() => setLoading(false));
+                    } else {
+                        setMessages([welcomeMsg]);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load history:', error)
             }
         }
         loadHistory()
-    }, [agentId, agentName])
+    }, [agentId, agentName, initialMessage])
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -138,8 +163,8 @@ export function AgentChat({ agentId, agentName, agentIcon, agentColor }: AgentCh
                             </Avatar>
                             <div
                                 className={`rounded-lg px-4 py-2 max-w-[80%] whitespace-pre-wrap ${message.role === 'user'
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted'
                                     }`}
                             >
                                 {message.content}

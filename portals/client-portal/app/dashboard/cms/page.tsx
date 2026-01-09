@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { FileText, File, Image, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink } from 'lucide-react';
+import { FileText, File, Image as ImageIcon, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -195,7 +195,7 @@ export default function CMSPage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Media</CardTitle>
-                        <Image className="w-4 h-4 text-muted-foreground" />
+                        <ImageIcon className="w-4 h-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">-</div>

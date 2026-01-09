@@ -315,6 +315,9 @@ export const brainApi = {
         getCampaigns: async (token?: string) => {
             return apiFetch('/api/marketing/campaigns', {}, token);
         },
+        getStats: async (token?: string) => {
+            return apiFetch('/api/marketing/stats', {}, token);
+        },
         createList: async (name: string, token?: string) => {
             return apiFetch('/api/marketing/lists', {
                 method: 'POST',
@@ -355,6 +358,56 @@ export const brainApi = {
             return apiFetch(`/api/campaigns/${id}/publish`, {
                 method: 'POST'
             }, token);
+        }
+    },
+    users: {
+        me: async (token?: string) => {
+            return apiFetch('/api/users/me', {}, token);
+        },
+        updateMe: async (data: any, token?: string) => {
+            return apiFetch('/api/users/me', {
+                method: 'PATCH',
+                body: JSON.stringify(data)
+            }, token);
+        }
+    },
+    workflows: {
+        list: async (token?: string) => {
+            return apiFetch('/api/workflows', {}, token);
+        },
+        updateConfig: async (id: string, config: any, token?: string) => {
+            return apiFetch(`/api/workflows/${id}/config`, {
+                method: 'POST',
+                body: JSON.stringify(config)
+            }, token);
+        },
+        toggle: async (id: string, token?: string) => {
+            return apiFetch(`/api/workflows/${id}/toggle`, {
+                method: 'POST'
+            }, token);
+        },
+        getExecutionData: async (id: string, token?: string) => {
+            // Mocking execution data for DAG visualization
+            return {
+                nodes: [
+                    { id: 'start', label: 'Trigger: New Lead', type: 'trigger', status: 'completed' },
+                    { id: 'qualify', label: 'AI Qualification', type: 'action', status: 'completed' },
+                    { id: 'score', label: 'Lead Scoring', type: 'action', status: 'running' },
+                    { id: 'assign', label: 'CRM Assignment', type: 'action', status: 'pending' },
+                    { id: 'notify', label: 'Slack Notification', type: 'action', status: 'pending' }
+                ],
+                edges: [
+                    { from: 'start', to: 'qualify' },
+                    { from: 'qualify', to: 'score' },
+                    { from: 'score', to: 'assign' },
+                    { from: 'assign', to: 'notify' }
+                ]
+            };
+        }
+    },
+    discovery: {
+        getRecommendations: async (token?: string) => {
+            return apiFetch('/api/discovery/recommendations', {}, token);
         }
     }
 };

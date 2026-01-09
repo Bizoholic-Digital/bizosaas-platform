@@ -14,20 +14,22 @@ import {
     Zap, RefreshCw, Rocket, Globe, Megaphone, Share2, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CampaignWizardSelector } from '@/components/CampaignWizardSelector';
+import { AgentChat } from '@/components/AgentChat';
 
 interface Campaign {
     id: string;
     name: string;
     status: string;
-    type: string;
+    type?: string;
     subject?: string;
+    emails_sent?: number;
     stats?: {
         open_rate: number;
         click_rate: number;
@@ -36,47 +38,82 @@ interface Campaign {
 }
 
 export default function MarketingPage() {
-    const { isConnected: isMailchimpConnected, isLoading: statusLoading } = useConnectorStatus('mailchimp', 'marketing');
-    const [campaigns, setCampaigns] = useState<Campaign[]>([
-        { id: '1', name: 'Winter Flash Sale', status: 'running', type: 'Google Ads', stats: { open_rate: 0, click_rate: 3.4, emails_sent: 0 } },
-        { id: '2', name: 'New Year Newsletter', status: 'sent', type: 'Email', stats: { open_rate: 24.5, click_rate: 1.2, emails_sent: 12500 } },
-        { id: '3', name: 'Social Brand Awareness', status: 'paused', type: 'Social Media', stats: { open_rate: 0, click_rate: 0.8, emails_sent: 0 } }
-    ]);
+    const { isConnected: isMarketingConnected, isLoading: statusLoading } = useConnectorStatus('marketing', 'marketing');
+    const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+    const [stats, setStats] = useState<any>(null);
     const [isLoadingData, setIsLoadingData] = useState(false);
     const [activeTab, setActiveTab] = useState('hub');
     const [showWizard, setShowWizard] = useState(false);
+    const [executingInsight, setExecutingInsight] = useState<any>(null);
+    const [isChatOpen, setIsChatOpen] = useState(false);
 
     const [aiInsights] = useState([
         {
             title: "Optimize Ad Targeting",
-            content: "Your Google Ads 'Winter Flash Sale' is performing 15% better in Southeast regions. Consider shifting 10% budget from Northeast to maximize ROI.",
+            content: "Your Google Ads performance is better in Southeast regions. Shifting budget to maximize ROI.",
             type: 'info'
         },
         {
             title: "Email Personalization Boost",
-            content: "Adding first names to subject lines in your next newsletter is predicted to increase open rates by 8.4%.",
+            content: "Adding first names to subject lines is predicted to increase open rates significantly.",
             type: 'success'
         }
     ]);
 
+    const handleExecuteAction = (insight: any) => {
+        setExecutingInsight(insight);
+        setIsChatOpen(true);
+    };
+
     const loadData = async () => {
+        if (!isMarketingConnected) return;
+
         setIsLoadingData(true);
         try {
-            const campaignsData = await brainApi.marketing.getCampaigns().catch(() => ({ data: [] }));
-            if (campaignsData.data?.length > 0) {
-                setCampaigns(prev => [...prev, ...campaignsData.data]);
+            const [campaignsResp, statsResp] = await Promise.all([
+                brainApi.marketing.getCampaigns(),
+                brainApi.marketing.getStats().catch(() => null)
+            ]);
+
+            if (Array.isArray(campaignsResp)) {
+                setCampaigns(campaignsResp);
+            } else if (campaignsResp?.data) {
+                setCampaigns(campaignsResp.data);
+            }
+
+            if (statsResp) {
+                setStats(statsResp);
             }
         } catch (error) {
             console.error('Failed to load marketing data:', error);
+            toast.error('Failed to load real-time marketing data');
         } finally {
             setIsLoadingData(false);
         }
     };
 
+    useEffect(() => {
+        if (isMarketingConnected) {
+            loadData();
+        }
+    }, [isMarketingConnected]);
+
     if (statusLoading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    if (!isMarketingConnected) {
+        return (
+            <div className="p-6">
+                <ConnectionPrompt
+                    serviceName="Marketing Suite"
+                    description="Connect Mailchimp or another marketing platform to manage campaigns and view real-time performance data."
+                    onConnect={loadData}
+                />
             </div>
         );
     }
@@ -95,7 +132,11 @@ export default function MarketingPage() {
     return (
         <div className="p-6 space-y-6">
             {/* Header section with Premium feel */}
-            <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-black tracking-tight uppercase">Marketing Suite</h1>
+                    <p className="text-muted-foreground">Orchestrate and optimize your growth engine.</p>
+                </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" className="gap-2 h-11" onClick={loadData}>
                         <RefreshCw className={`w-4 h-4 ${isLoadingData ? 'animate-spin' : ''}`} />
@@ -111,47 +152,55 @@ export default function MarketingPage() {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-none bg-indigo-50 dark:bg-indigo-950/20 shadow-sm border-l-4 border-l-indigo-500">
+                <Card className="border-none bg-indigo-100/50 dark:bg-indigo-900/20 shadow-sm border-l-4 border-l-indigo-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
                             <Target className="w-5 h-5 text-indigo-600" />
-                            <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">Active</Badge>
+                            <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">All Platforms</Badge>
                         </div>
-                        <p className="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-widest">Total Ads Budget</p>
-                        <h3 className="text-3xl font-black mt-1 text-indigo-950 dark:text-indigo-50">$12,450.00</h3>
+                        <p className="text-xs font-bold text-indigo-800 dark:text-indigo-300 uppercase tracking-widest">Total Campaigns</p>
+                        <h3 className="text-3xl font-black mt-1 text-indigo-950 dark:text-indigo-50">
+                            {isLoadingData ? '...' : (stats?.campaigns || campaigns.length || '0')}
+                        </h3>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none bg-emerald-50 dark:bg-emerald-950/20 shadow-sm border-l-4 border-l-emerald-500">
+                <Card className="border-none bg-emerald-100/50 dark:bg-emerald-900/20 shadow-sm border-l-4 border-l-emerald-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
                             <TrendingUp className="w-5 h-5 text-emerald-600" />
-                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">+18.2%</Badge>
+                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Growth</Badge>
                         </div>
-                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-widest">Total Conversions</p>
-                        <h3 className="text-3xl font-black mt-1 text-emerald-950 dark:text-emerald-50">842</h3>
+                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-widest">Active Campaigns</p>
+                        <h3 className="text-3xl font-black mt-1 text-emerald-950 dark:text-emerald-50">
+                            {isLoadingData ? '...' : (stats?.active_campaigns || campaigns.filter((c: any) => c.status === 'running').length || '0')}
+                        </h3>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none bg-blue-50 dark:bg-blue-950/20 shadow-sm border-l-4 border-l-blue-500">
+                <Card className="border-none bg-blue-100/50 dark:bg-blue-900/20 shadow-sm border-l-4 border-l-blue-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
                             <Send className="w-5 h-5 text-blue-600" />
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">Omni</Badge>
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">Subscribers</Badge>
                         </div>
-                        <p className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-widest">Global Reach</p>
-                        <h3 className="text-3xl font-black mt-1 text-blue-950 dark:text-blue-50">45.2K</h3>
+                        <p className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-widest">Total Audience</p>
+                        <h3 className="text-3xl font-black mt-1 text-blue-950 dark:text-indigo-50">
+                            {isLoadingData ? '...' : (stats?.subscribers?.toLocaleString() || '0')}
+                        </h3>
                     </CardContent>
                 </Card>
 
-                <Card className="border-none bg-amber-50 dark:bg-amber-950/20 shadow-sm border-l-4 border-l-amber-500">
+                <Card className="border-none bg-amber-100/50 dark:bg-amber-900/20 shadow-sm border-l-4 border-l-amber-500">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between mb-2">
                             <BrainCircuit className="w-5 h-5 text-amber-600" />
-                            <Badge variant="secondary" className="bg-amber-100 text-amber-700">Optimal</Badge>
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-700">Lists</Badge>
                         </div>
-                        <p className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-widest">AI Efficiency Score</p>
-                        <h3 className="text-3xl font-black mt-1 text-amber-950 dark:text-amber-50">94/100</h3>
+                        <p className="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-widest">Email Lists</p>
+                        <h3 className="text-3xl font-black mt-1 text-amber-950 dark:text-indigo-50">
+                            {isLoadingData ? '...' : (stats?.lists || '0')}
+                        </h3>
                     </CardContent>
                 </Card>
             </div>
@@ -301,22 +350,24 @@ export default function MarketingPage() {
                                         </Badge>
                                         <Badge variant="outline">{campaign.type}</Badge>
                                     </div>
-                                    <CardTitle className="text-xl font-bold">{campaign.name}</CardTitle>
+                                    <CardTitle className="text-xl font-bold truncate" title={campaign.name}>{campaign.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Performance</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Status</p>
                                             <div className="flex items-center gap-1 mt-1">
-                                                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                                <span className="text-lg font-black">{campaign.stats?.click_rate || '3.2'}%</span>
+                                                <div className={`w-2 h-2 rounded-full ${campaign.status === 'running' || campaign.status === 'sent' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                                <span className="text-sm font-bold capitalize">{campaign.status}</span>
                                             </div>
                                         </div>
                                         <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Engagement</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold">Reach</p>
                                             <div className="flex items-center gap-1 mt-1">
                                                 <Users className="w-4 h-4 text-blue-500" />
-                                                <span className="text-lg font-black">{campaign.stats?.emails_sent ? (campaign.stats.emails_sent / 1000).toFixed(1) + 'K' : 'Active'}</span>
+                                                <span className="text-sm font-black">
+                                                    {(campaign.stats?.emails_sent || campaign.emails_sent || 0).toLocaleString()}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -353,7 +404,13 @@ export default function MarketingPage() {
                                             <p className="text-sm text-muted-foreground leading-relaxed">{insight.content}</p>
                                         </CardContent>
                                         <CardFooter className="bg-slate-50 dark:bg-slate-800/50 py-3">
-                                            <Button variant="link" className="text-blue-600 font-bold p-0">Execute with Agent &rarr;</Button>
+                                            <Button
+                                                variant="link"
+                                                className="text-blue-600 font-bold p-0"
+                                                onClick={() => handleExecuteAction(insight)}
+                                            >
+                                                Execute with Agent &rarr;
+                                            </Button>
                                         </CardFooter>
                                     </Card>
                                 ))}
@@ -434,8 +491,8 @@ export default function MarketingPage() {
                                 </div>
                                 <div className="text-left flex-1">
                                     <p className="font-bold text-sm">Mailchimp</p>
-                                    <Badge variant="outline" className={`text-[10px] font-bold ${isMailchimpConnected ? 'text-green-600 border-green-200' : 'text-slate-400'}`}>
-                                        {isMailchimpConnected ? 'Connected' : 'Disconnected'}
+                                    <Badge variant="outline" className={`text-[10px] font-bold ${isMarketingConnected ? 'text-green-600 border-green-200' : 'text-slate-400'}`}>
+                                        {isMarketingConnected ? 'Connected' : 'Disconnected'}
                                     </Badge>
                                 </div>
                                 <Button size="sm" variant="ghost" className="text-xs">Configure</Button>
@@ -455,6 +512,31 @@ export default function MarketingPage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+            {/* AI Agent Execution Dialog */}
+            <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+                <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl">
+                    <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-900 border-b">
+                        <DialogTitle className="flex items-center gap-2 text-2xl font-black">
+                            <BrainCircuit className="w-6 h-6 text-blue-600" />
+                            AI Strategy Execution
+                        </DialogTitle>
+                        <DialogDescription>
+                            Collaborating with Marketing Strategist to execute: <span className="font-bold text-slate-900 dark:text-slate-100">{executingInsight?.title}</span>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-hidden p-4 bg-slate-50/50 dark:bg-slate-950/50">
+                        {executingInsight && (
+                            <AgentChat
+                                agentId="marketing-strategist"
+                                agentName="Marketing Strategist"
+                                agentIcon="📊"
+                                agentColor="#FF6B6B"
+                                initialMessage={`I want to execute the following optimization: ${executingInsight.content}. Can you help me set this up?`}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

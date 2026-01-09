@@ -315,7 +315,9 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
 
         {hasSubItems && isExpanded && !isCollapsed && (
           <div className="mt-1 space-y-1">
-            {item.subItems?.map(subItem => renderNavigationItem(subItem, depth + 1))}
+            {item.subItems
+              ?.filter(subItem => subItem.show !== false)
+              .map(subItem => renderNavigationItem(subItem, depth + 1))}
           </div>
         )}
       </div>
