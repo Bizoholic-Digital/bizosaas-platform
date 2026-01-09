@@ -72,7 +72,7 @@ async def lifespan(app: FastAPI):
                 except Exception as e:
                     logger.error(f"Failed to re-initialize RAG: {e}")
     except Exception as e:
-        logger.error(f"Failed to connect to Vault: {e}")
+        logger.warning(f"Vault connectivity issue: {e}. Continuing with local environment variables.")
 
     seed_connectors()
     

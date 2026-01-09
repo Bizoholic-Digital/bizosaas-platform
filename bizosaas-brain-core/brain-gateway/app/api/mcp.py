@@ -17,8 +17,7 @@ class CategoryResponse(BaseModel):
     description: Optional[str]
     icon: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class McpResponse(BaseModel):
     id: UUID
@@ -31,8 +30,7 @@ class McpResponse(BaseModel):
     install_count: int
     category_id: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class InstallationRequest(BaseModel):
     mcp_slug: str
