@@ -122,6 +122,25 @@ async def validate_connector(
     
     return {"valid": is_valid}
 
+@router.post("/{connector_id}/test")
+async def test_connector_credentials(
+    connector_id: str,
+    credentials: Dict[str, Any] = Body(...),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Test connector credentials without saving them"""
+    tenant_id = user.tenant_id or "default_tenant"
+    
+    try:
+        connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
+        is_valid = await connector.validate_credentials()
+        return {"valid": is_valid}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Test failed for {connector_id}: {e}")
+        return {"valid": False, "error": str(e)}
+
 @router.post("/{connector_id}/action/{action}")
 async def perform_connector_action(
     connector_id: str,

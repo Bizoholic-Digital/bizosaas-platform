@@ -13,6 +13,14 @@ import { useSystemStatus } from '@/lib/hooks/useSystemStatus';
 import { useAuth } from '@/shared/components/AuthProvider';
 import { useTheme } from 'next-themes';
 import { usePWAInstall } from '@/components/PWAInstallPrompt';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
@@ -267,12 +275,48 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   )}
                 </button>
 
-                {/* Header Actions */}
                 <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
-                    <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
+                        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                      <DropdownMenuLabel>System Notifications</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <div className="max-h-[300px] overflow-y-auto">
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                          <div className="flex w-full items-center justify-between font-bold">
+                            <span className="text-red-600">High CPU Load</span>
+                            <span className="text-[10px] text-muted-foreground">Just now</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">KVM2 Server is experiencing high CPU usage on "ai-agents" container.</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                          <div className="flex w-full items-center justify-between font-bold">
+                            <span className="text-yellow-600">New Tenant Signup</span>
+                            <span className="text-[10px] text-muted-foreground">15m ago</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">"Global Logistics Inc" has just finished onboarding.</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                          <div className="flex w-full items-center justify-between font-bold">
+                            <span className="text-green-600">Backup Successful</span>
+                            <span className="text-[10px] text-muted-foreground">2h ago</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">Full platform backup has been completed and synced to S3.</p>
+                        </DropdownMenuItem>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="w-full text-center justify-center font-bold text-indigo-600">
+                        View Audit Log
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                   </button>

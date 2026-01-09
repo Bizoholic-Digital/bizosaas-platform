@@ -33,8 +33,8 @@ export default function AuditLogsPage() {
     }, []);
 
     const filteredLogs = logs.filter(log =>
-        log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.user?.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (log.action?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (log.user?.email?.toLowerCase() || 'system').includes(searchTerm.toLowerCase())
     );
 
     return (

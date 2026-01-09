@@ -26,9 +26,12 @@ export class BYOKApi {
     }
 
     /**
-     * Test/validate an existing API key
+     * Test/validate an API key (existing or new)
      */
-    async testKey(serviceId: string): Promise<ApiResponse<{ valid: boolean }>> {
+    async testKey(serviceId: string, credentials?: Record<string, any>): Promise<ApiResponse<{ valid: boolean }>> {
+        if (credentials) {
+            return brainApi.post(`/api/connectors/${serviceId}/test/`, credentials);
+        }
         return brainApi.post(`/api/connectors/${serviceId}/validate/`, {});
     }
 

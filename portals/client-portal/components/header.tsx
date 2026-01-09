@@ -41,10 +41,47 @@ export function Header() {
             <div className="flex items-center gap-4">
                 <ThemeToggle />
 
-                <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="relative">
+                            <Bell className="h-5 w-5" />
+                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                        <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <div className="max-h-[300px] overflow-y-auto">
+                            <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                                <div className="flex w-full items-center justify-between font-semibold">
+                                    <span>Campaign Ready</span>
+                                    <span className="text-[10px] text-muted-foreground">2m ago</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Your "Summer Sale" campaign is ready for review.</p>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                                <div className="flex w-full items-center justify-between font-semibold">
+                                    <span>New Lead</span>
+                                    <span className="text-[10px] text-muted-foreground">1h ago</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">A new lead joined through your landing page.</p>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                                <div className="flex w-full items-center justify-between font-semibold">
+                                    <span>System Update</span>
+                                    <span className="text-[10px] text-muted-foreground">5h ago</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">BizOS v5.1 has been deployed with new AI features.</p>
+                            </DropdownMenuItem>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="w-full text-center justify-center font-semibold text-blue-600">
+                            Clear all notifications
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

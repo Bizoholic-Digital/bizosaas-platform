@@ -424,40 +424,61 @@ async def chat_with_agent(
     request: ChatRequest = Body(...)
 ):
     """Chat with a specific AI agent"""
-    agent = next((a for a in AGENTS if a.id == agent_id), None)
-    if not agent:
-        raise HTTPException(status_code=404, detail="Agent not found")
+    from opentelemetry import trace, metrics
+    tracer = trace.get_tracer(__name__)
+    meter = metrics.get_meter(__name__)
     
-    # Store user message
-    conversation_id = f"user_default:{agent_id}"
-    if conversation_id not in conversations:
-        conversations[conversation_id] = []
-    
-    conversations[conversation_id].append(ChatMessage(
-        role="user",
-        content=request.message,
-        timestamp=datetime.utcnow()
-    ))
-    
-    # Generate response based on agent type
-    response_message = generate_agent_response(agent, request.message, request.context)
-    
-    conversations[conversation_id].append(ChatMessage(
-        role="assistant",
-        content=response_message,
-        timestamp=datetime.utcnow()
-    ))
-    
-    # Generate suggestions and actions
-    suggestions = generate_suggestions(agent, request.message)
-    actions = generate_actions(agent, request.message)
-    
-    return ChatResponse(
-        agent_id=agent_id,
-        message=response_message,
-        suggestions=suggestions,
-        actions=actions
+    agent_counter = meter.create_counter(
+        "agent.chat.requests",
+        unit="1",
+        description="Number of agent chat requests"
     )
+
+    with tracer.start_as_current_span("agent_chat") as span:
+        span.set_attribute("agent.id", agent_id)
+        span.set_attribute("message.length", len(request.message))
+        
+        agent = next((a for a in AGENTS if a.id == agent_id), None)
+        if not agent:
+            span.set_status(trace.Status(trace.StatusCode.ERROR, "Agent not found"))
+            raise HTTPException(status_code=404, detail="Agent not found")
+        
+        agent_counter.add(1, {"agent.id": agent_id, "agent.role": agent.role})
+        span.set_attribute("agent.role", agent.role)
+        
+        # Store user message
+        conversation_id = f"user_default:{agent_id}"
+        if conversation_id not in conversations:
+            conversations[conversation_id] = []
+        
+        conversations[conversation_id].append(ChatMessage(
+            role="user",
+            content=request.message,
+            timestamp=datetime.utcnow()
+        ))
+        
+        # Generate response based on agent type
+        response_message = generate_agent_response(agent, request.message, request.context)
+        
+        conversations[conversation_id].append(ChatMessage(
+            role="assistant",
+            content=response_message,
+            timestamp=datetime.utcnow()
+        ))
+        
+        # Generate suggestions and actions
+        suggestions = generate_suggestions(agent, request.message)
+        actions = generate_actions(agent, request.message)
+        
+        span.set_attribute("response.length", len(response_message))
+        span.set_attribute("actions.count", len(actions))
+        
+        return ChatResponse(
+            agent_id=agent_id,
+            message=response_message,
+            suggestions=suggestions,
+            actions=actions
+        )
 
 @router.get("/{agent_id}/history")
 async def get_conversation_history(agent_id: str, user_id: str = "default"):

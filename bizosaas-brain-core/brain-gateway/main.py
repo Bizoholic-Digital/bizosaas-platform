@@ -22,6 +22,29 @@ app = FastAPI(title="Brain API Gateway")
 # Add Prometheus metrics
 Instrumentator().instrument(app).expose(app)
 
+# OpenTelemetry Foundation
+from opentelemetry import trace, metrics
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+# Set up tracing
+resource = Resource(attributes={
+    SERVICE_NAME: "brain-gateway"
+})
+
+tracer_provider = TracerProvider(resource=resource)
+# Only add OTLP exporter if endpoint is configured
+otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+if otlp_endpoint:
+    otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
+    tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+trace.set_tracer_provider(tracer_provider)
+FastAPIInstrumentor.instrument_app(app)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -121,7 +144,53 @@ SALEOR_URL = os.getenv("SALEOR_URL", "http://saleor:8000")
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "brain-gateway"}
+    from app.dependencies import engine
+    from sqlalchemy import text
+    import time
+
+    health = {
+        "status": "healthy",
+        "service": "brain-gateway",
+        "timestamp": time.time(),
+        "dependencies": {}
+    }
+
+    # Check Database
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        health["dependencies"]["database"] = "ok"
+    except Exception as e:
+        health["dependencies"]["database"] = f"error: {str(e)}"
+        health["status"] = "unhealthy"
+
+    # Check Vault (Optional)
+    vault_addr = os.getenv('VAULT_ADDR')
+    if vault_addr:
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(f"{vault_addr}/v1/sys/health", timeout=2.0)
+                health["dependencies"]["vault"] = "ok" if res.status_code == 200 else f"status: {res.status_code}"
+        except:
+            health["dependencies"]["vault"] = "unreachable"
+
+    # Check Services (Basic ping)
+    services = {
+        "cms": CMS_URL,
+        "crm": CRM_URL,
+        "ai-agents": "http://ai-agents:8000"
+    }
+    
+    for name, url in services.items():
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get(f"{url}/health" if name == "ai-agents" else url, timeout=1.0)
+                health["dependencies"][name] = "ok" if res.status_code < 500 else f"status: {res.status_code}"
+        except:
+            health["dependencies"][name] = "unreachable"
+
+    status_code = 200 if health["status"] == "healthy" else 503
+    return JSONResponse(content=health, status_code=status_code)
 
 @app.api_route("/api/brain/wagtail/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_wagtail(request: Request, path: str):

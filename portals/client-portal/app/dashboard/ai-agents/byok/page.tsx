@@ -120,7 +120,7 @@ export default function BYOKManagementPage() {
         try {
             // Test the key before adding
             // Note: backend connect endpoint also validates
-            const res = await byokApi.testKey(selectedService)
+            const res = await byokApi.testKey(selectedService, { [selectedKeyType]: keyValue })
             if (res.data?.valid) {
                 toast.success('Key validation successful!')
             } else {

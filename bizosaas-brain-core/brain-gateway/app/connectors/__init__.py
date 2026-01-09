@@ -27,6 +27,7 @@ from .twilio import TwilioConnector
 from .gohighlevel import GoHighLevelConnector
 from .hubspot import HubSpotConnector
 from .tiktok_ads import TikTokAdsConnector
+from .llm import OpenAIConnector, AnthropicConnector, OpenRouterConnector, GoogleAIConnector
 
 __all__ = [
     "BaseConnector",
@@ -60,5 +61,9 @@ __all__ = [
     "TwilioConnector",
     "GoHighLevelConnector",
     "HubSpotConnector",
-    "TikTokAdsConnector"
+    "TikTokAdsConnector",
+    "OpenAIConnector",
+    "AnthropicConnector",
+    "OpenRouterConnector",
+    "GoogleAIConnector"
 ]

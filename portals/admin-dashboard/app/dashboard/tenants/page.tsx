@@ -1,18 +1,49 @@
 'use client';
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Plus, Search, MoreVertical, Globe, Users, ShieldCheck } from 'lucide-react';
+import { Building2, Plus, Search, MoreVertical, Globe, Users, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { adminApi } from '@/lib/api/admin';
+import { toast } from 'sonner';
 
 export default function TenantsPage() {
-    const tenants = [
-        { id: '1', name: 'Bizoholic Digital', domain: 'bizoholic.net', users: 12, status: 'active', plan: 'Enterprise' },
-        { id: '2', name: 'Corel Dove', domain: 'coreldove.com', users: 5, status: 'active', plan: 'Pro' },
-        { id: '3', name: 'Staging Lab', domain: 'staging.bizosaas.com', users: 2, status: 'maintenance', plan: 'Developer' },
-    ];
+    const [tenants, setTenants] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [newTenant, setNewTenant] = useState({ name: '', domain: '', slug: '' });
+
+    const loadTenants = async () => {
+        setLoading(true);
+        try {
+            const res = await adminApi.getTenants();
+            if (res.data) {
+                setTenants(res.data);
+            }
+        } catch (error) {
+            toast.error("Failed to load tenants");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadTenants();
+    }, []);
+
+    const handleCreateTenant = async () => {
+        toast.info("Tenant creation is handled via the onboarding workflow.");
+        setIsCreateModalOpen(false);
+    };
+
+    const filteredTenants = tenants.filter(tenant =>
+        tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant.domain?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="p-6 space-y-6 bg-slate-50 dark:bg-slate-950 min-h-full">
@@ -21,9 +52,14 @@ export default function TenantsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Tenant Management</h1>
                     <p className="text-muted-foreground">Manage multi-tenant organizations and their infrastructure.</p>
                 </div>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="mr-2 h-4 w-4" /> New Tenant
-                </Button>
+                <div className="flex gap-2">
+                    <Button onClick={loadTenants} variant="outline" disabled={loading}>
+                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+                    </Button>
+                    <Button onClick={() => setIsCreateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="mr-2 h-4 w-4" /> New Tenant
+                    </Button>
+                </div>
             </div>
 
             <Card>
@@ -34,45 +70,102 @@ export default function TenantsPage() {
                             <CardDescription>A list of all active tenants on the platform.</CardDescription>
                         </div>
                         <div className="relative w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Search tenants..." className="pl-8" />
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search tenants..."
+                                className="pl-8"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {tenants.map((tenant) => (
-                            <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-                                        <Building2 className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-lg">{tenant.name}</h3>
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Globe className="h-3 w-3" /> {tenant.domain}
-                                            <span className="mx-1">•</span>
-                                            <Users className="h-3 w-3" /> {tenant.users} Users
+                        {loading ? (
+                            <div className="flex justify-center p-8">
+                                <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+                            </div>
+                        ) : filteredTenants.length === 0 ? (
+                            <div className="text-center p-8 text-muted-foreground">
+                                No tenants found.
+                            </div>
+                        ) : (
+                            filteredTenants.map((tenant) => (
+                                <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                            <Building2 className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-lg">{tenant.name}</h3>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Globe className="h-3 w-3" /> {tenant.domain || 'no-domain'}
+                                                <span className="mx-1">•</span>
+                                                <Users className="h-3 w-3" /> {tenant.users_count || 0} Users
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <Badge variant={tenant.status === 'active' ? 'default' : 'secondary'}>
-                                        {tenant.status.toUpperCase()}
-                                    </Badge>
-                                    <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-medium">{tenant.plan}</p>
-                                        <p className="text-xs text-muted-foreground">Plan Status</p>
+                                    <div className="flex items-center gap-4">
+                                        <Badge variant={tenant.status === 'active' ? 'default' : 'secondary'}>
+                                            {(tenant.status || 'active').toUpperCase()}
+                                        </Badge>
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-sm font-medium">{tenant.plan || 'Free'}</p>
+                                            <p className="text-xs text-muted-foreground">Plan Status</p>
+                                        </div>
+                                        <Button variant="ghost" size="icon">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
                                     </div>
-                                    <Button variant="ghost" size="icon">
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Create Tenant Modal */}
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Create New Tenant</DialogTitle>
+                        <DialogDescription>
+                            Initialize a new organization on the BizOSaaS platform.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Organization Name</label>
+                            <Input
+                                placeholder="e.g. Acme Corp"
+                                value={newTenant.name}
+                                onChange={(e) => setNewTenant({ ...newTenant, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Primary Domain</label>
+                            <Input
+                                placeholder="e.g. acme.com"
+                                value={newTenant.domain}
+                                onChange={(e) => setNewTenant({ ...newTenant, domain: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Unique Slug</label>
+                            <Input
+                                placeholder="e.g. acme-corp"
+                                value={newTenant.slug}
+                                onChange={(e) => setNewTenant({ ...newTenant, slug: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreateTenant}>Create Organization</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
