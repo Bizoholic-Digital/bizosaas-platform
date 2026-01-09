@@ -274,6 +274,29 @@ export const brainApi = {
             return apiFetch(`/api/cms/categories/${id}`, {
                 method: 'DELETE'
             }, token);
+        },
+        getPlugins: async (token?: string) => {
+            return apiFetch('/api/cms/plugins', {}, token);
+        },
+        installPlugin: async (slug: string, token?: string) => {
+            return apiFetch(`/api/cms/plugins/${slug}/install`, {
+                method: 'POST'
+            }, token);
+        },
+        activatePlugin: async (slug: string, token?: string) => {
+            return apiFetch(`/api/cms/plugins/${slug}/activate`, {
+                method: 'POST'
+            }, token);
+        },
+        deactivatePlugin: async (slug: string, token?: string) => {
+            return apiFetch(`/api/cms/plugins/${slug}/deactivate`, {
+                method: 'POST'
+            }, token);
+        },
+        deletePlugin: async (slug: string, token?: string) => {
+            return apiFetch(`/api/cms/plugins/${slug}`, {
+                method: 'DELETE'
+            }, token);
         }
     },
     crm: {

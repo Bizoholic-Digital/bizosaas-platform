@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminApi } from '@/lib/api/admin';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 export default function GlobalUsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -41,23 +42,19 @@ export default function GlobalUsersPage() {
 
     return (
         <div className="p-4 md:p-6 space-y-6 bg-slate-50 dark:bg-slate-950 min-h-full">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Global User Management</h1>
-                    <p className="text-sm md:text-base text-muted-foreground">Manage all user accounts and roles across the entire platform.</p>
-                </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <Button variant="outline" size="sm" onClick={loadUsers} disabled={loading}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-                    </Button>
-                    <Button variant="outline" size="sm">
-                        <Filter className="mr-2 h-4 w-4" /> Filter
-                    </Button>
-                    <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
-                        <UserCheck className="mr-2 h-4 w-4" /> Add User
-                    </Button>
-                </div>
-            </div>
+            <PageHeader
+                title={
+                    <>Global User <span className="text-indigo-600">Management</span></>
+                }
+                description="Manage all user accounts and roles across the entire platform."
+            >
+                <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-800" onClick={loadUsers} disabled={loading}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Sync Directory
+                </Button>
+                <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold" size="sm">
+                    <UserCheck className="mr-2 h-4 w-4" /> Provision User
+                </Button>
+            </PageHeader>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>

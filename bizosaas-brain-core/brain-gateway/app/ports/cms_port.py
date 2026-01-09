@@ -33,6 +33,16 @@ class CMSStats(BaseModel):
     media: int
     last_sync: Optional[datetime] = None
 
+class Plugin(BaseModel):
+    id: str  # textdomain or slug
+    name: str
+    description: Optional[str] = None
+    status: str = "inactive" # active, inactive
+    version: Optional[str] = None
+    author: Optional[str] = None
+    icon: Optional[str] = None # URL to icon
+    installed: bool = False
+
 class CMSPort(ABC):
     """
     Abstract Port for Content Management Systems (WordPress, Webflow, etc).
@@ -59,6 +69,10 @@ class CMSPort(ABC):
         pass
     
     @abstractmethod
+    async def delete_page(self, page_id: str) -> bool:
+        pass
+    
+    @abstractmethod
     async def get_posts(self, limit: int = 100) -> List[Post]:
         pass
         
@@ -76,4 +90,52 @@ class CMSPort(ABC):
     
     @abstractmethod
     async def delete_post(self, post_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def get_plugins(self) -> List[Plugin]:
+        pass
+
+    @abstractmethod
+    async def install_plugin(self, slug: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def activate_plugin(self, slug: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def deactivate_plugin(self, slug: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def delete_plugin(self, slug: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def get_categories(self) -> List[Dict[str, Any]]:
+        pass
+
+    @abstractmethod
+    async def create_category(self, category: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def update_category(self, category_id: str, updates: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def delete_category(self, category_id: str) -> bool:
+        pass
+
+    @abstractmethod
+    async def list_media(self, limit: int = 100) -> List[Dict[str, Any]]:
+        pass
+
+    @abstractmethod
+    async def upload_media(self, file_data: bytes, filename: str, mime_type: str) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    async def delete_media(self, media_id: str) -> bool:
         pass

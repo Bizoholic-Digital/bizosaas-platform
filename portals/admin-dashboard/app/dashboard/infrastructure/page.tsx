@@ -56,6 +56,7 @@ interface ServiceHealth {
 
 import { adminApi } from '@/lib/api/admin';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 export default function InfrastructurePage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -119,16 +120,19 @@ export default function InfrastructurePage() {
 
     return (
         <div className="p-4 md:p-8 space-y-8 bg-slate-50 dark:bg-slate-950 min-h-full pb-20">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
+            <PageHeader
+                title={
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">
                         Infrastructure <span className="text-indigo-600">Commander</span>
                     </h1>
+                }
+                description={
                     <p className="text-slate-500 font-medium flex items-center gap-2">
                         <Activity className="w-4 h-4 text-emerald-500" />
                         Live cluster telemetry and service health orchestration
                     </p>
-                </div>
+                }
+            >
                 <div className="flex items-center gap-2">
                     <div className="text-right hidden md:block mr-2">
                         <p className="text-[10px] uppercase font-black text-slate-400">Last Sync</p>
@@ -149,7 +153,7 @@ export default function InfrastructurePage() {
                         Console
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             {/* Hardware Pulse */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

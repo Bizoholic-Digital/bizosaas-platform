@@ -55,7 +55,7 @@ export default function AgentStudioPage() {
         <div className="space-y-8 p-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <Settings className="w-5 h-5 text-indigo-600" />
                         Configuration Hub
                     </h2>
@@ -115,7 +115,7 @@ export default function AgentStudioPage() {
                                 >
                                     {getAgentIcon(agent.id)}
                                 </div>
-                                <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
+                                <button className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                     <MoreHorizontal className="w-5 h-5" />
                                 </button>
                             </div>
@@ -129,15 +129,15 @@ export default function AgentStudioPage() {
 
                             <div className="mt-8 space-y-4">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500">Status</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Status</span>
                                     <span className="font-bold text-emerald-500">Healthy</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500">Last Active</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Last Active</span>
                                     <span className="font-medium text-slate-700 dark:text-slate-300">2h ago</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500">Memory usage</span>
+                                    <span className="text-slate-500 dark:text-slate-400">Memory usage</span>
                                     <span className="font-medium text-slate-700 dark:text-slate-300">650MB</span>
                                 </div>
                             </div>

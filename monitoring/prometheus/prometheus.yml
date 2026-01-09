@@ -12,12 +12,11 @@ global:
 alerting:
   alertmanagers:
     - static_configs:
-        - targets: []
-          # - alertmanager:9093
+        - targets: ['alertmanager:9093']
 
 # Load rules once and periodically evaluate them
 rule_files:
-  # - "alerts/*.yml"
+  - "alerts/*.yml"
 
 # Scrape configurations
 scrape_configs:
@@ -146,6 +145,19 @@ scrape_configs:
       - source_labels: [__address__]
         target_label: service
         replacement: 'elasticsearch'
+
+  # ==========================================
+  # INFRASTRUCTURE: Brain Gateway (Central Agent Orchestrator)
+  # ==========================================
+  - job_name: 'brain-gateway'
+    static_configs:
+      - targets: ['bizosaas-brain-gateway:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'brain-gateway'
 
   # ==========================================
   # INFRASTRUCTURE: Prometheus Self-Monitoring

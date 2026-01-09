@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer, JSON, Table
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from .utils import GUID
 import uuid
 from datetime import datetime
 
@@ -14,11 +14,11 @@ class User(Base):
     partner_managed_tenants = Table(
         'partner_managed_tenants',
         Base.metadata,
-        Column('user_id', UUID(as_uuid=True), ForeignKey('users.id'), primary_key=True),
-        Column('tenant_id', UUID(as_uuid=True), ForeignKey('tenants.id'), primary_key=True)
+        Column('user_id', GUID, ForeignKey('users.id'), primary_key=True),
+        Column('tenant_id', GUID, ForeignKey('tenants.id'), primary_key=True)
     )
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     email = Column(String(320), unique=True, nullable=False, index=True)
     hashed_password = Column(String(1024), nullable=False)
     first_name = Column(String(50), nullable=False)
@@ -47,7 +47,7 @@ class User(Base):
     privacy_accepted_at = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
+    tenant_id = Column(GUID, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     tenant = relationship("Tenant", back_populates="users")
     mcp_installations = relationship("UserMcpInstallation", back_populates="user", cascade="all, delete-orphan")
     managed_tenants = relationship(
@@ -61,8 +61,8 @@ class User(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     action = Column(String(100), nullable=False) # e.g. "PROMOTE_TO_PARTNER"
     details = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
@@ -74,7 +74,7 @@ class AuditLog(Base):
 class Tenant(Base):
     __tablename__ = "tenants"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False)
     slug = Column(String(50), unique=True, nullable=False, index=True)
     domain = Column(String(100), unique=True, nullable=True)

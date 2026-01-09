@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user
 from domain.ports.identity_port import AuthenticatedUser
-from app.models.support import Ticket
+from app.models.support import SupportTicket
 from pydantic import BaseModel
 from typing import List, Optional
 import uuid
@@ -22,7 +22,7 @@ async def create_ticket(
     user: AuthenticatedUser = Depends(get_current_user)
 ):
     """Create a new support ticket."""
-    ticket = Ticket(
+    ticket = SupportTicket(
         tenant_id=user.tenant_id,
         creator_id=user.id,
         subject=ticket_in.subject,
@@ -46,11 +46,11 @@ async def list_tickets(
     """List tickets for the current tenant or assigned to the partner."""
     # If user is a client, show their tenant's tickets
     if user.role == "client" or user.role == "user":
-        return db.query(Ticket).filter(Ticket.tenant_id == user.tenant_id).all()
+        return db.query(SupportTicket).filter(SupportTicket.tenant_id == user.tenant_id).all()
     
     # If user is a partner, show tickets assigned to them
     if user.role == "partner":
-        return db.query(Ticket).filter(Ticket.assigned_partner_id == user.id).all()
+        return db.query(SupportTicket).filter(SupportTicket.assigned_partner_id == user.id).all()
         
     return []
 
@@ -60,7 +60,7 @@ async def get_ticket(
     db: Session = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):
-    ticket = db.query(Ticket).filter(Ticket.id == uuid.UUID(ticket_id)).first()
+    ticket = db.query(SupportTicket).filter(SupportTicket.id == uuid.UUID(ticket_id)).first()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
     return ticket

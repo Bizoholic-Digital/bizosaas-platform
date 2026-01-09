@@ -549,36 +549,41 @@ const DomainCard: React.FC<{
   return (
     <Card className="border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden border-l-4 border-l-indigo-500">
       <CardHeader className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors" onClick={onToggle}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4 min-w-0">
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl shrink-0">
               <Brain className="w-6 h-6 text-indigo-600" />
             </div>
-            <div>
-              <CardTitle className="text-lg font-black uppercase italic tracking-tighter text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <CardTitle className="text-lg font-black uppercase italic tracking-tighter text-slate-900 dark:text-white truncate">
                 {supervisor.name}
               </CardTitle>
-              <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-widest">
+              <CardDescription className="text-xs font-medium text-slate-500 uppercase tracking-widest truncate">
                 {supervisor.domain}
               </CardDescription>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between sm:justify-end space-x-4 w-full sm:w-auto">
             <StatusBadge status={supervisor.status} />
-            {expanded ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
+            <div className="flex items-center">
+              <span className="text-xs text-slate-400 mr-2 sm:hidden">
+                {expanded ? 'Collapse' : 'Expand'}
+              </span>
+              {expanded ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
+            </div>
           </div>
         </div>
       </CardHeader>
 
       <CardContent>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="bg-slate-50 dark:bg-slate-800/10 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
             <p className="text-xl md:text-2xl font-black text-emerald-600 tracking-tighter italic">{supervisor.performance.overallHealth}%</p>
             <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest mt-1">Health</p>
           </div>
           <div className="bg-slate-50 dark:bg-slate-800/10 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
             <p className="text-xl md:text-2xl font-black text-indigo-600 tracking-tighter italic">{supervisor.performance.activeAgents}</p>
-            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest mt-1">Live</p>
+            <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest mt-1">Live Agents</p>
           </div>
           <div className="bg-slate-50 dark:bg-slate-800/10 p-3 rounded-2xl border border-slate-100 dark:border-slate-800">
             <p className="text-xl md:text-2xl font-black text-blue-600 tracking-tighter italic">{supervisor.performance.totalTasks}</p>

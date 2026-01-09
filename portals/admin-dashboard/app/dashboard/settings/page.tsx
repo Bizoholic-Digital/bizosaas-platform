@@ -20,6 +20,7 @@ import {
     Wrench
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 
 export default function AdminSettingsPage() {
     const [platformName, setPlatformName] = useState('BizOSaaS Platform');
@@ -35,13 +36,14 @@ export default function AdminSettingsPage() {
     return (
         <AdminSettingsLayout>
             <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
+                <PageHeader
+                    title={
                         <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">
                             Platform <span className="text-indigo-600">Settings</span>
                         </h1>
-                        <p className="text-slate-500 font-medium">Global configuration and platform state management</p>
-                    </div>
+                    }
+                    description="Global configuration and platform state management"
+                >
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-800">
                             <RotateCcw className="w-4 h-4 mr-2" />
@@ -52,7 +54,7 @@ export default function AdminSettingsPage() {
                             Save Changes
                         </Button>
                     </div>
-                </div>
+                </PageHeader>
 
                 <div className="grid grid-cols-1 gap-6">
                     {/* General Configuration */}

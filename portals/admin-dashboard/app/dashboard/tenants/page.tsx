@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Plus, Search, MoreVertical, Globe, Users, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/dashboard/PageHeader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { adminApi } from '@/lib/api/admin';
 import { toast } from 'sonner';
@@ -48,20 +49,19 @@ export default function TenantsPage() {
 
     return (
         <div className="p-6 space-y-6 bg-slate-50 dark:bg-slate-950 min-h-full">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Tenant Management</h1>
-                    <p className="text-muted-foreground">Manage multi-tenant organizations and their infrastructure.</p>
-                </div>
-                <div className="flex gap-2">
-                    <Button onClick={loadTenants} variant="outline" disabled={loading}>
-                        <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-                    </Button>
-                    <Button onClick={() => setIsCreateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="mr-2 h-4 w-4" /> New Tenant
-                    </Button>
-                </div>
-            </div>
+            <PageHeader
+                title={
+                    <>Tenant <span className="text-indigo-600">Management</span></>
+                }
+                description="Manage multi-tenant organizations and their infrastructure."
+            >
+                <Button onClick={loadTenants} variant="outline" disabled={loading}>
+                    <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+                </Button>
+                <Button onClick={() => setIsCreateModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="mr-2 h-4 w-4" /> New Tenant
+                </Button>
+            </PageHeader>
 
             <Card>
                 <CardHeader>

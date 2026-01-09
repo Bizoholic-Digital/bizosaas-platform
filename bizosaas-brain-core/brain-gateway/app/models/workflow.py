@@ -3,11 +3,12 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
 from .user import Base
+from .utils import GUID
 
 class Workflow(Base):
     __tablename__ = "workflows"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     tenant_id = Column(String, index=True)
     name = Column(String, nullable=False)
     description = Column(String)
@@ -22,7 +23,7 @@ class Workflow(Base):
 
     def to_dict(self):
         return {
-            "id": self.id,
+            "id": str(self.id),
             "tenant_id": self.tenant_id,
             "name": self.name,
             "description": self.description,

@@ -224,16 +224,6 @@ export function ConnectorsContent() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">{currentTitle}</h2>
-                    <p className="text-muted-foreground">{currentDesc}</p>
-                </div>
-                <Button variant="outline" onClick={loadConnectors}>
-                    <RefreshCw className="mr-2 h-4 w-4" /> Refresh
-                </Button>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredConnectors.map(c => {
                     const Icon = ICONS[c.icon] || ICONS.default;

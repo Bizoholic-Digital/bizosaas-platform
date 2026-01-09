@@ -18,7 +18,7 @@ class McpOrchestrator:
         """
         print(f"[Orchestrator] Starting provisioning for Installation {installation_id}")
         
-        from app.database import SessionLocal
+        from app.dependencies import SessionLocal
         db = SessionLocal()
         
         try:

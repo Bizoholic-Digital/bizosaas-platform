@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
-from app.db.session import get_db
-from app.deps.auth import get_current_user, AuthenticatedUser
+from typing import List, Dict, Any, Optional
+from app.dependencies import get_db, get_current_user
+from domain.ports.identity_port import AuthenticatedUser
 import random
 
 router = APIRouter()

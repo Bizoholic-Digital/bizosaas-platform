@@ -7,6 +7,8 @@ from .registry import ConnectorRegistry
 from .oauth_mixin import OAuthMixin
 from ..ports.crm_port import CRMPort, Contact, Deal, CRMStats
 
+from app.observability.decorators import instrument_connector_operation, instrument_sync_operation
+
 logger = logging.getLogger(__name__)
 
 @ConnectorRegistry.register
@@ -137,6 +139,7 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
             logger.error(f"Failed to get HubSpot stats: {e}")
             return CRMStats(contacts=0, deals=0, companies=0)
 
+    @instrument_sync_operation("contacts")
     async def get_contacts(self, limit: int = 100, cursor: Optional[str] = None) -> List[Contact]:
         """Get contacts from HubSpot"""
         try:
@@ -208,6 +211,7 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
                 return contact
         return None
 
+    @instrument_connector_operation("create_contact")
     async def create_contact(self, contact: Contact) -> Contact:
         """Create a new contact in HubSpot"""
         try:
@@ -233,6 +237,7 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
             logger.error(f"Failed to create HubSpot contact: {e}")
             raise
 
+    @instrument_connector_operation("update_contact")
     async def update_contact(self, contact_id: str, updates: Dict[str, Any]) -> Contact:
         """Update an existing contact"""
         try:
@@ -250,6 +255,7 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
             logger.error(f"Failed to update HubSpot contact {contact_id}: {e}")
             raise
 
+    @instrument_connector_operation("delete_contact")
     async def delete_contact(self, contact_id: str) -> bool:
         """Delete an existing contact"""
         try:
@@ -263,6 +269,7 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
             logger.error(f"Failed to delete HubSpot contact {contact_id}: {e}")
             return False
 
+    @instrument_sync_operation("deals")
     async def get_deals(self, limit: int = 100) -> List[Deal]:
         """Get deals from HubSpot"""
         try:
@@ -292,6 +299,7 @@ class HubSpotConnector(BaseConnector, OAuthMixin, CRMPort):
             logger.error(f"Failed to get HubSpot deals: {e}")
             return []
 
+    @instrument_connector_operation("create_deal")
     async def create_deal(self, deal: Deal) -> Deal:
         """Create a new deal in HubSpot"""
         try:

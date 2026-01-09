@@ -312,7 +312,7 @@ export default function AIAgentsPage() {
                                                 <span>{item.name}</span>
                                                 <span className="font-bold">{item.value}%</span>
                                             </div>
-                                            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                                 <div className={`h-full ${item.color}`} style={{ width: `${item.value}%` }} />
                                             </div>
                                         </div>
@@ -348,7 +348,7 @@ export default function AIAgentsPage() {
                                         ].map((log, i) => (
                                             <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
                                                 <td className="p-3 font-medium">{log.agent}</td>
-                                                <td className="p-3 text-slate-500">{log.action}</td>
+                                                <td className="p-3 text-slate-500 dark:text-slate-400">{log.action}</td>
                                                 <td className="p-3">
                                                     <Badge variant={log.status === 'Success' ? 'default' : log.status === 'Failed' ? 'destructive' : 'secondary'}>
                                                         {log.status}

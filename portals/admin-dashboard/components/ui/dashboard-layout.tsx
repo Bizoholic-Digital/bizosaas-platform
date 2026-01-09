@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
@@ -142,20 +143,47 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
 
             {!isCollapsed && (
-              <div className="mb-4">
+              <div className="mb-6 space-y-4">
                 <button
-                  onClick={() => router.push('/dashboard/system-status')}
-                  className="w-full text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors group"
+                  onClick={() => router.push('/dashboard/infrastructure')}
+                  className="w-full text-left bg-slate-50 dark:bg-slate-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl p-3 border border-slate-100 dark:border-slate-800 transition-all group"
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">System Status</span>
+                      <Activity className="w-4 h-4 text-indigo-500" />
+                      <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Platform Health</span>
                     </div>
-                    <div className={`w-2 h-2 rounded-full ${metrics?.status === 'down' ? 'bg-red-500' :
+                    <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.5)] ${metrics?.status === 'down' ? 'bg-red-500' :
                       metrics?.status === 'degraded' ? 'bg-yellow-500' :
                         'bg-green-500'
                       }`} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-slate-500">CPU LOAD</span>
+                      <span className="text-indigo-600 dark:text-indigo-400">{metrics?.cpu || 0}%</span>
+                    </div>
+                    <Progress value={metrics?.cpu || 0} className="h-1 bg-slate-200 dark:bg-slate-800" indicatorClassName="bg-indigo-600" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <span className="text-[9px] font-black uppercase text-slate-400">Gateway</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <span className="text-[9px] font-black uppercase text-slate-400">Database</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="text-[9px] font-black uppercase text-slate-400">AI Core</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      <span className="text-[9px] font-black uppercase text-slate-400">Vault</span>
+                    </div>
                   </div>
                 </button>
               </div>

@@ -141,6 +141,26 @@ async def test_connector_credentials(
         logger.error(f"Test failed for {connector_id}: {e}")
         return {"valid": False, "error": str(e)}
 
+@router.get("/{connector_id}/status")
+async def get_connector_status(
+    connector_id: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    """Get status of a specific connector"""
+    tenant_id = user.tenant_id or "default_tenant"
+    
+    credentials = await secret_service.get_connector_credentials(tenant_id, connector_id)
+    if not credentials:
+        return {"status": "disconnected"}
+        
+    try:
+        connector = ConnectorRegistry.create_connector(connector_id, tenant_id, credentials)
+        status = await connector.get_status()
+        return {"status": status.value}
+    except Exception:
+        return {"status": "error"}
+
 @router.post("/{connector_id}/action/{action}")
 async def perform_connector_action(
     connector_id: str,

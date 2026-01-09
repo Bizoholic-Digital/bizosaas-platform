@@ -3,21 +3,88 @@ import httpx
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import logging
+from contextlib import asynccontextmanager
+from app.observability.logging import setup_logging
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s:%(name)s:%(message)s'
-)
+# Configure structured logging
+setup_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=os.getenv("LOG_JSON", "true").lower() == "true")
 logger = logging.getLogger(__name__)
 
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery
-import app.connectors # Trigger registration
+from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics, websockets
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    logger.info("Starting Brain Gateway...")
+    
+    # Auto-Migration & Seeding
+    try:
+        from init_db import init_db
+        from seed_mcp import seed_mcp_registry
+        logger.info("Running database initialization...")
+        init_db()
+        logger.info("Running MCP registry seeding...")
+        seed_mcp_registry()
+    except Exception as e:
+        logger.error(f"Startup migration failed: {e}")
 
-app = FastAPI(title="Brain API Gateway")
+    # Vault Integration for API Keys
+    try:
+        import hvac
+        vault_addr = os.getenv('VAULT_ADDR')
+        vault_token = os.getenv('VAULT_TOKEN')
+        
+        if vault_addr and vault_token:
+            client = hvac.Client(url=vault_addr, token=vault_token)
+            if client.is_authenticated():
+                logger.info("Connected to Vault for API keys")
+                
+                # Fetch Platform Secrets
+                try:
+                    secret = client.secrets.kv.v2.read_secret_version(path='platform/brain-gateway', mount_point='bizosaas')
+                    data = secret['data']['data']
+                    
+                    if 'openai_api_key' in data:
+                        os.environ['OPENAI_API_KEY'] = data['openai_api_key']
+                    if 'vector_db_url' in data:
+                        os.environ['VECTOR_DB_URL'] = data['vector_db_url']
+                except Exception as e:
+                    logger.warning(f"Failed to fetch platform secrets: {e}")
+
+                # Fetch Clerk Secrets
+                try:
+                    clerk_secret = client.secrets.kv.v2.read_secret_version(path='clerk', mount_point='bizosaas')
+                    clerk_data = clerk_secret['data']['data']
+                    if 'secret_key' in clerk_data:
+                        os.environ['CLERK_SECRET_KEY'] = clerk_data['secret_key']
+                        logger.info("Clerk Secret Key loaded from Vault")
+                except Exception as e:
+                    logger.warning(f"Failed to fetch Clerk secrets: {e}")
+
+                # Re-initialize RAG service with new env vars
+                try:
+                    from app.core import rag
+                    rag.rag_service.__init__()
+                    logger.info("RAG Service re-initialized with Vault secrets")
+                except Exception as e:
+                    logger.error(f"Failed to re-initialize RAG: {e}")
+    except Exception as e:
+        logger.error(f"Failed to connect to Vault: {e}")
+
+    seed_connectors()
+    
+    # Start metrics collector
+    from app.observability.collectors import periodic_metric_collector
+    asyncio.create_task(periodic_metric_collector())
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down Brain Gateway...")
+
+app = FastAPI(title="Brain API Gateway", lifespan=lifespan)
 
 # Add Prometheus metrics
 Instrumentator().instrument(app).expose(app)
@@ -56,60 +123,6 @@ app.add_middleware(
 
 from app.seeds.connectors import seed_connectors
 
-@app.on_event("startup")
-async def startup_event():
-    # Auto-Migration & Seeding
-    try:
-        from init_db import init_db
-        from seed_mcp import seed_mcp_registry
-        print("Running database initialization...")
-        init_db()
-        print("Running MCP registry seeding...")
-        seed_mcp_registry()
-    except Exception as e:
-        print(f"Startup migration failed: {e}")
-
-    # Vault Integration for API Keys
-    try:
-        import hvac
-        vault_addr = os.getenv('VAULT_ADDR')
-        vault_token = os.getenv('VAULT_TOKEN')
-        
-        if vault_addr and vault_token:
-            client = hvac.Client(url=vault_addr, token=vault_token)
-            if client.is_authenticated():
-                print("Connected to Vault for API keys")
-                
-                # Fetch Platform Secrets
-                try:
-                    secret = client.secrets.kv.v2.read_secret_version(path='platform/brain-gateway', mount_point='bizosaas')
-                    data = secret['data']['data']
-                    
-                    if 'openai_api_key' in data:
-                        os.environ['OPENAI_API_KEY'] = data['openai_api_key']
-                    if 'vector_db_url' in data:
-                        os.environ['VECTOR_DB_URL'] = data['vector_db_url']
-                except Exception as e:
-                    print(f"Failed to fetch platform secrets: {e}")
-
-                # Fetch Clerk Secrets
-                try:
-                    clerk_secret = client.secrets.kv.v2.read_secret_version(path='clerk', mount_point='bizosaas')
-                    clerk_data = clerk_secret['data']['data']
-                    if 'secret_key' in clerk_data:
-                        os.environ['CLERK_SECRET_KEY'] = clerk_data['secret_key']
-                        print("Clerk Secret Key loaded from Vault")
-                except Exception as e:
-                    print(f"Failed to fetch Clerk secrets (Key might not be stored yet): {e}")
-
-                # Re-initialize RAG service with new env vars
-                from app.core import rag
-                rag.rag_service.__init__()
-                print("RAG Service re-initialized with Vault secrets")
-    except Exception as e:
-        print(f"Failed to connect to Vault: {e}")
-
-    seed_connectors()
 
 app.include_router(connectors.router)
 app.include_router(agents.router)
@@ -127,6 +140,8 @@ app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 app.include_router(users.router)
 app.include_router(workflows.router)
 app.include_router(discovery.router, prefix="/api/discovery", tags=["discovery"])
+app.include_router(metrics.router)
+app.include_router(websockets.router)
 
 from app.routers import oauth
 from app.api import rag
@@ -147,53 +162,18 @@ SALEOR_URL = os.getenv("SALEOR_URL", "http://saleor:8000")
 
 @app.get("/health")
 async def health_check():
-    from app.dependencies import engine
-    from sqlalchemy import text
     import time
-
-    health = {
-        "status": "healthy",
-        "service": "brain-gateway",
-        "timestamp": time.time(),
-        "dependencies": {}
-    }
-
-    # Check Database
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        health["dependencies"]["database"] = "ok"
-    except Exception as e:
-        health["dependencies"]["database"] = f"error: {str(e)}"
-        health["status"] = "unhealthy"
-
-    # Check Vault (Optional)
-    vault_addr = os.getenv('VAULT_ADDR')
-    if vault_addr:
-        try:
-            async with httpx.AsyncClient() as client:
-                res = await client.get(f"{vault_addr}/v1/sys/health", timeout=2.0)
-                health["dependencies"]["vault"] = "ok" if res.status_code == 200 else f"status: {res.status_code}"
-        except:
-            health["dependencies"]["vault"] = "unreachable"
-
-    # Check Services (Basic ping)
-    services = {
-        "cms": CMS_URL,
-        "crm": CRM_URL,
-        "ai-agents": "http://ai-agents:8000"
-    }
+    from app.observability.health import get_dependency_health
     
-    for name, url in services.items():
-        try:
-            async with httpx.AsyncClient() as client:
-                res = await client.get(f"{url}/health" if name == "ai-agents" else url, timeout=1.0)
-                health["dependencies"][name] = "ok" if res.status_code < 500 else f"status: {res.status_code}"
-        except:
-            health["dependencies"][name] = "unreachable"
-
-    status_code = 200 if health["status"] == "healthy" else 503
-    return JSONResponse(content=health, status_code=status_code)
+    data = await get_dependency_health()
+    data.update({
+        "service": "brain-gateway",
+        "version": "1.0.0",
+        "timestamp": time.time()
+    })
+    
+    status_code = 200 if data["status"] == "healthy" else (503 if data["status"] == "unhealthy" else 200)
+    return JSONResponse(content=data, status_code=status_code)
 
 @app.api_route("/api/brain/wagtail/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_wagtail(request: Request, path: str):

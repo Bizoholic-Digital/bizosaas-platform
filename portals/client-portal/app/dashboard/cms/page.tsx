@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { FileText, File, Image as ImageIcon, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink, FolderOpen, Upload } from 'lucide-react';
+import { FileText, File, Image as ImageIcon, Loader2, Plus, Edit, Trash2, MoreVertical, ExternalLink, FolderOpen, Upload, Package, Power, PowerOff, Download } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -46,12 +46,31 @@ interface MediaItem {
     mime_type: string;
 }
 
+interface Plugin {
+    id: string;
+    name: string;
+    description: string;
+    status: string; // active, inactive
+    version: string;
+    author: string;
+    icon?: string;
+    installed: boolean;
+}
+
+const RECOMMENDED_PLUGINS = [
+    { id: 'woocommerce', name: 'WooCommerce', description: 'eCommerce for WordPress', icon: 'https://ps.w.org/woocommerce/assets/icon-128x128.png' },
+    { id: 'elementor', name: 'Elementor', description: 'The most advanced frontend drag & drop page builder', icon: 'https://ps.w.org/elementor/assets/icon-128x128.png' },
+    { id: 'wordpress-seo', name: 'Yoast SEO', description: 'Improve your WordPress SEO', icon: 'https://ps.w.org/wordpress-seo/assets/icon-128x128.png' },
+    { id: 'contact-form-7', name: 'Contact Form 7', description: 'Just another contact form plugin', icon: 'https://ps.w.org/contact-form-7/assets/icon-128x128.png' }
+];
+
 export default function CMSPage() {
     const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('wordpress', 'cms');
     const [posts, setPosts] = useState<Post[]>([]);
     const [pages, setPages] = useState<Page[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [media, setMedia] = useState<MediaItem[]>([]);
+    const [plugins, setPlugins] = useState<Plugin[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
 
     const [activeTab, setActiveTab] = useState('posts');
@@ -76,17 +95,19 @@ export default function CMSPage() {
     const loadData = async () => {
         setIsLoadingData(true);
         try {
-            const [postsData, pagesData, categoriesData, mediaData] = await Promise.all([
+            const [postsData, pagesData, categoriesData, mediaData, pluginsData] = await Promise.all([
                 brainApi.cms.getPosts().catch(() => []),
                 brainApi.cms.getPages().catch(() => []),
                 brainApi.cms.getCategories().catch(() => []),
-                brainApi.cms.listMedia().catch(() => [])
+                brainApi.cms.listMedia().catch(() => []),
+                brainApi.cms.getPlugins().catch(() => [])
             ]);
 
             setPosts(postsData || []);
             setPages(pagesData || []);
             setCategories(categoriesData || []);
             setMedia(mediaData || []);
+            setPlugins(pluginsData || []);
         } catch (error) {
             console.error('Failed to load CMS data:', error);
             toast.error('Failed to load CMS data');
@@ -168,6 +189,31 @@ export default function CMSPage() {
         }
     };
 
+    const togglePlugin = async (slug: string, currentStatus: string) => {
+        try {
+            if (currentStatus === 'active') {
+                await brainApi.cms.deactivatePlugin(slug);
+                toast.success('Plugin deactivated');
+            } else {
+                await brainApi.cms.activatePlugin(slug);
+                toast.success('Plugin activated');
+            }
+            loadData();
+        } catch (error) {
+            toast.error('Failed to update plugin status');
+        }
+    };
+
+    const installPlugin = async (slug: string) => {
+        try {
+            await brainApi.cms.installPlugin(slug);
+            toast.success('Plugin installed successfully');
+            loadData();
+        } catch (error) {
+            toast.error('Failed to install plugin');
+        }
+    };
+
     const resetForm = () => {
         setFormData({ title: '', content: '', status: 'draft', slug: '', description: '', file: null });
         setIsEditing(false);
@@ -219,7 +265,7 @@ export default function CMSPage() {
                 </Badge>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
@@ -257,6 +303,16 @@ export default function CMSPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{media.length}</div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Plugins</CardTitle>
+                        <Package className="w-4 h-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{plugins.length}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -361,7 +417,7 @@ export default function CMSPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="posts" className="w-full" onValueChange={setActiveTab}>
-                        <TabsList className="grid w-full grid-cols-4 mb-4">
+                        <TabsList className="grid w-full grid-cols-5 mb-4">
                             <TabsTrigger value="posts">
                                 <FileText className="w-4 h-4 mr-2" />
                                 Posts ({posts.length})
@@ -377,6 +433,10 @@ export default function CMSPage() {
                             <TabsTrigger value="media">
                                 <ImageIcon className="w-4 h-4 mr-2" />
                                 Media ({media.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="plugins">
+                                <Package className="w-4 h-4 mr-2" />
+                                Plugins ({plugins.length})
                             </TabsTrigger>
                         </TabsList>
 
@@ -534,6 +594,110 @@ export default function CMSPage() {
                                         </div>
                                     ))}
                                 </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="plugins" className="space-y-6">
+                            {isLoadingData ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-medium">Installed Plugins</h3>
+                                        {plugins.length === 0 ? (
+                                            <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">No plugins installed</div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {plugins.map((plugin) => (
+                                                    <div key={plugin.id} className="flex flex-col justify-between p-4 rounded-lg border bg-white dark:bg-slate-900 shadow-sm">
+                                                        <div className="space-y-2">
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-10 h-10 rounded bg-slate-100 flex items-center justify-center overflow-hidden">
+                                                                        {plugin.icon ? <img src={plugin.icon} alt={plugin.name} className="w-full h-full object-cover" /> : <Package className="w-6 h-6 text-slate-400" />}
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className="font-semibold text-sm">{plugin.name}</h4>
+                                                                        <p className="text-xs text-muted-foreground">v{plugin.version} by {plugin.author}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <Badge variant={plugin.status === 'active' ? 'default' : 'secondary'} className={plugin.status === 'active' ? 'bg-green-500 hover:bg-green-600' : ''}>
+                                                                    {plugin.status}
+                                                                </Badge>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 min-h-[40px]">{plugin.description}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="flex-1"
+                                                                onClick={() => togglePlugin(plugin.id, plugin.status)}
+                                                            >
+                                                                {plugin.status === 'active' ? (
+                                                                    <><PowerOff className="w-3 h-3 mr-2" /> Deactivate</>
+                                                                ) : (
+                                                                    <><Power className="w-3 h-3 mr-2" /> Activate</>
+                                                                )}
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                                onClick={() => {
+                                                                    if (confirm('Are you sure you want to delete this plugin?')) {
+                                                                        brainApi.cms.deletePlugin(plugin.id).then(() => {
+                                                                            toast.success('Plugin deleted');
+                                                                            loadData();
+                                                                        }).catch(() => {
+                                                                            toast.error('Failed to delete plugin');
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-medium">Marketplace Recommendations</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            {RECOMMENDED_PLUGINS.map((plugin) => {
+                                                const isInstalled = plugins.some(p => p.id === plugin.id || p.id.includes(plugin.id));
+                                                return (
+                                                    <div key={plugin.id} className="flex flex-col justify-between p-4 rounded-lg border hover:border-blue-500 transition-colors">
+                                                        <div className="space-y-3">
+                                                            <div className="w-12 h-12 rounded bg-slate-100 mx-auto flex items-center justify-center overflow-hidden">
+                                                                <img src={plugin.icon} alt={plugin.name} className="w-full h-full object-cover" />
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <h4 className="font-semibold text-sm">{plugin.name}</h4>
+                                                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{plugin.description}</p>
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            className="w-full mt-4"
+                                                            variant={isInstalled ? "secondary" : "default"}
+                                                            disabled={isInstalled}
+                                                            onClick={() => installPlugin(plugin.id)}
+                                                        >
+                                                            {isInstalled ? 'Installed' : (
+                                                                <><Download className="w-3 h-3 mr-2" /> Install</>
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </TabsContent>
                     </Tabs>

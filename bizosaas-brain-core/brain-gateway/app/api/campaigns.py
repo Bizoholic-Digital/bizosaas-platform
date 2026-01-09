@@ -23,16 +23,28 @@ class CampaignCreateRequest(BaseModel):
     goal: Optional[str] = None
     channels: List[ChannelCreateRequest] = []
 
+class ChannelResponse(BaseModel):
+    id: UUID
+    channel_type: str
+    connector_id: str
+    status: str
+    remote_id: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+    stats: Optional[Dict[str, Any]] = None
+
+    class Config:
+        from_attributes = True
+
 class CampaignResponse(BaseModel):
     id: UUID
     name: str
     status: str
     goal: Optional[str]
     created_at: datetime
-    channels: List[Dict[str, Any]] = []
+    channels: List[ChannelResponse] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 @router.post("/", response_model=CampaignResponse)
 async def create_campaign(

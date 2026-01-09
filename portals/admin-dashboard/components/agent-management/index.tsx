@@ -115,6 +115,8 @@ const hasPermission = (permissions: string[] = []): boolean => {
   return true;
 };
 
+import { PageHeader } from '../dashboard/PageHeader';
+
 // Main Agent Management Interface
 export default function AgentManagementInterface() {
   const [activeComponent, setActiveComponent] = useState<string>('dashboard');
@@ -151,14 +153,14 @@ export default function AgentManagementInterface() {
   return (
     <div className="min-h-full bg-slate-50 dark:bg-slate-950 flex flex-col animate-in fade-in duration-500">
       <Tabs value={activeComponent} onValueChange={setActiveComponent} className="flex flex-col flex-1 w-full">
-        {/* Header - Standardized with Premium Aesthetics */}
-        <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        {/* Header - Standardized with PageHeader */}
+        <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 pt-6 -mb-8">
+          <PageHeader
+            title={
               <div className="flex items-center space-x-2">
-                <Bot className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
+                <Bot className="w-8 h-8 text-indigo-600" />
                 <div>
-                  <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white leading-tight uppercase italic">
+                  <h1 className="text-3xl font-black text-slate-900 dark:text-white leading-tight uppercase italic tracking-tighter">
                     Agent <span className="text-indigo-600">Hub</span>
                   </h1>
                   <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] font-bold">
@@ -166,8 +168,9 @@ export default function AgentManagementInterface() {
                   </p>
                 </div>
               </div>
-            </div>
-
+            }
+            description={null}
+          >
             <div className="flex items-center space-x-4">
               {/* Quick Stats - Premium Cards Style */}
               <div className="hidden lg:flex items-center space-x-6 text-sm">
@@ -183,18 +186,14 @@ export default function AgentManagementInterface() {
                   <p className="font-black text-blue-600 dark:text-blue-400">{stats.domainsManaged}</p>
                   <p className="text-[10px] uppercase font-bold text-blue-500">Domains</p>
                 </div>
-                <div className="text-center bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-lg border border-amber-100 dark:border-amber-900/30">
-                  <p className="font-black text-amber-600 dark:text-amber-400">{stats.tasksInProgress}</p>
-                  <p className="text-[10px] uppercase font-bold text-amber-500">Tasks</p>
-                </div>
               </div>
 
               {/* Current user indicator */}
-              <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-none font-bold italic tracking-tighter">
+              <Badge className="bg-indigo-600 hover:bg-indigo-700 text-white border-none font-bold italic tracking-tighter h-8">
                 Super Admin
               </Badge>
             </div>
-          </div>
+          </PageHeader>
         </div>
 
         {/* Navigation Tabs - Mobile App Style */}

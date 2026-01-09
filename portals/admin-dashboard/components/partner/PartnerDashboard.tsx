@@ -83,6 +83,8 @@ const MOCK_CLIENTS: Client[] = [
     }
 ];
 
+import { PageHeader } from '../dashboard/PageHeader';
+
 export default function PartnerDashboard() {
     const router = useRouter();
     const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
@@ -107,17 +109,16 @@ export default function PartnerDashboard() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Partner Dashboard</h1>
-                    <p className="text-gray-500">Manage your clients and oversee their AI operations</p>
-                </div>
+            <PageHeader
+                title="Partner Dashboard"
+                description="Manage your clients and oversee their AI operations from a unified center."
+            >
                 <div className="flex gap-3">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-[200px] justify-between">
-                                <span className="flex items-center gap-2">
-                                    <Building2 className="w-4 h-4" />
+                            <Button variant="outline" className="w-[180px] md:w-[200px] justify-between border-slate-200 dark:border-slate-800 h-9">
+                                <span className="flex items-center gap-2 truncate">
+                                    <Building2 className="w-4 h-4 text-indigo-500" />
                                     {selectedClient ? clients.find(c => c.id === selectedClient)?.name : 'Global View'}
                                 </span>
                             </Button>
@@ -136,12 +137,12 @@ export default function PartnerDashboard() {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button>
+                    <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700">
                         <Users className="w-4 h-4 mr-2" />
                         Add Client
                     </Button>
                 </div>
-            </div>
+            </PageHeader>
 
             {/* Aggregated Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -307,8 +308,8 @@ export default function PartnerDashboard() {
                                     <div>
                                         <span className="text-muted-foreground block text-xs">Status</span>
                                         <Badge variant="secondary" className={`mt-1 ${client.status === 'active' ? 'bg-green-100 text-green-700' :
-                                                client.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
-                                                    'bg-red-100 text-red-700'
+                                            client.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                                                'bg-red-100 text-red-700'
                                             }`}>
                                             {client.status.toUpperCase()}
                                         </Badge>
@@ -324,7 +325,7 @@ export default function PartnerDashboard() {
                                     <div>
                                         <span className="text-muted-foreground block text-xs">Health</span>
                                         <span className={`font-bold ${client.healthScore >= 90 ? 'text-green-600' :
-                                                client.healthScore >= 70 ? 'text-yellow-600' : 'text-red-600'
+                                            client.healthScore >= 70 ? 'text-yellow-600' : 'text-red-600'
                                             }`}>{client.healthScore}%</span>
                                     </div>
                                 </div>

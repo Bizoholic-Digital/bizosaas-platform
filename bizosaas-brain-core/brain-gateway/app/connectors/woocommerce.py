@@ -5,6 +5,7 @@ from datetime import datetime
 from ..ports.ecommerce_port import ECommercePort, Product, Order, OrderItem, EcommerceStats
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
+from app.observability.decorators import instrument_connector_operation, instrument_sync_operation
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +113,7 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
 
     # --- ECommercePort Implementation ---
 
+    @instrument_sync_operation("products")
     async def get_products(self, limit: int = 100, category_id: Optional[str] = None) -> List[Product]:
         params = {"per_page": limit}
         if category_id:
@@ -164,6 +166,7 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
             except Exception:
                 return None
 
+    @instrument_connector_operation("create_product")
     async def create_product(self, product: Product) -> Product:
         payload = {
             "name": product.name,
@@ -183,6 +186,7 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
             product.id = str(item.get("id"))
             return product
 
+    @instrument_connector_operation("update_product")
     async def update_product(self, product_id: str, updates: Dict[str, Any]) -> Product:
         async with httpx.AsyncClient() as client:
             response = await client.put(
@@ -201,6 +205,7 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
                 status=item.get("status")
             )
 
+    @instrument_connector_operation("delete_product")
     async def delete_product(self, product_id: str) -> bool:
         async with httpx.AsyncClient() as client:
             response = await client.delete(
@@ -219,6 +224,7 @@ class WooCommerceConnector(BaseConnector, ECommercePort):
             )
             return response.status_code == 200
 
+    @instrument_sync_operation("orders")
     async def get_orders(self, limit: int = 100, status: Optional[str] = None) -> List[Order]:
         params = {"per_page": limit}
         if status:

@@ -9,7 +9,14 @@ from app.middleware.auth import get_current_user
 
 # Mock Auth
 async def override_get_current_user():
-    return MagicMock(tenant_id="test_tenant", id="user_1", role="admin")
+    from domain.ports.identity_port import AuthenticatedUser
+    return AuthenticatedUser(
+        id="user_1",
+        email="test@example.com",
+        name="Test User",
+        roles=["admin"],
+        tenant_id="test_tenant"
+    )
 
 app.dependency_overrides[get_current_user] = override_get_current_user
 

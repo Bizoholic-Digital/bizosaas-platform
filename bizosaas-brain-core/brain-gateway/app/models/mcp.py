@@ -1,14 +1,14 @@
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Integer, JSON, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
 from .user import Base
+from .utils import GUID
 
 class McpCategory(Base):
     __tablename__ = "mcp_categories"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False, unique=True)
     slug = Column(String(100), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
@@ -21,7 +21,7 @@ class McpCategory(Base):
 class McpRegistry(Base):
     __tablename__ = "mcp_registry"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String(100), nullable=False)
     slug = Column(String(100), nullable=False, unique=True, index=True)
     description = Column(Text, nullable=True)
@@ -30,7 +30,7 @@ class McpRegistry(Base):
     source_url = Column(String(255), nullable=True)
     
     # Configuration
-    category_id = Column(UUID(as_uuid=True), ForeignKey("mcp_categories.id"), nullable=False)
+    category_id = Column(GUID, ForeignKey("mcp_categories.id"), nullable=False)
     capabilities = Column(JSON, default=list)  # ["products", "orders", "analytics"]
     mcp_config = Column(JSON, nullable=False)  # { "type": "docker", "image": "...", "env": [...] }
     is_official = Column(Boolean, default=False)
@@ -48,9 +48,9 @@ class McpRegistry(Base):
 class UserMcpInstallation(Base):
     __tablename__ = "user_mcp_installations"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    mcp_id = Column(UUID(as_uuid=True), ForeignKey("mcp_registry.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    mcp_id = Column(GUID, ForeignKey("mcp_registry.id", ondelete="CASCADE"), nullable=False)
     
     status = Column(String(20), default="pending", nullable=False)  # pending, installed, configured, error, stopped
     config = Column(JSON, nullable=True)  # User-specific config overrides

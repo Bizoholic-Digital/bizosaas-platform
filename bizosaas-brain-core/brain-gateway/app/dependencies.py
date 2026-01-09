@@ -2,6 +2,7 @@ from functools import lru_cache
 import os
 import logging
 from domain.ports.identity_port import IdentityPort
+from app.ports.workflow_port import WorkflowPort
 from adapters.identity.mock_adapter import MockIdentityAdapter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
@@ -16,6 +17,30 @@ if not DATABASE_URL:
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# ============================================================================
+# Database Query Profiling
+# ============================================================================
+from sqlalchemy import event
+import time
+
+@event.listens_for(engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    context._query_start_time = time.time()
+
+@event.listens_for(engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    total = time.time() - context._query_start_time
+    # Log slow queries (above 500ms)
+    if total > 0.5:
+        logger.warning(f"SLOW_QUERY: {total:.4f}s - {statement}")
+    
+    # Record query duration in metrics if available
+    try:
+        from app.observability.metrics import db_query_duration
+        db_query_duration.record(total * 1000) # Convert to ms
+    except ImportError:
+        pass
 
 def get_db():
     db = SessionLocal()
@@ -78,7 +103,7 @@ def get_secret_service():
     db_adapter = DatabaseSecretAdapter(session_factory=SessionLocal)
     return SecretService(secret_adapter=db_adapter)
 
-from fastapi import Security, HTTPException, status
+from fastapi import Security, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 security = HTTPBearer(auto_error=False)
@@ -137,4 +162,22 @@ def require_role(allowed_roles: list[str]):
             )
         return user
     return role_dependency
+
+@lru_cache()
+def get_workflow_port() -> WorkflowPort:
+    """Dependency Injection: Returns the configured Workflow Port (Temporal)."""
+    from app.adapters.temporal_adapter import TemporalAdapter
+    temporal_host = os.getenv("TEMPORAL_HOST", "localhost:7233")
+    namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
+    
+    logger.info(f"Creating TemporalAdapter for host {temporal_host}")
+    return TemporalAdapter(host=temporal_host, namespace=namespace)
+
+def get_workflow_service(
+    db: Session = Depends(get_db),
+    workflow_port: WorkflowPort = Depends(get_workflow_port)
+):
+    """Dependency Injection: Returns the Workflow Service."""
+    from app.domain.services.workflow_service import WorkflowService
+    return WorkflowService(db=db, workflow_port=workflow_port)
 

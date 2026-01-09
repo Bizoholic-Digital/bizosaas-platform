@@ -1,12 +1,7 @@
-import asyncio
-import sys
-import os
-
-# Add parent directory to path to import app modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import pytest
 from app.connectors.zoho_crm import ZohoCRMConnector
 
+@pytest.mark.asyncio
 async def test_zoho_connector():
     print("Testing Zoho CRM Connector...")
     

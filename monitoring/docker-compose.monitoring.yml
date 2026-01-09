@@ -168,6 +168,22 @@ services:
       - "com.bizosaas.component=redis-exporter"
       - "com.bizosaas.description=Redis metrics exporter"
 
+  # Alertmanager - Alert routing & notifications
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: bizosaas-alertmanager
+    hostname: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+
 # Volumes for persistent data
 volumes:
   prometheus-data:

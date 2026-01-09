@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -35,11 +35,20 @@ class PostMessage(BaseModel):
     published_at: Optional[datetime] = None
     author: Optional[str] = ""
 
+class CategoryMessage(BaseModel):
+    id: str
+    name: str
+    slug: str
+    description: Optional[str] = ""
+    count: Optional[int] = 0
+
 class MediaMessage(BaseModel):
     id: str
-    url: str
-    title: Optional[str] = ""
-    mime_type: Optional[str] = ""
+    title: str
+    source_url: str
+    mime_type: str
+    alt_text: Optional[str] = ""
+    caption: Optional[str] = ""
 
 async def get_active_cms_connector(tenant_id: str, secret_service: SecretService) -> CMSPort:
     # Find any connected CMS connector for this tenant
@@ -300,9 +309,257 @@ async def delete_post(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"CMS Error: {str(e)}")
 
+class PluginMessage(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    status: str
+    version: Optional[str] = None
+    author: Optional[str] = None
+    icon: Optional[str] = None
+    installed: bool = False
+
+# ... existing endpoints ...
+
+@router.get("/plugins", response_model=List[PluginMessage])
+async def list_plugins(
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        if not hasattr(connector, 'get_plugins'):
+             # If connector doesn't support plugins
+             return []
+        
+        plugins = await connector.get_plugins()
+        return [
+            PluginMessage(
+                id=p.id,
+                name=p.name,
+                description=p.description,
+                status=p.status,
+                version=p.version,
+                author=p.author,
+                icon=p.icon,
+                installed=p.installed
+            ) for p in plugins
+        ]
+    except Exception as e:
+        # Fallback empty if not supported or error
+        return []
+
+@router.post("/plugins/{slug}/install")
+async def install_plugin(
+    slug: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        success = await connector.install_plugin(slug)
+        if not success:
+             raise HTTPException(status_code=400, detail="Installation failed")
+        return {"status": "success", "slug": slug}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Plugin Error: {str(e)}")
+
+@router.post("/plugins/{slug}/activate")
+async def activate_plugin(
+    slug: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        success = await connector.activate_plugin(slug)
+        if not success:
+             raise HTTPException(status_code=400, detail="Activation failed")
+        return {"status": "success", "slug": slug}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Plugin Error: {str(e)}")
+
+@router.post("/plugins/{slug}/deactivate")
+async def deactivate_plugin(
+    slug: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        success = await connector.deactivate_plugin(slug)
+        if not success:
+             raise HTTPException(status_code=400, detail="Deactivation failed")
+        return {"status": "success", "slug": slug}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Plugin Error: {str(e)}")
+
+@router.delete("/plugins/{slug}")
+async def delete_plugin(
+    slug: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        success = await connector.delete_plugin(slug)
+        if not success:
+             raise HTTPException(status_code=400, detail="Deletion failed")
+        return {"status": "success", "slug": slug}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Plugin Error: {str(e)}")
+
+# Categories endpoints
+@router.get("/categories", response_model=List[CategoryMessage])
+async def list_categories(
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        if not hasattr(connector, 'get_categories'):
+            return []
+        
+        categories = await connector.get_categories()
+        return [
+            CategoryMessage(
+                id=str(c.get('id', c.get('slug', ''))),
+                name=c.get('name', ''),
+                slug=c.get('slug', ''),
+                description=c.get('description', ''),
+                count=c.get('count', 0)
+            ) for c in categories
+        ]
+    except Exception as e:
+        return []
+
+@router.post("/categories")
+async def create_category(
+    category: CategoryMessage,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        result = await connector.create_category({
+            'name': category.name,
+            'slug': category.slug,
+            'description': category.description
+        })
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Category Error: {str(e)}")
+
+@router.put("/categories/{category_id}")
+async def update_category(
+    category_id: str,
+    category: CategoryMessage,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        result = await connector.update_category(category_id, {
+            'name': category.name,
+            'slug': category.slug,
+            'description': category.description
+        })
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Category Error: {str(e)}")
+
+@router.delete("/categories/{category_id}")
+async def delete_category(
+    category_id: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        success = await connector.delete_category(category_id)
+        if not success:
+            raise HTTPException(status_code=400, detail="Deletion failed")
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Category Error: {str(e)}")
+
+# Media endpoints
 @router.get("/media", response_model=List[MediaMessage])
 async def list_media(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
 ):
-    # Media port undefined in base yet, placeholder
-    return []
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        if not hasattr(connector, 'list_media'):
+            return []
+        
+        media = await connector.list_media()
+        return [
+            MediaMessage(
+                id=str(m.get('id', '')),
+                title=m.get('title', {}).get('rendered', '') if isinstance(m.get('title'), dict) else m.get('title', ''),
+                source_url=m.get('source_url', ''),
+                mime_type=m.get('mime_type', ''),
+                alt_text=m.get('alt_text', ''),
+                caption=m.get('caption', {}).get('rendered', '') if isinstance(m.get('caption'), dict) else m.get('caption', '')
+            ) for m in media
+        ]
+    except Exception as e:
+        return []
+
+@router.post("/media")
+async def upload_media(
+    file: UploadFile = File(...),
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    
+    try:
+        if not hasattr(connector, 'upload_media'):
+            raise HTTPException(status_code=400, detail="Connected CMS does not support media upload")
+            
+        file_data = await file.read()
+        result = await connector.upload_media(
+            file_data=file_data,
+            filename=file.filename,
+            mime_type=file.content_type
+        )
+        
+        return {
+            "id": str(result.get('id', '')),
+            "title": result.get('title', {}).get('rendered', '') if isinstance(result.get('title'), dict) else result.get('title', ''),
+            "source_url": result.get('source_url', ''),
+            "mime_type": result.get('mime_type', ''),
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload Error: {str(e)}")
+
+@router.delete("/media/{media_id}")
+async def delete_media(
+    media_id: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    secret_service: SecretService = Depends(get_secret_service)
+):
+    tenant_id = user.tenant_id or "default_tenant"
+    connector = await get_active_cms_connector(tenant_id, secret_service)
+    try:
+        success = await connector.delete_media(media_id)
+        if not success:
+            raise HTTPException(status_code=400, detail="Deletion failed")
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Media Error: {str(e)}")

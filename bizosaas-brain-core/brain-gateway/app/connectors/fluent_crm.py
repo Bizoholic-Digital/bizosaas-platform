@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Optional
 from ..ports.crm_port import CRMPort, Contact, Deal, CRMStats
 from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 from .registry import ConnectorRegistry
+from app.observability.decorators import instrument_connector_operation, instrument_sync_operation
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,7 @@ class FluentCRMConnector(BaseConnector, CRMPort):
 
     # --- CRMPort Implementation ---
 
+    @instrument_sync_operation("contacts")
     async def get_contacts(self, limit: int = 100, cursor: Optional[str] = None) -> List[Contact]:
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -171,6 +173,7 @@ class FluentCRMConnector(BaseConnector, CRMPort):
                     )
             return None
 
+    @instrument_connector_operation("create_contact")
     async def create_contact(self, contact: Contact) -> Contact:
         payload = {
             "email": contact.email,
@@ -191,6 +194,7 @@ class FluentCRMConnector(BaseConnector, CRMPort):
             contact.id = str(item.get("id"))
             return contact
 
+    @instrument_connector_operation("update_contact")
     async def update_contact(self, contact_id: str, updates: Dict[str, Any]) -> Contact:
         async with httpx.AsyncClient() as client:
             response = await client.put(
@@ -202,6 +206,7 @@ class FluentCRMConnector(BaseConnector, CRMPort):
             # Ideally fetch updated contact properly
             return await self.get_contact(contact_id)
 
+    @instrument_connector_operation("delete_contact")
     async def delete_contact(self, contact_id: str) -> bool:
         async with httpx.AsyncClient() as client:
             response = await client.delete(

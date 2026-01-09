@@ -4,8 +4,10 @@ from .base import BaseConnector, ConnectorConfig, ConnectorType, ConnectorStatus
 
 from .registry import ConnectorRegistry
 
+from ..ports.project_port import ProjectPort, Project, Issue, IssueState, Cycle
+
 @ConnectorRegistry.register
-class PlaneConnector(BaseConnector):
+class PlaneConnector(BaseConnector, ProjectPort):
     def __init__(self, tenant_id: str, credentials: Dict[str, Any]):
         super().__init__(tenant_id, credentials)
         self.api_url = credentials.get("api_url", "https://api.plane.so/api/v1")
@@ -52,6 +54,101 @@ class PlaneConnector(BaseConnector):
         except Exception:
             return False
             
+    async def get_projects(self) -> List[Project]:
+        workspace_slug = self.credentials.get("workspace_slug")
+        data = await self.sync_data("projects", {"workspace_slug": workspace_slug})
+        
+        projects_data = data.get("results", []) if isinstance(data, dict) else data
+        return [
+            Project(
+                id=p["id"],
+                name=p["name"],
+                identifier=p.get("identifier"),
+                description=p.get("description")
+            ) for p in projects_data
+        ]
+
+    async def get_project(self, project_id: str) -> Optional[Project]:
+        workspace_slug = self.credentials.get("workspace_slug")
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.api_url}/workspaces/{workspace_slug}/projects/{project_id}/",
+                headers={"X-API-Key": self.api_key}
+            )
+            if response.status_code == 200:
+                p = response.json()
+                return Project(
+                    id=p["id"],
+                    name=p["name"],
+                    identifier=p.get("identifier"),
+                    description=p.get("description")
+                )
+            return None
+
+    async def create_project(self, project: Project) -> Project:
+        payload = {
+            "name": project.name,
+            "identifier": project.identifier,
+            "description": project.description
+        }
+        workspace_slug = self.credentials.get("workspace_slug")
+        res = await self._create_project({**payload, "workspace_slug": workspace_slug})
+        project.id = res["id"]
+        return project
+
+    async def get_cycles(self, project_id: str) -> List[Cycle]:
+        workspace_slug = self.credentials.get("workspace_slug")
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.api_url}/workspaces/{workspace_slug}/projects/{project_id}/cycles/",
+                headers={"X-API-Key": self.api_key}
+            )
+            data = response.json() if response.status_code == 200 else []
+            return [
+                Cycle(
+                    id=c["id"],
+                    project_id=project_id,
+                    name=c["name"],
+                    start_date=None, # Should parse if available
+                    end_date=None
+                ) for c in (data.get("results", []) if isinstance(data, dict) else data)
+            ]
+
+    async def get_states(self, project_id: str) -> List[IssueState]:
+        return [] # Simplified
+
+    async def get_issues(self, project_id: str, cycle_id: Optional[str] = None) -> List[Issue]:
+        workspace_slug = self.credentials.get("workspace_slug")
+        params = {"workspace_slug": workspace_slug, "project_id": project_id}
+        data = await self.sync_data("issues", params)
+        return [
+            Issue(
+                id=i["id"],
+                title=i["name"],
+                description=i.get("description"),
+                project_id=project_id,
+                priority=i.get("priority")
+            ) for i in (data.get("results", []) if isinstance(data, dict) else data)
+        ]
+
+    async def get_issue(self, issue_id: str) -> Optional[Issue]:
+        return None
+
+    async def create_issue(self, issue: Issue) -> Issue:
+        workspace_slug = self.credentials.get("workspace_slug")
+        payload = {
+            "name": issue.title,
+            "description": issue.description,
+            "project_id": issue.project_id,
+            "priority": issue.priority
+        }
+        res = await self._create_issue({**payload, "workspace_slug": workspace_slug, "project_id": issue.project_id})
+        issue.id = res["id"]
+        return issue
+
+    async def update_issue(self, issue_id: str, updates: Dict[str, Any]) -> Issue:
+        raise NotImplementedError()
+
     async def get_status(self) -> ConnectorStatus:
         if await self.validate_credentials():
             return ConnectorStatus.CONNECTED
