@@ -11,6 +11,7 @@ import { Plug, Check, RefreshCw, X, Layout, Database, ShoppingCart, Search, MapP
 import { connectorsApi, ConnectorConfig, ConnectorCredentials } from '@/lib/api/connectors';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
+import { DiscoveryWidget } from '@/components/DiscoveryWidget';
 
 
 // Icon mapping
@@ -224,6 +225,7 @@ export function ConnectorsContent() {
 
     return (
         <div className="space-y-6">
+            <DiscoveryWidget />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredConnectors.map(c => {
                     const Icon = ICONS[c.icon] || ICONS.default;

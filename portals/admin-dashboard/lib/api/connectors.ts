@@ -56,6 +56,10 @@ export class ConnectorsApi {
     async getConnectorAnalytics(): Promise<ApiResponse<any>> {
         return brainApi.get<any>('/connectors/analytics');
     }
+
+    async getRecommendations(): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>('/discovery/recommendations');
+    }
 }
 
 export const connectorsApi = new ConnectorsApi();
