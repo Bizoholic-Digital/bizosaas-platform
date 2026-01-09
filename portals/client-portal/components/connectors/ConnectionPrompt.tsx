@@ -8,13 +8,15 @@ interface ConnectionPromptProps {
     serviceIcon?: React.ReactNode;
     description?: string;
     onConnect?: () => void;
+    actionUrl?: string;
 }
 
 export function ConnectionPrompt({
     serviceName,
     serviceIcon,
     description,
-    onConnect
+    onConnect,
+    actionUrl
 }: ConnectionPromptProps) {
     return (
         <div className="flex items-center justify-center min-h-[400px]">
@@ -45,10 +47,10 @@ export function ConnectionPrompt({
                             Connect {serviceName}
                         </Button>
                     ) : (
-                        <Link href="/dashboard/connectors" className="block">
+                        <Link href={actionUrl || "/dashboard/connectors"} className="block">
                             <Button className="w-full" size="lg">
                                 <Plug className="w-4 h-4 mr-2" />
-                                Go to Connectors
+                                {actionUrl ? `Connect ${serviceName}` : "Go to Connectors"}
                             </Button>
                         </Link>
                     )}

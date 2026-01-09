@@ -9,14 +9,14 @@
 
 | Category | Total Tasks | Completed | Progress |
 |----------|-------------|-----------|----------|
-| **Client Portal (CP)** | 28 | 2 | 7% |
+| **Client Portal (CP)** | 28 | 5 | 18% |
 | **Admin Dashboard (AD)** | 14 | 2 | 14% |
 | **Backend Testing (BT)** | 19 | 4 | 21% |
 | **Monitoring (MO)** | 10 | 5 | 50% |
 | **Service Health (SH)** | 10 | 1 | 10% |
 | **Testing Suite (TS)** | 10 | 0 | 0% |
 | **Cross-Portal (XP)** | 5 | 1 | 20% |
-| **TOTAL** | **96** | **15** | **15.6%** |
+| **TOTAL** | **96** | **18** | **18.8%** |
 
 ---
 
@@ -27,10 +27,10 @@
 |:---:|:---|:---|:---:|:---:|:---|
 | [ ] | CP-001 | Connector selection modal in Launch Discovery | P1 | 8h | - |
 | [ ] | CP-002 | Intelligent service recommendation engine | P1 | 12h | - |
-| [ ] | CP-003 | Dashboard cards clickable (Connectors, Tasks, Traffic) | P1 | 4h | - |
-| [ ] | CP-004 | CRM & Contacts connector display (FluentCRM, HubSpot) | P1 | 6h | - |
+| [x] | CP-003 | Dashboard cards clickable (Connectors, Tasks, Traffic) | P1 | 4h | Implemented Link wrappers and hover effects |
+| [x] | CP-004 | CRM & Contacts connector display (FluentCRM, HubSpot) | P1 | 6h | Added toggle and unified view in CRM page |
 | [ ] | CP-005 | Replicate connector display for CMS/eCommerce | P2 | 4h | - |
-| [ ] | CP-006 | Project navigation and "View All" button | P1 | 6h | - |
+| [x] | CP-006 | Project navigation and "View All" button | P1 | 6h | Added view-all in dashboard and project footer |
 | [ ] | CP-007 | Optimize mobile project view (scrollable) | P2 | 4h | - |
 | [x] | CP-008 | Fix Plane.so project/task creation logic | P0 | 10h | Implemented perform_action in plane.py |
 | [ ] | CP-009 | Assignee dropdown with Plane.so user list | P1 | 8h | - |

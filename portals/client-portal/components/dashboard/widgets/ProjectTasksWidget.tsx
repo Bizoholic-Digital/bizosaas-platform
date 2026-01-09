@@ -125,7 +125,7 @@ export function ProjectTasksWidget({ tenantId = "default-tenant" }: { tenantId?:
                                         <Badge
                                             variant={project.state === 'Completed' ? 'default' : 'outline'}
                                             className={`text-[10px] px-1.5 py-0 h-5 ${project.state === 'In Progress' ? 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800' :
-                                                    project.state === 'Completed' ? 'border-green-200 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : ''
+                                                project.state === 'Completed' ? 'border-green-200 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800' : ''
                                                 }`}
                                         >
                                             {project.state || 'Active'}
@@ -140,6 +140,11 @@ export function ProjectTasksWidget({ tenantId = "default-tenant" }: { tenantId?:
                     </div>
                 )}
             </CardContent>
+            <div className="p-4 border-t border-gray-100 dark:border-gray-800">
+                <Button variant="outline" className="w-full text-xs h-8" asChild>
+                    <a href="/tasks">View All Tasks & Projects</a>
+                </Button>
+            </div>
         </Card>
     );
 }

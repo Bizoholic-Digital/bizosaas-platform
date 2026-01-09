@@ -34,7 +34,11 @@ interface Deal {
 }
 
 export default function CRMPage() {
-    const { isConnected, isLoading: statusLoading, connector } = useConnectorStatus('hubspot', 'crm');
+    const { isConnected: hubspotConnected, connector: hubspotConnector } = useConnectorStatus('hubspot');
+    const { isConnected: fluentcrmConnected, connector: fluentcrmConnector } = useConnectorStatus('fluentcrm');
+    const { isLoading: statusLoading } = useConnectorStatus('', 'crm'); // Just for loading state
+
+    const [activeConnector, setActiveConnector] = useState<'hubspot' | 'fluentcrm' | null>(null);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [deals, setDeals] = useState<Deal[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(false);
@@ -62,15 +66,26 @@ export default function CRMPage() {
 
     const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
+    // Set initial active connector
     useEffect(() => {
-        if (isConnected) {
+        if (hubspotConnected) {
+            setActiveConnector('hubspot');
+        } else if (fluentcrmConnected) {
+            setActiveConnector('fluentcrm');
+        }
+    }, [hubspotConnected, fluentcrmConnected]);
+
+    useEffect(() => {
+        if (activeConnector) {
             loadData();
         }
-    }, [isConnected]);
+    }, [activeConnector]);
 
     const loadData = async () => {
         setIsLoadingData(true);
         try {
+            // Include connector header if the backend needs hint, 
+            // though brain-gateway should handle it via user session/config
             const [contactsData, dealsData] = await Promise.all([
                 brainApi.crm.getContacts(),
                 brainApi.crm.getDeals()
@@ -185,15 +200,34 @@ export default function CRMPage() {
         );
     }
 
-    if (!isConnected) {
+    if (!hubspotConnected && !fluentcrmConnected) {
         return (
-            <ConnectionPrompt
-                serviceName="HubSpot CRM"
-                serviceIcon={<Users className="w-8 h-8 text-blue-600" />}
-                description="Connect your HubSpot account to manage contacts, deals, and companies."
-            />
+            <div className="space-y-6 max-w-4xl mx-auto p-6">
+                <div className="text-center space-y-2 mb-8">
+                    <h1 className="text-3xl font-bold">Connect Your CRM</h1>
+                    <p className="text-muted-foreground text-lg">Choose a CRM to manage your contacts and deals.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <ConnectionPrompt
+                        serviceName="HubSpot CRM"
+                        serviceIcon={<Users className="w-8 h-8 text-orange-600" />}
+                        description="Professional CRM for growing businesses. Sync deals and contacts seamlessly."
+                        actionUrl="/dashboard/connectors?category=crm"
+                    />
+                    <ConnectionPrompt
+                        serviceName="FluentCRM"
+                        serviceIcon={<Building2 className="w-8 h-8 text-blue-600" />}
+                        description="Self-hosted marketing automation for WordPress. High performance and privacy."
+                        actionUrl="/dashboard/connectors?category=crm"
+                    />
+                </div>
+            </div>
         );
     }
+
+    const currentConnector = activeConnector === 'hubspot' ? hubspotConnector : fluentcrmConnector;
+    const isConnected = !!activeConnector;
 
     const filteredContacts = contacts.filter(contact =>
         contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -204,17 +238,40 @@ export default function CRMPage() {
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">CRM</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Manage your contacts, deals, and companies
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">CRM Dashboard</h1>
+                    <p className="text-muted-foreground mt-1 text-sm">
+                        Unified view of your {currentConnector?.name || 'CRM'} data
                     </p>
                 </div>
-                <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
-                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
-                    Connected to {connector?.name}
-                </Badge>
+
+                <div className="flex items-center gap-3">
+                    {(hubspotConnected && fluentcrmConnected) && (
+                        <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
+                            <Button
+                                variant={activeConnector === 'hubspot' ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setActiveConnector('hubspot')}
+                                className="h-8 text-xs px-3"
+                            >
+                                HubSpot
+                            </Button>
+                            <Button
+                                variant={activeConnector === 'fluentcrm' ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setActiveConnector('fluentcrm')}
+                                className="h-8 text-xs px-3"
+                            >
+                                FluentCRM
+                            </Button>
+                        </div>
+                    )}
+                    <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800 whitespace-nowrap">
+                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                        Connected: {currentConnector?.name}
+                    </Badge>
+                </div>
             </div>
 
             {/* Stats Cards */}
