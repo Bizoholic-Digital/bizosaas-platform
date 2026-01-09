@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, JSON, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, String, JSON, DateTime, ForeignKey, Boolean, Float, Integer
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -16,8 +16,8 @@ class Workflow(Base):
     status = Column(String, default="running") # 'running', 'paused', 'error'
     config = Column(JSON, default={}) # retries, timeout, etc.
     last_run = Column(DateTime, nullable=True)
-    success_rate = Column(JSON, default=100.0)
-    runs_today = Column(JSON, default=0)
+    success_rate = Column(Float, default=100.0)
+    runs_today = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

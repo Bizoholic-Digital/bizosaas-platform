@@ -32,7 +32,7 @@ async def create_workflow(
 ):
     """Create a new workflow"""
     tenant_id = user.tenant_id or "default_tenant"
-    workflow = await service.create_workflow(tenant_id, workflow_data.dict())
+    workflow = await service.create_workflow(tenant_id, workflow_data.model_dump())
     return workflow.to_dict()
 
 @router.get("/")
@@ -87,7 +87,7 @@ async def update_workflow_config(
 ):
     """Update workflow execution configuration"""
     tenant_id = user.tenant_id or "default_tenant"
-    success = await service.update_config(tenant_id, workflow_id, config.dict(exclude_unset=True))
+    success = await service.update_config(tenant_id, workflow_id, config.model_dump(exclude_unset=True))
     
     if not success:
         raise HTTPException(status_code=404, detail="Workflow not found")

@@ -304,8 +304,8 @@ export function CampaignWizardSelector() {
             <ArrowLeft size={16} />
             Back to Campaign Selection
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">Google Ads Campaign Wizard</h1>
-          <p className="text-gray-600">Create and launch your Google Ads campaign in 6 easy steps</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Google Ads Campaign Wizard</h1>
+          <p className="text-gray-600 dark:text-gray-400">Create and launch your Google Ads campaign in 6 easy steps</p>
         </div>
         <GoogleAdsCampaignWizard
           data={googleAdsData}
@@ -327,8 +327,8 @@ export function CampaignWizardSelector() {
             <ArrowLeft size={16} />
             Back to Campaign Selection
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">Social Media Campaign Wizard</h1>
-          <p className="text-gray-600">Launch your multi-platform social media campaign in 5 steps</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Social Media Campaign Wizard</h1>
+          <p className="text-gray-600 dark:text-gray-400">Launch your multi-platform social media campaign in 5 steps</p>
         </div>
         <SocialMediaCampaignWizard
           data={socialMediaData}
@@ -350,8 +350,8 @@ export function CampaignWizardSelector() {
             <ArrowLeft size={16} />
             Back to Campaign Selection
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">Email Marketing Campaign Wizard</h1>
-          <p className="text-gray-600">Create your personalized email campaign in 5 steps</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Email Marketing Campaign Wizard</h1>
+          <p className="text-gray-600 dark:text-gray-400">Create your personalized email campaign in 5 steps</p>
         </div>
         <EmailMarketingWizard
           data={emailMarketingData}
@@ -366,11 +366,11 @@ export function CampaignWizardSelector() {
     <div className="max-w-6xl mx-auto p-6">
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
           Campaign Creation Wizards
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Choose your campaign type and launch professional marketing campaigns with our 
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Choose your campaign type and launch professional marketing campaigns with our
           step-by-step wizards powered by AI optimization.
         </p>
       </div>
@@ -382,28 +382,27 @@ export function CampaignWizardSelector() {
           return (
             <div
               key={campaign.id}
-              className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all cursor-pointer group"
+              className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 p-6 hover:shadow-lg transition-all cursor-pointer group"
               onClick={() => setSelectedCampaign(campaign.id)}
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center">
-                  <div 
+                  <div
                     className="w-12 h-12 rounded-lg flex items-center justify-center mr-4"
                     style={{ backgroundColor: campaign.color + '20' }}
                   >
                     <Icon size={24} style={{ color: campaign.color }} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-gray-700">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-gray-700 dark:group-hover:text-gray-300">
                       {campaign.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        campaign.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
-                        campaign.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${campaign.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
+                          campaign.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                        }`}>
                         {campaign.difficulty}
                       </span>
                       <span className="text-xs text-gray-500 flex items-center">
@@ -416,32 +415,32 @@ export function CampaignWizardSelector() {
               </div>
 
               {/* Description */}
-              <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
                 {campaign.description}
               </p>
 
               {/* Metrics */}
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">{campaign.metrics.avgROI}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{campaign.metrics.avgROI}</div>
                   <div className="text-xs text-gray-500">Avg ROI</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">{campaign.metrics.setupTime}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{campaign.metrics.setupTime}</div>
                   <div className="text-xs text-gray-500">Setup</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-lg font-bold text-gray-900">{campaign.metrics.reach}</div>
+                  <div className="text-lg font-bold text-gray-900 dark:text-white">{campaign.metrics.reach}</div>
                   <div className="text-xs text-gray-500">Reach</div>
                 </div>
               </div>
 
               {/* Features */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Key Features:</h4>
+                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Key Features:</h4>
                 <div className="space-y-1">
                   {campaign.features.slice(0, 4).map((feature, index) => (
-                    <div key={index} className="flex items-center text-sm text-gray-600">
+                    <div key={index} className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                       <div className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-2"></div>
                       {feature}
                     </div>
@@ -455,7 +454,7 @@ export function CampaignWizardSelector() {
               </div>
 
               {/* Action Button */}
-              <button 
+              <button
                 className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 group-hover:bg-gray-800"
                 style={{ backgroundColor: campaign.color }}
               >
@@ -468,54 +467,54 @@ export function CampaignWizardSelector() {
       </div>
 
       {/* Benefits Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-8">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Why Use Our Campaign Wizards?
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Our AI-powered wizards simplify complex campaign creation while ensuring 
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Our AI-powered wizards simplify complex campaign creation while ensuring
             professional results and optimal performance.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <Zap size={24} className="text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <Zap size={24} className="text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Fast Setup</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Fast Setup</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Launch campaigns in minutes, not hours, with our streamlined process.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <TrendingUp size={24} className="text-green-600" />
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <TrendingUp size={24} className="text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">AI Optimization</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">AI Optimization</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Benefit from AI-powered recommendations and automatic optimizations.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <BarChart3 size={24} className="text-purple-600" />
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <BarChart3 size={24} className="text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Advanced Analytics</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Advanced Analytics</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Track performance with comprehensive analytics and reporting.
             </p>
           </div>
 
           <div className="text-center">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <DollarSign size={24} className="text-orange-600" />
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
+              <DollarSign size={24} className="text-orange-600 dark:text-orange-400" />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">ROI Focused</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">ROI Focused</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Every feature is designed to maximize your return on investment.
             </p>
           </div>
