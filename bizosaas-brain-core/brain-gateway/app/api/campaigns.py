@@ -32,8 +32,7 @@ class ChannelResponse(BaseModel):
     config: Optional[Dict[str, Any]] = None
     stats: Optional[Dict[str, Any]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 class CampaignResponse(BaseModel):
     id: UUID

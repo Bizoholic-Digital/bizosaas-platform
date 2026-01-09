@@ -15,9 +15,10 @@ class BaseEntity(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
-    class Config:
-        validate_assignment = True
-        arbitrary_types_allowed = True
+    model_config = {
+        "validate_assignment": True,
+        "arbitrary_types_allowed": True
+    }
 
     def update(self, data: dict):
         """Update entity fields with provided data"""

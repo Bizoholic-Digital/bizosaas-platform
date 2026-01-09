@@ -57,5 +57,4 @@ class Task(BaseEntity):
     due_date: Optional[datetime] = None
     tags: List[str] = []
     
-    class Config:
-        use_enum_values = True
+    model_config = {"use_enum_values": True}
