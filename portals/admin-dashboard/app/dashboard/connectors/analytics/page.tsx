@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,32 +22,48 @@ import {
     Download,
     Share2
 } from 'lucide-react';
-
-const connectorTrafficData = [
-    { time: '00:00', requests: 450, failures: 2 },
-    { time: '04:00', requests: 320, failures: 1 },
-    { time: '08:00', requests: 1200, failures: 15 },
-    { time: '12:00', requests: 2500, failures: 42 },
-    { time: '16:00', requests: 1800, failures: 20 },
-    { time: '20:00', requests: 900, failures: 5 },
-    { time: '23:59', requests: 600, failures: 3 },
-];
-
-const connectorUsageData = [
-    { name: 'Google Workspace', calls: 45000, value: 400, color: '#4285F4' },
-    { name: 'Mailchimp', calls: 32000, value: 300, color: '#FFE01B' },
-    { name: 'WooCommerce', calls: 28000, value: 300, color: '#96588A' },
-    { name: 'Slack', calls: 24000, value: 200, color: '#4A154B' },
-    { name: 'Stripe', calls: 18000, value: 200, color: '#635BFF' },
-    { name: 'HubSpot', calls: 12000, value: 100, color: '#FF7A59' },
-];
+import { connectorsApi } from '@/lib/api/connectors';
+import { toast } from 'sonner';
 
 export default function ConnectorAnalyticsPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [analytics, setAnalytics] = useState<any>(null);
+
+    const fetchAnalytics = async () => {
+        setLoading(true);
+        try {
+            const res = await connectorsApi.getConnectorAnalytics();
+            if (res.data) {
+                setAnalytics(res.data);
+            } else {
+                toast.error("Failed to load analytics");
+            }
+        } catch (error) {
+            console.error("Failed to fetch analytics", error);
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, []);
 
     const handleRefresh = () => {
         setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 1500);
+        fetchAnalytics();
+    };
+
+    if (loading && !analytics) {
+        return <div className="p-8 text-center text-slate-500 animate-pulse">Loading intelligence streams...</div>;
+    }
+
+    const { traffic_series, usage_distribution, global_stats } = analytics || {
+        traffic_series: [],
+        usage_distribution: [],
+        global_stats: { total_requests: '0', success_rate: '0%', latency_p95: '0ms' }
     };
 
     return (
@@ -88,7 +102,7 @@ export default function ConnectorAnalyticsPage() {
                         </div>
                         <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Total API Requests</p>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black italic text-slate-900 dark:text-white">1.2M</span>
+                            <span className="text-3xl font-black italic text-slate-900 dark:text-white">{global_stats?.total_requests}</span>
                             <span className="text-xs font-bold text-emerald-500 flex items-center">
                                 <TrendingUp className="w-3 h-3 mr-1" />
                                 14%
@@ -103,7 +117,7 @@ export default function ConnectorAnalyticsPage() {
                             <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                             </div>
-                            <Badge className="bg-emerald-500 text-white border-none text-[8px] font-black italic font-sans">99.8% SUCCESS</Badge>
+                            <Badge className="bg-emerald-500 text-white border-none text-[8px] font-black italic font-sans">{global_stats?.success_rate} SUCCESS</Badge>
                         </div>
                         <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Global Reliability</p>
                         <div className="flex items-baseline gap-2">
@@ -123,7 +137,7 @@ export default function ConnectorAnalyticsPage() {
                         </div>
                         <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Latency P95</p>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black italic text-slate-900 dark:text-white">450ms</span>
+                            <span className="text-3xl font-black italic text-slate-900 dark:text-white">{global_stats?.latency_p95}</span>
                             <span className="text-xs font-bold text-red-500 flex items-center">
                                 <TrendingUp className="w-3 h-3 mr-1" />
                                 8%
@@ -142,7 +156,7 @@ export default function ConnectorAnalyticsPage() {
                         </div>
                         <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-1">Throughput</p>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-3xl font-black italic text-slate-900 dark:text-white">8.4 GB</span>
+                            <span className="text-3xl font-black italic text-slate-900 dark:text-white">{global_stats?.throughput}</span>
                             <span className="text-[10px] font-bold text-slate-400">DAILY EGRESS</span>
                         </div>
                     </CardContent>
@@ -164,7 +178,7 @@ export default function ConnectorAnalyticsPage() {
                     <CardContent className="pt-6">
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={connectorTrafficData}>
+                                <AreaChart data={traffic_series}>
                                     <defs>
                                         <linearGradient id="colorReq" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
@@ -193,13 +207,13 @@ export default function ConnectorAnalyticsPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
-                                        data={connectorUsageData}
+                                        data={usage_distribution}
                                         innerRadius={60}
                                         outerRadius={80}
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
-                                        {connectorUsageData.map((entry, index) => (
+                                        {usage_distribution.slice(0, 6).map((entry: any, index: number) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
@@ -208,7 +222,7 @@ export default function ConnectorAnalyticsPage() {
                             </ResponsiveContainer>
                         </div>
                         <div className="space-y-2 mt-4">
-                            {connectorUsageData.slice(0, 4).map((item, i) => (
+                            {usage_distribution.slice(0, 4).map((item: any, i: number) => (
                                 <div key={i} className="flex justify-between items-center text-xs font-bold">
                                     <div className="flex items-center gap-2">
                                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
@@ -253,7 +267,7 @@ export default function ConnectorAnalyticsPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                                {connectorUsageData.map((item, i) => (
+                                {usage_distribution.map((item: any, i: number) => (
                                     <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
@@ -267,15 +281,15 @@ export default function ConnectorAnalyticsPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-1 w-20">
-                                                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '99.8%' }} />
+                                                    <div className={`h-full rounded-full ${item.reliability > 99 ? 'bg-emerald-500' : item.reliability > 95 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${Math.min(item.reliability, 100)}%` }} />
                                                 </div>
-                                                <span className="text-[10px] font-black text-emerald-600 italic">99.8%</span>
+                                                <span className={`text-[10px] font-black italic ${item.reliability > 99 ? 'text-emerald-600' : 'text-slate-600'}`}>{item.reliability.toFixed(1)}%</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 font-bold text-[10px] text-slate-500">2.4 MB/S</td>
-                                        <td className="px-6 py-4 text-[10px] font-medium text-slate-500 italic">2 SECONDS AGO</td>
+                                        <td className="px-6 py-4 text-[10px] font-medium text-slate-500 italic">{item.last_event}</td>
                                         <td className="px-6 py-4">
-                                            <Badge className="bg-emerald-500 text-white border-none italic text-[8px] font-black">STABLE</Badge>
+                                            <Badge className={`${item.status === 'STABLE' ? 'bg-emerald-500' : 'bg-amber-500'} text-white border-none italic text-[8px] font-black`}>{item.status}</Badge>
                                         </td>
                                     </tr>
                                 ))}
@@ -287,3 +301,4 @@ export default function ConnectorAnalyticsPage() {
         </div>
     );
 }
+

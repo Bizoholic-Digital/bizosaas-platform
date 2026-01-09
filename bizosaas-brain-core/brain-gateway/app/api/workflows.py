@@ -14,6 +14,41 @@ class WorkflowConfigUpdate(BaseModel):
     timeout: Optional[int] = None
     notifyOnError: Optional[bool] = None
     priority: Optional[str] = None
+class WorkflowCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    type: str = "Custom"
+    status: str = "paused"
+    template_id: Optional[str] = None
+    config: Optional[Dict[str, Any]] = None
+
+@router.post("/")
+async def create_workflow(
+    workflow_data: WorkflowCreate,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Create a new workflow"""
+    tenant_id = user.tenant_id or "default_tenant"
+    
+    new_workflow = Workflow(
+        tenant_id=tenant_id,
+        name=workflow_data.name,
+        description=workflow_data.description,
+        type=workflow_data.type,
+        status=workflow_data.status,
+        last_run=None,
+        success_rate=0.0,
+        runs_today=0,
+        config=workflow_data.config or {"retries": 3, "timeout": 30, "notifyOnError": False, "priority": "medium"}
+    )
+    
+    db.add(new_workflow)
+    db.commit()
+    db.refresh(new_workflow)
+    
+    return new_workflow.to_dict()
+
 
 @router.get("/")
 async def list_workflows(
@@ -102,3 +137,51 @@ async def toggle_workflow_status(
     db.commit()
     
     return {"status": "success", "new_status": workflow.status}
+
+@router.get("/optimizations")
+async def get_workflow_optimizations(
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get AI-powered optimization suggestions for workflows"""
+    tenant_id = user.tenant_id or "default_tenant"
+    workflows = db.query(Workflow).filter(Workflow.tenant_id == tenant_id).all()
+    
+    suggestions = []
+    
+    for wf in workflows:
+        # Heuristic 1: Low success rate
+        if wf.success_rate < 98.0:
+            suggestions.append({
+                "id": f"opt_success_{wf.id}",
+                "workflow_id": wf.id,
+                "workflow_name": wf.name,
+                "type": "reliability",
+                "severity": "high",
+                "message": f"Success rate is {wf.success_rate}%. Consider increasing retry attempts or adding error handlers.",
+                "action": "Configure Retries"
+            })
+            
+        # Heuristic 2: High frequency (mock)
+        if wf.runs_today > 10:
+             suggestions.append({
+                "id": f"opt_scale_{wf.id}",
+                "workflow_id": wf.id,
+                "workflow_name": wf.name,
+                "type": "performance",
+                "severity": "medium",
+                "message": f"High usage detected ({wf.runs_today} runs). Consider enabling batch processing to reduce overhead.",
+                "action": "Enable Batching"
+            })
+            
+    # Default message if no specific insights
+    if not suggestions:
+        suggestions.append({
+            "id": "opt_gen_1",
+            "type": "general",
+            "severity": "low",
+            "message": "All workflows are running smoothly. No optimizations needed at this time.",
+            "action": "View Analytics"
+        })
+        
+    return suggestions

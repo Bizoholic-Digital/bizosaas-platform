@@ -375,6 +375,12 @@ export const brainApi = {
         list: async (token?: string) => {
             return apiFetch('/api/workflows', {}, token);
         },
+        create: async (workflow: any, token?: string) => {
+            return apiFetch('/api/workflows', {
+                method: 'POST',
+                body: JSON.stringify(workflow)
+            }, token);
+        },
         updateConfig: async (id: string, config: any, token?: string) => {
             return apiFetch(`/api/workflows/${id}/config`, {
                 method: 'POST',
@@ -403,6 +409,9 @@ export const brainApi = {
                     { from: 'assign', to: 'notify' }
                 ]
             };
+        },
+        getOptimizations: async (token?: string) => {
+            return apiFetch('/api/workflows/optimizations', {}, token);
         }
     },
     discovery: {

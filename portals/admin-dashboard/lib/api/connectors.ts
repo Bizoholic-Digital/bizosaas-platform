@@ -52,6 +52,10 @@ export class ConnectorsApi {
     async getMarketplaceMetrics(): Promise<ApiResponse<any[]>> {
         return brainApi.get<any[]>('/connectors/marketplace/metrics');
     }
+
+    async getConnectorAnalytics(): Promise<ApiResponse<any>> {
+        return brainApi.get<any>('/connectors/analytics');
+    }
 }
 
 export const connectorsApi = new ConnectorsApi();

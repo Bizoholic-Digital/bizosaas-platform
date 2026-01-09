@@ -48,11 +48,16 @@ export default function AgentMeshVisualizer() {
         try {
             const res = await agentsApi.getAgentMesh();
             if (res.data) {
-                // If we get real data, map it (assuming same structure for now or map it)
-                // For demo purposes, we will keep the mock data if API is not fully ready
+                setNodes(res.data.nodes);
+                setEdges(res.data.edges);
+                toast.success("Agent Mesh synchronized with live environment");
+            } else {
+                console.warn("Failed to load mesh data", res.error);
+                toast.error("Failed to load Agent Mesh data");
             }
         } catch (error) {
-            console.warn("Real mesh data unavailable, using edge-cached mock data.");
+            console.warn("Real mesh data unavailable, using cached view.", error);
+            toast.error("Agent Mesh synchronization failed");
         } finally {
             setLoading(false);
         }

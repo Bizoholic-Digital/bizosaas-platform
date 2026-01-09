@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -92,20 +93,20 @@ export default function TenantsPage() {
                             </div>
                         ) : (
                             filteredTenants.map((tenant) => (
-                                <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                                <div key={tenant.id} className="flex items-center justify-between p-4 border rounded-xl bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-shadow group">
+                                    <Link href={`/dashboard/tenants/${tenant.id}`} className="flex-1 flex items-center gap-4 cursor-pointer">
+                                        <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                             <Building2 className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-lg">{tenant.name}</h3>
+                                            <h3 className="font-bold text-lg group-hover:text-blue-600 transition-colors">{tenant.name}</h3>
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                 <Globe className="h-3 w-3" /> {tenant.domain || 'no-domain'}
                                                 <span className="mx-1">•</span>
                                                 <Users className="h-3 w-3" /> {tenant.users_count || 0} Users
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                     <div className="flex items-center gap-4">
                                         <Badge variant={tenant.status === 'active' ? 'default' : 'secondary'}>
                                             {(tenant.status || 'active').toUpperCase()}

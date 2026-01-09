@@ -95,20 +95,19 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs">AI</div>
-              <div>
-                <p className="text-sm font-medium">Agent "SEO Expert" generated a report</p>
-                <p className="text-xs text-gray-500">2 minutes ago</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs">CRM</div>
-              <div>
-                <p className="text-sm font-medium">New Lead via HubSpot</p>
-                <p className="text-xs text-gray-500">1 hour ago</p>
-              </div>
-            </div>
+            {[
+              { label: 'Agent "SEO Expert" generated a report', time: '2 minutes ago', href: '/dashboard/ai-agents', type: 'AI', color: 'bg-blue-100 text-blue-600' },
+              { label: 'New Lead via HubSpot', time: '1 hour ago', href: '/dashboard/crm', type: 'CRM', color: 'bg-green-100 text-green-600' },
+              { label: 'WooCommerce Sync Completed', time: '3 hours ago', href: '/dashboard/ecommerce', type: 'SHOP', color: 'bg-purple-100 text-purple-600' }
+            ].map((item, i) => (
+              <Link key={i} href={item.href} className="flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 p-2 -mx-2 rounded-lg transition-colors cursor-pointer group">
+                <div className={`w-8 h-8 rounded-full ${item.color} flex items-center justify-center text-[10px] font-black group-hover:scale-110 transition-transform`}>{item.type}</div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.label}</p>
+                  <p className="text-xs text-gray-500">{item.time}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>

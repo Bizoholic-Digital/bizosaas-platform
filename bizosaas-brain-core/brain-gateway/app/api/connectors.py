@@ -431,3 +431,59 @@ async def get_marketplace_metrics(
             "demand_score": 30
         }
     ]
+
+@router.get("/analytics")
+async def get_connector_analytics(
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get global connector analytics/traffic data"""
+    # Mock data structure for now, to be replaced with real OpenTelemetry/Prometheus queries later
+    import random
+    from datetime import datetime, timedelta
+
+    # Generate last 24h traffic
+    now = datetime.utcnow()
+    traffic_series = []
+    for i in range(24):
+        time_slot = (now - timedelta(hours=23-i)).strftime("%H:00")
+        traffic_series.append({
+            "time": time_slot,
+            "requests": random.randint(300, 3000),
+            "failures": random.randint(0, 50)
+        })
+
+    # Connector usage (could use real connected count + random multipliers)
+    # Getting real connected names:
+    real_configs = ConnectorRegistry.get_all_configs()
+    usage_distribution = []
+    colors = ['#4285F4', '#FFE01B', '#96588A', '#4A154B', '#635BFF', '#FF7A59', '#00C853', '#AA00FF']
+    
+    for idx, config in enumerate(real_configs):
+        # Weight popularity for demo
+        base_calls = 5000 if config.id in ['google', 'slack', 'stripe'] else 1000
+        
+        usage_distribution.append({
+            "name": config.name,
+            "connector_id": config.id,
+            "calls": random.randint(base_calls, base_calls * 10),
+            "value": random.randint(100, 500), # Used for Pie chart sizing
+            "color": colors[idx % len(colors)],
+            "reliability": 99.0 + (random.random()), # 99.0 - 100.0
+            "latency": f"{random.randint(100, 800)}ms",
+            "last_event": f"{random.randint(1, 60)} seconds ago",
+            "status": "STABLE" if random.random() > 0.05 else "DEGRADED"
+        })
+
+    # Sort by calls for "Top Connectors"
+    usage_distribution.sort(key=lambda x: x['calls'], reverse=True)
+
+    return {
+        "traffic_series": traffic_series,
+        "usage_distribution": usage_distribution,
+        "global_stats": {
+            "total_requests": f"{sum(d['calls'] for d in usage_distribution)/1000:.1f}K",
+            "success_rate": "99.8%",
+            "latency_p95": "450ms",
+            "throughput": "8.4 GB"
+        }
+    }

@@ -196,7 +196,8 @@ export default function PartnerDashboard() {
                         </div>
                     </div>
 
-                    <div className="rounded-md border">
+                    {/* Desktop View */}
+                    <div className="hidden md:block rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -240,8 +241,8 @@ export default function PartnerDashboard() {
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <div className={`font-bold ${client.healthScore >= 90 ? 'text-green-600' :
-                                                    client.healthScore >= 70 ? 'text-yellow-600' :
-                                                        'text-red-600'
+                                                client.healthScore >= 70 ? 'text-yellow-600' :
+                                                    'text-red-600'
                                                 }`}>
                                                 {client.healthScore}%
                                             </div>
@@ -270,6 +271,68 @@ export default function PartnerDashboard() {
                                 ))}
                             </TableBody>
                         </Table>
+                    </div>
+
+                    {/* Mobile View */}
+                    <div className="md:hidden space-y-4">
+                        {filteredClients.map((client) => (
+                            <div key={client.id} className="p-4 border rounded-lg space-y-4 bg-white dark:bg-slate-900 shadow-sm">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${client.name}`} />
+                                            <AvatarFallback>CL</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <div className="font-bold">{client.name}</div>
+                                            <div className="text-xs text-muted-foreground">{client.email}</div>
+                                        </div>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                                            <DropdownMenuItem>Billing settings</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleSwitchContext(client.id)}>Manage Account</DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem className="text-red-600">Suspend Account</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <span className="text-muted-foreground block text-xs">Status</span>
+                                        <Badge variant="secondary" className={`mt-1 ${client.status === 'active' ? 'bg-green-100 text-green-700' :
+                                                client.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
+                                            }`}>
+                                            {client.status.toUpperCase()}
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground block text-xs">Plan</span>
+                                        <Badge variant="outline" className="mt-1">{client.plan.toUpperCase()}</Badge>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground block text-xs">Revenue</span>
+                                        <span className="font-bold">${client.revenue.toLocaleString()}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-muted-foreground block text-xs">Health</span>
+                                        <span className={`font-bold ${client.healthScore >= 90 ? 'text-green-600' :
+                                                client.healthScore >= 70 ? 'text-yellow-600' : 'text-red-600'
+                                            }`}>{client.healthScore}%</span>
+                                    </div>
+                                </div>
+                                <Button className="w-full" size="sm" onClick={() => handleSwitchContext(client.id)}>
+                                    Manage Client <ArrowRight className="w-4 h-4 ml-2" />
+                                </Button>
+                            </div>
+                        ))}
                     </div>
                 </CardContent>
             </Card>

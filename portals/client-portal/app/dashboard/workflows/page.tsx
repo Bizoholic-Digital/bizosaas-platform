@@ -23,50 +23,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { WorkflowConfigModal } from '@/components/workflows/WorkflowConfigModal';
 import Link from 'next/link';
+import { WorkflowOptimizationPanel } from '@/components/workflows/WorkflowOptimizationPanel';
 
 // Mock workflow data
-const MOCK_WORKFLOWS = [
-    {
-        id: 'wf_001',
-        name: 'Marketing Email Sequence',
-        type: 'Marketing',
-        status: 'running',
-        lastRun: '2024-03-20T10:30:00Z',
-        successRate: 98.5,
-        runsToday: 12,
-        description: 'Automates welcome sequence and follow-ups for new leads.'
-    },
-    {
-        id: 'wf_002',
-        name: 'Shopify Inventory Sync',
-        type: 'E-commerce',
-        status: 'paused',
-        lastRun: '2024-03-20T08:15:00Z',
-        successRate: 100,
-        runsToday: 4,
-        description: 'Updates product levels between Shopify and local database every 15 minutes.'
-    },
-    {
-        id: 'wf_003',
-        name: 'SEO Meta Generator',
-        type: 'Content',
-        status: 'running',
-        lastRun: '2024-03-20T11:00:00Z',
-        successRate: 94.2,
-        runsToday: 45,
-        description: 'AI-powered meta description generation for new WordPress posts.'
-    },
-    {
-        id: 'wf_004',
-        name: 'Customer Health Monitor',
-        type: 'Analytics',
-        status: 'running',
-        lastRun: '2024-03-20T11:45:00Z',
-        successRate: 99.9,
-        runsToday: 1,
-        description: 'Daily analysis of customer engagement and churn risk detection.'
-    }
-];
 
 import { brainApi } from '@/lib/brain-api';
 import { useAuth } from '@clerk/nextjs';
@@ -157,20 +116,48 @@ export default function WorkflowsPage() {
                         <RefreshCw className={`mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 ${isLoading ? 'animate-spin' : ''}`} />
                         Refresh
                     </Button>
-                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-[10px] md:text-xs">
-                        <Zap className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
-                        New Workflow
-                    </Button>
+                    <Link href="/dashboard/workflows/create">
+                        <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-[10px] md:text-xs">
+                            <Zap className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+                            New Workflow
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
             {/* Summary Metrics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 {[
-                    { label: 'Total', value: '24', icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50' },
-                    { label: 'Success', value: '1.2k', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { label: 'Errors', value: '3', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
-                    { label: 'Latency', value: '45ms', icon: Clock, color: 'text-purple-600', bg: 'bg-purple-50' },
+                    {
+                        label: 'Total Workflows',
+                        value: workflows.length.toString(),
+                        icon: Activity,
+                        color: 'text-blue-600',
+                        bg: 'bg-blue-50'
+                    },
+                    {
+                        label: 'Runs Today',
+                        value: workflows.reduce((acc, wf) => acc + (wf.runsToday || 0), 0).toString(),
+                        icon: Activity,
+                        color: 'text-indigo-600',
+                        bg: 'bg-indigo-50'
+                    },
+                    {
+                        label: 'Avg Success Rate',
+                        value: workflows.length > 0
+                            ? `${(workflows.reduce((acc, wf) => acc + (wf.successRate || 0), 0) / workflows.length).toFixed(1)}%`
+                            : '0%',
+                        icon: CheckCircle2,
+                        color: 'text-emerald-600',
+                        bg: 'bg-emerald-50'
+                    },
+                    {
+                        label: 'Latency (Avg)',
+                        value: '45ms', // Metric not yet available in list API
+                        icon: Clock,
+                        color: 'text-purple-600',
+                        bg: 'bg-purple-50'
+                    },
                 ].map((m, i) => (
                     <Card key={i} className="border-none shadow-sm bg-white dark:bg-slate-900/50">
                         <CardContent className="p-3 md:p-6 flex items-center justify-between">
@@ -297,24 +284,7 @@ export default function WorkflowsPage() {
                 onSave={handleSaveConfig}
             />
 
-            {/* Recommendation Box */}
-            <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/20 rounded-2xl p-6 mt-8">
-                <div className="flex gap-4">
-                    <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/40 rounded-full flex items-center justify-center shrink-0">
-                        <Zap className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                        <h4 className="font-bold text-purple-900 dark:text-purple-100">AI-Powered Suggestion</h4>
-                        <p className="text-sm text-purple-800 dark:text-purple-300 mt-1 leading-relaxed">
-                            Your "Marketing Email Sequence" has a slight drop in success rate (98.5%) due to 2 bounce errors this morning.
-                            We recommend enabling the "Automatic Lead Cleaning" workflow to filter invalid emails before execution.
-                        </p>
-                        <Button size="sm" variant="link" className="text-purple-700 dark:text-purple-400 p-0 h-auto mt-2 font-bold group">
-                            Optimize Workflow <ExternalLink className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            <WorkflowOptimizationPanel />
         </div>
     );
 }
