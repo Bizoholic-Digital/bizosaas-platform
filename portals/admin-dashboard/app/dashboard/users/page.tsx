@@ -20,12 +20,16 @@ export default function GlobalUsersPage() {
         setLoading(true);
         try {
             const res = await adminApi.getUsers();
-            if (res.data) {
+            if (Array.isArray(res.data)) {
                 setUsers(res.data);
+            } else {
+                console.error("Invalid users data format:", res.data);
+                setUsers([]);
             }
         } catch (error) {
             console.error(error);
             toast.error("Failed to load users");
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -35,7 +39,8 @@ export default function GlobalUsersPage() {
         loadUsers();
     }, []);
 
-    const filteredUsers = users.filter(u =>
+    const safeUsers = Array.isArray(users) ? users : [];
+    const filteredUsers = safeUsers.filter(u =>
         u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );

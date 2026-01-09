@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import {
   Target, DollarSign, Users, Edit3, BarChart3, Rocket,
   Plus, Minus, X, Check, AlertCircle, CheckCircle,
-  Calendar, Clock, MapPin, Globe, Smartphone, Monitor
+  Calendar, Clock, MapPin, Globe, Smartphone, Monitor, Sparkles
 } from 'lucide-react';
 
 interface CampaignObjective {
@@ -313,15 +313,14 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
           {CAMPAIGN_OBJECTIVES.map((objective) => (
             <div
               key={objective.type}
-              className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                data.objective?.type === objective.type
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
+              className={`border rounded-lg p-4 cursor-pointer transition-all ${data.objective?.type === objective.type
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 hover:border-gray-300'
+                }`}
               onClick={() => updateData({ objective })}
             >
-              <h4 className="font-medium text-gray-900">{objective.label}</h4>
-              <p className="text-sm text-gray-600 mt-1">{objective.description}</p>
+              <h4 className="font-medium text-gray-900 dark:text-white">{objective.label}</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{objective.description}</p>
               <p className="text-xs text-gray-500 mt-2">
                 Recommended: ${objective.recommendedBudget.min}-${objective.recommendedBudget.max}/day
               </p>
@@ -338,11 +337,11 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
   const renderStep2 = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-4">Define your target audience</h3>
-        
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Define your target audience</h3>
+
         {/* Keywords */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Keywords (what people search for)
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
@@ -384,6 +383,17 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               <Plus size={16} />
+            </button>
+          </div>
+          <div className="mt-2">
+            <button
+              onClick={() => {
+                const suggestions = ['digital marketing', 'online advertising', 'ppc agency', 'social media ads', 'google ads expert'];
+                suggestions.forEach(k => addKeyword(k));
+              }}
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+            >
+              <Sparkles size={14} /> Auto-suggest from website
             </button>
           </div>
           {validationErrors.keywords && (
@@ -441,30 +451,35 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
 
         {/* Location */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Geographic Targeting</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Geographic Targeting</label>
           <div className="space-y-2">
-            <input
-              type="text"
-              placeholder="Add countries, regions, or cities"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  const location = (e.target as HTMLInputElement).value;
-                  if (location) {
-                    updateData({
-                      targeting: {
-                        ...data.targeting,
-                        geographic: {
-                          ...data.targeting.geographic,
-                          countries: [...data.targeting.geographic.countries, location]
-                        }
+            <select
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-slate-900 dark:text-white"
+              onChange={(e) => {
+                const location = e.target.value;
+                if (location && !data.targeting.geographic.countries.includes(location)) {
+                  updateData({
+                    targeting: {
+                      ...data.targeting,
+                      geographic: {
+                        ...data.targeting.geographic,
+                        countries: [...data.targeting.geographic.countries, location]
                       }
-                    });
-                    (e.target as HTMLInputElement).value = '';
-                  }
+                    }
+                  });
                 }
+                e.target.value = '';
               }}
-            />
+            >
+              <option value="">Select a Country...</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Canada">Canada</option>
+              <option value="Australia">Australia</option>
+              <option value="India">India</option>
+              <option value="Germany">Germany</option>
+              <option value="France">France</option>
+            </select>
             <div className="flex flex-wrap gap-2">
               {data.targeting.geographic.countries.map((location, index) => (
                 <span
@@ -503,7 +518,7 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Create your ad creative</h3>
-        
+
         {/* Ad Type */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Ad Type</label>
@@ -511,11 +526,10 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
             {AD_TYPES.map((type) => (
               <div
                 key={type.value}
-                className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                  data.creative.type === type.value
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`border rounded-lg p-3 cursor-pointer transition-all ${data.creative.type === type.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+                  }`}
                 onClick={() => updateData({
                   creative: { ...data.creative, type: type.value as AdCreative['type'] }
                 })}
@@ -641,7 +655,7 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Set your budget and schedule</h3>
-        
+
         {/* Budget */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Budget Type</label>
@@ -705,11 +719,10 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
             {BID_STRATEGIES.map((strategy) => (
               <div
                 key={strategy.value}
-                className={`border rounded-lg p-3 cursor-pointer transition-all ${
-                  data.budget.bidStrategy === strategy.value
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`border rounded-lg p-3 cursor-pointer transition-all ${data.budget.bidStrategy === strategy.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+                  }`}
                 onClick={() => updateData({
                   budget: { ...data.budget, bidStrategy: strategy.value as BudgetSchedule['bidStrategy'] }
                 })}
@@ -760,7 +773,7 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">Set up conversion tracking</h3>
-        
+
         {/* Conversion Goals */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">Conversion Goals</label>
@@ -867,17 +880,17 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
 
   const renderStep6 = () => {
     // Calculate estimates based on data
-    const estimatedReach = data.objective && data.budget.amount > 0 
+    const estimatedReach = data.objective && data.budget.amount > 0
       ? Math.round(data.budget.amount * 100 * (data.objective.type === 'awareness' ? 2 : 1))
       : 0;
-    
+
     const estimatedClicks = Math.round(estimatedReach * 0.02);
     const estimatedCost = data.budget.budgetType === 'daily' ? data.budget.amount * 30 : data.budget.amount;
-    
-    const qualityScore = Math.min(95, Math.max(60, 
-      70 + 
-      (data.creative.headlines.length * 2) + 
-      (data.creative.descriptions.length * 3) + 
+
+    const qualityScore = Math.min(95, Math.max(60,
+      70 +
+      (data.creative.headlines.length * 2) +
+      (data.creative.descriptions.length * 3) +
       (data.targeting.keywords.length * 1) +
       (data.tracking.goals.length * 5)
     ));
@@ -892,7 +905,7 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
       <div className="space-y-6">
         <div>
           <h3 className="text-lg font-semibold mb-4">Review and launch your campaign</h3>
-          
+
           {/* Campaign Name */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Name</label>
@@ -1013,7 +1026,7 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
                 Save as draft
               </label>
             </div>
-            
+
             {data.review.launchType === 'scheduled' && (
               <div className="mt-3">
                 <input
@@ -1038,12 +1051,11 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
       <div className="mb-8">
         <div className="flex items-center justify-between">
           {steps.map((step, index) => (
-            <div key={step.number} className="flex items-center">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                currentStep >= step.number
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600'
-              }`}>
+            <div key={step.number} className="flex items-center w-full">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${currentStep >= step.number
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-600'
+                }`}>
                 {currentStep > step.number ? (
                   <Check size={16} />
                 ) : (
@@ -1051,9 +1063,8 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
                 )}
               </div>
               {index < steps.length - 1 && (
-                <div className={`w-full h-0.5 mx-2 ${
-                  currentStep > step.number ? 'bg-blue-600' : 'bg-gray-200'
-                }`} />
+                <div className={`w-full h-0.5 mx-2 ${currentStep > step.number ? 'bg-blue-600' : 'bg-gray-200'
+                  }`} />
               )}
             </div>
           ))}
@@ -1086,7 +1097,7 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
         >
           Previous
         </button>
-        
+
         {currentStep < steps.length ? (
           <button
             onClick={nextStep}
@@ -1105,8 +1116,8 @@ export function GoogleAdsCampaignWizard({ data, onUpdate, onValidate }: GoogleAd
             className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
           >
             <Rocket size={16} />
-            {data.review.launchType === 'immediate' ? 'Launch Campaign' : 
-             data.review.launchType === 'scheduled' ? 'Schedule Campaign' : 'Save Draft'}
+            {data.review.launchType === 'immediate' ? 'Launch Campaign' :
+              data.review.launchType === 'scheduled' ? 'Schedule Campaign' : 'Save Draft'}
           </button>
         )}
       </div>
