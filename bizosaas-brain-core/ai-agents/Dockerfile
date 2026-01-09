@@ -29,7 +29,6 @@ USER aiagents
 
 # Environment variables for Vault integration
 ENV VAULT_ADDR=http://vault:8200
-ENV VAULT_TOKEN=bizosaas-vault-dev-token-2025
 ENV BRAIN_API_URL=http://brain-gateway:8000
 
 # Expose port
