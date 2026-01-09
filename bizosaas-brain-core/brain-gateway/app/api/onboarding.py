@@ -221,15 +221,24 @@ async def discover_google_services(
     if not token:
         raise HTTPException(status_code=400, detail="access_token is required")
     
+    dry_run = payload.get("dry_run", False)
+    selected_connectors = payload.get("selected_connectors", [])
+    
     tenant_id = current_user.tenant_id or current_user.id
     results = {}
     
-    connectors_to_process = [
+    all_connectors = [
         ("google-analytics", "app.connectors.google_analytics.GoogleAnalyticsConnector"),
         ("google-search-console", "app.connectors.google_search_console.GoogleSearchConsoleConnector"),
         ("google-ads", "app.connectors.google_ads.GoogleAdsConnector"),
         ("google-business-profile", "app.connectors.google_business_profile.GoogleBusinessProfileConnector")
     ]
+    
+    # Filter if selected_connectors is provided and not empty, and not a dry_run
+    if selected_connectors and not dry_run:
+        connectors_to_process = [c for c in all_connectors if c[0] in selected_connectors]
+    else:
+        connectors_to_process = all_connectors
     
     import importlib
     import asyncio
@@ -249,9 +258,10 @@ async def discover_google_services(
             connector = connector_cls(tenant_id=tenant_id, credentials=creds)
             
             # Perform discovery
-            discovery_result = await connector.perform_action("auto_link", {})
+            # For discovery, we check if the account is accessible/has properties
+            discovery_result = await connector.perform_action("auto_link" if not dry_run else "discover", {})
             
-            if discovery_result.get("status") == "success":
+            if not dry_run and discovery_result.get("status") == "success":
                 # Save to Vault
                 await secret_service.store_connector_credentials(
                     tenant_id=tenant_id,

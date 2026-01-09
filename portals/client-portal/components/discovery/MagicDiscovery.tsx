@@ -7,6 +7,7 @@ import { Sparkles, RefreshCw, CheckCircle2, X } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { toast } from 'sonner';
 import { useAuth, useUser } from '@clerk/nextjs';
+import { DiscoveryModal } from './DiscoveryModal';
 
 export function MagicDiscovery() {
     const { getToken } = useAuth();
@@ -14,10 +15,10 @@ export function MagicDiscovery() {
     const [isVisible, setIsVisible] = useState(false);
     const [isDiscovering, setIsDiscovering] = useState(false);
     const [discoveredData, setDiscoveredData] = useState<any>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         // Check if we should show discovery
-        // Logic: If user has a google account linked and hasn't connected major google tools
         const hasGoogle = user?.externalAccounts.some(acc => acc.provider === 'google');
         const discoveryDismissed = localStorage.getItem('magic_discovery_dismissed');
 
@@ -30,24 +31,37 @@ export function MagicDiscovery() {
         setIsDiscovering(true);
         try {
             const token = await getToken();
-            // In a real scenario, we'd need the Google Access Token
-            // Clerk provides this via user.externalAccounts[x].token if configured,
-            // or we might need a separate OAuth flow.
-            // For now, we'll try with the Clerk token or a mock implementation if it fails.
-
             const googleAcc = user?.externalAccounts.find(acc => acc.provider === 'google');
             if (!googleAcc) throw new Error("No Google account linked");
 
-            // Mocking the call to the backend discover endpoint
-            const res = await brainApi.connectors.autoLinkGoogle('MOCK_GOOGLE_TOKEN', token || undefined);
+            // 1. First perform discovery (dry run)
+            const res = await brainApi.connectors.autoLinkGoogle('MOCK_GOOGLE_TOKEN', { dry_run: true }, token || undefined);
 
             setDiscoveredData(res.discovered);
-            toast.success("Magic Discovery complete! Found several accounts.");
+            setIsModalOpen(true);
+            toast.success("Accounts discovered! Please select which ones to link.");
         } catch (error) {
             console.error("Discovery failed", error);
             toast.error("Account discovery failed. Please connect manually.");
         } finally {
             setIsDiscovering(false);
+        }
+    };
+
+    const handleConfirmLink = async (selectedIds: string[]) => {
+        try {
+            const token = await getToken();
+            const res = await brainApi.connectors.autoLinkGoogle('MOCK_GOOGLE_TOKEN', {
+                dry_run: false,
+                selected_connectors: selectedIds
+            }, token || undefined);
+
+            setDiscoveredData(res.discovered);
+            toast.success(`Successfully connected ${selectedIds.length} accounts!`);
+        } catch (error) {
+            console.error("Linking failed", error);
+            toast.error("Failed to link selected accounts.");
+            throw error;
         }
     };
 
@@ -117,6 +131,15 @@ export function MagicDiscovery() {
                     </div>
                 )}
             </CardContent>
+
+            {discoveredData && (
+                <DiscoveryModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    discoveredData={discoveredData}
+                    onConfirm={handleConfirmLink}
+                />
+            )}
         </Card>
     );
 }

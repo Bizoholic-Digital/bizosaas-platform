@@ -97,6 +97,20 @@ class PlaneConnector(BaseConnector):
                     f"{self.api_url}/workspaces/{slug}/projects/{project_id}/issues/",
                     headers=headers
                 )
+            elif resource == "members":
+                # Requires workspace_slug in params
+                slug = params.get("workspace_slug") if params else None
+                if not slug:
+                    # Fallback: get first workspace
+                    ws_resp = await client.get(f"{self.api_url}/workspaces/", headers=headers)
+                    if ws_resp.status_code == 200 and ws_resp.json():
+                        slug = ws_resp.json()[0]["slug"]
+                    else:
+                        return []
+                response = await client.get(
+                    f"{self.api_url}/workspaces/{slug}/members/",
+                    headers=headers
+                )
             else:
                 raise ValueError(f"Unknown resource: {resource}")
                 

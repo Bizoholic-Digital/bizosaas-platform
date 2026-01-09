@@ -132,10 +132,10 @@ export const brainApi = {
         discover: async (connectorId: string, resource: string, token?: string) => {
             return apiFetch(`/api/connectors/${connectorId}/discover/${resource}`, {}, token);
         },
-        autoLinkGoogle: async (accessToken: string, token?: string) => {
+        autoLinkGoogle: async (accessToken: string, extraPayload: any = {}, token?: string) => {
             return apiFetch('/api/onboarding/google/discover', {
                 method: 'POST',
-                body: JSON.stringify({ access_token: accessToken })
+                body: JSON.stringify({ access_token: accessToken, ...extraPayload })
             }, token);
         }
     },

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
 
 interface TaskFormProps {
@@ -26,6 +26,30 @@ export const TaskForm: React.FC<TaskFormProps> = ({
         related_to_type: initialData?.related_to_type || 'lead',
         related_to_id: initialData?.related_to_id || '',
     });
+
+    const [members, setMembers] = useState<any[]>([]);
+    const [isFetchingMembers, setIsFetchingMembers] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && members.length === 0) {
+            fetchMembers();
+        }
+    }, [isOpen]);
+
+    const fetchMembers = async () => {
+        setIsFetchingMembers(true);
+        try {
+            const response = await fetch('/api/brain/plane?type=members');
+            if (response.ok) {
+                const data = await response.json();
+                setMembers(data || []);
+            }
+        } catch (error) {
+            console.error('Failed to fetch members:', error);
+        } finally {
+            setIsFetchingMembers(false);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -115,15 +139,32 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Assigned To *
                         </label>
-                        <input
-                            type="text"
-                            name="assigned_to"
-                            value={formData.assigned_to}
-                            onChange={handleChange}
-                            required
-                            placeholder="Username or Email"
-                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        {members.length > 0 ? (
+                            <select
+                                name="assigned_to"
+                                value={formData.assigned_to}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="">Select Assignee</option>
+                                {members.map((member: any) => (
+                                    <option key={member.id} value={member.user_detail?.id || member.id}>
+                                        {member.user_detail?.display_name || member.user_detail?.email || 'Unknown User'}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <input
+                                type="text"
+                                name="assigned_to"
+                                value={formData.assigned_to}
+                                onChange={handleChange}
+                                required
+                                placeholder={isFetchingMembers ? "Loading members..." : "User ID or Email"}
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                        )}
                     </div>
 
                     {/* Related To */}

@@ -9,14 +9,14 @@
 
 | Category | Total Tasks | Completed | Progress |
 |----------|-------------|-----------|----------|
-| **Client Portal (CP)** | 28 | 5 | 18% |
+| **Client Portal (CP)** | 28 | 8 | 28% |
 | **Admin Dashboard (AD)** | 14 | 2 | 14% |
 | **Backend Testing (BT)** | 19 | 4 | 21% |
 | **Monitoring (MO)** | 10 | 5 | 50% |
 | **Service Health (SH)** | 10 | 1 | 10% |
 | **Testing Suite (TS)** | 10 | 0 | 0% |
 | **Cross-Portal (XP)** | 5 | 1 | 20% |
-| **TOTAL** | **96** | **18** | **18.8%** |
+| **TOTAL** | **96** | **21** | **21.9%** |
 
 ---
 
@@ -25,7 +25,7 @@
 ### 1. Client Portal (CP)
 | Status | ID | Task | Priority | Est. | Progress/Notes |
 |:---:|:---|:---|:---:|:---:|:---|
-| [ ] | CP-001 | Connector selection modal in Launch Discovery | P1 | 8h | - |
+| [x] | CP-001 | Connector selection modal in Launch Discovery | P1 | 8h | Implemented DiscoveryModal with two-step flow |
 | [ ] | CP-002 | Intelligent service recommendation engine | P1 | 12h | - |
 | [x] | CP-003 | Dashboard cards clickable (Connectors, Tasks, Traffic) | P1 | 4h | Implemented Link wrappers and hover effects |
 | [x] | CP-004 | CRM & Contacts connector display (FluentCRM, HubSpot) | P1 | 6h | Added toggle and unified view in CRM page |
@@ -33,7 +33,7 @@
 | [x] | CP-006 | Project navigation and "View All" button | P1 | 6h | Added view-all in dashboard and project footer |
 | [ ] | CP-007 | Optimize mobile project view (scrollable) | P2 | 4h | - |
 | [x] | CP-008 | Fix Plane.so project/task creation logic | P0 | 10h | Implemented perform_action in plane.py |
-| [ ] | CP-009 | Assignee dropdown with Plane.so user list | P1 | 8h | - |
+| [x] | CP-009 | Assignee dropdown with Plane.so user list | P1 | 8h | Added member fetching and dropdown in TaskForm |
 | [ ] | CP-010 | Expand CMS content types (Categories, Media, CPTs) | P2 | 12h | - |
 | [ ] | CP-011 | WordPress Plugin Marketplace integration | P2 | 16h | - |
 | [ ] | CP-012 | Fix WP plugin detection logic (WooCommerce etc) | P2 | 6h | - |
@@ -51,7 +51,7 @@
 | [ ] | CP-024 | Optimize mobile Settings layout | P3 | 6h | - |
 | [ ] | CP-025 | RBAC for Platform Admin link | P1 | 4h | - |
 | [ ] | CP-026 | Make recent activity clickable/redirectable | P2 | 8h | - |
-| [ ] | CP-027 | Remove gradients from all buttons | P3 | 4h | - |
+| [x] | CP-027 | Remove gradients from all buttons | P3 | 4h | Removed gradients from UnifiedLoginForm buttons |
 | [ ] | CP-028 | Fix CSS/Font visibility across themes | P2 | 8h | - |
 
 ### 2. Admin Dashboard (AD)

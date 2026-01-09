@@ -13,15 +13,25 @@ export async function GET(req: NextRequest) {
         const searchParams = req.nextUrl.searchParams;
         const workspaceSlug = searchParams.get('workspace') || DEFAULT_WORKSPACE;
         const projectId = searchParams.get('project') || DEFAULT_PROJECT;
-        const fetchIssues = searchParams.get('type') === 'issues' || !!projectId;
+        const type = searchParams.get('type');
+        const fetchIssues = type === 'issues' || (!!projectId && !type);
+        const fetchMembers = type === 'members';
 
         let url = `${PLANE_API_URL}/workspaces/${workspaceSlug}/projects/`;
         if (fetchIssues && projectId) {
             url = `${PLANE_API_URL}/workspaces/${workspaceSlug}/projects/${projectId}/issues/`;
+        } else if (fetchMembers) {
+            url = `${PLANE_API_URL}/workspaces/${workspaceSlug}/members/`;
         }
 
         if (!PLANE_API_TOKEN) {
             console.warn('PLANE_API_TOKEN is not defined, returning mock data.');
+            if (fetchMembers) {
+                return NextResponse.json([
+                    { id: '1', user_detail: { email: 'admin@bizoholic.net', display_name: 'Admin User' } },
+                    { id: '2', user_detail: { email: 'demo@bizoholic.net', display_name: 'Demo User' } },
+                ]);
+            }
             return NextResponse.json({
                 results: [
                     { id: '1', name: 'Website Redesign', identifier: 'WEB', state: 'In Progress' },

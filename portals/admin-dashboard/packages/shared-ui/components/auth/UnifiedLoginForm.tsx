@@ -203,7 +203,7 @@ export function UnifiedLoginForm({
 
                             <button
                                 type="submit"
-                                className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/30 transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center text-lg active:scale-[0.98]"
+                                className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/30 transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center text-lg active:scale-[0.98]"
                                 disabled={isLoading}
                             >
                                 {isLoading ? (
