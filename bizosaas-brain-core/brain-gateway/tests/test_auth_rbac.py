@@ -12,6 +12,7 @@ def get_mock_user(role: str):
     return AuthenticatedUser(
         id=uuid4(),
         email=f"test-{role.lower().replace(' ', '-')}@example.com",
+        name=f"Test {role}",
         tenant_id=uuid4(),
         roles=[role]
     )
