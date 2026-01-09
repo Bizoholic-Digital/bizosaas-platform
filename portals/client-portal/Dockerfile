@@ -108,5 +108,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start with Vault secret injection
-CMD ["sh", "-c", "eval $(node scripts/vault-injector.js) && node server.js"]
+# Start with optional Vault secret injection
+CMD ["sh", "-c", "if [ -n \"$VAULT_TOKEN\" ] && [ -n \"$VAULT_SECRET_PATH\" ]; then eval $(node scripts/vault-injector.js 2>/dev/null || echo ''); fi && node server.js"]

@@ -91,5 +91,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 
 # Start from the service directory to ensure paths match
 WORKDIR /app/portals/admin-dashboard
-CMD ["sh", "-c", "eval $(node ../../scripts/vault-injector.js) && node server.js"]
+# Make Vault optional - only inject if VAULT_TOKEN is set
+CMD ["sh", "-c", "if [ -n \"$VAULT_TOKEN\" ] && [ -n \"$VAULT_SECRET_PATH\" ]; then eval $(node ../../scripts/vault-injector.js 2>/dev/null || echo ''); fi && node server.js"]
 
