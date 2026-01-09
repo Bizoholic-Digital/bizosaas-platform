@@ -55,7 +55,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=${PORT:-3000}
+ENV PORT=3000
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
@@ -81,13 +81,13 @@ USER nextjs
 
 EXPOSE 3000
 # Ensure runtime port flexibility
-ENV PORT=${PORT:-3000}
+ENV PORT=3000
 
 ENV HOSTNAME="0.0.0.0"
 
 # Healthcheck targeting the internal server.js path
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-3000}/api/health || exit 1
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start from the service directory to ensure paths match
 WORKDIR /app/portals/admin-dashboard
