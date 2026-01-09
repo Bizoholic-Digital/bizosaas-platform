@@ -23,8 +23,11 @@ export default function TenantsPage() {
         setLoading(true);
         try {
             const res = await adminApi.getTenants();
-            if (res.data) {
+            if (res.data && Array.isArray(res.data)) {
                 setTenants(res.data);
+            } else {
+                setTenants([]);
+                console.error("Invalid tenants data format:", res.data);
             }
         } catch (error) {
             toast.error("Failed to load tenants");

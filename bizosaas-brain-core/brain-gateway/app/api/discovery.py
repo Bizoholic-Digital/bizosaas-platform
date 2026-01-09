@@ -15,6 +15,60 @@ async def get_recommendations(
     # This would eventually use AI to analyze the business graph
     # For now, we return intelligent placeholders based on common high-value integrations
     
+    from app.models.mcp import UserMcpInstallation, McpRegistry
+    
+    # Check if Google Tag Manager is connected
+    gtm = db.query(UserMcpInstallation).join(McpRegistry).filter(
+        UserMcpInstallation.user_id == current_user.id,
+        McpRegistry.slug == 'google-tag-manager',
+        UserMcpInstallation.status.in_(['connected', 'installed', 'configured'])
+    ).first()
+
+    if gtm:
+        # Simulate detection from GTM tags
+        return [
+            {
+                "id": "intercom",
+                "name": "Intercom",
+                "description": "Customer messaging platform detected via GTM.",
+                "category": "Communication",
+                "reason": "Found 'Intercom' tag in your Google Tag Manager container.",
+                "impactScore": 95,
+                "potentialGrowth": "Improved Support",
+                "connected": False,
+                "color": "blue",
+                "icon_type": "message",
+                "is_detected": True
+            },
+            {
+                "id": "hotjar",
+                "name": "Hotjar",
+                "description": "Heatmaps and recording tool detected via GTM.",
+                "category": "Analytics",
+                "reason": "Found 'Hotjar Tracking Code' in your GTM container.",
+                "impactScore": 88,
+                "potentialGrowth": "UX Insights",
+                "connected": False,
+                "color": "red",
+                "icon_type": "activity",
+                "is_detected": True
+            },
+            {
+                "id": "facebook-pixel",
+                "name": "Meta Pixel",
+                "description": "Ad tracking detected via GTM.",
+                "category": "Marketing",
+                "reason": "Found 'Facebook Pixel' tag in your GTM container.",
+                "impactScore": 90,
+                "potentialGrowth": "Ad Retargeting",
+                "connected": False,
+                "color": "indigo",
+                "icon_type": "facebook",
+                "is_detected": True
+            }
+        ]
+
+    # Default static recommendations
     recommendations = [
         {
             "id": "mailchimp",
