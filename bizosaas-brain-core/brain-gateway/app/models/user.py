@@ -49,7 +49,6 @@ class User(Base):
     # Relationships
     tenant_id = Column(GUID, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False)
     tenant = relationship("Tenant", back_populates="users")
-    mcp_installations = relationship("UserMcpInstallation", back_populates="user", cascade="all, delete-orphan")
     managed_tenants = relationship(
         "Tenant",
         secondary="partner_managed_tenants",

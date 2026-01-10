@@ -49,7 +49,7 @@ class UserMcpInstallation(Base):
     __tablename__ = "user_mcp_installations"
     
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
-    user_id = Column(GUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String(255), nullable=False, index=True)  # Clerk user IDs are strings
     mcp_id = Column(GUID, ForeignKey("mcp_registry.id", ondelete="CASCADE"), nullable=False)
     
     status = Column(String(20), default="pending", nullable=False)  # pending, installed, configured, error, stopped
@@ -64,5 +64,5 @@ class UserMcpInstallation(Base):
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     
     # Relationships
-    user = relationship("User", back_populates="mcp_installations")
+    # Note: user relationship removed - using Clerk user IDs which don't map to users table
     mcp = relationship("McpRegistry", back_populates="installations")
