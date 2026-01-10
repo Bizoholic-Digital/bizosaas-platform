@@ -45,29 +45,27 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
 
   // Auto-expand sections based on current path
   useEffect(() => {
-    const newExpanded = ['workspace'];
+    let activeSection = 'workspace'; // Default
 
-    if (pathname.startsWith('/crm') || pathname.startsWith('/content') || pathname.startsWith('/ecommerce') || pathname.startsWith('/directory')) {
-      newExpanded.push('business-suite');
-    }
-    if (pathname.startsWith('/ai-agents') || pathname.startsWith('/analytics')) {
-      newExpanded.push('automation');
-    }
-    if (pathname.startsWith('/tasks') || pathname.includes('/connectors')) {
-      newExpanded.push('operations');
-    }
-    if (pathname.startsWith('/settings')) {
-      newExpanded.push('platform');
+    const p = pathname;
+    if (p.startsWith('/dashboard/crm') || p.startsWith('/dashboard/cms') || p.startsWith('/dashboard/ecommerce') || p.startsWith('/dashboard/support') || p.startsWith('/dashboard/marketing')) {
+      activeSection = 'business-suite';
+    } else if (p.startsWith('/dashboard/ai-agents') || p.startsWith('/ai-agents') || p.startsWith('/dashboard/bi') || p.startsWith('/dashboard/workflows')) {
+      activeSection = 'automation';
+    } else if (p.startsWith('/tasks') || p.includes('/connectors')) {
+      activeSection = 'operations';
+    } else if (p.startsWith('/settings')) {
+      activeSection = 'platform';
+    } else if (p === '/dashboard' || p === '/dashboard/ai-assistant') {
+      activeSection = 'workspace';
     }
 
-    setExpandedSections(newExpanded);
+    setExpandedSections([activeSection]);
   }, [pathname]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev =>
-      prev.includes(sectionId)
-        ? prev.filter(id => id !== sectionId)
-        : [...prev, sectionId]
+      prev.includes(sectionId) ? [] : [sectionId]
     );
   };
 

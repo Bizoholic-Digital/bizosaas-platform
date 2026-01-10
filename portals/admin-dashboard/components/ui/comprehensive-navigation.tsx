@@ -41,26 +41,24 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
 
   // Auto-expand sections based on current path
   useEffect(() => {
-    const newExpanded = ['workspace'];
+    let activeSection = 'workspace'; // Default
 
-    if (pathname.includes('/tenants') || pathname.includes('/users')) {
-      newExpanded.push('management');
-    }
-    if (pathname.includes('/status') || pathname.includes('/connectors')) {
-      newExpanded.push('connectivity');
-    }
-    if (pathname.includes('/security') || pathname.includes('/settings')) {
-      newExpanded.push('platform');
+    if (pathname.includes('/tenants') || pathname.includes('/users') || pathname === '/dashboard/partner' || pathname === '/dashboard/plugin-analytics') {
+      activeSection = 'management';
+    } else if (pathname.includes('/system-status') || pathname.includes('/connectors')) {
+      activeSection = 'connectivity';
+    } else if (pathname.includes('/security') || pathname.includes('/settings')) {
+      activeSection = 'platform';
+    } else if (pathname === '/dashboard' || pathname === '/dashboard/ai-assistant' || pathname === '/dashboard/agent-management') {
+      activeSection = 'workspace';
     }
 
-    setExpandedSections(newExpanded);
+    setExpandedSections([activeSection]);
   }, [pathname]);
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev =>
-      prev.includes(sectionId)
-        ? prev.filter(id => id !== sectionId)
-        : [...prev, sectionId]
+      prev.includes(sectionId) ? [] : [sectionId]
     );
   };
 
