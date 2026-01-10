@@ -54,7 +54,7 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 slide-in-from-bottom-4">
       {/* Top Stats Row */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => (
           <Card key={i} className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

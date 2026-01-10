@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  MessageSquare, 
-  Send, 
-  Trash2, 
-  Bot, 
+import {
+  MessageSquare,
+  Send,
+  Trash2,
+  Bot,
   User,
   Mic,
   MicOff,
@@ -62,7 +62,7 @@ export default function AdminChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isVoiceRecording, setIsVoiceRecording] = useState(false);
   const [conversationId, setConversationId] = useState<string>('');
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -140,7 +140,7 @@ export default function AdminChatPage() {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-      
+
       // Update conversation ID if provided
       if (apiResponse.conversationId) {
         setConversationId(apiResponse.conversationId);
@@ -154,7 +154,7 @@ export default function AdminChatPage() {
 
     } catch (error) {
       console.error('AI Assistant API error:', error);
-      
+
       // Fallback to mock response only if API completely fails
       const mockResponse = generateMockAdminResponse(message.trim());
       setMessages(prev => [...prev, mockResponse]);
@@ -166,7 +166,7 @@ export default function AdminChatPage() {
   // Generate mock admin AI response for demo
   const generateMockAdminResponse = (userMessage: string): Message => {
     const lowerMessage = userMessage.toLowerCase();
-    
+
     let response = "As your platform administrator, I'll help you with: \"" + userMessage + "\". ";
     let quickActions: Message['quickActions'] = [];
 
@@ -302,7 +302,7 @@ export default function AdminChatPage() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <Badge variant="outline" className="text-sm px-3 py-1">
               <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
@@ -341,22 +341,22 @@ export default function AdminChatPage() {
                     <Bot className="w-5 h-5 text-white" />
                   </div>
                 )}
-                
+
                 <div className={cn(
                   "max-w-3xl",
                   message.role === 'user' ? 'flex flex-col items-end' : 'flex flex-col items-start'
                 )}>
                   <Card className={cn(
                     "shadow-sm",
-                    message.role === 'user' 
-                      ? 'bg-blue-600 text-white border-blue-600' 
+                    message.role === 'user'
+                      ? 'bg-blue-600 text-white border-blue-600'
                       : 'bg-white border-gray-200'
                   )}>
                     <CardContent className="p-4">
                       <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </CardContent>
                   </Card>
-                  
+
                   <div className="text-xs text-gray-500 mt-1">
                     {message.timestamp.toLocaleTimeString()}
                   </div>
@@ -379,7 +379,7 @@ export default function AdminChatPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {message.role === 'user' && (
                   <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
                     <User className="w-5 h-5 text-white" />
@@ -408,15 +408,15 @@ export default function AdminChatPage() {
                 </Card>
               </div>
             )}
-            
+
             <div ref={messagesEndRef} />
           </div>
         </div>
       </div>
 
       {/* Input Area - Sticky Bottom */}
-      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto p-6">
+      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 shadow-sm pb-20 lg:pb-0 safe-area-bottom">
+        <div className="max-w-7xl mx-auto p-6 lg:p-6">
           <div className="relative">
             <Textarea
               ref={inputRef}
@@ -427,7 +427,7 @@ export default function AdminChatPage() {
               className="min-h-[100px] pr-36 resize-none text-base"
               disabled={isTyping}
             />
-            
+
             <div className="absolute bottom-4 right-4 flex items-center gap-2">
               {/* File Upload */}
               <Button
@@ -439,7 +439,7 @@ export default function AdminChatPage() {
               >
                 <Paperclip className="w-4 h-4" />
               </Button>
-              
+
               {/* Voice Input */}
               <Button
                 variant="ghost"
@@ -457,7 +457,7 @@ export default function AdminChatPage() {
                   <Mic className="w-4 h-4" />
                 )}
               </Button>
-              
+
               {/* Send Button */}
               <Button
                 onClick={() => sendMessage(inputText)}
@@ -470,7 +470,7 @@ export default function AdminChatPage() {
               </Button>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between mt-3">
             <p className="text-xs text-gray-500">
               Press Enter to send, Shift+Enter for new line
