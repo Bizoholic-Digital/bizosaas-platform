@@ -47,8 +47,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   // Initialize theme on client side
   useEffect(() => {
     setMounted(true);
-    // Set sidebar open by default on desktop
-    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+    // Set sidebar open by default on tablet/desktop
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
       setIsSidebarOpen(true);
     }
   }, []);
@@ -59,7 +59,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
 
   const toggleSidebar = () => {
-    if (window.innerWidth >= 1024) {
+    if (window.innerWidth >= 768) {
       setIsCollapsed(!isCollapsed);
     } else {
       setIsSidebarOpen(!isSidebarOpen);
@@ -67,10 +67,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   };
 
   const BottomNav = () => {
-    if (isSidebarOpen && typeof window !== 'undefined' && window.innerWidth < 1024) return null;
+    if (isSidebarOpen && typeof window !== 'undefined' && window.innerWidth < 768) return null;
 
     return (
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom shadow-lg animate-in slide-in-from-bottom duration-300">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom shadow-lg animate-in slide-in-from-bottom duration-300">
         <button onClick={() => router.push('/dashboard')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
           <Home className="h-5 w-5" />
           <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Home</span>
@@ -103,7 +103,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Mobile Overlay */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-20 md:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         )}
@@ -112,9 +112,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div
           className={`
             fixed inset-y-0 left-0 z-30 bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 transform 
-            lg:static lg:transform-none flex flex-col
-            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            ${isCollapsed ? 'lg:w-20' : 'w-80'}
+            md:static md:transform-none flex flex-col
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            ${isCollapsed ? 'md:w-20' : 'w-80'}
           `}
         >
           <div className={`p-4 border-b border-gray-200 dark:border-gray-700 ${isCollapsed ? 'px-2 flex flex-col items-center' : ''}`}>
@@ -140,7 +140,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
               >
-                <Menu className={`w-5 h-5 text-gray-600 dark:text-gray-300 ${isSidebarOpen || !isCollapsed ? 'hidden lg:block' : 'block'}`} />
+                <Menu className={`w-5 h-5 text-gray-600 dark:text-gray-300 ${isSidebarOpen || !isCollapsed ? 'hidden md:block' : 'block'}`} />
               </button>
             </div>
 
@@ -176,7 +176,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <ComprehensiveNavigation
                 isCollapsed={isCollapsed}
                 onNavigate={() => {
-                  if (window.innerWidth < 1024) {
+                  if (window.innerWidth < 768) {
                     setIsSidebarOpen(false);
                   }
                 }}
@@ -234,7 +234,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <div className="flex items-center gap-3">
                 <button
                   onClick={toggleSidebar}
-                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden active:scale-90"
+                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors md:hidden active:scale-90"
                 >
                   <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                 </button>
@@ -252,7 +252,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   <input
                     type="text"
                     placeholder="Search..."
-                    className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40 lg:w-60"
+                    className="pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-40 md:w-60"
                   />
                 </div>
 
@@ -281,12 +281,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto w-full pb-20 lg:pb-0">
+          <div className="flex-1 overflow-y-auto w-full pb-20 md:pb-0">
             {children}
           </div>
+          <BottomNav />
         </div>
       </div>
-      <BottomNav />
     </div>
   );
 };

@@ -159,7 +159,7 @@ export const AIAgentChat: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-slate-800 bg-slate-900/50 pb-20 lg:pb-4">
+            <div className="p-4 border-t border-slate-800 bg-slate-900/50 pb-0 lg:pb-4">
                 <form
                     onSubmit={(e) => { e.preventDefault(); handleSend(); }}
                     className="relative"

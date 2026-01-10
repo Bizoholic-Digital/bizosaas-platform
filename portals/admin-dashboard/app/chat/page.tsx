@@ -415,7 +415,7 @@ export default function AdminChatPage() {
       </div>
 
       {/* Input Area - Sticky Bottom */}
-      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 shadow-sm pb-20 lg:pb-0 safe-area-bottom">
+      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 shadow-sm pb-0 safe-area-bottom">
         <div className="max-w-7xl mx-auto p-6 lg:p-6">
           <div className="relative">
             <Textarea
