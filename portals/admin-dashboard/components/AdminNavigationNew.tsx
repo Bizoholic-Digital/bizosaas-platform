@@ -14,6 +14,7 @@ import {
   LayoutDashboard, Workflow, Building2, Globe, AlertCircle,
   Bot, LogOut, Search, HardDrive, Gauge, ChevronUp
 } from 'lucide-react';
+import { useAuth } from '@/shared/components/AuthProvider';
 
 interface AdminDashboardProps {
   children?: React.ReactNode;
@@ -21,6 +22,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [theme, setTheme] = useState(() => {
@@ -165,30 +167,34 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
     }
   ];
 
-  const BottomNav = () => (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom">
-      <Link href="/" onClick={() => setActiveTab('dashboard')} className={cn("flex flex-col items-center p-2", activeTab === 'dashboard' ? "text-blue-600" : "text-gray-400")}>
-        <Home className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-medium">Home</span>
-      </Link>
-      <Link href="/dashboard/workflows" onClick={() => setActiveTab('workflows')} className={cn("flex flex-col items-center p-2", activeTab === 'workflows' ? "text-blue-600" : "text-gray-400")}>
-        <Zap className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-medium">Workflows</span>
-      </Link>
-      <Link href="/ai-agents" onClick={() => setActiveTab('ai-agents')} className={cn("flex flex-col items-center p-2", activeTab === 'ai-agents' ? "text-blue-600" : "text-gray-400")}>
-        <Bot className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-medium">Agents</span>
-      </Link>
-      <Link href="/system-health" onClick={() => setActiveTab('system-health')} className={cn("flex flex-col items-center p-2", activeTab === 'system-health' ? "text-blue-600" : "text-gray-400")}>
-        <Activity className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-medium">Monitor</span>
-      </Link>
-      <button onClick={() => setIsSidebarOpen(true)} className="flex flex-col items-center p-2 text-gray-400">
-        <Menu className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-medium">Menu</span>
-      </button>
-    </div>
-  );
+  const BottomNav = () => {
+    if (isSidebarOpen && typeof window !== 'undefined' && window.innerWidth < 1024) return null;
+
+    return (
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom">
+        <Link href="/" onClick={() => setActiveTab('dashboard')} className={cn("flex flex-col items-center p-2", activeTab === 'dashboard' ? "text-blue-600" : "text-gray-400")}>
+          <Home className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-medium">Home</span>
+        </Link>
+        <Link href="/dashboard/workflows" onClick={() => setActiveTab('workflows')} className={cn("flex flex-col items-center p-2", activeTab === 'workflows' ? "text-blue-600" : "text-gray-400")}>
+          <Zap className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-medium">Workflows</span>
+        </Link>
+        <Link href="/ai-agents" onClick={() => setActiveTab('ai-agents')} className={cn("flex flex-col items-center p-2", activeTab === 'ai-agents' ? "text-blue-600" : "text-gray-400")}>
+          <Bot className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-medium">Agents</span>
+        </Link>
+        <Link href="/system-health" onClick={() => setActiveTab('system-health')} className={cn("flex flex-col items-center p-2", activeTab === 'system-health' ? "text-blue-600" : "text-gray-400")}>
+          <Activity className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-medium">Monitor</span>
+        </Link>
+        <button onClick={() => setIsSidebarOpen(true)} className="flex flex-col items-center p-2 text-gray-400">
+          <Menu className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-medium">Menu</span>
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div className={cn("min-h-screen", theme === "dark" ? "dark bg-gray-900" : "bg-gray-50")}>
@@ -335,15 +341,24 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
           </nav>
 
           {/* User info */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-gray-600" />
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4 pb-12">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{user?.name || 'Super Admin'}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate w-32">{user?.email || 'admin@bizosaas.com'}</p>
+                </div>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Super Admin</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">admin@bizosaas.com</p>
-              </div>
+              <button
+                onClick={() => logout()}
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
             </div>
           </div>
         </div>

@@ -66,30 +66,34 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     }
   };
 
-  const BottomNav = () => (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom shadow-lg">
-      <button onClick={() => router.push('/dashboard')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
-        <Home className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Home</span>
-      </button>
-      <button onClick={() => router.push('/dashboard/workflows')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/workflows' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
-        <Zap className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Work</span>
-      </button>
-      <button onClick={() => router.push('/dashboard/marketing')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/marketing' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
-        <BarChart className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Growth</span>
-      </button>
-      <button onClick={() => router.push('/dashboard/ai-assistant')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/ai-assistant' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
-        <Bot className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">AI</span>
-      </button>
-      <button onClick={toggleSidebar} className="flex flex-col items-center p-2 text-gray-400 active:text-blue-600 transition-all">
-        <Menu className="h-5 w-5" />
-        <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Menu</span>
-      </button>
-    </div>
-  );
+  const BottomNav = () => {
+    if (isSidebarOpen && typeof window !== 'undefined' && window.innerWidth < 1024) return null;
+
+    return (
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-2 flex justify-between items-center z-50 safe-area-bottom shadow-lg animate-in slide-in-from-bottom duration-300">
+        <button onClick={() => router.push('/dashboard')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+          <Home className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Home</span>
+        </button>
+        <button onClick={() => router.push('/dashboard/workflows')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/workflows' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+          <Zap className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Work</span>
+        </button>
+        <button onClick={() => router.push('/dashboard/marketing')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/marketing' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+          <BarChart className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Growth</span>
+        </button>
+        <button onClick={() => router.push('/dashboard/ai-assistant')} className={cn("flex flex-col items-center p-2 transition-all", pathname === '/dashboard/ai-assistant' ? "text-blue-600 scale-110" : "text-gray-400 hover:text-gray-600")}>
+          <Bot className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">AI</span>
+        </button>
+        <button onClick={toggleSidebar} className="flex flex-col items-center p-2 text-gray-400 active:text-blue-600 transition-all">
+          <Menu className="h-5 w-5" />
+          <span className="text-[10px] mt-1 font-black uppercase tracking-tighter">Menu</span>
+        </button>
+      </div>
+    );
+  };
 
   const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
 
@@ -180,7 +184,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </Suspense>
           </div>
 
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+          <div className="p-4 pb-8 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
             <div className={`flex flex-col gap-4 ${isCollapsed ? 'items-center' : ''}`}>
               <div className={`flex items-center justify-between w-full ${isCollapsed ? 'flex-col gap-2' : ''}`}>
                 <div className="flex items-center gap-3 min-w-0">
