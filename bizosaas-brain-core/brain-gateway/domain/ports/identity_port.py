@@ -12,6 +12,14 @@ class AuthenticatedUser:
     tenant_id: Optional[str] = None
     permissions: List[str] = field(default_factory=list)
     attributes: Dict[str, Any] = field(default_factory=dict) # Extra profile data
+    
+    @property
+    def role(self) -> str:
+        """Helper to get primary role as a standardized string for backward compatibility."""
+        if not self.roles:
+            return "user"
+        # Standardize: "Super Admin" -> "super_admin", "Admin" -> "admin"
+        return self.roles[0].lower().replace(" ", "_")
 
 class IdentityPort(ABC):
     """Port (Interface) for Identity operations.

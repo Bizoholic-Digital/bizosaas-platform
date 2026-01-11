@@ -24,7 +24,16 @@ async def get_me(
     db: Session = Depends(get_db)
 ):
     """Get current user profile"""
-    db_user = db.query(User).filter(User.id == user.id).first()
+    db_user = None
+    try:
+        from uuid import UUID
+        # Only query if it looks like a UUID
+        UUID(str(user.id))
+        db_user = db.query(User).filter(User.id == user.id).first()
+    except:
+        # Fallback for non-UUID strings (like Clerk IDs)
+        db_user = None
+        
     if not db_user:
         # Fallback to info from current_user (from JWT/Clerk)
         return {
@@ -58,7 +67,14 @@ async def update_me(
     db: Session = Depends(get_db)
 ):
     """Update current user profile"""
-    db_user = db.query(User).filter(User.id == user.id).first()
+    db_user = None
+    try:
+        from uuid import UUID
+        UUID(str(user.id))
+        db_user = db.query(User).filter(User.id == user.id).first()
+    except:
+        db_user = None
+        
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found in local database")
     
