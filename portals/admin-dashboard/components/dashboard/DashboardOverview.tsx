@@ -54,22 +54,20 @@ export default function DashboardOverview() {
   return (
     <div className="space-y-8 animate-in fade-in duration-700 slide-in-from-bottom-4">
       {/* Top Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <Card key={i} className="border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                {stat.title}
-              </CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bg}`}>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+            <CardContent className="p-4 md:p-6 flex items-center">
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{stat.value}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stat.description}
-              </p>
+              <div className="ml-3 md:ml-4">
+                <p className="text-[10px] md:text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight">{stat.title}</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-lg md:text-2xl font-black text-slate-900 dark:text-white leading-none mt-1">{stat.value}</p>
+                  <span className="text-[10px] text-muted-foreground hidden sm:inline-block">{stat.description}</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ))}

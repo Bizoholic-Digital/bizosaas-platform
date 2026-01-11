@@ -11,6 +11,14 @@ import ComprehensiveNavigation from './comprehensive-navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
 import { useAuth } from '../auth/AuthProvider';
 import { useTheme } from 'next-themes';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 
 interface DashboardLayoutProps {
@@ -269,11 +277,43 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
                 {/* Header Actions */}
                 <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
-                    <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
-                  </button>
-                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
+                        <Bell className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                      <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <div className="max-h-[300px] overflow-y-auto">
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                          <div className="flex w-full items-center justify-between font-bold">
+                            <span className="text-blue-600">New Connector Available</span>
+                            <span className="text-[10px] text-muted-foreground">Just now</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">"HubSpot CRM" integration is now available for your tier.</p>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="flex flex-col items-start gap-1 p-4 cursor-pointer">
+                          <div className="flex w-full items-center justify-between font-bold">
+                            <span className="text-green-600">Task Completed</span>
+                            <span className="text-[10px] text-muted-foreground">1h ago</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">"Q1 Marketing Plan" has been marked as complete.</p>
+                        </DropdownMenuItem>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="w-full text-center justify-center font-bold text-blue-600" onClick={() => router.push('/dashboard/support')}>
+                        View All
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <button
+                    onClick={() => router.push('/settings')}
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
                     <Settings className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                   </button>
                 </div>

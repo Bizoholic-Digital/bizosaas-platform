@@ -187,7 +187,7 @@ export function OnboardingWizard() {
     const isLastStep = state.currentStep === STEPS.length - 1;
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 md:p-8 font-sans">
+        <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 md:p-8 font-sans">
 
             {/* Header */}
             <div className="w-full max-w-5xl flex justify-between items-center mb-8">
