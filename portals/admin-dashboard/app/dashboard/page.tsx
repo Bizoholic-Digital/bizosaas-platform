@@ -11,6 +11,7 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard Overview"
         description="Unified Command Center for platform-wide operations and health."
+        hideInContent={true}
       />
 
       <DashboardOverview />

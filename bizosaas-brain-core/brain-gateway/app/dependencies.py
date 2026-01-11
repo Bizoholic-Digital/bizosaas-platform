@@ -1,7 +1,8 @@
 from functools import lru_cache
+from typing import List, Union, Optional
 import os
 import logging
-from domain.ports.identity_port import IdentityPort
+from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from app.ports.workflow_port import WorkflowPort
 from adapters.identity.mock_adapter import MockIdentityAdapter
 from sqlalchemy import create_engine
@@ -103,58 +104,86 @@ def get_secret_service():
     db_adapter = DatabaseSecretAdapter(session_factory=SessionLocal)
     return SecretService(secret_adapter=db_adapter)
 
-from fastapi import Security, HTTPException, status, Depends
+from fastapi import Security, HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 security = HTTPBearer(auto_error=False)
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
+async def get_current_user(
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    identity: IdentityPort = Depends(get_identity_port)
+) -> AuthenticatedUser:
     """Dependency Injection: Returns the current authenticated user.
     Validates JWT tokens from the Authorization header using the configured Identity Adapter.
     """
+    # Bypass auth if configured (dev/testing)
     if os.getenv("DISABLE_AUTH", "false").lower() == "true":
         from domain.ports.identity_port import AuthenticatedUser
         return AuthenticatedUser(
             id="00000000-0000-0000-0000-000000000001",
             email="system@bizosaas.local",
             name="System User",
-            roles=["admin"],
-            tenant_id="default"
+            roles=["Super Admin"],
+            tenant_id="default_tenant"
         )
 
-    if not credentials:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    token_str = None
+    if credentials:
+        token_str = credentials.credentials
+    elif request.headers.get("Authorization"):
+        # Fallback manual header parsing
+        parts = request.headers.get("Authorization").split(" ")
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token_str = parts[1]
+    elif request.headers.get("x-clerk-auth-token"):
+        # Support Clerk-injected token
+        token_str = request.headers.get("x-clerk-auth-token")
+            
+    if not token_str:
+        auth_status = request.headers.get("x-clerk-auth-status", "unknown")
+        logger.error(f"DEBUG AUTH FAILURE: Headers received: {request.headers}")
+        logger.error(f"DEBUG AUTH FAILURE: Clerk Auth Status: {auth_status}")
+        raise HTTPException(status_code=401, detail="Missing authentication credentials")
 
-    token = credentials.credentials
-    identity_port = get_identity_port()
+    # 1. Validate Token (Introspection)
+    try:
+        is_valid = await identity.validate_token(token_str)
+        if not is_valid:
+            logger.error(f"DEBUG AUTH FAILURE: Token validation returned False for token: {token_str[:10]}...")
+            raise HTTPException(status_code=401, detail="Invalid, expired or revoked token")
+    except Exception as e:
+        logger.error(f"DEBUG AUTH FAILURE: Validation Exception: {str(e)}")
+        raise HTTPException(status_code=401, detail="Token validation failed")
     
-    user = await identity_port.get_user_from_token(token)
+    # 2. Get User Profile
+    user = await identity.get_user_from_token(token_str)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-        
+        logger.error(f"DEBUG AUTH FAILURE: Could not retrieve user profile for token: {token_str[:10]}...")
+        raise HTTPException(status_code=401, detail="Could not retrieve user profile")
+    
     return user
 
-def require_role(allowed_roles: list[str]):
-    """Factory function to create a dependency for role-based access control."""
+def require_role(allowed_roles: str | List[str]):
+    """Factory function to create a dependency for role-based access control.
+    Supports either a single string or a list of required roles.
+    """
+    if isinstance(allowed_roles, str):
+        allowed_roles = [allowed_roles]
+        
     async def role_dependency(user = Security(get_current_user)):
         # If no roles specified, allow access (authentication is sufficient)
         if not allowed_roles:
             return user
             
-        # Admin bypass
-        if "admin" in user.roles:
+        # Super Admin Bypass (Global Access)
+        user_roles_lower = [r.lower() for r in user.roles]
+        if "super admin" in user_roles_lower:
             return user
             
         # Check if user has at least one of the allowed roles
-        has_role = any(role in user.roles for role in allowed_roles)
+        allowed_roles_lower = [r.lower() for r in allowed_roles]
+        has_role = any(role in user_roles_lower for role in allowed_roles_lower)
         if not has_role:
              raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

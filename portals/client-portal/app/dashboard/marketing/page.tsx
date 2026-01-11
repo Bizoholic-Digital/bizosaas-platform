@@ -37,7 +37,11 @@ interface Campaign {
     }
 }
 
+import { useSetHeader } from '@/lib/contexts/HeaderContext';
+
 export default function MarketingPage() {
+    useSetHeader("Marketing Suite", "Orchestrate and optimize your growth engine.");
+
     const { isConnected: isMarketingConnected, isLoading: statusLoading } = useConnectorStatus('marketing', 'marketing');
     const [campaigns, setCampaigns] = useState<Campaign[]>([]);
     const [stats, setStats] = useState<any>(null);
@@ -131,12 +135,7 @@ export default function MarketingPage() {
 
     return (
         <div className="p-6 space-y-6">
-            {/* Header section with Premium feel */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight uppercase">Marketing Suite</h1>
-                    <p className="text-muted-foreground">Orchestrate and optimize your growth engine.</p>
-                </div>
+            <div className="flex flex-col md:flex-row md:items-center justify-end gap-4">
                 <div className="flex items-center gap-2">
                     <Button variant="outline" className="gap-2 h-11" onClick={loadData}>
                         <RefreshCw className={`w-4 h-4 ${isLoadingData ? 'animate-spin' : ''}`} />

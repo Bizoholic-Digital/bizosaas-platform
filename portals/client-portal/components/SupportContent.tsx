@@ -53,11 +53,7 @@ export default function SupportContent() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Support Helpdesk</h2>
-                    <p className="text-muted-foreground">Get help from our team and AI assistants.</p>
-                </div>
+            <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
                 <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary/90 w-full md:w-auto">
                     <Plus className="mr-2 h-4 w-4" /> New Ticket
                 </Button>

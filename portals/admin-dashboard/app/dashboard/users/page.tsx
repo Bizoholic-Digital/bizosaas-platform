@@ -155,10 +155,9 @@ export default function GlobalUsersPage() {
     return (
         <div className="p-4 md:p-6 space-y-6 bg-slate-50 dark:bg-slate-950 min-h-full">
             <PageHeader
-                title={
-                    <>Global User <span className="text-indigo-600">Management</span></>
-                }
+                title="Global User Management"
                 description="Manage all user accounts and roles across the entire platform."
+                hideInContent={true}
             >
                 <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-800" onClick={loadUsers} disabled={loading}>
                     <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Sync Directory

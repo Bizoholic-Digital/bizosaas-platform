@@ -8,7 +8,10 @@ import { getUserDisplayInfoFromSession } from '@/utils/rbac';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
 import { MagicDiscovery } from '@/components/discovery/MagicDiscovery';
 
+import { useSetHeader } from '@/lib/contexts/HeaderContext';
+
 export default function DashboardPage() {
+  useSetHeader("Product Dashboard", "Manage your connected platforms and automation flows.");
   const { user } = useUser();
 
   const sessionUser = user ? {

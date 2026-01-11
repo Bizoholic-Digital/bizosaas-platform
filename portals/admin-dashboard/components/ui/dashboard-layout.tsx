@@ -24,6 +24,8 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 
+import { useHeader } from '@/lib/contexts/HeaderContext';
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -32,9 +34,12 @@ interface DashboardLayoutProps {
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
-  title,
-  description
+  title: propTitle,
+  description: propDescription
 }) => {
+  const { title: contextTitle, description: contextDescription } = useHeader();
+  const title = propTitle || contextTitle;
+  const description = propDescription || contextDescription;
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
