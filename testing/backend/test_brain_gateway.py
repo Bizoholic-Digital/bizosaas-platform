@@ -110,7 +110,7 @@ class TestDependencies:
         with patch.dict('os.environ', {'DISABLE_AUTH': 'true'}):
             user = await get_current_user(None)
             assert user.id == "00000000-0000-0000-0000-000000000001"
-            assert "admin" in user.roles
+            assert "Super Admin" in user.roles
 
     @pytest.mark.asyncio
     async def test_require_role_success(self):
