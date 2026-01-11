@@ -39,6 +39,28 @@ export function Header() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
+                {/* Impersonation Indicator */}
+                {typeof window !== 'undefined' && localStorage.getItem('impersonation_token') && (
+                    <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 rounded-full text-xs font-semibold border border-amber-200 dark:border-amber-800">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                        </span>
+                        Viewing as User
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-4 p-0 ml-2 text-amber-900 hover:text-amber-950 dark:text-amber-300 dark:hover:text-amber-200 font-bold"
+                            onClick={() => {
+                                localStorage.removeItem('impersonation_token');
+                                window.location.href = '/dashboard';
+                            }}
+                        >
+                            Exit
+                        </Button>
+                    </div>
+                )}
+
                 <ThemeToggle />
 
                 <DropdownMenu>

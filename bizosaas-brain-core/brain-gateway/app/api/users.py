@@ -14,7 +14,9 @@ class UserProfileUpdate(BaseModel):
     last_name: Optional[str] = None
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
-    job_title: Optional[str] = None  # We can store this in platform_preferences or a new field
+    job_title: Optional[str] = None
+    timezone: Optional[str] = None
+    locale: Optional[str] = None
 
 @router.get("/me")
 async def get_me(
@@ -33,6 +35,8 @@ async def get_me(
             "role": user.role
         }
     
+    prefs = db_user.platform_preferences or {}
+    
     return {
         "id": str(db_user.id),
         "email": db_user.email,
@@ -41,7 +45,9 @@ async def get_me(
         "phone": db_user.phone,
         "avatar_url": db_user.avatar_url,
         "role": db_user.role,
-        "job_title": db_user.platform_preferences.get("job_title") if db_user.platform_preferences else None,
+        "job_title": prefs.get("job_title"),
+        "timezone": prefs.get("timezone", "UTC"),
+        "locale": prefs.get("locale", "en-US"),
         "company": db_user.tenant.name if db_user.tenant else None
     }
 
@@ -65,10 +71,28 @@ async def update_me(
     if update_data.avatar_url is not None:
         db_user.avatar_url = update_data.avatar_url
     
+    # Update preferences
+    if not db_user.platform_preferences:
+        db_user.platform_preferences = {}
+        
+    preferences_changed = False
+    
     if update_data.job_title is not None:
-        if not db_user.platform_preferences:
-            db_user.platform_preferences = {}
         db_user.platform_preferences["job_title"] = update_data.job_title
+        preferences_changed = True
+        
+    if update_data.timezone is not None:
+        db_user.platform_preferences["timezone"] = update_data.timezone
+        preferences_changed = True
+
+    if update_data.locale is not None:
+        db_user.platform_preferences["locale"] = update_data.locale
+        preferences_changed = True
+        
+    # Force SQLAlchemy to detect change if only JSON content changed
+    if preferences_changed:
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(db_user, "platform_preferences")
     
     db.commit()
     db.refresh(db_user)

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException, Depends, Request, Body
 import httpx
 import os
 import psutil
 import time
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from app.dependencies import get_current_user, require_role, get_db
 from sqlalchemy.orm import Session
 from domain.ports.identity_port import AuthenticatedUser
@@ -206,13 +206,95 @@ async def demote_user(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.put("/users/{user_id}/permissions")
+async def update_user_permissions(
+    user_id: str,
+    permissions: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Enable/Disable user features."""
+    from app.services.user_service import UserService
+    from uuid import UUID
+    user_service = UserService(db)
+    try:
+        user = user_service.update_permissions(UUID(user_id), permissions)
+        return {"status": "success", "message": "Permissions updated", "permissions": user.permissions}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/users/{user_id}/impersonate")
+async def impersonate_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Generate a short-lived impersonation token for Super Admins."""
+    impersonation_secret = os.getenv("IMPERSONATION_SECRET")
+    if not impersonation_secret:
+        raise HTTPException(status_code=500, detail="Impersonation not configured")
+
+    from app.models.user import User
+    from uuid import UUID
+    import jwt
+    import datetime
+
+    # Fetch user details to populate the token
+    user = db.query(User).filter(User.id == UUID(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Create the token
+    now = datetime.datetime.utcnow()
+    payload = {
+        "sub": str(user.id),
+        "email": user.email,
+        "name": f"{user.first_name} {user.last_name}",
+        "roles": [user.role],
+        "tenant_id": str(user.tenant_id) if user.tenant_id else "default",
+        "type": "impersonation",
+        "impersonator_id": admin_user.id,
+        "iat": now,
+        "exp": now + datetime.timedelta(hours=1) # 1 hour expiry
+    }
+    
+    token = jwt.encode(payload, impersonation_secret, algorithm="HS256")
+    
+    # Audit Log
+    from app.models.user import AuditLog
+    log = AuditLog(
+        user_id=admin_user.id,
+        action="IMPERSONATION_START",
+        details={"target_user": str(user.id), "target_email": user.email}
+    )
+    db.add(log)
+    db.commit()
+    
+    return {"token": token}
+
 @router.get("/audit-logs")
 async def get_audit_logs(
+    user_id: Optional[str] = None,
     limit: int = 50,
     db: Session = Depends(get_db),
     admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
 ):
     """Fetch recent audit logs."""
     from app.models.user import AuditLog
-    logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
+    from uuid import UUID
+    
+    query = db.query(AuditLog)
+    if user_id:
+        try:
+             # Filter by target user (if 'details' contains it) or the actor (user_id)
+             # Usually we want to see what happened TO a user or BY a user.
+             # Current model: user_id is the ACTOR.
+             # If filter is for a specific user management view, we might want logs where they are the target too?
+             # For now, let's filter by the actor (logs of what this user did).
+             uid = UUID(user_id)
+             query = query.filter(AuditLog.user_id == uid)
+        except ValueError:
+            pass # Ignore invalid UUID
+            
+    logs = query.order_by(AuditLog.created_at.desc()).limit(limit).all()
     return logs

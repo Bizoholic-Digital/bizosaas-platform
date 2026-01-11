@@ -45,6 +45,28 @@ class ClerkAdapter(IdentityPort):
             return False
 
     async def get_user_from_token(self, token: str) -> Optional[AuthenticatedUser]:
+        # 1. Try Local Impersonation Token
+        impersonation_secret = os.getenv("IMPERSONATION_SECRET")
+        if impersonation_secret:
+            try:
+                # Local tokens use HS256
+                payload = jwt.decode(token, impersonation_secret, algorithms=["HS256"])
+                if payload.get("type") == "impersonation":
+                    logger.info(f"Processing impersonation token for user {payload.get('sub')}")
+                    return AuthenticatedUser(
+                        id=payload.get("sub"),
+                        email=payload.get("email", ""),
+                        name=payload.get("name", ""),
+                        roles=payload.get("roles", []),
+                        tenant_id=payload.get("tenant_id", "default"),
+                        attributes={"impersonator_id": payload.get("impersonator_id")}
+                    )
+            except jwt.InvalidTokenError:
+                # Not a valid local token, proceed to Clerk validation
+                pass
+            except Exception as e:
+                logger.warning(f"Impersonation check failed: {e}")
+
         try:
             signing_key = self.jwks_client.get_signing_key_from_jwt(token)
             payload = jwt.decode(
@@ -127,7 +149,6 @@ class ClerkAdapter(IdentityPort):
                 tenant_id = public_metadata.get("tenant_id") or public_metadata.get("tenantId")
             if not tenant_id:
                 tenant_id = payload.get("tenant_id") or payload.get("tenantId") or "default"
-
 
             
             # Fallback for name

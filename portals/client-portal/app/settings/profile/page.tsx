@@ -21,7 +21,9 @@ export default function ProfileSettingsPage() {
         last_name: '',
         phone: '',
         job_title: '',
-        company: ''
+        company: '',
+        timezone: '',
+        locale: ''
     });
     const [isLoading, setIsLoading] = React.useState(true);
     const [isSaving, setIsSaving] = React.useState(false);
@@ -36,7 +38,9 @@ export default function ProfileSettingsPage() {
                     last_name: data.last_name || '',
                     phone: data.phone || '',
                     job_title: data.job_title || '',
-                    company: data.company || ''
+                    company: data.company || '',
+                    timezone: data.timezone || 'UTC',
+                    locale: data.locale || 'en-US'
                 });
             } catch (error) {
                 console.error("Failed to fetch profile:", error);
@@ -55,7 +59,9 @@ export default function ProfileSettingsPage() {
                 first_name: profile.first_name,
                 last_name: profile.last_name,
                 phone: profile.phone,
-                job_title: profile.job_title
+                job_title: profile.job_title,
+                timezone: profile.timezone,
+                locale: profile.locale
             }, token as string);
             toast.success("Profile updated successfully");
         } catch (error) {
@@ -125,6 +131,22 @@ export default function ProfileSettingsPage() {
                             <div className="space-y-2">
                                 <Label>Company</Label>
                                 <Input value={profile.company} disabled />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Timezone</Label>
+                                <Input
+                                    value={profile.timezone}
+                                    onChange={e => setProfile({ ...profile, timezone: e.target.value })}
+                                    placeholder="e.g. UTC, America/New_York"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Locale / Language</Label>
+                                <Input
+                                    value={profile.locale}
+                                    onChange={e => setProfile({ ...profile, locale: e.target.value })}
+                                    placeholder="e.g. en-US"
+                                />
                             </div>
                         </div>
 

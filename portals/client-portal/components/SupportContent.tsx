@@ -53,12 +53,12 @@ export default function SupportContent() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Support Helpdesk</h2>
                     <p className="text-muted-foreground">Get help from our team and AI assistants.</p>
                 </div>
-                <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary/90">
+                <Button onClick={() => setShowCreate(true)} className="bg-primary hover:bg-primary/90 w-full md:w-auto">
                     <Plus className="mr-2 h-4 w-4" /> New Ticket
                 </Button>
             </div>
@@ -105,14 +105,14 @@ export default function SupportContent() {
                 {tickets.map((ticket) => (
                     <Card key={ticket.id} className="hover:border-primary/50 transition-colors cursor-pointer">
                         <CardContent className="p-6">
-                            <div className="flex items-start justify-between">
+                            <div className="flex flex-col md:flex-row items-start justify-between gap-4">
                                 <div className="flex gap-4">
-                                    <div className={`p-2 rounded-full ${ticket.status === 'open' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
+                                    <div className={`p-2 rounded-full shrink-0 ${ticket.status === 'open' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
                                         {ticket.status === 'open' ? <AlertCircle className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
                                     </div>
                                     <div>
                                         <h3 className="font-semibold text-lg">{ticket.subject}</h3>
-                                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                        <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-muted-foreground">
                                             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(ticket.created_at).toLocaleDateString()}</span>
                                             <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> 0 replies</span>
                                             <Badge variant={ticket.priority === 'high' ? 'destructive' : 'secondary'}>
@@ -121,7 +121,7 @@ export default function SupportContent() {
                                         </div>
                                     </div>
                                 </div>
-                                <Badge variant={ticket.status === 'open' ? 'default' : 'outline'}>
+                                <Badge variant={ticket.status === 'open' ? 'default' : 'outline'} className="mt-2 md:mt-0">
                                     {ticket.status.toUpperCase()}
                                 </Badge>
                             </div>

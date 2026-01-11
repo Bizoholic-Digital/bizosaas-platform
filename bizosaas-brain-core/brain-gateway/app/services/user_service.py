@@ -94,3 +94,26 @@ class UserService:
             raise ValueError("Partner not found")
             
         return partner.managed_tenants
+
+    def update_permissions(self, user_id: UUID, permissions: dict) -> User:
+        """Update user permissions/features."""
+        user = self.db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise ValueError("User not found")
+            
+        from app.models.user import AuditLog
+        
+        # Merge or replace permissions? Replacing is safer for state management
+        old_permissions = user.permissions
+        user.permissions = permissions
+        
+        log = AuditLog(
+            user_id=user.id,
+            action="UPDATE_PERMISSIONS",
+            details={"from": old_permissions, "to": permissions}
+        )
+        self.db.add(log)
+        
+        self.db.commit()
+        self.db.refresh(user)
+        return user

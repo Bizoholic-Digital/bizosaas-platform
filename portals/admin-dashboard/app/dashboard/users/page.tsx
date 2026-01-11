@@ -4,17 +4,50 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Shield, UserCheck, MoreVertical, Search, Filter, ShieldAlert, Mail, RefreshCw } from 'lucide-react';
+import { User, Shield, UserCheck, MoreVertical, Search, Filter, ShieldAlert, Mail, RefreshCw, Plus, Trash2, Pencil, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { adminApi } from '@/lib/api/admin';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/dashboard/PageHeader';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserActivityLog } from '@/components/UserActivityLog';
 
 export default function GlobalUsersPage() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Dialog States
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [formData, setFormData] = useState({ name: '', email: '', role: 'User', status: 'active' });
+    const [permissions, setPermissions] = useState({
+        ai_access: false,
+        crm_access: false,
+        analytics_advanced: false,
+        beta_features: false
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const loadUsers = async () => {
         setLoading(true);
@@ -23,13 +56,11 @@ export default function GlobalUsersPage() {
             if (Array.isArray(res.data)) {
                 setUsers(res.data);
             } else {
-                console.error("Invalid users data format:", res.data);
                 setUsers([]);
             }
         } catch (error) {
             console.error(error);
             toast.error("Failed to load users");
-            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -38,6 +69,82 @@ export default function GlobalUsersPage() {
     useEffect(() => {
         loadUsers();
     }, []);
+
+    const handleCreate = async () => {
+        setIsSubmitting(true);
+        try {
+            await adminApi.createUser(formData);
+            toast.success("User created successfully");
+            setIsCreateOpen(false);
+            setFormData({ name: '', email: '', role: 'User', status: 'active' });
+            loadUsers();
+        } catch (e) {
+            toast.error("Failed to create user");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!currentUser) return;
+        setIsSubmitting(true);
+        try {
+            await Promise.all([
+                adminApi.updateUser(currentUser.id, formData),
+                adminApi.updateUserPermissions(currentUser.id, permissions)
+            ]);
+            toast.success("User updated successfully");
+            setIsEditOpen(false);
+            setCurrentUser(null);
+            loadUsers();
+        } catch (e) {
+            toast.error("Failed to update user");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (userId: string) => {
+        if (!window.confirm("Are you sure you want to delete this user?")) return;
+        try {
+            await adminApi.deleteUser(userId);
+            toast.success("User deleted successfully");
+            loadUsers();
+        } catch (e) {
+            toast.error("Failed to delete user");
+        }
+    };
+
+    const handleImpersonate = async (userId: string, userName: string) => {
+        if (!window.confirm(`Are you sure you want to impersonate ${userName}?`)) return;
+        try {
+            const res = await adminApi.impersonateUser(userId);
+            if (res.data?.token) {
+                // In a real scenario, redirect to Client Portal with token
+                // For now, we'll assume Client Portal is on localhost:3000 for dev
+                // or similar structure.
+                const isLocal = window.location.hostname === 'localhost';
+                const clientUrl = isLocal ? 'http://localhost:3000' : 'https://app.bizoholic.net';
+                const url = `${clientUrl}/auth/impersonate?token=${res.data.token}`;
+                window.open(url, '_blank');
+                toast.success(`Impersonating ${userName}`);
+            }
+        } catch (e) {
+            toast.error("Failed to start impersonation");
+        }
+    };
+
+    const openEdit = (user: any) => {
+        setCurrentUser(user);
+        setFormData({ name: user.name, email: user.email, role: user.role, status: user.status });
+        setPermissions(user.permissions || {
+            ai_access: false,
+            crm_access: false,
+            analytics_advanced: false,
+            beta_features: false
+        });
+        setIsEditOpen(true);
+    };
 
     const safeUsers = Array.isArray(users) ? users : [];
     const filteredUsers = safeUsers.filter(u =>
@@ -56,7 +163,7 @@ export default function GlobalUsersPage() {
                 <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-800" onClick={loadUsers} disabled={loading}>
                     <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Sync Directory
                 </Button>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold" size="sm">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold" size="sm" onClick={() => setIsCreateOpen(true)}>
                     <UserCheck className="mr-2 h-4 w-4" /> Provision User
                 </Button>
             </PageHeader>
@@ -68,8 +175,8 @@ export default function GlobalUsersPage() {
                         <User className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{users.length || '1,234'}</div>
-                        <p className="text-xs text-muted-foreground">+12% from last month</p>
+                        <div className="text-2xl font-bold">{users.length}</div>
+                        <p className="text-xs text-muted-foreground">Registered accounts</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -78,18 +185,18 @@ export default function GlobalUsersPage() {
                         <Shield className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{users.filter(u => u.role === 'Admin').length || 12}</div>
+                        <div className="text-2xl font-bold">{users.filter(u => u.role === 'Admin' || u.role === 'Super Admin').length}</div>
                         <p className="text-xs text-muted-foreground">Across all tenants</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Security Alerts</CardTitle>
-                        <ShieldAlert className="h-4 w-4 text-red-500" />
+                        <CardTitle className="text-sm font-medium">New Today</CardTitle>
+                        <UserCheck className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">0</div>
-                        <p className="text-xs text-muted-foreground">Active warnings</p>
+                        <div className="text-2xl font-bold text-green-600">0</div>
+                        <p className="text-xs text-muted-foreground">New signups</p>
                     </CardContent>
                 </Card>
             </div>
@@ -165,9 +272,17 @@ export default function GlobalUsersPage() {
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">{u.lastLogin || 'Never'}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="ghost" size="icon" title="Impersonate" onClick={() => handleImpersonate(u.id, u.name)}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDelete(u.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))
@@ -199,9 +314,17 @@ export default function GlobalUsersPage() {
                                                 <div className="text-xs text-muted-foreground">{u.email}</div>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </Button>
+                                        <div className="flex gap-1">
+                                            <Button variant="ghost" size="icon" onClick={() => handleImpersonate(u.id, u.name)}>
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(u.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                     <div className="flex justify-between items-center text-sm pt-2 border-t border-slate-100 dark:border-slate-800">
                                         <Badge variant="outline">{u.role || 'User'}</Badge>
@@ -216,6 +339,184 @@ export default function GlobalUsersPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Create Dialog */}
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Provision New User</DialogTitle>
+                        <DialogDescription>Add a new user to the platform. They will receive an email invitation.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Full Name</Label>
+                            <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="John Doe" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Email Address</Label>
+                            <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="john@example.com" type="email" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Role</Label>
+                                <Select value={formData.role} onValueChange={v => setFormData({ ...formData, role: v })}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="User">User</SelectItem>
+                                        <SelectItem value="Admin">Admin</SelectItem>
+                                        <SelectItem value="Super Admin">Super Admin</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Status</Label>
+                                <Select value={formData.status} onValueChange={v => setFormData({ ...formData, status: v })}>
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreate} disabled={isSubmitting}>
+                            {isSubmitting ? "Creating..." : "Create User"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+                    <DialogHeader>
+                        <DialogTitle>User Details: {formData.name}</DialogTitle>
+                        <DialogDescription>Manage profile, permissions, and view activity history.</DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-y-auto py-4">
+                        <Tabs defaultValue="profile" className="w-full">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="profile">Profile & Account</TabsTrigger>
+                                <TabsTrigger value="permissions">Permissions (RBAC)</TabsTrigger>
+                                <TabsTrigger value="activity">Activity Log</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="profile" className="space-y-4 py-4">
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Full Name</Label>
+                                        <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Email Address</Label>
+                                        <Input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} type="email" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Role</Label>
+                                            <Select value={formData.role} onValueChange={v => setFormData({ ...formData, role: v })}>
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="User">User</SelectItem>
+                                                    <SelectItem value="Admin">Admin</SelectItem>
+                                                    <SelectItem value="Super Admin">Super Admin</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Status</Label>
+                                            <Select value={formData.status} onValueChange={v => setFormData({ ...formData, status: v })}>
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="active">Active</SelectItem>
+                                                    <SelectItem value="inactive">Inactive</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="permissions" className="space-y-4 py-4">
+                                <div className="space-y-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        Control granular feature access for this user. These override role-based defaults.
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                                            <Checkbox
+                                                id="ai_access"
+                                                checked={permissions.ai_access}
+                                                onCheckedChange={(c) => setPermissions({ ...permissions, ai_access: c as boolean })}
+                                            />
+                                            <div className="grid gap-1.5 leading-none">
+                                                <Label htmlFor="ai_access" className="cursor-pointer">AI Assistant Access</Label>
+                                                <p className="text-xs text-muted-foreground">Access to specific AI Agents.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                                            <Checkbox
+                                                id="crm_access"
+                                                checked={permissions.crm_access}
+                                                onCheckedChange={(c) => setPermissions({ ...permissions, crm_access: c as boolean })}
+                                            />
+                                            <div className="grid gap-1.5 leading-none">
+                                                <Label htmlFor="crm_access" className="cursor-pointer">CRM Module</Label>
+                                                <p className="text-xs text-muted-foreground">Contacts & Deals management.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                                            <Checkbox
+                                                id="analytics_advanced"
+                                                checked={permissions.analytics_advanced}
+                                                onCheckedChange={(c) => setPermissions({ ...permissions, analytics_advanced: c as boolean })}
+                                            />
+                                            <div className="grid gap-1.5 leading-none">
+                                                <Label htmlFor="analytics_advanced" className="cursor-pointer">Advanced Analytics</Label>
+                                                <p className="text-xs text-muted-foreground">Full data export capabilities.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                                            <Checkbox
+                                                id="beta_features"
+                                                checked={permissions.beta_features}
+                                                onCheckedChange={(c) => setPermissions({ ...permissions, beta_features: c as boolean })}
+                                            />
+                                            <div className="grid gap-1.5 leading-none">
+                                                <Label htmlFor="beta_features" className="cursor-pointer">Beta Features (Labs)</Label>
+                                                <p className="text-xs text-muted-foreground">Experimental tools access.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="activity" className="py-4 h-[400px]">
+                                <UserActivityLog userId={currentUser?.id} />
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+
+                    <DialogFooter className="mt-4 border-t pt-4">
+                        <Button variant="outline" onClick={() => setIsEditOpen(false)}>Close</Button>
+                        <Button onClick={handleUpdate} disabled={isSubmitting}>
+                            {isSubmitting ? "Saving..." : "Save Changes"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

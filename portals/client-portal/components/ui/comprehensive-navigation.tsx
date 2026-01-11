@@ -18,6 +18,14 @@ import {
 } from 'lucide-react';
 import { useAuth as useClerkAuth } from '@clerk/nextjs';
 import { useAuth } from '@/components/auth/AuthProvider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface NavigationItem {
   id: string;
@@ -282,6 +290,34 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
       ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-none'
       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
       } ${paddingClass} ${isCollapsed ? 'justify-center px-2' : ''}`;
+
+    if (isCollapsed && hasSubItems && depth === 0) {
+      return (
+        <div key={item.id} className="mb-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className={commonClasses} title={item.name}>
+                <div className="flex-shrink-0">{item.icon}</div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="start" className="w-48 ml-2">
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {item.name}
+              </div>
+              <DropdownMenuSeparator />
+              {item.subItems?.filter(subItem => subItem.show !== false).map(subItem => (
+                <DropdownMenuItem key={subItem.id} onClick={() => onNavigate?.(subItem.href)} className="cursor-pointer">
+                  <Link href={subItem.href} className="flex items-center gap-2 w-full">
+                    {subItem.icon}
+                    <span>{subItem.name}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+    }
 
     return (
       <div key={item.id} className="mb-1">
