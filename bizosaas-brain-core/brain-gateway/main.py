@@ -87,31 +87,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Brain API Gateway", lifespan=lifespan)
 
-# Add Prometheus metrics
-Instrumentator().instrument(app).expose(app)
-
-# OpenTelemetry Foundation
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-
-# Set up tracing
-resource = Resource(attributes={
-    SERVICE_NAME: "brain-gateway"
-})
-
-tracer_provider = TracerProvider(resource=resource)
-# Only add OTLP exporter if endpoint is configured
-otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-if otlp_endpoint:
-    otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
-    tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-
-trace.set_tracer_provider(tracer_provider)
-FastAPIInstrumentor.instrument_app(app)
+# ----------------------------------------------------------------------------
+# Routers and Middleware
+# ----------------------------------------------------------------------------
 
 # CORS
 app.add_middleware(
@@ -124,7 +102,7 @@ app.add_middleware(
 
 from app.seeds.connectors import seed_connectors
 
-
+# Register all Routers
 app.include_router(connectors.router)
 app.include_router(agents.router)
 app.include_router(cms.router, prefix="/api/cms", tags=["cms"])
@@ -152,6 +130,43 @@ from strawberry.fastapi import GraphQLRouter
 from app.graphql.schema import schema
 graphql_app = GraphQLRouter(schema)
 app.include_router(graphql_app, prefix="/graphql")
+
+# ----------------------------------------------------------------------------
+# Instrumentation (After Routers)
+# ----------------------------------------------------------------------------
+
+# Add Prometheus metrics
+Instrumentator().instrument(app).expose(app)
+
+# OpenTelemetry Foundation
+from opentelemetry import trace, metrics
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+# Set up tracing
+resource = Resource(attributes={
+    SERVICE_NAME: "brain-gateway"
+})
+
+tracer_provider = TracerProvider(resource=resource)
+# Only add OTLP exporter if endpoint is configured
+otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+if otlp_endpoint:
+    try:
+        otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
+        tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+        logger.info(f"OTLP Exporter configured for {otlp_endpoint}")
+    except Exception as e:
+        logger.warning(f"Failed to initialize OTLP exporter: {e}")
+
+trace.set_tracer_provider(tracer_provider)
+FastAPIInstrumentor.instrument_app(app)
+
+# ----------------------------------------------------------------------------
+
 
 # Configuration
 CMS_URL = os.getenv("CMS_URL", "http://cms:8002")

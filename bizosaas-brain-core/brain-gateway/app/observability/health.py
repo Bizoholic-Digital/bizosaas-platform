@@ -44,11 +44,17 @@ async def get_dependency_health() -> Dict[str, Any]:
     # Basic check if port is open (simplified)
     import socket
     try:
-        host, port = temporal_host.split(":")
-        with socket.create_connection((host, int(port)), timeout=1.0):
+        if ":" in temporal_host:
+            host, port = temporal_host.split(":")
+            port = int(port)
+        else:
+            host = temporal_host
+            port = 7233 # Default Temporal port
+            
+        with socket.create_connection((host, port), timeout=1.0):
             dependencies["temporal"] = {"status": "up"}
-    except Exception:
-        dependencies["temporal"] = {"status": "down"}
+    except Exception as e:
+        dependencies["temporal"] = {"status": "down", "error": str(e)}
         if overall_status == "healthy":
              overall_status = "degraded"
 
