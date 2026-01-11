@@ -41,5 +41,6 @@ jobs:
           REDIS_URL: redis://localhost:6379
           ENVIRONMENT: testing
           SKIP_VAULT: "true"
+          PYTHONPATH: .
         run: |
           pytest tests/
