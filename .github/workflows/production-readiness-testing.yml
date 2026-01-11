@@ -63,7 +63,7 @@ jobs:
         run: |
           cd bizosaas-brain-core/brain-gateway
           pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-asyncio
+          # pytest and others already in requirements.txt
       
       - name: Run unit tests
         env:
@@ -153,7 +153,7 @@ jobs:
         run: |
           cd bizosaas-brain-core/brain-gateway
           pip install -r requirements.txt
-          pip install pytest pytest-asyncio redis hvac
+          # Already in requirements.txt
       
       - name: Run integration tests
         env:
