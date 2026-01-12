@@ -122,8 +122,13 @@ class GoogleTagManagerConnector(BaseConnector, OAuthMixin):
     # OAuth Methods
     async def get_auth_url(self, redirect_uri: str, state: str) -> str:
         client_id = os.getenv("GOOGLE_CLIENT_ID")
-        scope = "https://www.googleapis.com/auth/tagmanager.readonly" # Add .edit for setup
-        return f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope}&state={state}&access_type=offline&prompt=consent"
+        # Added .edit.containers scope to allow provisioning of tags as required by the GTM-first strategy
+        scopes = [
+            "https://www.googleapis.com/auth/tagmanager.readonly",
+            "https://www.googleapis.com/auth/tagmanager.edit.containers"
+        ]
+        scope_str = "%20".join(scopes)
+        return f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope_str}&state={state}&access_type=offline&prompt=consent"
 
     async def exchange_code(self, code: str, redirect_uri: str) -> Dict[str, Any]:
         url = "https://oauth2.googleapis.com/token"
