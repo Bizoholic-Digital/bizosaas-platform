@@ -170,7 +170,13 @@ export function OnboardingWizard() {
                     />
                 );
             case 4:
-                return <AnalyticsTrackingStep data={state.analytics} onUpdate={updateAnalytics} />;
+                return (
+                    <AnalyticsTrackingStep
+                        data={state.analytics}
+                        onUpdate={updateAnalytics}
+                        websiteUrl={state.profile.website}
+                    />
+                );
             case 5:
                 return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
             case 6:

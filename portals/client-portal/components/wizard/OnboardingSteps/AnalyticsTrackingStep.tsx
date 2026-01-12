@@ -11,9 +11,10 @@ import { toast } from 'sonner';
 interface Props {
     data: AnalyticsConfig;
     onUpdate: (data: Partial<AnalyticsConfig>) => void;
+    websiteUrl?: string;
 }
 
-export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
+export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
     const { user } = useUser();
     const [isDiscovering, setIsDiscovering] = React.useState(false);
     const [discovered, setDiscovered] = React.useState(false);
@@ -24,12 +25,12 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
         setIsDiscovering(true);
         try {
             // 1. Analyze existing site tags first
-            const websiteUrl = user?.externalAccounts[0]?.externalId || "example.com"; // Fallback for demo
+            const targetUrl = websiteUrl || "example.com"; // Use passed prop or fallback
 
             const analysisResp = await fetch('/api/brain/onboarding/gtm/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ website_url: websiteUrl })
+                body: JSON.stringify({ website_url: targetUrl })
             });
 
             if (analysisResp.ok) {
