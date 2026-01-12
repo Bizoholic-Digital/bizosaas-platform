@@ -15,7 +15,9 @@ from app.activities import (
     generate_ai_marketing_content,
     analyze_website_tags,
     discover_gtm_assets,
-    setup_gtm_tags_workflow
+    setup_gtm_tags_workflow,
+    provision_ga4_in_gtm,
+    audit_gtm_container_tags
 )
 import app.connectors # Ensure connectors are registered
 
@@ -38,7 +40,9 @@ async def run_worker():
             generate_ai_marketing_content,
             analyze_website_tags,
             discover_gtm_assets,
-            setup_gtm_tags_workflow
+            setup_gtm_tags_workflow,
+            provision_ga4_in_gtm,
+            audit_gtm_container_tags
         ],
     )
     

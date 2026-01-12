@@ -151,6 +151,71 @@ async def provision_ga4_in_gtm(params: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": str(e), "status": "failed"}
 
 @activity.defn
+async def audit_gtm_container_tags(params: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Analyzes all tags in a GTM workspace and categorizes them.
+    Identify: GA4, Google Ads, Facebook Pixel, LinkedIn, etc.
+    """
+    access_token = params.get("access_token")
+    workspace_path = params.get("workspace_path")
+    
+    if not access_token or not workspace_path:
+        return {"error": "Missing access_token or workspace_path"}
+
+    logger.info(f"Auditing GTM tags for workspace: {workspace_path}")
+    
+    try:
+        url = f"https://www.googleapis.com/tagmanager/v2/{workspace_path}/tags"
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, headers={"Authorization": f"Bearer {access_token}"})
+            resp.raise_for_status()
+            tags = resp.json().get("tag", [])
+            
+            essential_services = []
+            good_to_have_services = []
+            
+            # Simplified mapping logic
+            for tag in tags:
+                tag_type = tag.get("type")
+                tag_name = tag.get("name")
+                
+                service_info = {
+                    "id": tag.get("tagId"),
+                    "name": tag_name,
+                    "type": tag_type,
+                    "status": "active"
+                }
+
+                # Categorization logic
+                if tag_type in ["gaawe", "ua"]: # GA4 or Universal Analytics
+                    service_info["service"] = "Google Analytics"
+                    essential_services.append(service_info)
+                elif tag_type in ["awct", "spkt"]: # Google Ads Conversion or Remarketing
+                    service_info["service"] = "Google Ads"
+                    essential_services.append(service_info)
+                elif "facebook" in tag_name.lower() or "pixel" in tag_name.lower():
+                    service_info["service"] = "Facebook Pixel"
+                    good_to_have_services.append(service_info)
+                elif "linkedin" in tag_name.lower():
+                    service_info["service"] = "LinkedIn Insight"
+                    good_to_have_services.append(service_info)
+                else:
+                    # General scripts or custom tags
+                    service_info["service"] = "Custom Service"
+                    good_to_have_services.append(service_info)
+
+            return {
+                "status": "success",
+                "essential": essential_services,
+                "optional": good_to_have_services,
+                "raw_count": len(tags)
+            }
+
+    except Exception as e:
+        logger.error(f"Failed to audit GTM container: {e}")
+        return {"error": str(e), "status": "failed"}
+
+@activity.defn
 async def setup_gtm_tags_workflow(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Conceptual setup of tags within a GTM container.

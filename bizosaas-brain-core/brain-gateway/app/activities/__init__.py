@@ -12,7 +12,9 @@ from .marketing import (
 from .marketing_tags import (
     analyze_website_tags,
     discover_gtm_assets,
-    setup_gtm_tags_workflow
+    setup_gtm_tags_workflow,
+    provision_ga4_in_gtm,
+    audit_gtm_container_tags
 )
 
 __all__ = [
@@ -25,5 +27,7 @@ __all__ = [
     "generate_ai_marketing_content",
     "analyze_website_tags",
     "discover_gtm_assets",
-    "setup_gtm_tags_workflow"
+    "setup_gtm_tags_workflow",
+    "provision_ga4_in_gtm",
+    "audit_gtm_container_tags"
 ]

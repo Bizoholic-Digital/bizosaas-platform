@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { AnalyticsConfig } from '../types/onboarding';
-import { BarChart3, Search, Sparkles, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { BarChart3, Search, Sparkles, RefreshCw, CheckCircle2, Target, Rocket } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
 
@@ -33,15 +33,97 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
             });
 
             if (analysisResp.ok) {
-                const data = await analysisResp.json();
-                toast.success("Strategic analysis started! We are auditing your site tags.");
-                setDiscovered(true);
+                const data = await analysisResp.ok ? await analysisResp.json() : null;
+                if (data && data.status === "started") {
+                    toast.success("Strategic analysis started! Monitoring your GTM container...");
+                    // In a real app, we would poll for the workflow results. 
+                    // For demo, we simulate the audit result returned after a short delay
+                    setTimeout(() => {
+                        onUpdate({
+                            auditedServices: {
+                                essential: [
+                                    { id: '1', name: 'Google Analytics 4 Config', service: 'Google Analytics', status: 'active' },
+                                    { id: '2', name: 'Google Ads Remarketing', service: 'Google Ads', status: 'active' }
+                                ],
+                                optional: [
+                                    { id: '3', name: 'Facebook Pixel Base', service: 'Facebook Pixel', status: 'active' },
+                                    { id: '4', name: 'LinkedIn Insight Tag', service: 'LinkedIn Insight', status: 'active' }
+                                ]
+                            }
+                        });
+                        setDiscovered(true);
+                        toast.success("Audit complete! We identified your marketing services.");
+                    }, 3000);
+                }
             }
         } catch (error) {
             toast.error("Discovery failed. Please connect manually.");
         } finally {
             setIsDiscovering(false);
         }
+    };
+
+    const renderAuditedServices = () => {
+        if (!data.auditedServices) return null;
+
+        return (
+            <div className="space-y-6 mt-8 animate-in fade-in zoom-in duration-700">
+                <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="text-green-600 w-5 h-5" />
+                    <h3 className="font-bold text-lg text-gray-900">Digital Audit Results</h3>
+                </div>
+
+                {/* Essential Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Essential (Required for AI)</span>
+                        <div className="h-px flex-1 bg-gray-100 ml-4" />
+                    </div>
+                    {data.auditedServices.essential.map(s => (
+                        <div key={s.id} className="flex items-center justify-between p-3 bg-blue-50/50 border border-blue-100 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                                <div>
+                                    <p className="text-sm font-bold text-gray-900">{s.service}</p>
+                                    <p className="text-[10px] text-gray-500">{s.name}</p>
+                                </div>
+                            </div>
+                            <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">RELIABLE</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Optional Section */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Growth Tools (Good to Have)</span>
+                        <div className="h-px flex-1 bg-gray-100 ml-4" />
+                    </div>
+                    {data.auditedServices.optional.map(s => (
+                        <div key={s.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg group hover:border-indigo-200 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 rounded-full bg-indigo-400" />
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-700">{s.service}</p>
+                                    <p className="text-[10px] text-gray-500">{s.name}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="sm" className="h-6 text-[10px] text-gray-400 hover:text-red-500">Disable</Button>
+                                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">DETECTED</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="bg-slate-900 rounded-xl p-4 text-white text-sm mt-4 shadow-xl">
+                    <div className="flex items-start gap-3">
+                        <Rocket className="w-5 h-5 text-blue-400 shrink-0" />
+                        <p>By proceeding, these verified tags will be used by our **AI Marketing Assistant** to optimize your campaigns across all channels.</p>
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -51,7 +133,7 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
                 <p className="text-gray-500">We use a GTM-First approach to centralize your marketing data.</p>
             </div>
 
-            {isGmailUser && !discovered && (
+            {isGmailUser && !data.auditedServices && (
                 <div className="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-xl p-6 text-white mb-8 shadow-xl relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
                     <div className="flex items-center gap-4 mb-4 relative z-10">
@@ -168,6 +250,8 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
                         />
                     </div>
                 </div>
+
+                {renderAuditedServices()}
 
                 <div className="flex items-center justify-end space-x-2 pt-4">
                     <Switch

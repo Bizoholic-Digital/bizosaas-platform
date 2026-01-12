@@ -73,6 +73,18 @@ class GTMOnboardingWorkflow:
                     )
                     results["provision_res"] = provision_res
                     results["actions_taken"].append("provisioned_ga4_in_existing_gtm")
+
+                # Perform Deep Audit of existing GTM
+                audit_res = await workflow.execute_activity(
+                    "audit_gtm_container_tags",
+                    {
+                        "access_token": google_access_token,
+                        "workspace_path": found_container["workspacePath"]
+                    },
+                    start_to_close_timeout=timedelta(seconds=30)
+                )
+                results["audit"] = audit_res
+                results["actions_taken"].append("audited_existing_gtm_tags")
             else:
                 results["strategy"] = "external_gtm_unmanaged"
                 results["message"] = "GTM detected on site but not found in your Google account. Please provide access or replace with our managed GTM."

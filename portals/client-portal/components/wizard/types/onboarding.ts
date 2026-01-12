@@ -48,6 +48,10 @@ export interface AnalyticsConfig {
     gaId?: string;
     gscId?: string;
     setupLater: boolean;
+    auditedServices?: {
+        essential: Array<{ id: string, name: string, service: string, status: string }>;
+        optional: Array<{ id: string, name: string, service: string, status: string }>;
+    };
 }
 
 export interface SocialMediaConfig {
