@@ -31,6 +31,7 @@ import { CategorizedToolSelectionStep } from './OnboardingSteps/CategorizedToolS
 import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
 import { AIAssistantIntroStep } from './OnboardingSteps/AIAssistantIntroStep';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
@@ -197,12 +198,17 @@ export function OnboardingWizard() {
 
             {/* Header */}
             <div className="w-full max-w-5xl flex justify-between items-center mb-8">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
-                    <span className="font-bold text-xl text-foreground tracking-tight">BizOSaaS</span>
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
+                        <span className="font-bold text-xl text-foreground tracking-tight">BizOSaaS</span>
+                    </div>
                 </div>
-                <div className="text-sm text-muted-foreground font-medium">
-                    Step {state.currentStep + 1} of {STEPS.length}
+                <div className="flex items-center gap-4">
+                    <ThemeToggle />
+                    <div className="text-sm text-muted-foreground font-medium hidden sm:block">
+                        Step {state.currentStep + 1} of {STEPS.length}
+                    </div>
                 </div>
             </div>
 
@@ -253,12 +259,12 @@ export function OnboardingWizard() {
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="border-t bg-gray-50/50 p-6 flex justify-between items-center">
+                            <div className="border-t bg-muted/30 p-6 flex justify-between items-center">
                                 <Button
-                                    variant="ghost"
+                                    variant="outline"
                                     onClick={prevStep}
                                     disabled={state.currentStep === 0 || isSubmitting}
-                                    className="text-muted-foreground hover:text-foreground"
+                                    className="border-border text-foreground hover:bg-muted"
                                 >
                                     Back
                                 </Button>

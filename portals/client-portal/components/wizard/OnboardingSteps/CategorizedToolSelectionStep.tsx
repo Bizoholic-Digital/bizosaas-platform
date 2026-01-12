@@ -137,7 +137,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                                 {isSelected ? (
                                                     <CheckCircle className="text-blue-600 mt-1" size={20} />
                                                 ) : (
-                                                    <Circle className="text-gray-300 mt-1" size={20} />
+                                                    <Circle className="text-muted-foreground/40 mt-1" size={20} />
                                                 )}
                                             </div>
                                             <div>
