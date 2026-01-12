@@ -44,6 +44,7 @@ export interface DigitalPresence {
 }
 
 export interface AnalyticsConfig {
+    gtmId?: string;
     gaId?: string;
     gscId?: string;
     setupLater: boolean;
@@ -130,6 +131,9 @@ export const INITIAL_STATE: OnboardingState = {
         microsoft: [],
     },
     analytics: {
+        gtmId: '',
+        gaId: '',
+        gscId: '',
         setupLater: false,
     },
     socialMedia: {

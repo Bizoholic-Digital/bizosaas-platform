@@ -90,8 +90,35 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
             )}
 
             <div className="space-y-4">
+                {/* Google Tag Manager - PRIORITY */}
+                <div className="border-2 border-blue-200 rounded-xl p-5 bg-blue-50/30 space-y-4 relative overflow-hidden group hover:border-blue-400 transition-colors">
+                    <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] px-2 py-0.5 font-bold uppercase tracking-widest rounded-bl-lg">
+                        Priority
+                    </div>
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-600 p-2 rounded-lg text-white shadow-md">
+                                <Sparkles size={24} />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-base font-bold">Google Tag Manager</Label>
+                                <p className="text-xs text-gray-500">Includes GA4, Ads, and FB Pixel automatically.</p>
+                            </div>
+                        </div>
+                        <Button variant="outline" size="sm" className="bg-white border-blue-200 text-blue-700 font-bold">Priority Setup</Button>
+                    </div>
+                    <div className="pt-2 border-t border-blue-100 mt-2">
+                        <Input
+                            placeholder="GTM-XXXXXXX"
+                            className="h-9 text-sm border-blue-100 focus:border-blue-500"
+                            value={data.gtmId}
+                            onChange={(e) => onUpdate({ gtmId: e.target.value })}
+                        />
+                    </div>
+                </div>
+
                 {/* Google Analytics */}
-                <div className="border rounded-xl p-5 bg-white space-y-4 relative overflow-hidden group hover:border-blue-300 transition-colors">
+                <div className="border rounded-xl p-5 bg-white space-y-4 relative overflow-hidden group hover:border-slate-300 transition-colors">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
@@ -99,14 +126,12 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-semibold">Google Analytics 4</Label>
-                                <p className="text-xs text-gray-500">For website traffic and conversion data</p>
+                                <p className="text-xs text-gray-500">Standalone GA4 connection</p>
                             </div>
                         </div>
-                        {/* Mock Connect Button - In real app, this triggers OAuth */}
                         <Button variant="outline" size="sm" className="bg-white">Connect</Button>
                     </div>
                     <div className="pt-2 border-t mt-2">
-                        <Label className="text-xs text-gray-500 mb-1.5 block">Or enter Property ID manually</Label>
                         <Input
                             placeholder="G-XXXXXXXXXX"
                             className="h-8 text-sm"
@@ -117,7 +142,7 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
                 </div>
 
                 {/* Google Search Console */}
-                <div className="border rounded-xl p-5 bg-white space-y-4 hover:border-blue-300 transition-colors">
+                <div className="border rounded-xl p-5 bg-white space-y-4 hover:border-slate-300 transition-colors">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
@@ -131,7 +156,6 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
                         <Button variant="outline" size="sm" className="bg-white">Connect</Button>
                     </div>
                     <div className="pt-2 border-t mt-2">
-                        <Label className="text-xs text-gray-500 mb-1.5 block">Or enter Domain property</Label>
                         <Input
                             placeholder="example.com"
                             className="h-8 text-sm"

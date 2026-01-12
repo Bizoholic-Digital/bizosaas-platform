@@ -4,6 +4,7 @@ from temporalio.client import Client
 from temporalio.worker import Worker
 from app.workflows.connector_setup import ConnectorSetupWorkflow, ConnectorSyncWorkflow
 from app.workflows.marketing_workflow import LeadNurtureWorkflow
+from app.workflows.gtm_workflow import GTMOnboardingWorkflow
 from app.activities import (
     validate_connector_credentials,
     save_connector_credentials,
@@ -11,7 +12,10 @@ from app.activities import (
     update_connector_status,
     check_fluent_crm_lead,
     tag_fluent_crm_contact,
-    generate_ai_marketing_content
+    generate_ai_marketing_content,
+    analyze_website_tags,
+    discover_gtm_assets,
+    setup_gtm_tags_workflow
 )
 import app.connectors # Ensure connectors are registered
 
@@ -23,7 +27,7 @@ async def run_worker():
     worker = Worker(
         client,
         task_queue="connector-tasks",
-        workflows=[ConnectorSetupWorkflow, ConnectorSyncWorkflow, LeadNurtureWorkflow],
+        workflows=[ConnectorSetupWorkflow, ConnectorSyncWorkflow, LeadNurtureWorkflow, GTMOnboardingWorkflow],
         activities=[
             validate_connector_credentials,
             save_connector_credentials,
@@ -31,7 +35,10 @@ async def run_worker():
             update_connector_status,
             check_fluent_crm_lead,
             tag_fluent_crm_contact,
-            generate_ai_marketing_content
+            generate_ai_marketing_content,
+            analyze_website_tags,
+            discover_gtm_assets,
+            setup_gtm_tags_workflow
         ],
     )
     

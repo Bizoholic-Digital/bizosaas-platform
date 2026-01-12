@@ -307,6 +307,44 @@ async def discover_google_services(
     for connector_id, result in discovery_results:
         results[connector_id] = result
 
+@router.post("/gtm/analyze")
+async def analyze_gtm_onboarding(
+    payload: Dict[str, Any],
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    """
+    Priority GTM-First Onboarding:
+    Triggers the Temporal workflow to analyze the website and Google assets.
+    """
+    website_url = payload.get("website_url")
+    access_token = payload.get("access_token")
+    
+    if not website_url:
+        raise HTTPException(status_code=400, detail="website_url is required")
+
+    try:
+        from temporalio.client import Client
+        client = await Client.connect(os.getenv("TEMPORAL_HOST", "localhost:7233"))
+        
+        handle = await client.start_workflow(
+            "GTMOnboardingWorkflow",
+            {
+                "website_url": website_url,
+                "google_access_token": access_token,
+                "tenant_id": str(current_user.tenant_id or current_user.id)
+            },
+            id=f"gtm-onboarding-{current_user.id}",
+            task_queue="connector-tasks"
+        )
+        
+        return {
+            "status": "started",
+            "workflow_id": handle.id,
+            "message": "GTM analysis and integration workflow started."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start GTM workflow: {e}")
+
     return {
         "status": "success",
         "discovered": results
