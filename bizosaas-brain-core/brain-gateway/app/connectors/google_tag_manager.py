@@ -67,6 +67,19 @@ class GoogleTagManagerConnector(BaseConnector, OAuthMixin):
                 resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
                 return resp.json()
 
+            if resource_type == 'tags':
+                account_id = self.credentials.get("account_id")
+                container_id = self.credentials.get("container_id") # This usually needs path format or specific ID
+                # GTM API often uses paths like accounts/{accountId}/containers/{containerId}/workspaces/{workspaceId}/tags
+                # For simplicity, we'll assume latest workspace if not specified, but the path is needed.
+                path = params.get("path") if params else None
+                if not path:
+                     return {"error": "Workspace path is required for tags"}
+
+                url = f"https://www.googleapis.com/tagmanager/v2/{path}/tags"
+                resp = await client.get(url, headers={"Authorization": f"Bearer {token}"})
+                return resp.json()
+
         return {"status": "unsupported_resource", "resource": resource_type}
 
     async def perform_action(self, action: str, payload: Dict[str, Any]) -> Dict[str, Any]:

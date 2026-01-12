@@ -49,7 +49,7 @@ async def analyze_website_tags(params: Dict[str, Any]) -> Dict[str, Any]:
 
 @activity.defn
 async def discover_gtm_assets(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Use GTM API to discover accounts and containers."""
+    """Use GTM API to discover accounts, containers, and workspaces."""
     access_token = params.get("access_token")
     tenant_id = params.get("tenant_id", "default")
     
@@ -64,26 +64,90 @@ async def discover_gtm_assets(params: Dict[str, Any]) -> Dict[str, Any]:
         accounts = accounts_data.get("account", [])
         
         if not accounts:
-            return {"status": "no_accounts_found"}
+            return {"status": "no_accounts_found", "containers": []}
             
-        # 2. Get Containers for first account (simplistic for now)
+        # 2. Get Containers for first account
         first_account_id = accounts[0]["accountId"]
         connector.credentials["account_id"] = first_account_id
         
         containers_data = await connector.sync_data("containers")
         containers = containers_data.get("container", [])
+
+        # 3. Enhance with Workspace info for each container
+        enriched_containers = []
+        for c in containers:
+            # Typically a container has at least one workspace. 
+            # We'll fetch workspaces for the container to find the default (usually named "Default Workspace")
+            # GTM API path: accounts/{accountId}/containers/{containerId}/workspaces
+            async with httpx.AsyncClient() as client:
+                url = f"https://www.googleapis.com/tagmanager/v2/accounts/{first_account_id}/containers/{c['containerId']}/workspaces"
+                resp = await client.get(url, headers={"Authorization": f"Bearer {access_token}"})
+                workspaces = resp.json().get("workspace", [])
+                
+                # Find default or latest
+                default_workspace = workspaces[0] if workspaces else None
+                
+                enriched_containers.append({
+                    "id": c["publicId"],
+                    "containerId": c["containerId"],
+                    "name": c["name"],
+                    "path": c["path"],
+                    "workspacePath": default_workspace["path"] if default_workspace else None,
+                    "workspaceId": default_workspace["workspaceId"] if default_workspace else None
+                })
         
         return {
             "status": "success",
             "account_id": first_account_id,
             "account_name": accounts[0]["name"],
-            "containers": [
-                {"id": c["publicId"], "name": c["name"], "path": c["path"]} 
-                for c in containers
-            ]
+            "containers": enriched_containers
         }
     except Exception as e:
         logger.error(f"Failed to discover GTM assets: {e}")
+        return {"error": str(e), "status": "failed"}
+
+@activity.defn
+async def provision_ga4_in_gtm(params: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Programmatically create a GA4 Configuration tag in a GTM workspace.
+    """
+    access_token = params.get("access_token")
+    workspace_path = params.get("workspace_path")
+    measurement_id = params.get("measurement_id")
+    
+    if not all([access_token, workspace_path, measurement_id]):
+        return {"error": "Missing required parameters for GTM provisioning"}
+
+    logger.info(f"Provisioning GA4 ({measurement_id}) in GTM workspace: {workspace_path}")
+    
+    try:
+        url = f"https://www.googleapis.com/tagmanager/v2/{workspace_path}/tags"
+        
+        # Tag Definition for GA4 Configuration
+        tag_config = {
+            "name": "GA4 Configuration - BizOSaaS Managed",
+            "type": "gaawe", # GA4 Configuration Type
+            "parameter": [
+                {"type": "template", "key": "measurementId", "value": measurement_id},
+                {"type": "boolean", "key": "sendPageView", "value": "true"}
+            ],
+            "firingTriggerId": ["2147483647"] # Built-in 'All Pages' trigger ID in GTM
+        }
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                url, 
+                headers={"Authorization": f"Bearer {access_token}"},
+                json=tag_config
+            )
+            
+            if resp.status_code == 200:
+                return {"status": "success", "tag": resp.json()}
+            else:
+                return {"status": "error", "message": resp.text, "code": resp.status_code}
+
+    except Exception as e:
+        logger.error(f"Failed to provision GA4 in GTM: {e}")
         return {"error": str(e), "status": "failed"}
 
 @activity.defn

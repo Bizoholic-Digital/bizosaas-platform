@@ -23,56 +23,60 @@ export function AnalyticsTrackingStep({ data, onUpdate }: Props) {
     const handleMagicConnect = async () => {
         setIsDiscovering(true);
         try {
-            // 1. In a real app, this would trigger OAuth with all scopes
-            // For now, we simulate the discovery process
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // 1. Analyze existing site tags first
+            const websiteUrl = user?.externalAccounts[0]?.externalId || "example.com"; // Fallback for demo
 
-            // Mock discovery result
-            onUpdate({
-                gaId: 'G-7Y2B8C9E1A',
-                gscId: 'https://' + (user?.primaryEmailAddress?.emailAddress.split('@')[0] || 'example') + '.com'
+            const analysisResp = await fetch('/api/brain/onboarding/gtm/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ website_url: websiteUrl })
             });
 
-            setDiscovered(true);
-            toast.success("Accounts discovered and connected automatically!");
+            if (analysisResp.ok) {
+                const data = await analysisResp.json();
+                toast.success("Strategic analysis started! We are auditing your site tags.");
+                setDiscovered(true);
+            }
         } catch (error) {
             toast.error("Discovery failed. Please connect manually.");
         } finally {
             setIsDiscovering(false);
         }
     };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Tracking & Analytics</h2>
-                <p className="text-gray-500">Data fuels our AI agents. Let's connect your sources.</p>
+                <h2 className="text-2xl font-bold text-gray-900">Digital Intelligence</h2>
+                <p className="text-gray-500">We use a GTM-First approach to centralize your marketing data.</p>
             </div>
 
             {isGmailUser && !discovered && (
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 text-white mb-8 shadow-lg animate-in zoom-in duration-500">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="bg-white/20 p-2 rounded-lg">
+                <div className="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-xl p-6 text-white mb-8 shadow-xl relative overflow-hidden group">
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
+                    <div className="flex items-center gap-4 mb-4 relative z-10">
+                        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-md">
                             <Sparkles className="w-6 h-6 text-yellow-300" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">Google Magic Connect</h3>
-                            <p className="text-blue-100 text-sm">We detected your Gmail account. We can automatically find your Analytics and Search Console accounts.</p>
+                            <h3 className="font-bold text-lg">GTM-First Discovery</h3>
+                            <p className="text-blue-100 text-sm">We'll scan your site for existing tags and consolidate them into a single managed GTM container.</p>
                         </div>
                     </div>
                     <Button
                         onClick={handleMagicConnect}
                         disabled={isDiscovering}
-                        className="w-full bg-white text-blue-700 hover:bg-blue-50 font-bold py-6 text-lg"
+                        className="w-full bg-white text-blue-900 hover:bg-blue-50 font-bold py-7 text-lg shadow-lg"
                     >
                         {isDiscovering ? (
                             <>
-                                <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                                Analyzing Google Account...
+                                <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
+                                Auditing Digital Presence...
                             </>
                         ) : (
                             <>
-                                <Sparkles className="w-5 h-5 mr-2" />
-                                Discover & Connect Now
+                                <Target className="w-5 h-5 mr-3" />
+                                Start Smart Integration
                             </>
                         )}
                     </Button>

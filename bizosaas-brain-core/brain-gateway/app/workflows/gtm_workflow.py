@@ -42,35 +42,64 @@ class GTMOnboardingWorkflow:
             )
             results["gtm_assets"] = gtm_assets
 
-        # 3. Strategy Decision
+        # 3. Strategy Decision & Execution
         if site_analysis.get("gtm_detected"):
-            # GTM exists. Check if it's one we have access to.
+            # Scenario B & C: GTM exists on site.
             gtm_id = site_analysis.get("gtm_id")
-            found_in_assets = False
+            results["actions_taken"].append(f"detected_existing_gtm_{gtm_id}")
+            
+            found_container = None
             if gtm_assets.get("status") == "success":
                 for container in gtm_assets.get("containers", []):
                     if container["id"] == gtm_id:
-                        found_in_assets = True
+                        found_container = container
                         break
             
-            if found_in_assets:
+            if found_container:
                 results["strategy"] = "optimize_existing_gtm"
-                # Here we would trigger an "Analysis" workflow to see what's inside
+                # If GA4 is missing on site but we have access to GTM, let's provision it in GTM
+                if not site_analysis.get("ga4_detected"):
+                    # Provision GA4 in GTM
+                    # For demo/real, we'd need a GA4 Measurement ID
+                    measurement_id = params.get("ga4_measurement_id", "G-DEMO12345")
+                    provision_res = await workflow.execute_activity(
+                        "provision_ga4_in_gtm",
+                        {
+                            "access_token": google_access_token,
+                            "workspace_path": found_container["workspacePath"],
+                            "measurement_id": measurement_id
+                        },
+                        start_to_close_timeout=timedelta(seconds=30)
+                    )
+                    results["provision_res"] = provision_res
+                    results["actions_taken"].append("provisioned_ga4_in_existing_gtm")
             else:
-                results["strategy"] = "external_gtm_detected_limited_access"
+                results["strategy"] = "external_gtm_unmanaged"
+                results["message"] = "GTM detected on site but not found in your Google account. Please provide access or replace with our managed GTM."
         else:
-            # GTM Missing. Priority is to set it up.
-            results["strategy"] = "provision_new_gtm"
-            if gtm_assets.get("status") == "success":
-                # We have access to Google. We can try to create a container or use an existing empty one.
-                # For now, we simulate a setup
-                setup_results = await workflow.execute_activity(
-                    "setup_gtm_tags_workflow",
-                    {"container_id": "NEW-GTM-PROVISIONED", "tags": ["ga4", "ads", "fb_pixel"]},
-                    start_to_close_timeout=timedelta(seconds=60)
+            # Scenario A: Clean Slate or Hardcoded Tags (Migration)
+            results["strategy"] = "provision_new_gtm_architecture"
+            
+            if gtm_assets.get("status") == "success" and gtm_assets.get("containers"):
+                # Use first available container as target for migration/new setup
+                target = gtm_assets["containers"][0]
+                results["target_container"] = target["id"]
+                
+                # Provision everything needed in this container
+                provision_res = await workflow.execute_activity(
+                    "provision_ga4_in_gtm",
+                    {
+                        "access_token": google_access_token,
+                        "workspace_path": target["workspacePath"],
+                        "measurement_id": params.get("ga4_measurement_id", "G-NEW12345")
+                    },
+                    start_to_close_timeout=timedelta(seconds=30)
                 )
-                results["setup_results"] = setup_results
-                results["actions_taken"].append("provisioned_new_container")
+                results["provision_res"] = provision_res
+                results["actions_taken"].append("provisioned_new_gtm_architecture")
+            else:
+                results["strategy"] = "manual_setup_required"
+                results["message"] = "No GTM containers found in your account. Please create one or grant permissions."
 
         return {
             "status": "completed",
