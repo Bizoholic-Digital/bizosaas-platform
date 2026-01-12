@@ -3,10 +3,13 @@ import httpx
 import os
 import psutil
 import time
+import logging
 from typing import Dict, Any, List, Optional
-from app.dependencies import get_current_user, require_role, get_db
+from app.dependencies import get_current_user, require_role, get_db, get_identity_port
 from sqlalchemy.orm import Session
-from domain.ports.identity_port import AuthenticatedUser
+from domain.ports.identity_port import AuthenticatedUser, IdentityPort
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
