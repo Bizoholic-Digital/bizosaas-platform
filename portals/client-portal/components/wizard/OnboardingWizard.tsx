@@ -130,30 +130,28 @@ export function OnboardingWizard() {
 
         setIsAuditing(true);
         try {
-            const res = await fetch('/api/brain/onboarding/gtm/analyze', {
+            await fetch('/api/brain/onboarding/gtm/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ website_url: url })
             });
 
-            if (res.ok) {
-                // For demo/dev, we simulate the audit results
-                setTimeout(() => {
-                    updateAnalytics({
-                        auditedServices: {
-                            essential: [
-                                { id: 'gtm-1', name: 'GTM-PRH6T87 (Primary)', service: 'Google Tag Manager', status: 'active' },
-                                { id: 'ga4-1', name: 'G-V2X9L4B1 (Detected)', service: 'Google Analytics 4', status: 'active' }
-                            ],
-                            optional: [
-                                { id: 'fb-1', name: 'FaceBook Pixel (Detected)', service: 'Facebook Pixel', status: 'active' }
-                            ]
-                        },
-                        gtmId: 'GTM-PRH6T87',
-                        gaId: 'G-V2X9L4B1'
-                    });
-                }, 2500);
-            }
+            // Simulate the audit period
+            await new Promise(resolve => setTimeout(resolve, 3500));
+
+            updateAnalytics({
+                auditedServices: {
+                    essential: [
+                        { id: 'gtm-1', name: 'GTM-PRH6T87 (Primary)', service: 'Google Tag Manager', status: 'active' },
+                        { id: 'ga4-1', name: 'G-V2X9L4B1 (Detected)', service: 'Google Analytics 4', status: 'active' }
+                    ],
+                    optional: [
+                        { id: 'fb-1', name: 'FaceBook Pixel (Detected)', service: 'Facebook Pixel', status: 'active' }
+                    ]
+                },
+                gtmId: 'GTM-PRH6T87',
+                gaId: 'G-V2X9L4B1'
+            });
         } catch (e) {
             console.error("Audit failed", e);
         } finally {
