@@ -29,7 +29,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import type { AgentCategory } from '@/lib/ai/types'
 
+import { useSetHeader } from '@/lib/contexts/HeaderContext'
+
 export default function AIAgentsPage() {
+    useSetHeader("AI Agents", "Manage and deploy specialized AI intelligence");
     const router = useRouter()
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState<string>('all')

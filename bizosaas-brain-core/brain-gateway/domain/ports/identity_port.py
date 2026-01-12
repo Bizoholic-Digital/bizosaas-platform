@@ -47,3 +47,13 @@ class IdentityPort(ABC):
     async def update_user_metadata(self, user_id: str, metadata: Dict[str, Any]) -> bool:
         """Update user's public metadata."""
         pass
+
+    @abstractmethod
+    async def delete_user(self, user_id: str) -> bool:
+        """Permanently delete a user from the identity provider."""
+        pass
+
+    @abstractmethod
+    async def list_users(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+        """Retrieve a list of users from the identity provider."""
+        pass

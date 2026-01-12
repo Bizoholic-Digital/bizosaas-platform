@@ -83,7 +83,33 @@ To further strengthen the platform's reliability and usability, the following fe
     - Persist Timezone/Preference selections.
 
 ### Phase 3: Admin UI Enhancements (Next)
-- [ ] **Admin Dashboard: User Detail View**
+- [x] **Admin Dashboard: User Detail View**
     - Add "Impersonate" button to User Actions.
     - Add "Activity Log" tab fetching data from `AuditLog`.
     - Add "Security" tab for Session revocation.
+
+## 6. Model Context Protocol (MCP) Integration
+
+BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with standardized tools for interacting with external services and the local system.
+
+### A. Integration Strategy: Hybrid Approach
+- **Direct Connectors:** Used for high-performance UI rendering and mass data synchronization (e.g., Auth, core CRM UI).
+- **MCP Servers:** Used for "Agent Agency" — giving AI agents the ability to autonomously perform tasks like reading code, researching the web, or managing leads.
+
+### B. MCP Server Inventory
+
+| Service | MCP Server | Category | Priority | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **FluentCRM** | `fluent-crm-mcp` | CRM | P1 | ✅ Implemented (Custom) |
+| **GitHub** | `github-mcp-server` | DevOps | P1 | ✅ Configured (Official) |
+| **Brave Search** | `brave-search` | Search | P2 | ⏳ Planned |
+| **Filesystem** | `filesystem` | Tools | P2 | ⏳ Planned |
+| **Google Drive** | `google-drive` | Productivity | P2 | ⏳ Planned |
+| **Slack** | `slack` | Communication | P3 | ⏳ Planned |
+| **Google Ads** | `google-ads` | Marketing | P3 | ⏳ Planned |
+| **S3 / R2** | `aws-s3` | Storage | P4 | ⏳ Planned |
+
+### C. Implementation Progress
+1.  **FluentCRM MCP Server:** Custom server built in Python to manage contacts via WordPress REST API.
+2.  **GitHub MCP Integration:** Configured to allow agents to manage pull requests and issues.
+3.  **Workflow Orchestration:** Temporal is used to coordinate complex tasks between MCP tools and core services.

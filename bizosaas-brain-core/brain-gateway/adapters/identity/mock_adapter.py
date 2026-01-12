@@ -28,3 +28,20 @@ class MockIdentityAdapter(IdentityPort):
 
     async def exchange_code(self, code: str) -> Dict:
         return {"access_token": "mock-token", "id_token": "mock-id-token"}
+
+    async def update_user_metadata(self, user_id: str, metadata: Dict) -> bool:
+        return True
+
+    async def delete_user(self, user_id: str) -> bool:
+        return True
+
+    async def list_users(self, skip: int = 0, limit: int = 100) -> list:
+        return [
+            {
+                "id": "dev-user-id",
+                "email": "dev@bizoholic.net",
+                "name": "dev_admin",
+                "role": "Super Admin",
+                "status": "active"
+            }
+        ]

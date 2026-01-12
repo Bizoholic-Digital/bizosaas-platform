@@ -3,7 +3,8 @@ import jwt
 import os
 from clerk_backend_api import Clerk
 from jwt import PyJWKClient
-from typing import Optional, List
+from datetime import datetime
+from typing import Optional, List, Dict, Any
 
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 
@@ -193,3 +194,52 @@ class ClerkAdapter(IdentityPort):
         except Exception as e:
             logger.error(f"Failed to update Clerk metadata for {user_id}: {e}")
             return False
+
+    async def delete_user(self, user_id: str) -> bool:
+        clerk_secret = os.getenv("CLERK_SECRET_KEY")
+        if not clerk_secret:
+            logger.error("CLERK_SECRET_KEY not set, cannot delete user")
+            return False
+            
+        try:
+            clerk_client = Clerk(bearer_auth=clerk_secret)
+            clerk_client.users.delete(user_id=user_id)
+            logger.info(f"Deleted user {user_id} from Clerk")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to delete user {user_id} from Clerk: {e}")
+            return False
+
+    async def list_users(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
+        clerk_secret = os.getenv("CLERK_SECRET_KEY")
+        if not clerk_secret:
+            logger.error("CLERK_SECRET_KEY not set, cannot list users")
+            return []
+            
+        try:
+            clerk_client = Clerk(bearer_auth=clerk_secret)
+            # Clerk API list users
+            clerk_users_response = clerk_client.users.list(
+                offset=skip,
+                limit=limit
+            )
+            
+            results = []
+            for cu in clerk_users_response:
+                # Normalize Clerk user objects to a consistent dictionary format
+                user_data = {
+                    "id": cu.id,
+                    "email": cu.email_addresses[0].email_address if cu.email_addresses else "No Email",
+                    "first_name": cu.first_name or "",
+                    "last_name": cu.last_name or "",
+                    "name": f"{cu.first_name or ''} {cu.last_name or ''}".strip() or "Unknown User",
+                    "role": cu.public_metadata.get("role", "User") if cu.public_metadata else "User",
+                    "status": "active" if not cu.banned else "inactive",
+                    "last_login": datetime.fromtimestamp(cu.last_active_at / 1000).isoformat() if cu.last_active_at else None,
+                    "created_at": datetime.fromtimestamp(cu.created_at / 1000).isoformat() if cu.created_at else None,
+                }
+                results.append(user_data)
+            return results
+        except Exception as e:
+            logger.error(f"Failed to list users from Clerk: {e}")
+            return []

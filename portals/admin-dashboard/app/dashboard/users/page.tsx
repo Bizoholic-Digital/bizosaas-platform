@@ -269,7 +269,7 @@ export default function GlobalUsersPage() {
                                                     <span className="capitalize">{u.status || 'inactive'}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-muted-foreground">{u.lastLogin || 'Never'}</TableCell>
+                                            <TableCell className="text-muted-foreground">{u.last_login || 'Never'}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="ghost" size="icon" title="Impersonate" onClick={() => handleImpersonate(u.id, u.name)}>

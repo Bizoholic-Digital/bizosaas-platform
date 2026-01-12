@@ -52,21 +52,105 @@ async def get_platform_stats(
 
 @router.get("/users")
 async def list_all_users(
-    request: Request,
     skip: int = 0,
     limit: int = 100,
-    user: AuthenticatedUser = Depends(require_role("Super Admin"))
+    identity: IdentityPort = Depends(get_identity_port),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
 ):
-    """Proxy to list all users from Auth Service"""
-    token = request.headers.get("Authorization")
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"{AUTH_URL}/users", # FastAPI Users common endpoint
-            headers={"Authorization": token} if token else {},
-            params={"skip": skip, "limit": limit},
-            timeout=10.0
-        )
-        return response.json()
+    """Retrieve all users directly from the Identity Provider (Clerk)."""
+    return await identity.list_users(skip=skip, limit=limit)
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    identity: IdentityPort = Depends(get_identity_port),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Permanently delete a user from Clerk and local database."""
+    # 1. Protection for Platform Owner
+    from app.models.user import User
+    from uuid import UUID
+    
+    # Try to find user email for protection and logging
+    user_email = "unknown"
+    try:
+        # Check Clerk directly first to get email
+        # (This is safer than relying on local DB which might be out of sync)
+        users = await identity.list_users(limit=500)
+        target = next((u for u in users if u["id"] == user_id), None)
+        if target:
+            user_email = target["email"]
+            if user_email == "bizoholic.digital@gmail.com":
+                raise HTTPException(status_code=403, detail="Cannot delete the platform owner account.")
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        logger.warning(f"Deletion context check failed: {e}")
+
+    # 2. Delete from Clerk
+    clerk_deleted = await identity.delete_user(user_id)
+    if not clerk_deleted:
+        raise HTTPException(status_code=500, detail="Failed to delete user from Clerk")
+
+    # 3. Delete from Local DB (if exists)
+    try:
+        # Clean up local references
+        # Since local IDs are GUIDs, we might not find them by string user_id
+        # We try both by ID and by Email
+        db_user = db.query(User).filter(User.email == user_email).first()
+        if db_user:
+            db.delete(db_user)
+            db.commit()
+    except Exception as e:
+        logger.error(f"Failed to cleanup local user record: {e}")
+
+    # 4. Audit Log
+    from app.models.user import AuditLog
+    log = AuditLog(
+        user_id=admin_user.id,
+        action="USER_DELETED_PERMANENTLY",
+        details={"target_user_id": user_id, "target_email": user_email}
+    )
+    db.add(log)
+    db.commit()
+
+    return {"status": "success", "message": f"User {user_email} deleted successfully"}
+
+@router.put("/users/{user_id}")
+async def update_user(
+    user_id: str,
+    user_data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    identity: IdentityPort = Depends(get_identity_port),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """Update user profile and roles, syncing to Clerk."""
+    # 1. Sync Role to Clerk if provided
+    if "role" in user_data:
+        # Protect owner role from being changed down? 
+        # (Optional, but let's focus on syncing for now)
+        await identity.update_user_metadata(user_id, {"role": user_data["role"]})
+
+    # 2. Update Local DB if user exists
+    from app.models.user import User
+    try:
+        # Find by email or GUID
+        # In this context, we usually have the email in user_data or fetched from Clerk
+        db_user = db.query(User).filter(User.email == user_data.get("email")).first()
+        if db_user:
+            if "name" in user_data:
+                parts = user_data["name"].split()
+                db_user.first_name = parts[0] if parts else ""
+                db_user.last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+            if "role" in user_data:
+                db_user.role = user_data["role"].lower()
+            if "status" in user_data:
+                db_user.is_active = (user_data["status"] == "active")
+            db.commit()
+    except Exception as e:
+        logger.error(f"Local DB sync failed during update: {e}")
+
+    return {"status": "success", "message": "User updated successfully"}
 
 @router.get("/tenants")
 async def list_all_tenants(
