@@ -103,8 +103,8 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                 key={cat.id}
                                 onClick={() => setSelectedCategory(cat.slug)}
                                 className={`w-full flex items-center justify-between p-3 rounded-lg text-sm transition-all ${isSelected
-                                        ? 'bg-blue-50 text-blue-700 font-medium'
-                                        : 'text-muted-foreground hover:bg-muted'
+                                    ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium'
+                                    : 'text-muted-foreground hover:bg-muted'
                                     }`}
                             >
                                 <div className="flex items-center gap-2">
@@ -128,7 +128,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                 return (
                                     <Card
                                         key={mcp.id}
-                                        className={`cursor-pointer transition-all hover:border-blue-300 ${isSelected ? 'border-blue-500 bg-blue-50/20 ring-1 ring-blue-500' : ''
+                                        className={`cursor-pointer transition-all hover:border-blue-300 ${isSelected ? 'border-blue-500 bg-blue-500/5 ring-1 ring-blue-500' : ''
                                             }`}
                                         onClick={() => toggleMcp(mcp.slug)}
                                     >
@@ -150,7 +150,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                                 <p className="text-sm text-muted-foreground mt-1">{mcp.description}</p>
                                                 <div className="flex flex-wrap gap-1 mt-3">
                                                     {mcp.capabilities.slice(0, 3).map(cap => (
-                                                        <span key={cap} className="text-[10px] bg-gray-100 text-muted-foreground px-2 py-0.5 rounded-full capitalize">
+                                                        <span key={cap} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full capitalize">
                                                             {cap}
                                                         </span>
                                                     ))}

@@ -18,25 +18,25 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
     const renderWebsiteStatus = () => {
         if (websiteUrl) {
             return (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 mb-6">
-                    <div className="bg-green-100 p-2 rounded-full">
-                        <Globe className="text-green-600 h-5 w-5" />
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 flex items-center gap-3 mb-6">
+                    <div className="bg-green-500/20 p-2 rounded-full">
+                        <Globe className="text-green-600 dark:text-green-400 h-5 w-5" />
                     </div>
                     <div>
-                        <p className="font-semibold text-green-900">Website Detected</p>
-                        <p className="text-sm text-green-700">{websiteUrl}</p>
+                        <p className="font-semibold text-green-700 dark:text-green-400">Website Detected</p>
+                        <p className="text-sm text-green-600/80 dark:text-green-400/80">{websiteUrl}</p>
                     </div>
                 </div>
             );
         }
         return (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center gap-3 mb-6">
-                <div className="bg-yellow-100 p-2 rounded-full">
-                    <Globe className="text-yellow-600 h-5 w-5" />
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 flex items-center gap-3 mb-6">
+                <div className="bg-yellow-500/20 p-2 rounded-full">
+                    <Globe className="text-yellow-600 dark:text-yellow-400 h-5 w-5" />
                 </div>
                 <div>
-                    <p className="font-semibold text-yellow-900">No Website Detected</p>
-                    <p className="text-sm text-yellow-700">We'll help you set up tracking manually later.</p>
+                    <p className="font-semibold text-yellow-700 dark:text-yellow-400">No Website Detected</p>
+                    <p className="text-sm text-yellow-600/80 dark:text-yellow-400/80">We'll help you set up tracking manually later.</p>
                 </div>
             </div>
         );
@@ -90,6 +90,7 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="none">No CRM used</SelectItem>
+                            <SelectItem value="fluentcrm">FluentCRM</SelectItem>
                             <SelectItem value="hubspot">HubSpot</SelectItem>
                             <SelectItem value="salesforce">Salesforce</SelectItem>
                             <SelectItem value="zoho">Zoho CRM</SelectItem>
