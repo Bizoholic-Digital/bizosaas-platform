@@ -32,8 +32,8 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Company Identity</h2>
-                <p className="text-gray-500">Let's start with your business basics.</p>
+                <h2 className="text-2xl font-bold text-foreground">Company Identity</h2>
+                <p className="text-muted-foreground">Let's start with your business basics.</p>
             </div>
 
             <div className="space-y-4">
@@ -50,9 +50,9 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         </Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {[...(discovery.google || []), ...(discovery.microsoft || [])].map((svc: any) => (
-                                <div key={svc.id} className="bg-white p-2.5 rounded border border-green-200 flex justify-between items-center text-sm shadow-sm">
+                                <div key={svc.id} className="bg-card p-2.5 rounded border border-green-200 flex justify-between items-center text-sm shadow-sm">
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-gray-800">{svc.name}</span>
+                                        <span className="font-medium text-foreground">{svc.name}</span>
                                         {svc.cost && <span className="text-[10px] text-orange-600 font-bold uppercase">{svc.cost} May Apply</span>}
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -75,10 +75,10 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         </Label>
                         <div className="flex gap-2">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
                                 <Input
                                     placeholder="Paste your Google Maps link to auto-fill"
-                                    className="pl-9 bg-white"
+                                    className="pl-9 bg-card"
                                     value={data.gmbLink || ''}
                                     onChange={(e) => onUpdate({ gmbLink: e.target.value })}
                                 />
@@ -116,7 +116,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 <div className="space-y-2">
                     <Label>Location</Label>
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
                         <Input
                             value={data.location}
                             onChange={(e) => onUpdate({ location: e.target.value })}
@@ -130,7 +130,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                     <div className="space-y-2">
                         <Label>Website (Optional)</Label>
                         <div className="relative">
-                            <Globe className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                            <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
                             <Input
                                 value={data.website}
                                 onChange={(e) => onUpdate({ website: e.target.value })}
@@ -142,7 +142,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                     <div className="space-y-2">
                         <Label>Phone (Optional)</Label>
                         <div className="relative">
-                            <Phone className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                            <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
                             <Input
                                 value={data.phone}
                                 onChange={(e) => onUpdate({ phone: e.target.value })}

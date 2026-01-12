@@ -22,8 +22,8 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Pro
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4 text-blue-600">
                     <Bot size={32} />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Meet Your AI Success Manager</h2>
-                <p className="text-gray-500 mt-2 text-lg">Your dedicated advocate for seamless growth.</p>
+                <h2 className="text-3xl font-bold text-foreground tracking-tight">Meet Your AI Success Manager</h2>
+                <p className="text-muted-foreground mt-2 text-lg">Your dedicated advocate for seamless growth.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -31,23 +31,23 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Pro
                     <CardContent className="p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <Sparkles className="text-blue-600" size={20} />
-                            <h3 className="font-bold text-gray-900">Programmatic Setup</h3>
+                            <h3 className="font-bold text-foreground">Programmatic Setup</h3>
                         </div>
-                        <p className="text-sm text-gray-600 mb-6">
+                        <p className="text-sm text-muted-foreground mb-6">
                             We've identified <strong>{totalDetected} services</strong> linked to your accounts.
                             My team can automatically configure them for you, saving hours of manual work.
                         </p>
 
                         <div className="space-y-2">
                             {googleDetected.map((s: any) => (
-                                <div key={s.id} className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
-                                    <span className="text-gray-700 font-medium">{s.name}</span>
+                                <div key={s.id} className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
+                                    <span className="text-foreground font-medium">{s.name}</span>
                                     <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Ready</Badge>
                                 </div>
                             ))}
                             {microsoftDetected.map((s: any) => (
-                                <div key={s.id} className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
-                                    <span className="text-gray-700 font-medium">{s.name}</span>
+                                <div key={s.id} className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
+                                    <span className="text-foreground font-medium">{s.name}</span>
                                     <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0">Ready</Badge>
                                 </div>
                             ))}
@@ -56,23 +56,23 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Pro
                 </Card>
 
                 <div className="space-y-4">
-                    <div className="flex gap-4 items-start p-4 bg-white rounded-xl border-gray-100 border">
+                    <div className="flex gap-4 items-start p-4 bg-card rounded-xl border-gray-100 border">
                         <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                             <ShieldCheck size={20} />
                         </div>
                         <div>
-                            <h4 className="font-semibold text-gray-900">Safe & Secure</h4>
-                            <p className="text-sm text-gray-500 line-clamp-2">Only relevant marketing and business data is accessed. No personal data shared.</p>
+                            <h4 className="font-semibold text-foreground">Safe & Secure</h4>
+                            <p className="text-sm text-muted-foreground line-clamp-2">Only relevant marketing and business data is accessed. No personal data shared.</p>
                         </div>
                     </div>
 
-                    <div className="flex gap-4 items-start p-4 bg-white rounded-xl border-gray-100 border">
+                    <div className="flex gap-4 items-start p-4 bg-card rounded-xl border-gray-100 border">
                         <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
                             <Zap size={20} />
                         </div>
                         <div>
-                            <h4 className="font-semibold text-gray-900">One-Click Enablement</h4>
-                            <p className="text-sm text-gray-500 line-clamp-2">If a service isn't active on your console, we'll provision it programmatically.</p>
+                            <h4 className="font-semibold text-foreground">One-Click Enablement</h4>
+                            <p className="text-sm text-muted-foreground line-clamp-2">If a service isn't active on your console, we'll provision it programmatically.</p>
                         </div>
                     </div>
 
@@ -84,7 +84,7 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Pro
                             Confirm Team & Proceed
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Button>
-                        <p className="text-[10px] text-gray-400 text-center mt-3">
+                        <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
                             By proceeding, you authorize your AI CSM to coordinate with your connected accounts.
                         </p>
                     </div>

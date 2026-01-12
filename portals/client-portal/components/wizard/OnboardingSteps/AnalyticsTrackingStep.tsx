@@ -71,13 +71,13 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
             <div className="space-y-6 mt-8 animate-in fade-in zoom-in duration-700">
                 <div className="flex items-center gap-2 mb-2">
                     <CheckCircle2 className="text-green-600 w-5 h-5" />
-                    <h3 className="font-bold text-lg text-gray-900">Digital Audit Results</h3>
+                    <h3 className="font-bold text-lg text-foreground">Digital Audit Results</h3>
                 </div>
 
                 {/* Essential Section */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Essential (Required for AI)</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">Essential (Required for AI)</span>
                         <div className="h-px flex-1 bg-gray-100 ml-4" />
                     </div>
                     {data.auditedServices.essential.map(s => (
@@ -85,8 +85,8 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                             <div className="flex items-center gap-3">
                                 <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
                                 <div>
-                                    <p className="text-sm font-bold text-gray-900">{s.service}</p>
-                                    <p className="text-[10px] text-gray-500">{s.name}</p>
+                                    <p className="text-sm font-bold text-foreground">{s.service}</p>
+                                    <p className="text-[10px] text-muted-foreground">{s.name}</p>
                                 </div>
                             </div>
                             <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">RELIABLE</span>
@@ -97,20 +97,20 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                 {/* Optional Section */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Growth Tools (Good to Have)</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60">Growth Tools (Good to Have)</span>
                         <div className="h-px flex-1 bg-gray-100 ml-4" />
                     </div>
                     {data.auditedServices.optional.map(s => (
-                        <div key={s.id} className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-lg group hover:border-indigo-200 transition-colors">
+                        <div key={s.id} className="flex items-center justify-between p-3 bg-card border border-gray-100 rounded-lg group hover:border-indigo-200 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="w-2 h-2 rounded-full bg-indigo-400" />
                                 <div>
-                                    <p className="text-sm font-semibold text-gray-700">{s.service}</p>
-                                    <p className="text-[10px] text-gray-500">{s.name}</p>
+                                    <p className="text-sm font-semibold text-foreground">{s.service}</p>
+                                    <p className="text-[10px] text-muted-foreground">{s.name}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm" className="h-6 text-[10px] text-gray-400 hover:text-red-500">Disable</Button>
+                                <Button variant="ghost" size="sm" className="h-6 text-[10px] text-muted-foreground/60 hover:text-red-500">Disable</Button>
                                 <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">DETECTED</span>
                             </div>
                         </div>
@@ -130,15 +130,15 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Digital Intelligence</h2>
-                <p className="text-gray-500">We use a GTM-First approach to centralize your marketing data.</p>
+                <h2 className="text-2xl font-bold text-foreground">Digital Intelligence</h2>
+                <p className="text-muted-foreground">We use a GTM-First approach to centralize your marketing data.</p>
             </div>
 
             {isGmailUser && !data.auditedServices && (
                 <div className="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-xl p-6 text-white mb-8 shadow-xl relative overflow-hidden group">
-                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all" />
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-card/10 rounded-full blur-2xl group-hover:bg-card/20 transition-all" />
                     <div className="flex items-center gap-4 mb-4 relative z-10">
-                        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-md">
+                        <div className="bg-card/20 p-3 rounded-xl backdrop-blur-md">
                             <Sparkles className="w-6 h-6 text-yellow-300" />
                         </div>
                         <div>
@@ -149,7 +149,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                     <Button
                         onClick={handleMagicConnect}
                         disabled={isDiscovering}
-                        className="w-full bg-white text-blue-900 hover:bg-blue-50 font-bold py-7 text-lg shadow-lg"
+                        className="w-full bg-card text-blue-900 hover:bg-blue-50 font-bold py-7 text-lg shadow-lg"
                     >
                         {isDiscovering ? (
                             <>
@@ -189,10 +189,10 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-bold">Google Tag Manager</Label>
-                                <p className="text-xs text-gray-500">Includes GA4, Ads, and FB Pixel automatically.</p>
+                                <p className="text-xs text-muted-foreground">Includes GA4, Ads, and FB Pixel automatically.</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="bg-white border-blue-200 text-blue-700 font-bold">Priority Setup</Button>
+                        <Button variant="outline" size="sm" className="bg-card border-blue-200 text-blue-700 font-bold">Priority Setup</Button>
                     </div>
                     <div className="pt-2 border-t border-blue-100 mt-2">
                         <Input
@@ -205,7 +205,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                 </div>
 
                 {/* Google Analytics */}
-                <div className="border rounded-xl p-5 bg-white space-y-4 relative overflow-hidden group hover:border-slate-300 transition-colors">
+                <div className="border rounded-xl p-5 bg-card space-y-4 relative overflow-hidden group hover:border-slate-300 transition-colors">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
@@ -213,10 +213,10 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-semibold">Google Analytics 4</Label>
-                                <p className="text-xs text-gray-500">Standalone GA4 connection</p>
+                                <p className="text-xs text-muted-foreground">Standalone GA4 connection</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="bg-white">Connect</Button>
+                        <Button variant="outline" size="sm" className="bg-card">Connect</Button>
                     </div>
                     <div className="pt-2 border-t mt-2">
                         <Input
@@ -229,7 +229,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                 </div>
 
                 {/* Google Search Console */}
-                <div className="border rounded-xl p-5 bg-white space-y-4 hover:border-slate-300 transition-colors">
+                <div className="border rounded-xl p-5 bg-card space-y-4 hover:border-slate-300 transition-colors">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
@@ -237,10 +237,10 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-semibold">Search Console</Label>
-                                <p className="text-xs text-gray-500">For SEO performance and keywords</p>
+                                <p className="text-xs text-muted-foreground">For SEO performance and keywords</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="bg-white">Connect</Button>
+                        <Button variant="outline" size="sm" className="bg-card">Connect</Button>
                     </div>
                     <div className="pt-2 border-t mt-2">
                         <Input
@@ -260,7 +260,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                         checked={data.setupLater}
                         onCheckedChange={(checked) => onUpdate({ setupLater: checked })}
                     />
-                    <Label htmlFor="setup-later" className="text-sm text-gray-500">I'll set this up later</Label>
+                    <Label htmlFor="setup-later" className="text-sm text-muted-foreground">I'll set this up later</Label>
                 </div>
             </div>
         </div>

@@ -42,8 +42,8 @@ export function AgentSelectionStep({ data, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Setup Your AI Agent</h2>
-                <p className="text-gray-500">Choose a persona to help manage your business.</p>
+                <h2 className="text-2xl font-bold text-foreground">Setup Your AI Agent</h2>
+                <p className="text-muted-foreground">Choose a persona to help manage your business.</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 mb-8">
@@ -58,14 +58,14 @@ export function AgentSelectionStep({ data, onUpdate }: Props) {
                             onClick={() => onUpdate({ persona: persona.id as any })}
                         >
                             <CardContent className="p-4 flex items-start gap-4">
-                                <div className={`p-3 rounded-lg ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                                <div className={`p-3 rounded-lg ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-muted-foreground'}`}>
                                     <Icon size={24} />
                                 </div>
                                 <div>
-                                    <h3 className={`font-semibold ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                                    <h3 className={`font-semibold ${isSelected ? 'text-blue-900' : 'text-foreground'}`}>
                                         {persona.title}
                                     </h3>
-                                    <p className="text-sm text-gray-500 mt-1">
+                                    <p className="text-sm text-muted-foreground mt-1">
                                         {persona.description}
                                     </p>
                                 </div>
@@ -75,11 +75,11 @@ export function AgentSelectionStep({ data, onUpdate }: Props) {
                 })}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <div className="grid md:grid-cols-2 gap-6 bg-card p-6 rounded-xl border border-gray-100 shadow-sm">
                 <div className="space-y-2">
                     <Label>Agent Name</Label>
                     <div className="relative">
-                        <User className="absolute left-3 top-3 text-gray-400" size={18} />
+                        <User className="absolute left-3 top-3 text-muted-foreground/60" size={18} />
                         <Input
                             value={data.name}
                             onChange={(e) => onUpdate({ name: e.target.value })}

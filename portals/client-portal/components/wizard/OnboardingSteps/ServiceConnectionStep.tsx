@@ -73,8 +73,8 @@ export function ServiceConnectionStep({ data, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Connect Your Services</h2>
-                <p className="text-gray-500">Integrate your existing platforms to power AI automation.</p>
+                <h2 className="text-2xl font-bold text-foreground">Connect Your Services</h2>
+                <p className="text-muted-foreground">Integrate your existing platforms to power AI automation.</p>
             </div>
 
             {error && (
@@ -95,7 +95,7 @@ export function ServiceConnectionStep({ data, onUpdate }: Props) {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold text-lg">WordPress</h3>
-                                    <p className="text-sm text-gray-500">Connect your website for content management</p>
+                                    <p className="text-sm text-muted-foreground">Connect your website for content management</p>
                                 </div>
                             </div>
                             {data.wordpress?.connected && (
@@ -147,13 +147,13 @@ export function ServiceConnectionStep({ data, onUpdate }: Props) {
                                         </>
                                     ) : 'Connect WordPress'}
                                 </Button>
-                                <p className="text-xs text-center text-gray-400">
+                                <p className="text-xs text-center text-muted-foreground/60">
                                     Go to Users → Profile → Application Passwords in WP Admin to generate one.
                                 </p>
                             </div>
                         ) : (
-                            <div className="flex justify-between items-center bg-white p-3 rounded border">
-                                <span className="text-sm text-gray-600 truncate">{data.wordpress.siteUrl}</span>
+                            <div className="flex justify-between items-center bg-card p-3 rounded border">
+                                <span className="text-sm text-muted-foreground truncate">{data.wordpress.siteUrl}</span>
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -178,7 +178,7 @@ export function ServiceConnectionStep({ data, onUpdate }: Props) {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold">FluentCRM</h3>
-                                    <p className="text-xs text-gray-500">Marketing automation</p>
+                                    <p className="text-xs text-muted-foreground">Marketing automation</p>
                                 </div>
                             </div>
                             <Button
@@ -206,7 +206,7 @@ export function ServiceConnectionStep({ data, onUpdate }: Props) {
                                 </div>
                                 <div>
                                     <h3 className="font-semibold">WooCommerce</h3>
-                                    <p className="text-xs text-gray-500">E-commerce store</p>
+                                    <p className="text-xs text-muted-foreground">E-commerce store</p>
                                 </div>
                             </div>
                             <Button

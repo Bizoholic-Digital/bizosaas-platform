@@ -33,8 +33,8 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                 <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                     <CheckCircle2 size={32} />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Strategy Draft Ready</h2>
-                <p className="text-gray-500">Based on your inputs, we've designed this initial plan.</p>
+                <h2 className="text-2xl font-bold text-foreground">Strategy Draft Ready</h2>
+                <p className="text-muted-foreground">Based on your inputs, we've designed this initial plan.</p>
             </div>
 
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-6 relative overflow-hidden">
@@ -46,22 +46,22 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                 </p>
 
                 <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                    <div className="bg-white/60 p-3 rounded-lg">
-                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Channels</span>
-                        <span className="font-semibold text-gray-900">
+                    <div className="bg-card/60 p-3 rounded-lg">
+                        <span className="text-muted-foreground block text-xs uppercase tracking-wider">Channels</span>
+                        <span className="font-semibold text-foreground">
                             {data.socialMedia.platforms.length ? data.socialMedia.platforms.join(', ') : 'SEO & Content'}
                         </span>
                     </div>
-                    <div className="bg-white/60 p-3 rounded-lg">
-                        <span className="text-gray-500 block text-xs uppercase tracking-wider">Budget Allocation</span>
-                        <span className="font-semibold text-gray-900">
+                    <div className="bg-card/60 p-3 rounded-lg">
+                        <span className="text-muted-foreground block text-xs uppercase tracking-wider">Budget Allocation</span>
+                        <span className="font-semibold text-foreground">
                             70% Acquisition / 30% Retargeting
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div className="text-center text-sm text-gray-500 py-4">
+            <div className="text-center text-sm text-muted-foreground py-4">
                 Our AI Agents are ready to execute this plan upon your approval.
             </div>
         </div>

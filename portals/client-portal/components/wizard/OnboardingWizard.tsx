@@ -193,15 +193,15 @@ export function OnboardingWizard() {
     const isLastStep = state.currentStep === STEPS.length - 1;
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center p-4 md:p-8 font-sans">
+        <div className="min-h-screen bg-background flex flex-col items-center p-4 md:p-8 font-sans">
 
             {/* Header */}
             <div className="w-full max-w-5xl flex justify-between items-center mb-8">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
-                    <span className="font-bold text-xl text-gray-900 tracking-tight">BizOSaaS</span>
+                    <span className="font-bold text-xl text-foreground tracking-tight">BizOSaaS</span>
                 </div>
-                <div className="text-sm text-gray-400 font-medium">
+                <div className="text-sm text-muted-foreground font-medium">
                     Step {state.currentStep + 1} of {STEPS.length}
                 </div>
             </div>
@@ -217,8 +217,8 @@ export function OnboardingWizard() {
                         return (
                             <div
                                 key={step.id}
-                                className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${isActive ? 'bg-white shadow-sm text-blue-700' :
-                                    isCompleted ? 'text-gray-600' : 'text-gray-400'
+                                className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${isActive ? 'bg-card shadow-sm text-blue-700' :
+                                    isCompleted ? 'text-muted-foreground' : 'text-muted-foreground/50'
                                     }`}
                             >
                                 <div className={`p-1.5 rounded-md ${isActive ? 'bg-blue-100' :
@@ -236,11 +236,11 @@ export function OnboardingWizard() {
 
                 {/* Main Card */}
                 <div className="lg:col-span-9">
-                    <Card className="shadow-xl bg-white border-0 overflow-hidden min-h-[500px] flex flex-col">
+                    <Card className="shadow-xl bg-card border border-border overflow-hidden min-h-[500px] flex flex-col">
                         <CardContent className="p-0 flex-1 flex flex-col">
 
                             {/* Progress Bar (Mobile) */}
-                            <div className="lg:hidden h-1.5 bg-gray-100 w-full">
+                            <div className="lg:hidden h-1.5 bg-muted w-full">
                                 <div
                                     className="h-full bg-blue-600 transition-all duration-300"
                                     style={{ width: `${((state.currentStep + 1) / STEPS.length) * 100}%` }}
@@ -258,7 +258,7 @@ export function OnboardingWizard() {
                                     variant="ghost"
                                     onClick={prevStep}
                                     disabled={state.currentStep === 0 || isSubmitting}
-                                    className="text-gray-500 hover:text-gray-700"
+                                    className="text-muted-foreground hover:text-foreground"
                                 >
                                     Back
                                 </Button>

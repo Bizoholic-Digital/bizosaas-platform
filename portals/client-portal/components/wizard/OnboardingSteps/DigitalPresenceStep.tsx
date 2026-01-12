@@ -45,8 +45,8 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Digital Presence</h2>
-                <p className="text-gray-500">Connect your existing tech stack.</p>
+                <h2 className="text-2xl font-bold text-foreground">Digital Presence</h2>
+                <p className="text-muted-foreground">Connect your existing tech stack.</p>
             </div>
 
             {renderWebsiteStatus()}
@@ -72,7 +72,7 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
                             <SelectItem value="other">Other / None</SelectItem>
                         </SelectContent>
                     </Select>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                         We'll customize integration instructions based on your platform.
                     </p>
                 </div>
@@ -101,7 +101,7 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
                 <div className="flex items-center justify-between border rounded-lg p-4">
                     <div className="space-y-0.5">
                         <Label className="text-base">Tracking Scripts</Label>
-                        <p className="text-sm text-gray-500">Do you already have GA4 or Pixel installed?</p>
+                        <p className="text-sm text-muted-foreground">Do you already have GA4 or Pixel installed?</p>
                     </div>
                     <Switch
                         checked={data.hasTracking}

@@ -25,12 +25,12 @@ export function ToolIntegrationStep({ data, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Tools Integration</h2>
-                <p className="text-gray-500">Connect your marketing stack.</p>
+                <h2 className="text-2xl font-bold text-foreground">Tools Integration</h2>
+                <p className="text-muted-foreground">Connect your marketing stack.</p>
             </div>
 
             <div className="space-y-6">
-                <div className="bg-white border rounded-xl p-5 space-y-4">
+                <div className="bg-card border rounded-xl p-5 space-y-4">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
                             <Mail size={20} />
@@ -54,7 +54,7 @@ export function ToolIntegrationStep({ data, onUpdate }: Props) {
                     </Select>
                 </div>
 
-                <div className="bg-white border rounded-xl p-5 space-y-4">
+                <div className="bg-card border rounded-xl p-5 space-y-4">
                     <div className="flex items-center gap-3 mb-2">
                         <div className="bg-green-100 p-2 rounded-lg text-green-600">
                             <Megaphone size={20} />

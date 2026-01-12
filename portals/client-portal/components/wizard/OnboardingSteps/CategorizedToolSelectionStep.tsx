@@ -86,8 +86,8 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Select Your Tools</h2>
-                <p className="text-gray-500">Choose the platforms you use to power your business.</p>
+                <h2 className="text-2xl font-bold text-foreground">Select Your Tools</h2>
+                <p className="text-muted-foreground">Choose the platforms you use to power your business.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[400px]">
@@ -104,7 +104,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                 onClick={() => setSelectedCategory(cat.slug)}
                                 className={`w-full flex items-center justify-between p-3 rounded-lg text-sm transition-all ${isSelected
                                         ? 'bg-blue-50 text-blue-700 font-medium'
-                                        : 'text-gray-600 hover:bg-gray-50'
+                                        : 'text-muted-foreground hover:bg-muted'
                                     }`}
                             >
                                 <div className="flex items-center gap-2">
@@ -142,15 +142,15 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-gray-900">{mcp.name}</h3>
+                                                    <h3 className="font-semibold text-foreground">{mcp.name}</h3>
                                                     {mcp.is_official && (
                                                         <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">Official</span>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-gray-500 mt-1">{mcp.description}</p>
+                                                <p className="text-sm text-muted-foreground mt-1">{mcp.description}</p>
                                                 <div className="flex flex-wrap gap-1 mt-3">
                                                     {mcp.capabilities.slice(0, 3).map(cap => (
-                                                        <span key={cap} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">
+                                                        <span key={cap} className="text-[10px] bg-gray-100 text-muted-foreground px-2 py-0.5 rounded-full capitalize">
                                                             {cap}
                                                         </span>
                                                     ))}
@@ -162,7 +162,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                             })}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground/60">
                             <Icons.PackageOpen size={48} className="mb-4 opacity-20" />
                             <p>No tools available in this category yet.</p>
                         </div>

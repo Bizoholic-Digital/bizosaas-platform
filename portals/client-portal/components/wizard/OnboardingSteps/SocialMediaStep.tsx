@@ -32,8 +32,8 @@ export function SocialMediaStep({ data, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Social Channels</h2>
-                <p className="text-gray-500">Where does your audience hang out?</p>
+                <h2 className="text-2xl font-bold text-foreground">Social Channels</h2>
+                <p className="text-muted-foreground">Where does your audience hang out?</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -47,15 +47,15 @@ export function SocialMediaStep({ data, onUpdate }: Props) {
                 cursor-pointer border rounded-xl p-4 transition-all duration-200
                 ${isSelected
                                     ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    : 'border-gray-200 hover:border-gray-300 hover:bg-muted'
                                 }
               `}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${isSelected ? 'bg-white' : platform.bg}`}>
+                                <div className={`p-2 rounded-lg ${isSelected ? 'bg-card' : platform.bg}`}>
                                     <platform.icon className={`h-6 w-6 ${platform.color}`} />
                                 </div>
-                                <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                                <span className={`font-medium ${isSelected ? 'text-blue-700' : 'text-foreground'}`}>
                                     {platform.name}
                                 </span>
                             </div>
@@ -71,7 +71,7 @@ export function SocialMediaStep({ data, onUpdate }: Props) {
 
                     {data.platforms.includes('facebook') && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                            <Label className="text-xs text-gray-500">Facebook Page URL</Label>
+                            <Label className="text-xs text-muted-foreground">Facebook Page URL</Label>
                             <Input
                                 placeholder="https://facebook.com/..."
                                 value={data.facebookPageId}
@@ -82,7 +82,7 @@ export function SocialMediaStep({ data, onUpdate }: Props) {
 
                     {data.platforms.includes('instagram') && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                            <Label className="text-xs text-gray-500">Instagram Handle</Label>
+                            <Label className="text-xs text-muted-foreground">Instagram Handle</Label>
                             <Input
                                 placeholder="@username"
                                 value={data.instagramHandle}
@@ -93,7 +93,7 @@ export function SocialMediaStep({ data, onUpdate }: Props) {
 
                     {data.platforms.includes('linkedin') && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                            <Label className="text-xs text-gray-500">LinkedIn Company URL</Label>
+                            <Label className="text-xs text-muted-foreground">LinkedIn Company URL</Label>
                             <Input
                                 placeholder="https://linkedin.com/company/..."
                                 value={data.linkedinCompanyId}
@@ -104,7 +104,7 @@ export function SocialMediaStep({ data, onUpdate }: Props) {
 
                     {data.platforms.includes('twitter') && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                            <Label className="text-xs text-gray-500">Twitter Handle</Label>
+                            <Label className="text-xs text-muted-foreground">Twitter Handle</Label>
                             <Input
                                 placeholder="@username"
                                 value={data.twitterHandle}

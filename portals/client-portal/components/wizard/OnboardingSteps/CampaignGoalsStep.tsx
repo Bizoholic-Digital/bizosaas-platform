@@ -22,8 +22,8 @@ export function CampaignGoalsStep({ data, onUpdate }: Props) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Campaign Goals</h2>
-                <p className="text-gray-500">What does success look like?</p>
+                <h2 className="text-2xl font-bold text-foreground">Campaign Goals</h2>
+                <p className="text-muted-foreground">What does success look like?</p>
             </div>
 
             <div className="space-y-4">
@@ -42,12 +42,12 @@ export function CampaignGoalsStep({ data, onUpdate }: Props) {
               `}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${data.primaryGoal === goal.id ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
+                                <div className={`p-2 rounded-lg ${data.primaryGoal === goal.id ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-muted-foreground'}`}>
                                     <goal.icon size={20} />
                                 </div>
                                 <div>
                                     <h4 className="font-semibold text-sm">{goal.label}</h4>
-                                    <p className="text-xs text-gray-500">{goal.desc}</p>
+                                    <p className="text-xs text-muted-foreground">{goal.desc}</p>
                                 </div>
                             </div>
                         </div>
@@ -70,7 +70,7 @@ export function CampaignGoalsStep({ data, onUpdate }: Props) {
                     onValueChange={(val) => onUpdate({ monthlyBudget: val[0] })}
                     className="py-4"
                 />
-                <div className="flex justify-between text-xs text-gray-400">
+                <div className="flex justify-between text-xs text-muted-foreground/60">
                     <span>$100</span>
                     <span>$50,000+</span>
                 </div>
@@ -80,7 +80,7 @@ export function CampaignGoalsStep({ data, onUpdate }: Props) {
                 <Label>Target Audience</Label>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label className="text-xs text-gray-500">Age Range</Label>
+                        <Label className="text-xs text-muted-foreground">Age Range</Label>
                         <Select
                             value={data.targetAudience.ageRange}
                             onValueChange={(val) => onUpdate({ targetAudience: { ...data.targetAudience, ageRange: val } })}
@@ -99,7 +99,7 @@ export function CampaignGoalsStep({ data, onUpdate }: Props) {
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-xs text-gray-500">Location</Label>
+                        <Label className="text-xs text-muted-foreground">Location</Label>
                         <Input
                             placeholder="Region / Country"
                             onChange={(e) => onUpdate({ targetAudience: { ...data.targetAudience, locations: [e.target.value] } })}
