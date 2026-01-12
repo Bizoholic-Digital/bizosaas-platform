@@ -3,34 +3,27 @@ import { brainApi, ApiResponse } from './brain-client';
 export interface SubscriptionPlan {
     id: string;
     name: string;
-    code: string;
+    slug: string;
     amount: number;
     currency: string;
     interval: string;
-    trial_period_days?: number;
-}
-
-export interface Customer {
-    id?: string;
-    email: string;
-    name?: string;
-    currency?: string;
-    metadata?: Record<string, any>;
+    description?: string;
 }
 
 export interface Subscription {
     id: string;
-    plan_id: string;
+    plan_slug: string;
     status: string;
     current_period_end: string;
 }
 
 export interface Invoice {
     id: string;
-    amount_due: number;
+    amount: number;
     currency: string;
     status: string;
     created_at: string;
+    paid_at?: string;
     pdf_url?: string;
 }
 
@@ -43,16 +36,12 @@ export class BillingApi {
         return brainApi.get<SubscriptionPlan[]>('/api/brain/billing/plans');
     }
 
-    async createCustomer(customer: Customer): Promise<ApiResponse<Customer>> {
-        return brainApi.post('/api/brain/billing/customers', customer);
+    async getSubscription(): Promise<ApiResponse<Subscription>> {
+        return brainApi.get<Subscription>('/api/brain/billing/subscription');
     }
 
-    async createSubscription(planCode: string): Promise<ApiResponse<Subscription>> {
-        return brainApi.post(`/api/brain/billing/subscriptions`, { plan_code: planCode });
-    }
-
-    async getSubscriptions(): Promise<ApiResponse<Subscription[]>> {
-        return brainApi.get<Subscription[]>('/api/brain/billing/subscriptions');
+    async subscribe(planSlug: string): Promise<ApiResponse<Subscription>> {
+        return brainApi.post(`/api/brain/billing/subscribe?plan_slug=${planSlug}`, {});
     }
 
     async getInvoices(): Promise<ApiResponse<Invoice[]>> {

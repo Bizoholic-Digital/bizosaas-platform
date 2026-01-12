@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -8,7 +8,9 @@ from domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType
-from app.ports.billing_port import BillingPort, Customer, Subscription, SubscriptionPlan, Invoice
+from app.services.billing_service import BillingService
+from app.api.dependencies import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -16,183 +18,140 @@ router = APIRouter()
 class PlanMessage(BaseModel):
     id: str
     name: str
-    code: str
+    slug: str
     amount: float
     currency: str
     interval: str
-    trial_period_days: Optional[int] = 0
-
-class CustomerMessage(BaseModel):
-    id: Optional[str] = None
-    email: str
-    name: Optional[str] = None
-    currency: str = "USD"
-    metadata: Dict[str, Any] = {}
+    description: Optional[str] = None
 
 class SubscriptionMessage(BaseModel):
     id: str
-    plan_id: str
+    plan_slug: str
     status: str
     current_period_end: datetime
 
 class InvoiceMessage(BaseModel):
     id: str
-    amount_due: float
+    amount: float
     currency: str
     status: str
     created_at: datetime
+    paid_at: Optional[datetime] = None
     pdf_url: Optional[str] = None
-
-# --- Helpers ---
-async def get_active_billing_connector(tenant_id: str) -> BillingPort:
-    configs = [c for c in ConnectorRegistry.get_all_configs() if c.id == "lago" or c.type == ConnectorType.OTHER] # Check type logic
-    
-    for config in configs:
-        key = f"{tenant_id}:{config.id}"
-        if key in active_connectors:
-            data = active_connectors[key]
-            connector = ConnectorRegistry.create_connector(config.id, tenant_id, data["credentials"])
-            if isinstance(connector, BillingPort):
-                return connector
-            
-    # Fallback to checking specifically for 'lago' if type match isn't strict
-    key = f"{tenant_id}:lago"
-    if key in active_connectors:
-         data = active_connectors[key]
-         connector = ConnectorRegistry.create_connector("lago", tenant_id, data["credentials"])
-         return connector
-         
-    raise HTTPException(status_code=404, detail="No billing connector configured.")
 
 # --- Endpoints ---
 
-@router.get("/status")
-async def get_billing_status(
-    user: AuthenticatedUser = Depends(get_current_user)
-):
-    """Check connectivity to billing provider"""
-    tenant_id = user.tenant_id or "default_tenant"
-    try:
-        connector = await get_active_billing_connector(tenant_id)
-        # We can implement validate_credentials or similar on connector base
-        is_valid = await connector.validate_credentials() if hasattr(connector, 'validate_credentials') else True
-        return {
-            "connected": is_valid,
-            "platform": "lago" # Dynamic if needed
-        }
-    except HTTPException:
-        return {"connected": False}
-    except Exception:
-        return {"connected": False}
-
 @router.get("/plans", response_model=List[PlanMessage])
 async def list_plans(
-    user: AuthenticatedUser = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_billing_connector(tenant_id)
+    service = BillingService(db)
+    plans = await service.get_plans()
     
-    try:
-        plans = await connector.get_plans()
-        return [
-            PlanMessage(
-                id=p.id,
-                name=p.name,
-                code=p.code,
-                amount=p.amount,
-                currency=p.currency,
-                interval=p.interval,
-                trial_period_days=p.trial_period_days
-            ) for p in plans
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Billing Error: {str(e)}")
+    results = []
+    for p in plans:
+        # Handle both internal model and PortPlan
+        p_id = getattr(p, "id", None)
+        p_name = getattr(p, "name", None)
+        p_slug = getattr(p, "slug", getattr(p, "code", None))
+        p_amount = getattr(p, "price", getattr(p, "amount", 0.0))
+        p_curr = getattr(p, "currency", "USD")
+        p_interval = getattr(p, "interval", "monthly")
+        p_desc = getattr(p, "description", None)
+        
+        results.append(PlanMessage(
+            id=str(p_id),
+            name=p_name,
+            slug=p_slug,
+            amount=float(p_amount),
+            currency=p_curr,
+            interval=p_interval,
+            description=p_desc
+        ))
+    return results
 
-@router.post("/customers", response_model=CustomerMessage)
-async def create_customer(
-    customer: CustomerMessage,
-    user: AuthenticatedUser = Depends(get_current_user)
+@router.get("/subscription", response_model=Optional[SubscriptionMessage])
+async def get_subscription(
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_billing_connector(tenant_id)
+    service = BillingService(db)
+    sub = await service.get_tenant_subscription(user.tenant_id)
+    if not sub:
+        return None
     
-    try:
-        data = Customer(
-            id=customer.id or user.id, # Use User ID as external ID if not provided
-            email=customer.email,
-            name=customer.name,
-            currency=customer.currency,
-            metadata=customer.metadata
-        )
-        result = await connector.create_customer(data)
-        return CustomerMessage(
-            id=result.id,
-            email=result.email,
-            name=result.name,
-            currency=result.currency,
-            metadata=result.metadata
-        )
-    except Exception as e:
-         raise HTTPException(status_code=500, detail=f"Billing Error: {str(e)}")
+    # Handle both internal model and PortSubscription
+    plan_slug = None
+    if hasattr(sub, "plan"):
+        plan_slug = sub.plan.slug
+    else:
+        plan_slug = getattr(sub, "plan_id", "unknown")
+        
+    return SubscriptionMessage(
+        id=str(sub.id),
+        plan_slug=plan_slug,
+        status=getattr(sub, "status", "active"),
+        current_period_end=sub.current_period_end
+    )
 
-@router.post("/subscriptions", response_model=SubscriptionMessage)
+@router.post("/subscribe", response_model=SubscriptionMessage)
 async def create_subscription(
-    plan_code: str,
-    user: AuthenticatedUser = Depends(get_current_user)
+    plan_slug: str,
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_billing_connector(tenant_id)
-    
+    service = BillingService(db)
     try:
-        # Assume user.id is the customer external_id
-        sub = await connector.create_subscription(user.id, plan_code)
+        sub = await service.create_subscription(user.tenant_id, plan_slug)
+        
+        # Handle both internal model and PortSubscription
+        res_plan_slug = plan_slug
+        if hasattr(sub, "plan"):
+             res_plan_slug = sub.plan.slug
+        elif hasattr(sub, "plan_id"):
+             res_plan_slug = sub.plan_id
+
         return SubscriptionMessage(
-            id=sub.id or "",
-            plan_id=sub.plan_id,
-            status=sub.status,
+            id=str(sub.id),
+            plan_slug=res_plan_slug,
+            status=getattr(sub, "status", "active"),
             current_period_end=sub.current_period_end
         )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Billing Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/subscriptions", response_model=List[SubscriptionMessage])
-async def list_subscriptions(
-     user: AuthenticatedUser = Depends(get_current_user)
+@router.post("/webhooks/razorpay")
+async def razorpay_webhook(
+    request: Request,
+    db: Session = Depends(get_db)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_billing_connector(tenant_id)
-    
-    try:
-        subs = await connector.get_customer_subscriptions(user.id)
-        return [
-            SubscriptionMessage(
-                id=s.id or "",
-                plan_id=s.plan_id,
-                status=s.status,
-                current_period_end=s.current_period_end
-            ) for s in subs
-        ]
-    except Exception as e:
-         raise HTTPException(status_code=500, detail=f"Billing Error: {str(e)}")
+    json_data = await request.json()
+    # Verify signature here
+    # Handle events: subscription.charged, order.paid, etc.
+    return {"status": "ok"}
 
 @router.get("/invoices", response_model=List[InvoiceMessage])
 async def list_invoices(
-    user: AuthenticatedUser = Depends(get_current_user)
+    user: AuthenticatedUser = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    tenant_id = user.tenant_id or "default_tenant"
-    connector = await get_active_billing_connector(tenant_id)
+    service = BillingService(db)
+    invoices = await service.list_invoices(user.tenant_id)
     
-    try:
-        invoices = await connector.get_customer_invoices(user.id)
-        return [
-            InvoiceMessage(
-                id=i.id,
-                amount_due=i.amount_due,
-                currency=i.currency,
-                status=i.status,
-                created_at=i.created_at,
-                pdf_url=i.invoice_pdf_url
-            ) for i in invoices
-        ]
-    except Exception as e:
-         raise HTTPException(status_code=500, detail=f"Billing Error: {str(e)}")
+    results = []
+    for i in invoices:
+        amount = getattr(i, "amount", getattr(i, "amount_due", 0.0))
+        pdf_url = getattr(i, "pdf_url", getattr(i, "invoice_pdf_url", None))
+        
+        results.append(InvoiceMessage(
+            id=str(i.id),
+            amount=float(amount),
+            currency=i.currency,
+            status=i.status,
+            created_at=i.created_at,
+            paid_at=getattr(i, "paid_at", None),
+            pdf_url=pdf_url
+        ))
+    return results

@@ -1,29 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Menu, X, Home, Users, ShoppingCart, BarChart3, 
-  Settings, Bell, CreditCard, FileText, LinkIcon, 
+import {
+  Menu, X, Home, Users, ShoppingCart, BarChart3,
+  Settings, Bell, CreditCard, FileText, LinkIcon,
   ChevronDown, ChevronRight, Moon, Sun, TrendingUp,
   DollarSign, User, Target, Calendar, Package,
   Mail, MessageSquare, Share2, Activity, Zap,
   Lightbulb, Key, Shield, Terminal, Database, Grid, Code
 } from 'lucide-react';
 import { CRMContent } from '../components/CRMContent';
+import { BillingContent } from '../components/BillingContent';
 
 export default function ClientPortalDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [theme, setTheme] = useState('light');
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 
+    const savedTheme = localStorage.getItem('theme') ||
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     setTheme(savedTheme);
     localStorage.setItem('theme', savedTheme);
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    
+
     setExpandedSections({
       'crm': false,
       'cms': false,
@@ -187,18 +188,17 @@ export default function ClientPortalDashboard() {
               setActiveTab(item.id);
             }
           }}
-          className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors ${
-            isActive 
-              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' 
+          className={`w-full flex items-center px-3 py-2 text-left rounded-lg transition-colors ${isActive
+              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-          } ${level > 0 ? 'ml-4' : ''}`}
+            } ${level > 0 ? 'ml-4' : ''}`}
         >
           <Icon className="w-4 h-4 mr-3 flex-shrink-0" />
           {isSidebarOpen && (
             <>
               <span className="flex-1">{item.label}</span>
               {hasChildren && (
-                isExpanded 
+                isExpanded
                   ? <ChevronDown className="w-4 h-4" />
                   : <ChevronRight className="w-4 h-4" />
               )}
@@ -252,14 +252,14 @@ export default function ClientPortalDashboard() {
   };
 
   const renderBillingContent = () => {
-    return renderSimplePlaceholder('Billing');
+    return <BillingContent activeTab={activeTab} />;
   };
 
   const renderIntegrationsContent = () => {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Integrations</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3 mb-4">
@@ -317,23 +317,23 @@ export default function ClientPortalDashboard() {
     return (
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h2>
-        
+
         <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">General Settings</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company Name</label>
-              <input 
-                type="text" 
-                defaultValue="Acme Corporation" 
+              <input
+                type="text"
+                defaultValue="Acme Corporation"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-              <input 
-                type="email" 
-                defaultValue="admin@acme.com" 
+              <input
+                type="email"
+                defaultValue="admin@acme.com"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
             </div>
@@ -372,7 +372,7 @@ export default function ClientPortalDashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -546,7 +546,7 @@ export default function ClientPortalDashboard() {
               {activeTab === 'dashboard' ? 'Dashboard' : activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </h1>
             <div className="flex items-center space-x-4">
-              <button 
+              <button
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
                 title="Notifications"
               >

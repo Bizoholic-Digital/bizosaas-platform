@@ -31,17 +31,18 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
         setIsLoading(true);
         try {
             // Parallel fetch
-            const [statusRes, plansRes, subsRes, invoicesRes] = await Promise.all([
-                billingApi.getStatus(),
+            const [plansRes, subRes, invoicesRes] = await Promise.all([
                 billingApi.getPlans(),
-                billingApi.getSubscriptions(),
+                billingApi.getSubscription(),
                 billingApi.getInvoices()
             ]);
 
-            if (statusRes.data) setConnection(statusRes.data);
             if (plansRes.data) setPlans(plansRes.data);
-            if (subsRes.data) setSubscriptions(subsRes.data);
+            if (subRes.data) setSubscriptions(subRes.data ? [subRes.data] : []);
             if (invoicesRes.data) setInvoices(invoicesRes.data);
+
+            // Connection status is implicit for internal system
+            setConnection({ connected: true, platform: 'internal' });
 
         } catch (error) {
             console.error('Failed to fetch billing data:', error);
@@ -68,21 +69,11 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
 
     // Find current plan
     const currentSubscription = subscriptions[0];
-    const currentPlan = plans.find(p => p.code === currentSubscription?.plan_id) || { name: 'Free', code: 'free' };
+    const currentPlan = plans.find(p => p.slug === currentSubscription?.plan_slug) || { name: 'Free', slug: 'free' };
 
     const renderOverview = () => (
         <div className="space-y-6">
-            {/* Connection Status Banner */}
-            {connection && !connection.connected && (
-                <div className="bg-orange-50 text-orange-800 p-4 rounded-lg flex items-center gap-3 border border-orange-200">
-                    <AlertTriangle className="h-5 w-5" />
-                    <div>
-                        <h4 className="font-semibold">Billing System Disconnected</h4>
-                        <p className="text-sm">We are unable to connect to the billing provider. Displayed data may be outdated.</p>
-                    </div>
-                    <button onClick={fetchBillingData} className="ml-auto text-sm font-medium hover:underline">Retry</button>
-                </div>
-            )}
+            {/* Connection Status Banner removed as it's internal now */}
 
             {/* Current Plan Card */}
             <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg p-6 text-white shadow-lg">
@@ -166,13 +157,25 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
         </div>
     );
 
+    const handleSubscribe = async (slug: string) => {
+        try {
+            const res = await billingApi.subscribe(slug);
+            if (res.data) {
+                toast.success(`Successfully subscribed to ${slug}!`);
+                fetchBillingData();
+            }
+        } catch (error) {
+            toast.error("Failed to update subscription.");
+        }
+    };
+
     const renderPlans = () => (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {plans.map((plan) => {
-                const isCurrent = currentSubscription?.plan_id === plan.code;
+                const isCurrent = currentSubscription?.plan_slug === plan.slug;
                 return (
                     <div
-                        key={plan.id || plan.code}
+                        key={plan.id || plan.slug}
                         className={`relative bg-white dark:bg-gray-900 rounded-lg border ${isCurrent
                             ? 'border-purple-500 dark:border-purple-500 ring-2 ring-purple-500/20'
                             : 'border-gray-200 dark:border-gray-800'
@@ -191,16 +194,18 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
                             <span className="text-3xl font-bold text-gray-900 dark:text-white">{plan.currency} {plan.amount}</span>
                             <span className="text-gray-500 dark:text-gray-400">/{plan.interval}</span>
                         </div>
-                        {/* Features list would come from API or hardcoded map based on plan code */}
+                        {/* Features list */}
                         <ul className="space-y-3 mb-8 flex-1">
                             <li className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                                 <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
                                 Core Platform Access
                             </li>
-                            <li className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                                <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
-                                {plan.trial_period_days ? `${plan.trial_period_days}-day Free Trial` : 'Instant Access'}
-                            </li>
+                            {plan.description && (
+                                <li className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                                    <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                                    {plan.description}
+                                </li>
+                            )}
                         </ul>
                         <button
                             className={`w-full py-2 rounded-lg font-semibold transition-colors ${isCurrent
@@ -208,6 +213,7 @@ export const BillingContent: React.FC<BillingContentProps> = ({ activeTab }) => 
                                 : 'bg-blue-600 text-white hover:bg-blue-700'
                                 }`}
                             disabled={isCurrent}
+                            onClick={() => handleSubscribe(plan.slug)}
                         >
                             {isCurrent ? 'Current Plan' : 'Upgrade'}
                         </button>
