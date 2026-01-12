@@ -4,7 +4,7 @@ import shutil
 from typing import Any, Dict, List, Optional
 
 from mcp.server.models import InitializationOptions
-from mcp.server import Notification, Server
+from mcp.server import Server
 from mcp.server.stdio import stdio_server
 import mcp.types as types
 from dotenv import load_dotenv
@@ -103,7 +103,7 @@ async def main():
                 server_name="filesystem",
                 server_version="0.1.0",
                 capabilities=server.get_capabilities(
-                    notification_options=Notification,
+                    notification_options=None,
                     experimental_capabilities={},
                 ),
             ),
