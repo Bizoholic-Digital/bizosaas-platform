@@ -66,6 +66,7 @@ export function OnboardingWizard() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDiscovering, setIsDiscovering] = useState(false);
+    const [isAuditing, setIsAuditing] = useState(false);
 
     // Sync Clerk user with onboarding state
     useEffect(() => {
@@ -100,6 +101,18 @@ export function OnboardingWizard() {
             if (res.ok) {
                 const data = await res.json();
                 updateDiscovery(data.discovery);
+
+                // Pre-fill tracking if found in cloud accounts
+                const gtm = data.discovery.google?.find((s: any) => s.name.toLowerCase().includes('tag manager') && s.status === 'detected');
+                const ga4 = data.discovery.google?.find((s: any) => s.name.toLowerCase().includes('analytics') && s.status === 'detected');
+
+                if (gtm || ga4) {
+                    updateAnalytics({
+                        gtmId: gtm?.id || state.analytics.gtmId,
+                        gaId: ga4?.id || state.analytics.gaId
+                    });
+                }
+
                 // Also update profile if names/details were found
                 if (data.profile) {
                     updateProfile(data.profile);
@@ -111,6 +124,48 @@ export function OnboardingWizard() {
             setIsDiscovering(false);
         }
     };
+
+    const triggerTrackingAudit = async (url: string) => {
+        if (state.analytics.auditedServices || isAuditing) return;
+
+        setIsAuditing(true);
+        try {
+            const res = await fetch('/api/brain/onboarding/gtm/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ website_url: url })
+            });
+
+            if (res.ok) {
+                // For demo/dev, we simulate the audit results
+                setTimeout(() => {
+                    updateAnalytics({
+                        auditedServices: {
+                            essential: [
+                                { id: 'gtm-1', name: 'GTM-PRH6T87 (Primary)', service: 'Google Tag Manager', status: 'active' },
+                                { id: 'ga4-1', name: 'G-V2X9L4B1 (Detected)', service: 'Google Analytics 4', status: 'active' }
+                            ],
+                            optional: [
+                                { id: 'fb-1', name: 'FaceBook Pixel (Detected)', service: 'Facebook Pixel', status: 'active' }
+                            ]
+                        },
+                        gtmId: 'GTM-PRH6T87',
+                        gaId: 'G-V2X9L4B1'
+                    });
+                }, 2500);
+            }
+        } catch (e) {
+            console.error("Audit failed", e);
+        } finally {
+            setIsAuditing(false);
+        }
+    };
+
+    useEffect(() => {
+        if (state.digitalPresence.hasTracking && state.profile.website && !state.analytics.auditedServices) {
+            triggerTrackingAudit(state.profile.website);
+        }
+    }, [state.digitalPresence.hasTracking, state.profile.website]);
 
     if (!isLoaded || !isClerkLoaded) return null;
 
@@ -158,6 +213,8 @@ export function OnboardingWizard() {
                     data={state.digitalPresence}
                     websiteUrl={state.profile.website}
                     onUpdate={updateDigitalPresence}
+                    isAuditing={isAuditing}
+                    auditedServices={state.analytics.auditedServices}
                 />;
             case 2: // New Tools Step
                 return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;

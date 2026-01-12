@@ -3,16 +3,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DigitalPresence } from '../types/onboarding';
-import { Globe, Layout, Database } from 'lucide-react';
+import { Globe, Layout, Database, Search, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 interface Props {
     data: DigitalPresence;
     websiteUrl?: string;
     onUpdate: (data: Partial<DigitalPresence>) => void;
+    isAuditing?: boolean;
+    auditedServices?: any;
 }
 
-export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
+export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, auditedServices }: Props) {
 
     // Adaptive logic: If website was detected/provided in step 1, we show that
     const renderWebsiteStatus = () => {
@@ -99,15 +101,53 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate }: Props) {
                     </Select>
                 </div>
 
-                <div className="flex items-center justify-between border rounded-lg p-4">
-                    <div className="space-y-0.5">
-                        <Label className="text-base">Tracking Scripts</Label>
-                        <p className="text-sm text-muted-foreground">Do you already have GA4 or Pixel installed?</p>
+                <div className="border rounded-lg p-5 bg-card/50 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <Label className="text-base flex items-center gap-2">
+                                <Search className="h-4 w-4 text-blue-500" /> Tracking Scripts
+                            </Label>
+                            <p className="text-sm text-muted-foreground">Detect GA4, Pixel, or GTM automatically.</p>
+                        </div>
+                        <Switch
+                            checked={data.hasTracking}
+                            onCheckedChange={(checked) => onUpdate({ hasTracking: checked })}
+                        />
                     </div>
-                    <Switch
-                        checked={data.hasTracking}
-                        onCheckedChange={(checked) => onUpdate({ hasTracking: checked })}
-                    />
+
+                    {data.hasTracking && (
+                        <div className="pt-4 border-t border-dashed">
+                            {isAuditing ? (
+                                <div className="flex items-center gap-3 text-blue-600 animate-pulse bg-blue-500/5 p-3 rounded-lg">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span className="text-sm font-medium">Scanning {websiteUrl || 'your site'} for tags...</span>
+                                </div>
+                            ) : auditedServices ? (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-green-600 bg-green-500/5 p-3 rounded-lg border border-green-500/10">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                        <span className="text-sm font-bold">Successfully detected {auditedServices.essential.length + auditedServices.optional.length} tracking scripts</span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 px-1">
+                                        {auditedServices.essential.map((s: any) => (
+                                            <span key={s.id} className="text-[10px] bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                                                <Sparkles className="h-2.5 w-2.5" /> {s.service}
+                                            </span>
+                                        ))}
+                                        {auditedServices.optional.map((s: any) => (
+                                            <span key={s.id} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
+                                                {s.service}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-xs text-muted-foreground italic px-3">
+                                    Waiting to scan {websiteUrl || 'website'}...
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
