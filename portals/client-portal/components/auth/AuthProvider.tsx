@@ -10,6 +10,7 @@ interface User {
   name: string;
   role: string;
   tenant?: string;
+  onboarded?: boolean;
 }
 
 interface AuthContextType {
@@ -57,13 +58,15 @@ function ClerkAuthProvider({ children }: { children: React.ReactNode }) {
       const primaryEmail = clerkUser.primaryEmailAddress?.emailAddress || "";
       const role = (clerkUser.publicMetadata?.role as string) || "user";
       const tenant = (clerkUser.publicMetadata?.tenant_id as string) || "default";
+      const onboarded = (clerkUser.publicMetadata?.onboarded as boolean) || false;
 
       const userData: User = {
         id: clerkUser.id,
         email: primaryEmail,
         name: clerkUser.fullName || primaryEmail.split('@')[0],
         role: role,
-        tenant: tenant
+        tenant: tenant,
+        onboarded: onboarded
       };
 
       setUser(userData);

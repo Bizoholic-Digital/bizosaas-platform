@@ -10,6 +10,7 @@ import {
 import ComprehensiveNavigation from './comprehensive-navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
 import { useAuth } from '../auth/AuthProvider';
+import { useUser } from '@clerk/nextjs';
 import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
@@ -46,6 +47,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -55,6 +57,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const {
     metrics,
   } = useSystemStatus();
+
+  // Onboarding enforcement
+  useEffect(() => {
+    if (clerkLoaded && clerkUser) {
+      const onboarded = clerkUser.publicMetadata?.onboarded;
+      if (!onboarded && pathname !== '/onboarding') {
+        router.replace('/onboarding');
+      }
+    }
+  }, [clerkUser, clerkLoaded, pathname, router]);
 
   // Initialize theme on client side
   useEffect(() => {

@@ -368,6 +368,12 @@ async def complete_onboarding(
             except Exception as e:
                 print(f"Failed to schedule provision for {mcp_slug}: {e}")
                 
+    # Mark user as onboarded in Clerk
+    try:
+        await identity.update_user_metadata(current_user.id, {"onboarded": True})
+    except Exception as e:
+        print(f"Failed to update user metadata: {e}")
+
     return {
         "status": "success", 
         "message": f"Onboarding completed. {provisioned_count} tools provisioning.", 

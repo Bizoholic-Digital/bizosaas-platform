@@ -6,19 +6,27 @@ import { useUser } from "@clerk/nextjs";
 
 export default function RootPage() {
     const router = useRouter();
-    const { isSignedIn, isLoaded } = useUser();
+    const { isSignedIn, isLoaded, user } = useUser();
 
     useEffect(() => {
         if (!isLoaded) return; // Wait for session to load
 
         if (isSignedIn) {
-            // User is authenticated, redirect to dashboard
-            router.replace('/dashboard');
+            // Check if user has completed onboarding
+            const onboarded = user?.publicMetadata?.onboarded;
+
+            if (onboarded) {
+                // User is authenticated and onboarded, redirect to dashboard
+                router.replace('/dashboard');
+            } else {
+                // User is authenticated but NOT onboarded, redirect to onboarding
+                router.replace('/onboarding');
+            }
         } else {
             // User is not authenticated, redirect to login
             router.replace('/login');
         }
-    }, [isSignedIn, isLoaded, router]);
+    }, [isSignedIn, isLoaded, user, router]);
 
     // Show loading state while redirecting
     return (

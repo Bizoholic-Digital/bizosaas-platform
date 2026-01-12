@@ -173,3 +173,23 @@ class ClerkAdapter(IdentityPort):
         if "admin" in user.roles or "super_admin" in user.roles:
             return True
         return False
+
+    async def update_user_metadata(self, user_id: str, metadata: Dict[str, Any]) -> bool:
+        clerk_secret = os.getenv("CLERK_SECRET_KEY")
+        if not clerk_secret:
+            logger.error("CLERK_SECRET_KEY not set, cannot update metadata")
+            return False
+            
+        try:
+            clerk_client = Clerk(bearer_auth=clerk_secret)
+            # update_user_metadata in clerk-backend-api
+            # public_metadata is a dict
+            clerk_client.users.update(
+                user_id=user_id,
+                public_metadata=metadata
+            )
+            logger.info(f"Updated Clerk metadata for user {user_id}: {metadata}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to update Clerk metadata for {user_id}: {e}")
+            return False

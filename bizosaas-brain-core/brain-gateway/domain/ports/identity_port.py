@@ -43,5 +43,7 @@ class IdentityPort(ABC):
         """Check if user has a specific permission (RBAC/ABAC)."""
         pass
     
-    # Optional: User Management operations (if Gateway needs to manage users)
-    # For now, we keep it read-only (AuthN/AuthZ)
+    @abstractmethod
+    async def update_user_metadata(self, user_id: str, metadata: Dict[str, Any]) -> bool:
+        """Update user's public metadata."""
+        pass
