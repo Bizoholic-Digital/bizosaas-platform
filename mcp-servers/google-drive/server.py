@@ -8,8 +8,8 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 import io
 
-from mcp.server.models import InitializationOptions, NotificationOptions
-from mcp.server import Server
+from mcp.server.models import InitializationOptions
+from mcp.server import Server, NotificationOptions
 from mcp.server.stdio import stdio_server
 import mcp.types as types
 from dotenv import load_dotenv
