@@ -12,7 +12,8 @@ import {
     Rocket,
     Megaphone,
     Bot,
-    Sparkles
+    Sparkles,
+    Layout
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +29,7 @@ import { AnalyticsTrackingStep } from './OnboardingSteps/AnalyticsTrackingStep';
 import { SocialMediaStep } from './OnboardingSteps/SocialMediaStep';
 import { CampaignGoalsStep } from './OnboardingSteps/CampaignGoalsStep';
 import { CategorizedToolSelectionStep } from './OnboardingSteps/CategorizedToolSelectionStep';
+import { ThemePluginSelectionStep } from './OnboardingSteps/ThemePluginSelectionStep';
 import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
 import { AIAssistantIntroStep } from './OnboardingSteps/AIAssistantIntroStep';
@@ -37,7 +39,8 @@ const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
     { id: 'presence', title: 'Presence', icon: Globe },
     { id: 'tools', title: 'Select Tools', icon: Plug },
-    { id: 'ai_intro', title: 'AI Team', icon: Sparkles }, // New Step
+    { id: 'design', title: 'Design', icon: Layout },
+    { id: 'ai_intro', title: 'AI Team', icon: Sparkles },
     { id: 'analytics', title: 'Analytics', icon: BarChart3 },
     { id: 'social', title: 'Social', icon: Share2 },
     { id: 'goals', title: 'Goals', icon: Target },
@@ -57,6 +60,7 @@ export function OnboardingWizard() {
         updateSocialMedia,
         updateGoals,
         updateTools,
+        updateMarketplace,
         updateAgent,
         setSocialLogin,
         nextStep,
@@ -216,7 +220,9 @@ export function OnboardingWizard() {
                 />;
             case 2: // New Tools Step
                 return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
-            case 3:
+            case 3: // Marketplace / Design Step
+                return <ThemePluginSelectionStep data={state.marketplace} onUpdate={updateMarketplace} />;
+            case 4:
                 return (
                     <AIAssistantIntroStep
                         discovery={state.discovery}
@@ -225,7 +231,7 @@ export function OnboardingWizard() {
                         onNext={nextStep}
                     />
                 );
-            case 4:
+            case 5:
                 return (
                     <AnalyticsTrackingStep
                         data={state.analytics}
@@ -233,13 +239,13 @@ export function OnboardingWizard() {
                         websiteUrl={state.profile.website}
                     />
                 );
-            case 5:
-                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
             case 6:
-                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
+                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
             case 7:
-                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
             case 8:
+                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
+            case 9:
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;

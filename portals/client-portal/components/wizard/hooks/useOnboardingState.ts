@@ -56,6 +56,10 @@ export function useOnboardingState() {
         setState(prev => ({ ...prev, agent: { ...prev.agent, ...agent } }));
     };
 
+    const updateMarketplace = (marketplace: Partial<OnboardingState['marketplace']>) => {
+        setState(prev => ({ ...prev, marketplace: { ...prev.marketplace, ...marketplace } }));
+    };
+
     const updateDiscovery = (discovery: Partial<OnboardingState['discovery']>) => {
         setState(prev => ({ ...prev, discovery: { ...prev.discovery, ...discovery } }));
     };
@@ -87,6 +91,7 @@ export function useOnboardingState() {
         updateSocialMedia,
         updateGoals,
         updateTools,
+        updateMarketplace,
         updateAgent,
         setSocialLogin,
         nextStep,

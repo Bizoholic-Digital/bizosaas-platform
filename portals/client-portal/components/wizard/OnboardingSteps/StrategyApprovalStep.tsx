@@ -48,7 +48,7 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                 <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
                     <div className="bg-card/60 p-3 rounded-lg">
                         <span className="text-muted-foreground block text-xs uppercase tracking-wider">Channels</span>
-                        <span className="font-semibold text-foreground">
+                        <span className="font-semibold text-foreground capitalize">
                             {data.socialMedia.platforms.length ? data.socialMedia.platforms.join(', ') : 'SEO & Content'}
                         </span>
                     </div>
@@ -56,6 +56,14 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                         <span className="text-muted-foreground block text-xs uppercase tracking-wider">Budget Allocation</span>
                         <span className="font-semibold text-foreground">
                             70% Acquisition / 30% Retargeting
+                        </span>
+                    </div>
+                    <div className="bg-card/60 p-3 rounded-lg col-span-2 border border-blue-200/50 bg-blue-500/5">
+                        <span className="text-blue-600/80 block text-[10px] uppercase font-bold tracking-widest mb-1">Technical Foundation</span>
+                        <span className="font-semibold text-blue-900 dark:text-blue-100 flex items-center gap-1.5">
+                            {data.analytics.gtmId || 'Auto-Provision GTM'}
+                            {data.marketplace.useBridge && <span className="text-xs font-normal opacity-60">• BizOSaaS Bridge Active</span>}
+                            {data.marketplace.selectedThemes.length > 0 && <span className="text-xs font-normal opacity-60">• {data.marketplace.selectedThemes[0]} Theme</span>}
                         </span>
                     </div>
                 </div>

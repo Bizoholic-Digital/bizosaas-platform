@@ -96,6 +96,25 @@ export interface ToolIntegration {
     };
 }
 
+export interface MarketplaceAsset {
+    id: string;
+    name: string;
+    slug: string;
+    type: 'theme' | 'plugin';
+    price: number | 'free';
+    provider: 'envato' | 'wordpress' | 'bizosaas' | 'other';
+    affiliateLink?: string;
+    isRecommended?: boolean;
+    description?: string;
+    image?: string;
+}
+
+export interface MarketplaceConfig {
+    selectedThemes: string[]; // slugs
+    selectedPlugins: string[]; // slugs
+    useBridge: boolean;
+}
+
 export interface OnboardingState {
     currentStep: number;
     socialLogin?: SocialLoginInfo;
@@ -106,6 +125,7 @@ export interface OnboardingState {
     socialMedia: SocialMediaConfig;
     goals: CampaignGoals;
     tools: ToolIntegration;
+    marketplace: MarketplaceConfig;
     agent: AIAgentConfig;
     isComplete: boolean;
 }
@@ -158,6 +178,11 @@ export const INITIAL_STATE: OnboardingState = {
     tools: {
         selectedMcps: [],
         adPlatforms: [],
+    },
+    marketplace: {
+        selectedThemes: [],
+        selectedPlugins: [],
+        useBridge: true, // Recommended by default
     },
     agent: {
         persona: 'csm',

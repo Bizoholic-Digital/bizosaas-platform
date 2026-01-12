@@ -40,20 +40,29 @@ export default function PluginAnalyticsPage() {
         </div>
     );
 
-    const totalViews = metrics.reduce((acc, curr) => acc + curr.views, 0);
-    const totalClicks = metrics.reduce((acc, curr) => acc + curr.clicks, 0);
-    const avgConversion = ((totalClicks / totalViews) * 100).toFixed(1);
+    const totalViews = metrics?.reduce((acc, curr) => acc + (curr?.views || 0), 0) || 0;
+    const totalClicks = metrics?.reduce((acc, curr) => acc + (curr?.clicks || 0), 0) || 0;
+    const avgConversion = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : "0.0";
+
+    const topRequested = metrics.length > 0
+        ? [...metrics].sort((a, b) => (b.demand_score || 0) - (a.demand_score || 0))[0]
+        : null;
 
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Plugin Marketplace Analytics</h1>
-                    <p className="text-muted-foreground">Monitor demand and user interest in platform extensions.</p>
+                    <h1 className="text-3xl font-bold tracking-tight">Plugin & Theme Marketplace</h1>
+                    <p className="text-muted-foreground">Manage platform extensions and monitor installation demand.</p>
                 </div>
-                <Button onClick={loadMetrics} variant="outline">
-                    <RefreshCw className="mr-2 h-4 w-4" /> Refresh Data
-                </Button>
+                <div className="flex gap-2">
+                    <Button onClick={loadMetrics} variant="outline">
+                        <RefreshCw className="mr-2 h-4 w-4" /> Refresh Data
+                    </Button>
+                    <Button>
+                        <Download className="mr-2 h-4 w-4" /> Add New Asset
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -93,8 +102,8 @@ export default function PluginAnalyticsPage() {
                         <Star className="h-4 w-4 text-yellow-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{metrics.sort((a, b) => b.demand_score - a.demand_score)[0]?.name}</div>
-                        <p className="text-xs text-muted-foreground">High demand score</p>
+                        <div className="text-2xl font-bold truncate">{topRequested?.name || 'N/A'}</div>
+                        <p className="text-xs text-muted-foreground">Highest demand score</p>
                     </CardContent>
                 </Card>
             </div>
@@ -164,20 +173,28 @@ export default function PluginAnalyticsPage() {
                             <tbody className="[&_tr:last-child]:border-0">
                                 {metrics.map((m) => (
                                     <tr key={m.slug} className="border-b transition-colors hover:bg-muted/50">
-                                        <td className="p-4 align-middle font-medium">{m.name}</td>
-                                        <td className="p-4 align-middle">{m.views}</td>
-                                        <td className="p-4 align-middle">{m.clicks}</td>
-                                        <td className="p-4 align-middle text-center">{m.install_attempts}</td>
+                                        <td className="p-4 align-middle font-medium">
+                                            <div className="flex flex-col">
+                                                <span>{m.name}</span>
+                                                <span className="text-[10px] text-muted-foreground uppercase">{m.category || 'Plugin'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-4 align-middle">{m.views || 0}</td>
+                                        <td className="p-4 align-middle">{m.clicks || 0}</td>
+                                        <td className="p-4 align-middle text-center">{m.install_attempts || 0}</td>
                                         <td className="p-4 align-middle">
                                             <div className="flex items-center gap-1">
-                                                {m.trend.startsWith('+') ? <TrendingUp className="h-3 w-3 text-green-500" /> : <TrendingDown className="h-3 w-3 text-red-500" />}
-                                                <span className={m.trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}>{m.trend}</span>
+                                                {(m.trend || '').startsWith('+') ? <TrendingUp className="h-3 w-3 text-green-500" /> : <TrendingDown className="h-3 w-3 text-red-500" />}
+                                                <span className={(m.trend || '').startsWith('+') ? 'text-green-600' : 'text-red-600'}>{m.trend || '0%'}</span>
                                             </div>
                                         </td>
                                         <td className="p-4 align-middle">
                                             <Badge variant={m.demand_score > 80 ? 'default' : 'secondary'} className={m.demand_score > 80 ? 'bg-red-500 hover:bg-red-600' : ''}>
-                                                {m.demand_score}
+                                                {m.demand_score || 0}
                                             </Badge>
+                                        </td>
+                                        <td className="p-4 align-middle text-right">
+                                            <Button variant="ghost" size="sm">Manage</Button>
                                         </td>
                                     </tr>
                                 ))}
