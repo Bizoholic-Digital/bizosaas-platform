@@ -2,7 +2,7 @@ import asyncio
 import os
 from typing import Any, Dict, List, Optional
 from github import Github
-from mcp.server.models import InitializationOptions
+from mcp.server.models import InitializationOptions, NotificationOptions, NotificationOptions
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 import mcp.types as types
@@ -107,7 +107,7 @@ async def main():
                 server_name="github-mcp",
                 server_version="0.1.0",
                 capabilities=server.get_capabilities(
-                    notification_options=None,
+                    notification_options=NotificationOptions(),
                     experimental_capabilities={},
                 ),
             ),

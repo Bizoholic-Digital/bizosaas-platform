@@ -63,7 +63,7 @@ services:
       - "8000"
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
-      - VECTOR_DB_URL=http://qdrant:6333
+      - VECTOR_DB_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
       - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET:-BizOSaaS2025!JWTSecret}
       - TEMPORAL_HOST=${TEMPORAL_HOST:-temporal:7233}

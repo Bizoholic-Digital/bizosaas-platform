@@ -2,7 +2,7 @@ import asyncio
 import os
 from typing import Any, Dict, List, Optional
 import boto3
-from mcp.server.models import InitializationOptions
+from mcp.server.models import InitializationOptions, NotificationOptions
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 import mcp.types as types
@@ -81,7 +81,7 @@ async def main():
                 server_name="s3-storage-mcp",
                 server_version="0.1.0",
                 capabilities=server.get_capabilities(
-                    notification_options=None,
+                    notification_options=NotificationOptions(),
                     experimental_capabilities={},
                 ),
             ),
