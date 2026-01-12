@@ -30,7 +30,10 @@ import { WorkflowOptimizationPanel } from '@/components/workflows/WorkflowOptimi
 import { brainApi } from '@/lib/brain-api';
 import { useAuth } from '@clerk/nextjs';
 
+import { useSetHeader } from '@/lib/contexts/HeaderContext';
+
 export default function WorkflowsPage() {
+    useSetHeader("Workflows", "Automation engine for business processes");
     const { getToken } = useAuth();
     const [workflows, setWorkflows] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -94,24 +97,8 @@ export default function WorkflowsPage() {
 
     return (
         <div className="p-3 md:p-6 space-y-4 md:space-y-6 max-w-7xl mx-auto overflow-x-hidden">
-            {/* Status Bar */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <div className="h-8 w-8 rounded-full border-2 border-white dark:border-slate-900 bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                            <Cpu className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                        <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-emerald-600 text-[10px] text-white flex items-center justify-center font-bold border-2 border-white dark:border-slate-900">
-                            3
-                        </div>
-                    </div>
-                    <div className="text-[10px] md:text-sm font-medium">
-                        <span className="text-emerald-600 dark:text-emerald-400">3 Active Workers</span>
-                        <span className="text-slate-400 mx-2 md:mx-4 tracking-tighter">|</span>
-                        <span className="text-slate-500">System Healthy</span>
-                    </div>
-                </div>
-
+            {/* Header Actions */}
+            <div className="flex justify-end items-center gap-4">
                 <div className="grid grid-cols-2 md:flex gap-2 w-full md:w-auto">
                     <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading} className="text-[10px] md:text-xs">
                         <RefreshCw className={`mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4 ${isLoading ? 'animate-spin' : ''}`} />

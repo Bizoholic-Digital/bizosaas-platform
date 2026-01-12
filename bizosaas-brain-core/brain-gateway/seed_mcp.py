@@ -8,6 +8,9 @@ sys.path.append(os.getcwd())
 from app.dependencies import SessionLocal
 from app.models.mcp import McpCategory, McpRegistry
 
+from dotenv import load_dotenv
+load_dotenv()
+
 def seed_mcp_registry():
     db = SessionLocal()
     try:
@@ -23,6 +26,8 @@ def seed_mcp_registry():
             {"name": "Analytics", "slug": "analytics", "description": "Web & product analytics", "icon": "BarChart", "sort_order": 6},
             {"name": "Advertising", "slug": "advertising", "description": "Ad platforms", "icon": "Megaphone", "sort_order": 7},
             {"name": "Communication", "slug": "communication", "description": "Messaging & chat", "icon": "MessageCircle", "sort_order": 8},
+            {"name": "Search", "slug": "search", "description": "Web and local search capability", "icon": "Search", "sort_order": 9},
+            {"name": "Utilities", "slug": "utilities", "description": "Development and system tools", "icon": "Terminal", "sort_order": 10},
         ]
         
         categories = {}
@@ -70,6 +75,44 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-hubspot:latest"},
                 "is_official": True
             },
+            # Search
+            {
+                "name": "Brave Search", "slug": "brave-search", "category_slug": "search",
+                "description": "Real-time web and local search capability.",
+                "capabilities": ["web_search", "local_search"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-brave-search:latest"},
+                "is_official": True
+            },
+            # Utilities
+            {
+                "name": "Filesystem", "slug": "filesystem", "category_slug": "utilities",
+                "description": "Direct interactions with the provisioned storage volume.",
+                "capabilities": ["read_file", "write_file", "list_dir"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-filesystem:latest"},
+                "is_official": True
+            },
+            {
+                "name": "GitHub", "slug": "github", "category_slug": "utilities",
+                "description": "Manage repositories, issues, and pull requests.",
+                "capabilities": ["code_search", "repo_management", "issue_tracking"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-github:latest"},
+                "is_official": True
+            },
+            # Productivity
+            {
+                "name": "Google Drive", "slug": "google-drive", "category_slug": "communication",
+                "description": "Read and write files to Google Drive.",
+                "capabilities": ["file_upload", "file_list", "file_read"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-drive:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Slack", "slug": "slack", "category_slug": "communication",
+                "description": "Send notifications and interact with channels.",
+                "capabilities": ["send_message", "channel_management"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-slack:latest"},
+                "is_official": True
+            },
             # CMS
             {
                 "name": "WordPress", "slug": "wordpress", "category_slug": "cms",
@@ -107,13 +150,20 @@ def seed_mcp_registry():
         for mcp_data in mcps_data:
             mcp = db.query(McpRegistry).filter_by(slug=mcp_data["slug"]).first()
             if not mcp:
-                cat = categories.get(mcp_data.pop("category_slug"))
+                cat_slug = mcp_data.pop("category_slug")
+                cat = categories.get(cat_slug)
                 if cat:
                     mcp = McpRegistry(**mcp_data, category_id=cat.id)
                     db.add(mcp)
                     print(f"Created MCP: {mcp.name}")
+                else:
+                    print(f"Category not found: {cat_slug}")
             else:
-                print(f"MCP exists: {mcp.name}")
+                # Update existing MCP data if needed (optional)
+                for key, value in mcp_data.items():
+                    if key != "category_slug":
+                        setattr(mcp, key, value)
+                print(f"Updated MCP: {mcp.name}")
         
         db.commit()
         print("Seeding completed successfully!")

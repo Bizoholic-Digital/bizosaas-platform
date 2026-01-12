@@ -111,6 +111,108 @@ services:
           cpus: '0.2'
           memory: 256M
     restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Brave Search Integration)
+  # ========================================
+  brave-search-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
+    build:
+      context: ./mcp-servers/brave-search
+      dockerfile: Dockerfile
+    container_name: brain-mcp-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Filesystem Integration)
+  # ========================================
+  filesystem-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
+    build:
+      context: ./mcp-servers/filesystem
+      dockerfile: Dockerfile
+    container_name: brain-mcp-filesystem
+    environment:
+      - FILESYSTEM_ROOT=/data
+    volumes:
+      - bizosaas-data:/data
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Google Drive Integration)
+  # ========================================
+  google-drive-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    build:
+      context: ./mcp-servers/google-drive
+      dockerfile: Dockerfile
+    container_name: brain-mcp-google-drive
+    environment:
+      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (GitHub Integration)
+  # ========================================
+  github-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
+    build:
+      context: ./mcp-servers/github
+      dockerfile: Dockerfile
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Slack Integration)
+  # ========================================
+  slack-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
+    build:
+      context: ./mcp-servers/slack
+      dockerfile: Dockerfile
+    container_name: brain-mcp-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
   # ═══════════════════════════════════════════════════════════════════════════
   # Networks
   # ═══════════════════════════════════════════════════════════════════════════
@@ -120,3 +222,7 @@ networks:
     name: brain-network
   dokploy-network:
     external: true
+
+volumes:
+  bizosaas-data:
+    name: bizosaas-data

@@ -6,7 +6,10 @@ import { useSystemStatus } from '@/lib/hooks/useSystemStatus';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Activity, CheckCircle, AlertCircle, Clock, Server, Globe, Database, Cpu } from 'lucide-react';
 
+import { useSetHeader } from '@/lib/contexts/HeaderContext';
+
 export default function SystemStatusPage() {
+    useSetHeader("System Health", "Real-time monitoring of platform services and infrastructure");
     const { metrics, isLoading } = useSystemStatus();
 
     return (

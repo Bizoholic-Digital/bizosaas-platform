@@ -120,9 +120,10 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       icon: Users,
       label: 'Management',
       children: [
-        { id: 'tenants', label: 'Tenant Management', icon: Building2, href: '/tenants' },
-        { id: 'users', label: 'User Management', icon: User, href: '/users' },
-        { id: 'revenue', label: 'Revenue Analytics', icon: DollarSign, href: '/revenue' }
+        { id: 'tenants', label: 'Tenant Management', icon: Building2, href: '/dashboard/tenants' },
+        { id: 'users', label: 'User Management', icon: User, href: '/dashboard/users' },
+        { id: 'crm', label: 'Global CRM Monitor', icon: Target, href: '/dashboard/crm' },
+        { id: 'revenue', label: 'Revenue Analytics', icon: DollarSign, href: '/dashboard/revenue' }
       ]
     },
     {
@@ -130,9 +131,9 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       icon: ShoppingCart,
       label: 'E-commerce',
       children: [
-        { id: 'dropshipping', label: 'Dropshipping', icon: Package, href: '/dropshipping' },
-        { id: 'products', label: 'Product Management', icon: Grid, href: '/products' },
-        { id: 'orders', label: 'Order Management', icon: FileText, href: '/orders' }
+        { id: 'dropshipping', label: 'Dropshipping', icon: Package, href: '/dashboard/dropshipping' },
+        { id: 'products', label: 'Product Management', icon: Grid, href: '/dashboard/products' },
+        { id: 'orders', label: 'Order Management', icon: FileText, href: '/dashboard/orders' }
       ]
     },
     {
@@ -141,8 +142,8 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       label: 'AI & Automation',
       children: [
         { id: 'workflows', label: 'Workflow Management', icon: Workflow, href: '/dashboard/workflows' },
-        { id: 'ai-agents', label: 'AI Agent Monitor', icon: Activity, href: '/ai-agents' },
-        { id: 'chat', label: 'AI Assistant', icon: MessageSquare, href: '/chat' }
+        { id: 'ai-agents', label: 'AI Agent Monitor', icon: Activity, href: '/dashboard/ai-agents' },
+        { id: 'chat', label: 'AI Assistant', icon: MessageSquare, href: '/dashboard/chat' }
       ]
     },
     {
@@ -150,9 +151,9 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       icon: BarChart3,
       label: 'Monitoring',
       children: [
-        { id: 'system-health', label: 'System Health', icon: Gauge, href: '/system-health' },
-        { id: 'integrations', label: 'Integration Status', icon: Globe, href: '/integrations' },
-        { id: 'api-analytics', label: 'API Analytics', icon: TrendingUp, href: '/api-analytics' }
+        { id: 'system-health', label: 'System Health', icon: Gauge, href: '/dashboard/system-health' },
+        { id: 'integrations', label: 'Integration Status', icon: Globe, href: '/dashboard/integrations' },
+        { id: 'api-analytics', label: 'API Analytics', icon: TrendingUp, href: '/dashboard/api-analytics' }
       ]
     },
     {
@@ -160,9 +161,9 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       icon: Shield,
       label: 'System',
       children: [
-        { id: 'security', label: 'Security & Audit', icon: Shield, href: '/security' },
-        { id: 'sql-admin', label: 'SQL Admin', icon: Database, href: '/admin' },
-        { id: 'settings', label: 'System Settings', icon: Settings, href: '/settings' }
+        { id: 'security', label: 'Security & Audit', icon: Shield, href: '/dashboard/security' },
+        { id: 'sql-admin', label: 'SQL Admin', icon: Database, href: '/dashboard/admin' },
+        { id: 'settings', label: 'System Settings', icon: Settings, href: '/dashboard/settings' }
       ]
     }
   ];

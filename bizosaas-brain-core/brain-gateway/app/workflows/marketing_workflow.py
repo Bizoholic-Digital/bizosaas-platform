@@ -1,25 +1,9 @@
 from datetime import timedelta
-from temporalio import workflow, activity
+from temporalio import workflow
 from typing import Dict, Any
 
-# Activities would be implemented in a separate file (e.g., app/activities/marketing_activities.py)
-# but we'll define the interface here for now.
-
-@activity.defn
-async def check_fluent_crm_lead(email: str) -> Dict[str, Any]:
-    """Activity to check if a lead exists in FluentCRM."""
-    # In a real implementation, this would call the FluentCRM connector
-    pass
-
-@activity.defn
-async def tag_fluent_crm_contact(email: str, tag: str) -> bool:
-    """Activity to tag a contact in FluentCRM."""
-    pass
-
-@activity.defn
-async def generate_ai_marketing_content(prompt_params: Dict[str, Any]) -> str:
-    """Activity to use an AI Agent to generate personalized marketing content."""
-    pass
+# Activities are imported by the worker, but we reference them here by name
+# check_fluent_crm_lead, tag_fluent_crm_contact, generate_ai_marketing_content
 
 @workflow.defn
 class LeadNurtureWorkflow:
@@ -29,23 +13,22 @@ class LeadNurtureWorkflow:
         
         # 1. Verification
         lead_info = await workflow.execute_activity(
-            check_fluent_crm_lead,
-            email,
+            "check_fluent_crm_lead",
+            {"email": email, "tenant_id": lead_data.get("tenant_id", "default")},
             start_to_close_timeout=timedelta(seconds=10)
         )
         
         # 2. Add 'bizoholic-prospect' tag
         await workflow.execute_activity(
-            tag_fluent_crm_contact,
-            email,
-            "bizoholic-prospect",
+            "tag_fluent_crm_contact",
+            {"email": email, "tag": "bizoholic-prospect", "tenant_id": lead_data.get("tenant_id", "default")},
             start_to_close_timeout=timedelta(seconds=10)
         )
         
         # 3. Decision Point: First Touch
         content = await workflow.execute_activity(
-            generate_ai_marketing_content,
-            {"user": lead_data, "tone": "professional"},
+            "generate_ai_marketing_content",
+            {"user": lead_data, "tone": "professional", "goal": "nurture"},
             start_to_close_timeout=timedelta(seconds=60)
         )
         
