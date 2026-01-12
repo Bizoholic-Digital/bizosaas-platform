@@ -1,12 +1,13 @@
 name: Brain Gateway CI
   
 on:
-  push:
-    paths:
-      - 'bizosaas-brain-core/brain-gateway/**'
-  pull_request:
-    paths:
-      - 'bizosaas-brain-core/brain-gateway/**'
+  workflow_dispatch:
+  # push:
+  #   paths:
+  #     - 'bizosaas-brain-core/brain-gateway/**'
+  # pull_request:
+  #   paths:
+  #     - 'bizosaas-brain-core/brain-gateway/**'
 
 jobs:
   test:
