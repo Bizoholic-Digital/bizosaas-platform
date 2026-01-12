@@ -1,11 +1,55 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # BizOSaaS Core Services Stack
 # ═══════════════════════════════════════════════════════════════════════════
-# Contains: API Gateway, Auth Service, MCP Servers
-# Deploy this AFTER infrastructure stack
+# Contains: Infrastructure (Embedded), API Gateway, MCP Servers
 # ═══════════════════════════════════════════════════════════════════════════
 
 services:
+  # ========================================
+  # Infrastructure (Embedded for Stability)
+  # ========================================
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: brain-postgres
+    environment:
+      POSTGRES_DB: bizosaas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: brain-redis
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+
+  vault:
+    image: hashicorp/vault:latest
+    container_name: brain-vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    networks:
+      - brain-network
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    restart: unless-stopped
+
   # ========================================
   # API Gateway
   # ========================================
@@ -14,84 +58,44 @@ services:
     build:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile
-    # Ports managed by Traefik - no host binding needed
     container_name: bizosaas-brain-staging
     expose:
       - "8000"
     environment:
-      # Database & Cache (Mapping to Dokploy Env)
-      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@brain-postgres:5432/bizosaas}
-      - VECTOR_DB_URL=${VECTOR_DB_URL:-http://qdrant:6333}
-      - REDIS_URL=${REDIS_URL:-redis://brain-redis:6379/0}
-
-      # Authentication
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
+      - VECTOR_DB_URL=http://qdrant:6333
+      - REDIS_URL=redis://redis:6379/0
       - JWT_SECRET=${JWT_SECRET:-BizOSaaS2025!JWTSecret}
-
-      # Temporal (Temporal Cloud)
-      - TEMPORAL_HOST=${TEMPORAL_HOST:-brain-temporal:7233}
+      - TEMPORAL_HOST=${TEMPORAL_HOST:-temporal:7233}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE:-default}
-
-      # Vault (Internal)
       - USE_VAULT=true
-      - VAULT_ADDR=http://brain-vault:8200
+      - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-root}
-
-      # Plans.so Cloud settings
-      - PLANE_WEBHOOK_SECRET=${PLANE_WEBHOOK_SECRET:-}
-      - PLANE_WEBHOOK_URL=${PLANE_WEBHOOK_URL:-}
-
-      # LLM API Keys
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-
-      # Server Configuration
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-api.bizoholic.net,localhost}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://app.bizoholic.net,https://admin.bizoholic.net}
-
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://app.bizoholic.net,https://admin.bizoholic.net,https://bizoholic.net}
     networks:
       - brain-network
       - dokploy-network
-
     deploy:
       resources:
         limits:
           cpus: '1.0'
           memory: 1G
-        reservations:
-          cpus: '0.25'
-          memory: 512M
-
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      # HTTP Router (redirect to HTTPS)
-      - "traefik.http.routers.brain-gateway-http.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
-      - "traefik.http.routers.brain-gateway-http.entrypoints=web"
-      - "traefik.http.routers.brain-gateway-http.middlewares=redirect-to-https"
-      # HTTPS Router
       - "traefik.http.routers.brain-gateway.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
       - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls=true"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
-      # Service
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
-      # Middleware for HTTPS redirect
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
-
-    healthcheck:
-      test: [ "CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
     restart: unless-stopped
+
   # ========================================
-  # MCP Server (FluentCRM Integration)
+  # MCP Servers (Internal Stdio)
   # ========================================
   fluentcrm-mcp:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
@@ -107,16 +111,8 @@ services:
       - brain-network
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
     restart: unless-stopped
 
-  # ========================================
-  # MCP Server (Brave Search Integration)
-  # ========================================
   brave-search-mcp:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
     build:
@@ -129,16 +125,8 @@ services:
       - brain-network
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
     restart: unless-stopped
 
-  # ========================================
-  # MCP Server (Filesystem Integration)
-  # ========================================
   filesystem-mcp:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
     build:
@@ -153,16 +141,8 @@ services:
       - brain-network
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.1'
-          memory: 128M
     restart: unless-stopped
 
-  # ========================================
-  # MCP Server (Google Drive Integration)
-  # ========================================
   google-drive-mcp:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
     build:
@@ -175,16 +155,8 @@ services:
       - brain-network
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
     restart: unless-stopped
 
-  # ========================================
-  # MCP Server (GitHub Integration)
-  # ========================================
   github-mcp:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
     build:
@@ -197,16 +169,8 @@ services:
       - brain-network
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
     restart: unless-stopped
 
-  # ========================================
-  # MCP Server (Slack Integration)
-  # ========================================
   slack-mcp:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
     build:
@@ -219,20 +183,8 @@ services:
       - brain-network
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 256M
-    healthcheck:
-      test: [ "CMD", "python3", "-c", "import sys; sys.exit(0)" ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     restart: unless-stopped
-  # ═══════════════════════════════════════════════════════════════════════════
-  # Networks
-  # ═══════════════════════════════════════════════════════════════════════════
+
 networks:
   brain-network:
     driver: bridge
