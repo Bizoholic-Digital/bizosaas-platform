@@ -1,13 +1,5 @@
 services:
   # Base Infrastructure
-  postgres:
-    image: pgvector/pgvector:pg16
-    environment:
-      - POSTGRES_USER=test
-      - POSTGRES_PASSWORD=test
-      - POSTGRES_DB=test_db
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis:7-alpine
@@ -20,16 +12,16 @@ services:
       context: ./bizosaas-brain-core/brain-gateway
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://test:test@postgres:5432/test_db
+      - DATABASE_URL=${VECTOR_DB_URL}
       - REDIS_URL=redis://redis:6379/0
       - DISABLE_AUTH=true
-      - VECTOR_DB_URL=postgresql://test:test@postgres:5432/test_db
+      - VECTOR_DB_URL=${VECTOR_DB_URL}
       - LAGO_API_URL=http://lago-api:3000
       - LAGO_API_KEY=d37f94d0-868b-40c9-871d-a6154d7704c4
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
+
       - redis
 
   # Client Portal (port 3003)
