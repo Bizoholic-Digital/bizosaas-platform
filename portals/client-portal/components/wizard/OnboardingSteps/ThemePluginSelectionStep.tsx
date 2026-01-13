@@ -123,8 +123,8 @@ export function ThemePluginSelectionStep({ data, onUpdate }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 {(activeTab === 'themes' ? themes : plugins).map((asset) => {
                     const isSelected = activeTab === 'themes'
-                        ? data.selectedThemes.includes(asset.slug)
-                        : data.selectedPlugins.includes(asset.slug);
+                        ? (data.selectedThemes || []).includes(asset.slug)
+                        : (data.selectedPlugins || []).includes(asset.slug);
 
                     const isBridge = asset.slug === 'bizosaas-bridge';
 
@@ -188,7 +188,7 @@ export function ThemePluginSelectionStep({ data, onUpdate }: Props) {
             </div>
 
             {/* Paid Asset Notice */}
-            {data.selectedThemes.some(slug => {
+            {(data.selectedThemes || []).some(slug => {
                 const a = themes.find(t => t.slug === slug);
                 return a && typeof a.price === 'number';
             }) && (

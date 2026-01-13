@@ -12,7 +12,20 @@ export function useOnboardingState() {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
-                setState(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+                // Deep-ish merge to ensure new top-level objects (like marketplace) exist
+                setState(prev => ({
+                    ...prev,
+                    ...parsed,
+                    // Ensure sub-objects also merge safely if they are complex
+                    profile: { ...prev.profile, ...(parsed.profile || {}) },
+                    digitalPresence: { ...prev.digitalPresence, ...(parsed.digitalPresence || {}) },
+                    analytics: { ...prev.analytics, ...(parsed.analytics || {}) },
+                    marketplace: { ...prev.marketplace, ...(parsed.marketplace || {}) },
+                    tools: { ...prev.tools, ...(parsed.tools || {}) },
+                    agent: { ...prev.agent, ...(parsed.agent || {}) },
+                    discovery: { ...prev.discovery, ...(parsed.discovery || {}) }
+                }));
             }
         } catch (e) {
             console.error('Failed to load onboarding state', e);

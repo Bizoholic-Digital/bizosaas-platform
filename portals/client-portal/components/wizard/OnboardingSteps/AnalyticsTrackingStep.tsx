@@ -34,7 +34,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
             });
 
             if (analysisResp.ok) {
-                const data = await analysisResp.ok ? await analysisResp.json() : null;
+                const data = await analysisResp.json();
                 if (data && data.status === "started") {
                     toast.success("Strategic analysis started! Monitoring your GTM container...");
                     // In a real app, we would poll for the workflow results. 
