@@ -9,7 +9,7 @@ from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType
 from app.services.billing_service import BillingService
-from app.api.dependencies import get_db
+from app.dependencies import get_db
 from sqlalchemy.orm import Session
 
 router = APIRouter()
