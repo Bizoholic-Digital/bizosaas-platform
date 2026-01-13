@@ -1,11 +1,6 @@
 services:
   # Base Infrastructure
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
   # Brain Gateway
   brain-gateway:
     build:
@@ -13,7 +8,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - DATABASE_URL=${VECTOR_DB_URL}
-      - REDIS_URL=redis://redis:6379/0
+      - REDIS_URL=${REDIS_URL}
       - DISABLE_AUTH=true
       - VECTOR_DB_URL=${VECTOR_DB_URL}
       - LAGO_API_URL=http://lago-api:3000
@@ -22,9 +17,7 @@ services:
       - "8000:8000"
     depends_on:
 
-      - redis
-
-  # Client Portal (port 3003)
+      # Client Portal (port 3003)
   client-portal:
     build:
       context: ./portals/client-portal
