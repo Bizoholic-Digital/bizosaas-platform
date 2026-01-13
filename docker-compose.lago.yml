@@ -1,8 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════
 # Lago Billing Engine - Self-Hosted Open Source Billing
 # ═══════════════════════════════════════════════════════════════════════════
-# Deploy this as part of bizosaas-core project in Dokploy
-# ═══════════════════════════════════════════════════════════════════════════
 
 services:
   lago-db:
@@ -13,15 +11,10 @@ services:
       POSTGRES_DB: ${LAGO_POSTGRES_DB:-lago}
       POSTGRES_USER: ${LAGO_POSTGRES_USER:-lago}
       POSTGRES_PASSWORD: ${LAGO_POSTGRES_PASSWORD:-changeme}
-      PGDATA: /data/postgres
     volumes:
       - lago-db-data:/data/postgres
     networks:
       - brain-network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${LAGO_POSTGRES_USER:-lago}" ]
       interval: 10s
@@ -36,10 +29,6 @@ services:
       - lago-redis-data:/data
     networks:
       - brain-network
-    deploy:
-      resources:
-        limits:
-          memory: 128M
 
   lago-migrate:
     image: getlago/api:v1.16.0
@@ -49,67 +38,41 @@ services:
         condition: service_healthy
       lago-redis:
         condition: service_started
-    command: [ "./scripts/migrate.sh" ]
     env_file:
       - .env.lago
-    environment:
-      DATABASE_URL: postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
-      REDIS_URL: redis://lago-redis:6379
-      LAGO_RSA_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----
-
+    command:
+      - /bin/sh
+      - -c
+      - |
+        export LAGO_RSA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
         MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDWhWN7mNdvmgUH
-
         pupFrA3Weh01XP4Bz/vR+bn3TjKbkg50zekCi7iVf2GUJdB3wLPVRx+E8nclhp5z
-
         42dOuhqdErFn3hjmAm0/GlAKaRDOAklUpx/kafhzCtQ5A2ckjkl/hmzG+JTOurNK
-
         GJ9GnmhYGFUqvZ66WOdN37023lGl6b4+nCiJUGF18IS4kcXNTMvBHjexPfmC/gI/
-
         iwo60q8zmwGoUUVUOQ58zMp0oEJ6d5Yoj722JtUlbYGGPKU6jBvX42mvKQjqJMHJ
-
         vetXHINUOo+ui+nPxtOiRHd8rEqsIdFUixG/b+VIMaMfsa4u6UsWN3d5DyWTxw5q
-
         UfyV+/LfAgMBAAECggEAQmMWReYnaayu+M7Bel1EDQdOabjFDNeKFVGkqPGEvNtG
-
         6QPeI8EMlwtMLdZD/QNgQ9UWXoTQtYbDG5cY3ea/HLPvvfagGvJOT7R7Z7VbE33m
-
         prFvr7bRwfxsb9ZrQYddHH+Dw1Gjb5ScroYPKIIWRYkGNktnR0EDF/jxK/1CJEcw
-
         QpdRUD0Oo+BSbEG3SCLcwHjemPJwMvtPbW1OVuj5s6mbB79vW+1/ND4HZ5qzFMpr
-
         olx4SmghnXoB9PH5vDvHMuIKt2zcdY0qpJDQDPvYBqKhX7FT6YLAHhzZmLmcVGhx
-
         5uyV1oRLA3A0ry3kG8LhHX/AVCgsL/siE1XQjj9DIQKBgQD0SU5bBvOMkOx6DqxK
-
         EFBU2yQ8djO7PKPvuS5/+CnSFJAMo0DqHWm+sYettRsdsmIQT1Ga8mIFxuXH9d5a
-
         p2fb5lS78GwCR745QGJnJLZ8nEdQMPSkvFQsGzX9jq4XGDkzH7o+DISANjtZkaoP
-
         N8MREFqkCrKy5G2uBwSEoRe/oQKBgQDgzrQtbpdjYFyders17Qmhhq0hHm/1Y1ud
-
         ChdyxheSqQuXlBTuOM/w7yInInceL8BXiJ9dICvvLRsZC9Wok7c7QjelelSj/4oH
-
         /nfW5qjWD0g9jIods96UgeaWSOi5T6zVrUVYxmNICsvOJ2jApwxQhhT/W6YDUOx1
-
         JuzO3fCifwKBgQCgXctZiIuz+KO1URKboHAL9LyqEHLPdPSt9+Rlz/UsW6FhGn8P
-
-        8fUsYYEPcPf3G9aynE+XJ41f+313Mpog6wsMWf3ATwmoyY5AKVswGPLPhQxvwWOp
-
+        fUsYYEPcPf3G9aynE+XJ41f+313Mpog6wsMWf3ATwmoyY5AKVswGPLPhQxvwWOp
         DZU4Szi7VsJEmPtb63UpLLCDNpbpqu14BgRBnHnUfM1pEPpLp4G4y8Q6YQKBgQDX
-
         jJop7Z3uRRjITkNuo0bWv4EE/mAvEwNmgaSWAeXcU4Wv4uZmu8Z1p3RBvcQlB3gO
-
         9gqHii9V9xPCYhyMtIW9pfIhEjhRvtUkcROK1EMSbDjB+xz6+dny3tKvSl0KQaDg
-
         iHCzfBT5oJBlrFe+UO13z/gWGFQHXfI7KgVpHFh8FQKBgQCALoehjrb21/hxutli
-
         RCboEzwPS4mFJmRtvib9BO96umA47pZ5U1Z0vGAZERQ93FMpNUwWxbTQg5ESk2Dq
-
         cP7Jb+5NKsEem8dhdMvuzVTpDwwOFse5noVLsp8S7zTFyAeZLY15xDFfG3h5ewHB
-
         rcNnUTJphLDEqeRxCbJswzWYAw==
-
         -----END PRIVATE KEY-----"
+        ./scripts/migrate.sh
     networks:
       - brain-network
 
@@ -124,77 +87,46 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: [ "./scripts/start.api.sh" ]
     env_file:
       - .env.lago
-    environment:
-      LAGO_API_URL: http://lago-api:3000
-      DATABASE_URL: postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
-      REDIS_URL: redis://lago-redis:6379
-      LAGO_RSA_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----
-
+    command:
+      - /bin/sh
+      - -c
+      - |
+        export LAGO_RSA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
         MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDWhWN7mNdvmgUH
-
         pupFrA3Weh01XP4Bz/vR+bn3TjKbkg50zekCi7iVf2GUJdB3wLPVRx+E8nclhp5z
-
         42dOuhqdErFn3hjmAm0/GlAKaRDOAklUpx/kafhzCtQ5A2ckjkl/hmzG+JTOurNK
-
         GJ9GnmhYGFUqvZ66WOdN37023lGl6b4+nCiJUGF18IS4kcXNTMvBHjexPfmC/gI/
-
         iwo60q8zmwGoUUVUOQ58zMp0oEJ6d5Yoj722JtUlbYGGPKU6jBvX42mvKQjqJMHJ
-
         vetXHINUOo+ui+nPxtOiRHd8rEqsIdFUixG/b+VIMaMfsa4u6UsWN3d5DyWTxw5q
-
         UfyV+/LfAgMBAAECggEAQmMWReYnaayu+M7Bel1EDQdOabjFDNeKFVGkqPGEvNtG
-
         6QPeI8EMlwtMLdZD/QNgQ9UWXoTQtYbDG5cY3ea/HLPvvfagGvJOT7R7Z7VbE33m
-
         prFvr7bRwfxsb9ZrQYddHH+Dw1Gjb5ScroYPKIIWRYkGNktnR0EDF/jxK/1CJEcw
-
         QpdRUD0Oo+BSbEG3SCLcwHjemPJwMvtPbW1OVuj5s6mbB79vW+1/ND4HZ5qzFMpr
-
         olx4SmghnXoB9PH5vDvHMuIKt2zcdY0qpJDQDPvYBqKhX7FT6YLAHhzZmLmcVGhx
-
         5uyV1oRLA3A0ry3kG8LhHX/AVCgsL/siE1XQjj9DIQKBgQD0SU5bBvOMkOx6DqxK
-
         EFBU2yQ8djO7PKPvuS5/+CnSFJAMo0DqHWm+sYettRsdsmIQT1Ga8mIFxuXH9d5a
-
         p2fb5lS78GwCR745QGJnJLZ8nEdQMPSkvFQsGzX9jq4XGDkzH7o+DISANjtZkaoP
-
         N8MREFqkCrKy5G2uBwSEoRe/oQKBgQDgzrQtbpdjYFyders17Qmhhq0hHm/1Y1ud
-
         ChdyxheSqQuXlBTuOM/w7yInInceL8BXiJ9dICvvLRsZC9Wok7c7QjelelSj/4oH
-
         /nfW5qjWD0g9jIods96UgeaWSOi5T6zVrUVYxmNICsvOJ2jApwxQhhT/W6YDUOx1
-
         JuzO3fCifwKBgQCgXctZiIuz+KO1URKboHAL9LyqEHLPdPSt9+Rlz/UsW6FhGn8P
-
-        8fUsYYEPcPf3G9aynE+XJ41f+313Mpog6wsMWf3ATwmoyY5AKVswGPLPhQxvwWOp
-
+        fUsYYEPcPf3G9aynE+XJ41f+313Mpog6wsMWf3ATwmoyY5AKVswGPLPhQxvwWOp
         DZU4Szi7VsJEmPtb63UpLLCDNpbpqu14BgRBnHnUfM1pEPpLp4G4y8Q6YQKBgQDX
-
         jJop7Z3uRRjITkNuo0bWv4EE/mAvEwNmgaSWAeXcU4Wv4uZmu8Z1p3RBvcQlB3gO
-
         9gqHii9V9xPCYhyMtIW9pfIhEjhRvtUkcROK1EMSbDjB+xz6+dny3tKvSl0KQaDg
-
         iHCzfBT5oJBlrFe+UO13z/gWGFQHXfI7KgVpHFh8FQKBgQCALoehjrb21/hxutli
-
         RCboEzwPS4mFJmRtvib9BO96umA47pZ5U1Z0vGAZERQ93FMpNUwWxbTQg5ESk2Dq
-
         cP7Jb+5NKsEem8dhdMvuzVTpDwwOFse5noVLsp8S7zTFyAeZLY15xDFfG3h5ewHB
-
         rcNnUTJphLDEqeRxCbJswzWYAw==
-
         -----END PRIVATE KEY-----"
+        ./scripts/start.api.sh
     ports:
       - "3010:3000"
     networks:
       - brain-network
       - dokploy-network
-    deploy:
-      resources:
-        limits:
-          memory: 1G
     labels:
       traefik.enable: "true"
       traefik.http.routers.lago-api.rule: Host(`${LAGO_API_DOMAIN:-billing-api.bizoholic.net}`)
@@ -215,74 +147,43 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: [ "./scripts/start.worker.sh" ]
     env_file:
       - .env.lago
-    environment:
-      LAGO_API_URL: http://lago-api:3000
-      DATABASE_URL: postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
-      REDIS_URL: redis://lago-redis:6379
-      LAGO_RSA_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----
-
+    command:
+      - /bin/sh
+      - -c
+      - |
+        export LAGO_RSA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
         MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDWhWN7mNdvmgUH
-
         pupFrA3Weh01XP4Bz/vR+bn3TjKbkg50zekCi7iVf2GUJdB3wLPVRx+E8nclhp5z
-
         42dOuhqdErFn3hjmAm0/GlAKaRDOAklUpx/kafhzCtQ5A2ckjkl/hmzG+JTOurNK
-
         GJ9GnmhYGFUqvZ66WOdN37023lGl6b4+nCiJUGF18IS4kcXNTMvBHjexPfmC/gI/
-
         iwo60q8zmwGoUUVUOQ58zMp0oEJ6d5Yoj722JtUlbYGGPKU6jBvX42mvKQjqJMHJ
-
         vetXHINUOo+ui+nPxtOiRHd8rEqsIdFUixG/b+VIMaMfsa4u6UsWN3d5DyWTxw5q
-
         UfyV+/LfAgMBAAECggEAQmMWReYnaayu+M7Bel1EDQdOabjFDNeKFVGkqPGEvNtG
-
         6QPeI8EMlwtMLdZD/QNgQ9UWXoTQtYbDG5cY3ea/HLPvvfagGvJOT7R7Z7VbE33m
-
         prFvr7bRwfxsb9ZrQYddHH+Dw1Gjb5ScroYPKIIWRYkGNktnR0EDF/jxK/1CJEcw
-
         QpdRUD0Oo+BSbEG3SCLcwHjemPJwMvtPbW1OVuj5s6mbB79vW+1/ND4HZ5qzFMpr
-
         olx4SmghnXoB9PH5vDvHMuIKt2zcdY0qpJDQDPvYBqKhX7FT6YLAHhzZmLmcVGhx
-
         5uyV1oRLA3A0ry3kG8LhHX/AVCgsL/siE1XQjj9DIQKBgQD0SU5bBvOMkOx6DqxK
-
         EFBU2yQ8djO7PKPvuS5/+CnSFJAMo0DqHWm+sYettRsdsmIQT1Ga8mIFxuXH9d5a
-
         p2fb5lS78GwCR745QGJnJLZ8nEdQMPSkvFQsGzX9jq4XGDkzH7o+DISANjtZkaoP
-
         N8MREFqkCrKy5G2uBwSEoRe/oQKBgQDgzrQtbpdjYFyders17Qmhhq0hHm/1Y1ud
-
         ChdyxheSqQuXlBTuOM/w7yInInceL8BXiJ9dICvvLRsZC9Wok7c7QjelelSj/4oH
-
         /nfW5qjWD0g9jIods96UgeaWSOi5T6zVrUVYxmNICsvOJ2jApwxQhhT/W6YDUOx1
-
         JuzO3fCifwKBgQCgXctZiIuz+KO1URKboHAL9LyqEHLPdPSt9+Rlz/UsW6FhGn8P
-
-        8fUsYYEPcPf3G9aynE+XJ41f+313Mpog6wsMWf3ATwmoyY5AKVswGPLPhQxvwWOp
-
+        fUsYYEPcPf3G9aynE+XJ41f+313Mpog6wsMWf3ATwmoyY5AKVswGPLPhQxvwWOp
         DZU4Szi7VsJEmPtb63UpLLCDNpbpqu14BgRBnHnUfM1pEPpLp4G4y8Q6YQKBgQDX
-
         jJop7Z3uRRjITkNuo0bWv4EE/mAvEwNmgaSWAeXcU4Wv4uZmu8Z1p3RBvcQlB3gO
-
         9gqHii9V9xPCYhyMtIW9pfIhEjhRvtUkcROK1EMSbDjB+xz6+dny3tKvSl0KQaDg
-
         iHCzfBT5oJBlrFe+UO13z/gWGFQHXfI7KgVpHFh8FQKBgQCALoehjrb21/hxutli
-
         RCboEzwPS4mFJmRtvib9BO96umA47pZ5U1Z0vGAZERQ93FMpNUwWxbTQg5ESk2Dq
-
         cP7Jb+5NKsEem8dhdMvuzVTpDwwOFse5noVLsp8S7zTFyAeZLY15xDFfG3h5ewHB
-
         rcNnUTJphLDEqeRxCbJswzWYAw==
-
         -----END PRIVATE KEY-----"
+        ./scripts/start.worker.sh
     networks:
       - brain-network
-    deploy:
-      resources:
-        limits:
-          memory: 1G
 
   lago-front:
     image: getlago/front:v1.16.0
@@ -290,19 +191,9 @@ services:
     restart: unless-stopped
     depends_on:
       - lago-api
-    env_file:
-      - .env.lago
-    environment:
-      APP_ENV: production
-    ports:
-      - "8088:80"
     networks:
       - brain-network
       - dokploy-network
-    deploy:
-      resources:
-        limits:
-          memory: 256M
     labels:
       traefik.enable: "true"
       traefik.docker.network: dokploy-network
