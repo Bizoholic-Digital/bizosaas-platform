@@ -49,7 +49,7 @@ services:
         condition: service_healthy
       lago-redis:
         condition: service_started
-    command: sh -c "export LAGO_RSA_PRIVATE_KEY=$$(echo $${LAGO_RSA_PRIVATE_KEY_B64} | tr -d ' ' | base64 -d) && ./scripts/migrate.sh"
+    command: ruby -e "require 'base64'; ENV['LAGO_RSA_PRIVATE_KEY'] = Base64.decode64(ENV['LAGO_RSA_PRIVATE_KEY_B64'].to_s.gsub(/[\n\r\s]/, '')); exec('./scripts/migrate.sh')"
     env_file:
       - .env.lago
     environment:
@@ -69,7 +69,7 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: sh -c "export LAGO_RSA_PRIVATE_KEY=$$(echo $${LAGO_RSA_PRIVATE_KEY_B64} | tr -d ' ' | base64 -d) && ./scripts/start.api.sh"
+    command: ruby -e "require 'base64'; ENV['LAGO_RSA_PRIVATE_KEY'] = Base64.decode64(ENV['LAGO_RSA_PRIVATE_KEY_B64'].to_s.gsub(/[\n\r\s]/, '')); exec('./scripts/start.api.sh')"
     env_file:
       - .env.lago
     environment:
@@ -105,7 +105,7 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: sh -c "export LAGO_RSA_PRIVATE_KEY=$$(echo $${LAGO_RSA_PRIVATE_KEY_B64} | tr -d ' ' | base64 -d) && ./scripts/start.worker.sh"
+    command: ruby -e "require 'base64'; ENV['LAGO_RSA_PRIVATE_KEY'] = Base64.decode64(ENV['LAGO_RSA_PRIVATE_KEY_B64'].to_s.gsub(/[\n\r\s]/, '')); exec('./scripts/start.worker.sh')"
     env_file:
       - .env.lago
     environment:
@@ -140,6 +140,7 @@ services:
           memory: 256M
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.lago-front.rule=Host(`${LAGO_FRONT_DOMAIN:-billing.bizoholic.net}`)"
       - "traefik.http.routers.lago-front.entrypoints=websecure"
       - "traefik.http.routers.lago-front.tls=true"
