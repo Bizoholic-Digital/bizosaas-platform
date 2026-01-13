@@ -1,5 +1,6 @@
 services:
   # Base Infrastructure
+  # Postgres and Redis are now external (Neon DB / Redis Cloud)
 
   # Brain Gateway
   brain-gateway:
@@ -15,9 +16,10 @@ services:
       - LAGO_API_KEY=d37f94d0-868b-40c9-871d-a6154d7704c4
     ports:
       - "8000:8000"
-    depends_on:
+    networks:
+      - dokploy-network
 
-      # Client Portal (port 3003)
+  # Client Portal (port 3003)
   client-portal:
     build:
       context: ./portals/client-portal
@@ -32,6 +34,8 @@ services:
     command: npx next dev -p 3003 -H 0.0.0.0
     depends_on:
       - brain-gateway
+    networks:
+      - dokploy-network
 
   # Admin Dashboard (port 3004)
   admin-dashboard:
@@ -48,3 +52,9 @@ services:
     command: npx next dev -p 3004 --hostname 0.0.0.0
     depends_on:
       - brain-gateway
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
