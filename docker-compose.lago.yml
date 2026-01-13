@@ -49,31 +49,14 @@ services:
         condition: service_healthy
       lago-redis:
         condition: service_started
-    command: [ "./scripts/migrate.sh" ]
+    volumes:
+      - ./lago_rsa.pem:/app/lago_rsa.pem:ro
+    command: /bin/sh -c "export LAGO_RSA_PRIVATE_KEY=\"$$(cat /app/lago_rsa.pem)\" && ./scripts/migrate.sh"
     env_file:
       - .env.lago
     environment:
       DATABASE_URL: postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
       REDIS_URL: redis://lago-redis:6379
-      LAGO_RSA_PRIVATE_KEY: |
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIEpAIBAAKCAQEA197tD6m8T3V7vD6v27p6n8m+R/TfN7Xf8k0+9fD8k0+9fD8k
-        YpS0fID6+69QADccroZTb3macwmTY8MmJU7nG3QfSQKBgQDtDJwDcNmMwinhJBQp
-        3VYIUZBD+eUiwc5Ly6YyvUdIPAguH/2Qq9NYVdZmXR6YTyq3I9XN57AqthKrFAul
-        z4pmb7O1rduqMyMbXcThuoxSKYO5lLRuxetSe5/HxqfgopY58PuflvwhNThm1a+b
-        gjTGridl7VLiTOEAqklniBmZhwKBgQDrk0fVL87mxJIE7WBBX8gMPvmo6JisMJkz
-        Ml6qQLMQ/d2tRz7eRppXuKwsjHEtSjmB+HYh4XEewnEsLOAt66AlRQS7qnkFqz1f
-        s6chItB/7Z8MeLjEJKcG+1TP6ILl5Zv33wOEYYJkZQMHM6uJ32HAbrWZgjXkPcqu
-        UiLi1X4TqQKBgFVnwZ4LvpXULrqLASjEMgb1PAEBu+h14xmz2cFWKKSB3IChzf2d
-        qpuc8Y4X5roBa+Zn5tQ0sWfyCW/R3RB0YezeOeUvKoF7wx5M/m5Fg+DmTCtExG1U
-        qaAiIkMb88gfS/i8NiwdfeGJBzUlsAtbMiCTBmbWxpH6GObgc2n1wyNpAoGAAcpC
-        t3n/hn1j5qmvG5AQwxcPapsp3dUYtOzjD0QimDR1pMVv0tySe6wpksUWbxOrUDOF
-        IkjGRUeQ+Jb2tSKfOulFWe+3r7VXaAzDblsHXpF9reiU7tigdEsgn9vSctDF2KJX
-        MoBTL1QdK8bWvNt3sLCmrJ3yruNRUPXK0hJxPNECgYEAq+I5v/P9OEZI7UEoeB5I
-        BM2RR5doij+5kXpJB5UCd8GaXiX3pyRO3whGFamv0vHUDyDFGg8eklJ7zz+LaqK5
-        3i3LeAjfdcyz7ZgKhQUBAEfFzBto4YGzyh8nZILWHzX5yl8h1VfwRHIGTtLL9bfp
-        1RKEqnEjqIMoc2ZbvFI2pyw=
-        -----END RSA PRIVATE KEY-----
     networks:
       - brain-network
 
@@ -88,32 +71,15 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: [ "./scripts/start.api.sh" ]
+    volumes:
+      - ./lago_rsa.pem:/app/lago_rsa.pem:ro
+    command: /bin/sh -c "export LAGO_RSA_PRIVATE_KEY=\"$$(cat /app/lago_rsa.pem)\" && ./scripts/start.api.sh"
     env_file:
       - .env.lago
     environment:
       LAGO_API_URL: http://lago-api:3000
       DATABASE_URL: postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
       REDIS_URL: redis://lago-redis:6379
-      LAGO_RSA_PRIVATE_KEY: |
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIEpAIBAAKCAQEA197tD6m8T3V7vD6v27p6n8m+R/TfN7Xf8k0+9fD8k0+9fD8k
-        YpS0fID6+69QADccroZTb3macwmTY8MmJU7nG3QfSQKBgQDtDJwDcNmMwinhJBQp
-        3VYIUZBD+eUiwc5Ly6YyvUdIPAguH/2Qq9NYVdZmXR6YTyq3I9XN57AqthKrFAul
-        z4pmb7O1rduqMyMbXcThuoxSKYO5lLRuxetSe5/HxqfgopY58PuflvwhNThm1a+b
-        gjTGridl7VLiTOEAqklniBmZhwKBgQDrk0fVL87mxJIE7WBBX8gMPvmo6JisMJkz
-        Ml6qQLMQ/d2tRz7eRppXuKwsjHEtSjmB+HYh4XEewnEsLOAt66AlRQS7qnkFqz1f
-        s6chItB/7Z8MeLjEJKcG+1TP6ILl5Zv33wOEYYJkZQMHM6uJ32HAbrWZgjXkPcqu
-        UiLi1X4TqQKBgFVnwZ4LvpXULrqLASjEMgb1PAEBu+h14xmz2cFWKKSB3IChzf2d
-        qpuc8Y4X5roBa+Zn5tQ0sWfyCW/R3RB0YezeOeUvKoF7wx5M/m5Fg+DmTCtExG1U
-        qaAiIkMb88gfS/i8NiwdfeGJBzUlsAtbMiCTBmbWxpH6GObgc2n1wyNpAoGAAcpC
-        t3n/hn1j5qmvG5AQwxcPapsp3dUYtOzjD0QimDR1pMVv0tySe6wpksUWbxOrUDOF
-        IkjGRUeQ+Jb2tSKfOulFWe+3r7VXaAzDblsHXpF9reiU7tigdEsgn9vSctDF2KJX
-        MoBTL1QdK8bWvNt3sLCmrJ3yruNRUPXK0hJxPNECgYEAq+I5v/P9OEZI7UEoeB5I
-        BM2RR5doij+5kXpJB5UCd8GaXiX3pyRO3whGFamv0vHUDyDFGg8eklJ7zz+LaqK5
-        3i3LeAjfdcyz7ZgKhQUBAEfFzBto4YGzyh8nZILWHzX5yl8h1VfwRHIGTtLL9bfp
-        1RKEqnEjqIMoc2ZbvFI2pyw=
-        -----END RSA PRIVATE KEY-----
     ports:
       - "3010:3000"
     networks:
@@ -143,32 +109,15 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: [ "./scripts/start.worker.sh" ]
+    volumes:
+      - ./lago_rsa.pem:/app/lago_rsa.pem:ro
+    command: /bin/sh -c "export LAGO_RSA_PRIVATE_KEY=\"$$(cat /app/lago_rsa.pem)\" && ./scripts/start.worker.sh"
     env_file:
       - .env.lago
     environment:
       LAGO_API_URL: http://lago-api:3000
       DATABASE_URL: postgresql://${LAGO_POSTGRES_USER:-lago}:${LAGO_POSTGRES_PASSWORD:-changeme}@lago-db:5432/${LAGO_POSTGRES_DB:-lago}
       REDIS_URL: redis://lago-redis:6379
-      LAGO_RSA_PRIVATE_KEY: |
-        -----BEGIN RSA PRIVATE KEY-----
-        MIIEpAIBAAKCAQEA197tD6m8T3V7vD6v27p6n8m+R/TfN7Xf8k0+9fD8k0+9fD8k
-        YpS0fID6+69QADccroZTb3macwmTY8MmJU7nG3QfSQKBgQDtDJwDcNmMwinhJBQp
-        3VYIUZBD+eUiwc5Ly6YyvUdIPAguH/2Qq9NYVdZmXR6YTyq3I9XN57AqthKrFAul
-        z4pmb7O1rduqMyMbXcThuoxSKYO5lLRuxetSe5/HxqfgopY58PuflvwhNThm1a+b
-        gjTGridl7VLiTOEAqklniBmZhwKBgQDrk0fVL87mxJIE7WBBX8gMPvmo6JisMJkz
-        Ml6qQLMQ/d2tRz7eRppXuKwsjHEtSjmB+HYh4XEewnEsLOAt66AlRQS7qnkFqz1f
-        s6chItB/7Z8MeLjEJKcG+1TP6ILl5Zv33wOEYYJkZQMHM6uJ32HAbrWZgjXkPcqu
-        UiLi1X4TqQKBgFVnwZ4LvpXULrqLASjEMgb1PAEBu+h14xmz2cFWKKSB3IChzf2d
-        qpuc8Y4X5roBa+Zn5tQ0sWfyCW/R3RB0YezeOeUvKoF7wx5M/m5Fg+DmTCtExG1U
-        qaAiIkMb88gfS/i8NiwdfeGJBzUlsAtbMiCTBmbWxpH6GObgc2n1wyNpAoGAAcpC
-        t3n/hn1j5qmvG5AQwxcPapsp3dUYtOzjD0QimDR1pMVv0tySe6wpksUWbxOrUDOF
-        IkjGRUeQ+Jb2tSKfOulFWe+3r7VXaAzDblsHXpF9reiU7tigdEsgn9vSctDF2KJX
-        MoBTL1QdK8bWvNt3sLCmrJ3yruNRUPXK0hJxPNECgYEAq+I5v/P9OEZI7UEoeB5I
-        BM2RR5doij+5kXpJB5UCd8GaXiX3pyRO3whGFamv0vHUDyDFGg8eklJ7zz+LaqK5
-        3i3LeAjfdcyz7ZgKhQUBAEfFzBto4YGzyh8nZILWHzX5yl8h1VfwRHIGTtLL9bfp
-        1RKEqnEjqIMoc2ZbvFI2pyw=
-        -----END RSA PRIVATE KEY-----
     networks:
       - brain-network
     deploy:
