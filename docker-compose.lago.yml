@@ -49,7 +49,9 @@ services:
         condition: service_healthy
       lago-redis:
         condition: service_started
-    command: [ "./scripts/migrate.sh" ]
+    volumes:
+      - ./lago_rsa.pem:/app/lago_rsa.pem:ro
+    command: sh -c "export LAGO_RSA_PRIVATE_KEY=\"$(cat /app/lago_rsa.pem)\" && ./scripts/migrate.sh"
     env_file:
       - .env.lago
     environment:
@@ -69,7 +71,9 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: [ "./scripts/start.api.sh" ]
+    volumes:
+      - ./lago_rsa.pem:/app/lago_rsa.pem:ro
+    command: sh -c "export LAGO_RSA_PRIVATE_KEY=\"$(cat /app/lago_rsa.pem)\" && ./scripts/start.api.sh"
     env_file:
       - .env.lago
     environment:
@@ -87,12 +91,12 @@ services:
           memory: 1G
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.lago-api.rule=Host(`${LAGO_API_DOMAIN:-billing-api.bizoholic.net}`)"
       - "traefik.http.routers.lago-api.entrypoints=websecure"
       - "traefik.http.routers.lago-api.tls=true"
       - "traefik.http.routers.lago-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.lago-api.loadbalancer.server.port=3000"
+      - "traefik.docker.network=dokploy-network"
 
   lago-worker:
     image: getlago/api:v1.16.0
@@ -105,7 +109,9 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    command: [ "./scripts/start.worker.sh" ]
+    volumes:
+      - ./lago_rsa.pem:/app/lago_rsa.pem:ro
+    command: sh -c "export LAGO_RSA_PRIVATE_KEY=\"$(cat /app/lago_rsa.pem)\" && ./scripts/start.worker.sh"
     env_file:
       - .env.lago
     environment:
@@ -140,12 +146,12 @@ services:
           memory: 256M
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.lago-front.rule=Host(`${LAGO_FRONT_DOMAIN:-billing.bizoholic.net}`)"
       - "traefik.http.routers.lago-front.entrypoints=websecure"
       - "traefik.http.routers.lago-front.tls=true"
       - "traefik.http.routers.lago-front.tls.certresolver=letsencrypt"
       - "traefik.http.services.lago-front.loadbalancer.server.port=80"
+      - "traefik.docker.network=dokploy-network"
 
 networks:
   brain-network:
