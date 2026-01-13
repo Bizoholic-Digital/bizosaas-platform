@@ -98,7 +98,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.lago-api.rule=Host(`${LAGO_API_DOMAIN:-lago-api.bizoholic.net}`)"
+      - "traefik.http.routers.lago-api.rule=Host(`${LAGO_API_DOMAIN:-billing-api.bizoholic.net}`)"
       - "traefik.http.routers.lago-api.entrypoints=websecure"
       - "traefik.http.routers.lago-api.tls=true"
       - "traefik.http.routers.lago-api.tls.certresolver=letsencrypt"
@@ -140,7 +140,7 @@ services:
     depends_on:
       - lago-api
     environment:
-      - API_URL=https://${LAGO_API_DOMAIN:-lago-api.bizoholic.net}
+      - API_URL=https://${LAGO_API_DOMAIN:-billing-api.bizoholic.net}
       - APP_ENV=production
     ports:
       - "8088:80"
