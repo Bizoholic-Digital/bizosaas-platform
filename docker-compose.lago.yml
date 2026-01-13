@@ -159,6 +159,7 @@ services:
       - "traefik.http.routers.lago-front.tls=true"
       - "traefik.http.routers.lago-front.tls.certresolver=letsencrypt"
       - "traefik.http.services.lago-front.loadbalancer.server.port=80"
+      - "traefik.docker.network=dokploy-network"
 
 networks:
   brain-network:
