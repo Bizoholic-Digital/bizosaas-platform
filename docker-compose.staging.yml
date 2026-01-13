@@ -24,6 +24,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - DISABLE_AUTH=true
       - VECTOR_DB_URL=postgresql://test:test@postgres:5432/test_db
+      - LAGO_API_URL=http://lago-api:3000
+      - LAGO_API_KEY=d37f94d0-868b-40c9-871d-a6154d7704c4
     ports:
       - "8000:8000"
     depends_on:
