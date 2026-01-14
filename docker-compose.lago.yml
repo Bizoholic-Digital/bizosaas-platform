@@ -54,8 +54,6 @@ services:
     env_file:
       - .env.lago
     command: [ "./scripts/start.api.sh" ]
-    ports:
-      - "3010:3000"
     networks:
       - brain-network
       - dokploy-network
