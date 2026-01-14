@@ -212,7 +212,7 @@ services:
 
 networks:
   brain-network:
-    driver: bridge
+    external: true
     name: brain-network
   dokploy-network:
     external: true

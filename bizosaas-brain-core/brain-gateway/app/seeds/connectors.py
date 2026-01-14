@@ -63,7 +63,7 @@ def seed_connectors():
             "connector_id": "lago",
             "credentials": {
                  "api_url": "http://lago-api:3000",
-                 "api_key": "N3YbnttmAFCSMxyhyTPf696Pzyxfmud4RZGj0NMW4BOUjV61gRsBMN2jeq07c8Qw5x7eXpl3jiSakDgK7QbOQ1BexhWvpRHYKC4dQpWvAephZTJIzJVNoWar3wUd4An7",
+                 "api_key": "df1933ae-50fd-4c06-972c-1b092be9d96b",
                  "force_connect": True
             },
             "status": ConnectorStatus.CONNECTED

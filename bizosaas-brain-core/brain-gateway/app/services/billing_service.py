@@ -21,20 +21,18 @@ class BillingService:
 
     def _get_lago_connector(self, tenant_id: str) -> Optional[BillingPort]:
         # Check active connectors for Lago
-        # Note: In production, we'd use a more dynamic way to find the tenant's specific connector
-        conn_path = f"{tenant_id}:lago"
-        if conn_path in active_connectors:
-            config = active_connectors[conn_path]
-            connector_cls = ConnectorRegistry.get("lago")
-            if connector_cls:
-                return connector_cls(config["credentials"])
-        
-        # Fallback to default if available
-        if "default_tenant:lago" in active_connectors:
-            config = active_connectors["default_tenant:lago"]
-            connector_cls = ConnectorRegistry.get("lago")
-            if connector_cls:
-                return connector_cls(config["credentials"])
+        try:
+            conn_path = f"{tenant_id}:lago"
+            if conn_path in active_connectors:
+                config = active_connectors[conn_path]
+                return ConnectorRegistry.create_connector("lago", tenant_id, config["credentials"])
+            
+            # Fallback to default if available
+            if "default_tenant:lago" in active_connectors:
+                config = active_connectors["default_tenant:lago"]
+                return ConnectorRegistry.create_connector("lago", "default_tenant", config["credentials"])
+        except Exception as e:
+            print(f"Error creating Lago connector: {e}")
         return None
 
     async def get_plans(self) -> Union[List[SubscriptionPlan], List[PortPlan]]:

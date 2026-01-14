@@ -1,38 +1,34 @@
 #!/bin/bash
-# Fix Lago Deployment - Use docker compose (v2) instead of docker-compose
+set -e
 
-echo "🔧 Redeploying Lago with health checks..."
+SERVER_IP="72.60.98.213"
+REMOTE_DIR="/etc/dokploy/compose/bizosaasbraingateway-braingateway-p5xytd/code"
+PASSWORD="&k3civYG5Q6YPb"
 
-# Navigate to project directory
-cd /home/alagiri/projects/bizosaas-platform
+echo "🚀 Starting CLEAN Lago Billing Redeployment process..."
 
-# Stop current Lago containers
-echo "Stopping current Lago containers..."
-ssh root@72.60.98.213 "docker stop lago-api lago-worker lago-front lago-migrate 2>/dev/null || true"
+# 1. Create a clean .env.lago with the EXACT original quoted base64 string
+cat > .env.lago.prod << 'EOF'
+LAGO_POSTGRES_DB=lago
+LAGO_POSTGRES_USER=lago
+LAGO_POSTGRES_PASSWORD=lago_password_2025
+LAGO_SECRET_KEY_BASE=b871ed19c83665268c74149028bfdf3787727402660161421715423877960786
+LAGO_ENCRYPTION_PRIMARY_KEY=b871ed19c83665268c74149028bfdf37
+LAGO_ENCRYPTION_DETERMINISTIC_KEY=c4772099e0df28646077558667c29579
+LAGO_ENCRYPTION_KEY_DERIVATION_SALT=5c72d9e685f02604297135317769532e
+LAGO_API_URL=http://lago-api:3000
+LAGO_FRONT_URL=https://billing.bizoholic.net
+RAILS_ENV=production
+LAGO_RSA_PRIVATE_KEY="LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRREdRWUJlQWtwV0VGN24KYm9xMytmVnM5MUhhTlhQU1BmaHVLOEZ2Qm1OTmhIZHppN25IRmhoRjBwRVB1TktMZE9sYi9HMlFzRUozUVNIdQpTenpCSElZMmxnakdIZVVLSXRqNWZicXBTZzBkVUg1dmNWYVBCcnZHMFNhRDM3SDI5b0hHekJUVVdySmoxK3NaCksyTkcvelp4eGNLWGFvY0U0WGRQaFI5Z3dMTFFkQW5nemNKY2JNVUxMZHN4UjRVK3pDeHlnRkNTaExTKzhrSmgKMGFVZFdFWWlHQzdlajh2OWZUc0tCWnNET1NNSkdxMElOL2NTcVJoR1hFaVsqNDNNSUlSa0ZWdnhwaVpyRnZvYQpKTGFJT2oxSSsxRTJYeHJhRFFlK3BiMUVyTTFsYk53cjZuVS9hVVdlMUx3L3BUK1Z4blMzWlhXdS9RK0t0NThsCmJMSjNiT1VQQWdNQkFBRUNnZ0VBS1AzbWo4a2VjRk83STFNRjZBcU1OTWFmVENOLytpZ296REpNc0RVY1k4THUKNVZzdWdod3QwWVc2eXdyVnNOSnZpcjZTTW5kV2pveFBSUktXRVlEaHVMaGxRUHllUlcyMStVTUd6QWhNMU5JMwpDYmhmZ251TWFBc0cwUDMzTDgyQVFFY2lTVk1sRGFKdTcwbTZvVXVUaUlzdjg1a3BLQmVyVUt2L3RFT3kxSWpECnFYbXIrbjFCYUNZanhvRCtxdnQ5eDRYOWlVMnBnYkRYQkljMVEyYXp1YUM3QWFta3JJVUl0c25vbklXN2VMVGIKL1p5SDZDck1FNE5iaVFNc1g2N0RMSjJZdXFyV05ieWlQVGpYaXFoM2V4L3k2SjlNY0xpVFo4VEZiYWJuL1dsKwo2bFI3QjVDZTc0di81U3kxN1lFeEYrSUhSSHcySVlKa1JIZTdYQnJ2MVFLQmdRRDBReDFVQzhOMkhPWklpTWxGClRib2VWUGozV2htNGRQWjBYQXdDQzBwRGlscmt0aWNGNTFZd2pxbFlVMEc3dlcwRm9sZ0lwT1UxdVA4RGU1NFgKQ0piaVZUY2pPaEdaRmxsSnRFUFd2OGVYSk1RQkkyRmpUMDM3cjN6NlJkdFA3Tkx2bUVGQkNUc1M0NWJiNGI0bwpRRUJ1SWFWR3Q0MUR1UEI1SndvLzk4WGZqUUtCZ1FEUHpKMWpENVBnR2lzeUxNTkQ0YVo0TS85bDJzNHVVbitFCnBzTEhUbm8yUGVrRVBtaDc2Q2JpcUVjZXp6OTBaa2lwMWZZTHk1WmRrQ2x2Si9HUFlwQXVzZzZoVHJ6cnRvbWoKTE5QUVNrajhYRytBZ2Izd3JSWFN5NTdUR294Rk9tQUw3THBPTGg2VklHWlVNMkZsd2ZpVjh1ZGJUMDFjT0Q5VgoycU5CZ0QzeUN3S0JnUURNbUVMQ21TL1ppUTlpaGlDQVNrQ3hFMStPWUF2WE16RVQrZDJkQUxQdHFyL0Rmc2RrCjdJYWhHWmZEQWNtM1pVMGlRUDhZRG5abTcxTzdLUm9jRlBlOUVMK2taQWxGZnpDK3laMWhEVFl5NVhxL3NWRHIKakF1MzJ5QUZ5ZW1QSXNEMEswWE5JZHczVUNhV2VwbDZ3WWEyT0x4bFpXMlA0aUthZUJiZnlid1dLUUtCZ0h2YgprMGdUWmVuaXp6SjErZUdCSTI5c1Z1UElHck1EbTF4ZTVhUlVnNFhIT3hlN2R4Mjd6MG0wVWNmc2NmOFlaR0ZPCjFmeEwyaEZrdHoyNUNrT1QxU3J3R01aUEgwNUVIQi8xdlQ3ZXVFZ3JkSTZkUnJDcENtUDkyR290M2NQNXVud0IKR3o4MFFDaFZDb2xQb3RNN1hjZEs1Rm5KbCt2SzN2MTJkMjY0V0xQbkFvR0FlR3REeURieWZhWmJrT0xabjZNLwozbDZ0QStNZHpaQjU4ejBON1NUNnFJM0FuUytvazB2a2M4T1Vvb1lVSHkvMFl2RTZCWVVrYjNkaUpBOFZlSUlvClNPUWoyUFlQVXhuL3JpU1lWV3RhaktnbFVnTmNvYVpBV29KcmJyWkNBTW1TWDBqbHpzanRHcVdtbG42dU5EWWQKNDRLU2swVmgyVnRqK2NYRlU5TzQwcDQ9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K"
+EOF
 
-# Remove old containers
-echo "Removing old containers..."
-ssh root@72.60.98.213 "docker rm lago-api lago-worker lago-front lago-migrate 2>/dev/null || true"
+# 2. Upload files
+echo "📁 Uploading configurations..."
+sshpass -p "$PASSWORD" scp docker-compose.lago.yml root@${SERVER_IP}:${REMOTE_DIR}/docker-compose.lago.yml
+sshpass -p "$PASSWORD" scp .env.lago.prod root@${SERVER_IP}:${REMOTE_DIR}/.env.lago
 
-# Copy updated compose file
-echo "Copying updated docker-compose.lago.yml..."
-scp docker-compose.lago.yml root@72.60.98.213:/root/lago-compose.yml
+# 3. Restart Services
+echo "🔄 Restarting Lago Stack..."
+sshpass -p "$PASSWORD" ssh root@${SERVER_IP} "cd ${REMOTE_DIR} && docker compose -f docker-compose.lago.yml up -d --remove-orphans"
 
-# Deploy with docker compose (v2)
-echo "Deploying Lago stack..."
-ssh root@72.60.98.213 "cd /root && docker compose -f lago-compose.yml up -d"
-
-# Wait for services to start
-echo "Waiting for services to start..."
-sleep 10
-
-# Check status
-echo "Checking Lago services status..."
-ssh root@72.60.98.213 "docker ps | grep lago"
-
-echo ""
-echo "✅ Lago redeployment complete!"
-echo ""
-echo "Check logs with:"
-echo "  ssh root@72.60.98.213 'docker logs lago-api --tail 50'"
-echo "  ssh root@72.60.98.213 'docker logs lago-worker --tail 50'"
+echo "✅ Lago Redeployment Completed!"
