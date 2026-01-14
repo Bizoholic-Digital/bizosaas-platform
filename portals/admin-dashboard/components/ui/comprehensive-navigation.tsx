@@ -52,7 +52,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
   useEffect(() => {
     let activeSection = 'workspace'; // Default
 
-    if (pathname.includes('/tenants') || pathname.includes('/users') || pathname === '/dashboard/partner' || pathname === '/dashboard/plugin-analytics') {
+    if (pathname.includes('/tenants') || pathname.includes('/users') || pathname.includes('/dashboard/tools') || pathname === '/dashboard/partner' || pathname === '/dashboard/plugin-analytics') {
       activeSection = 'management';
     } else if (pathname.includes('/system-status') || pathname.includes('/connectors')) {
       activeSection = 'connectivity';
@@ -136,6 +136,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           icon: <BarChart3 className="w-4 h-4 text-emerald-500" />,
           badge: isCollapsed ? undefined : 'GROWTH',
           active: pathname === '/dashboard/plugin-analytics'
+        },
+        {
+          id: 'tool-registry',
+          name: 'Tool Registry',
+          href: '/dashboard/tools',
+          icon: <Package className="w-4 h-4 text-blue-500" />,
+          active: pathname === '/dashboard/tools'
         }
       ]
     },

@@ -29,6 +29,12 @@ class McpRegistry(Base):
     homepage_url = Column(String(255), nullable=True)
     source_url = Column(String(255), nullable=True)
     
+    # Business & Management
+    affiliate_link = Column(String(255), nullable=True)
+    vendor_name = Column(String(100), nullable=True)
+    sort_order = Column(Integer, default=0)
+    is_featured = Column(Boolean, default=False)
+    
     # Configuration
     category_id = Column(GUID, ForeignKey("mcp_categories.id"), nullable=False)
     capabilities = Column(JSON, default=list)  # ["products", "orders", "analytics"]

@@ -174,6 +174,12 @@ export const brainApi = {
                 body: JSON.stringify({ mcp_slug: mcpSlug, config })
             }, token);
         },
+        updateMcp: async (mcpId: string, data: any, token?: string) => {
+            return apiFetch(`/api/mcp/${mcpId}`, {
+                method: 'PATCH',
+                body: JSON.stringify(data)
+            }, token);
+        },
         getInstalled: async (token?: string): Promise<any[]> => {
             return apiFetch('/api/mcp/installed', {}, token);
         }

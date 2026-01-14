@@ -28,6 +28,8 @@ def seed_mcp_registry():
             {"name": "Communication", "slug": "communication", "description": "Messaging & chat", "icon": "MessageCircle", "sort_order": 8},
             {"name": "Search", "slug": "search", "description": "Web and local search capability", "icon": "Search", "sort_order": 9},
             {"name": "Utilities", "slug": "utilities", "description": "Development and system tools", "icon": "Terminal", "sort_order": 10},
+            {"name": "Hosting", "slug": "hosting", "description": "Web hosting & infrastructure", "icon": "Server", "sort_order": 11},
+            {"name": "HR & Payroll", "slug": "hr-payroll", "description": "Employee management & payroll", "icon": "Briefcase", "sort_order": 12},
         ]
         
         categories = {}
@@ -49,6 +51,10 @@ def seed_mcp_registry():
             {
                 "name": "WooCommerce", "slug": "woocommerce", "category_slug": "ecommerce",
                 "description": "Flexible, open-source e-commerce for WordPress.",
+                "vendor_name": "Automattic",
+                "sort_order": 1,
+                "is_featured": True,
+                "affiliate_link": "https://woocommerce.com/?aff=123",
                 "capabilities": ["products", "orders", "customers", "coupons"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-woocommerce:latest"},
                 "is_official": True
@@ -56,6 +62,10 @@ def seed_mcp_registry():
             {
                 "name": "Shopify", "slug": "shopify", "category_slug": "ecommerce",
                 "description": "All-in-one commerce platform to start, run, and grow a business.",
+                "vendor_name": "Shopify Inc",
+                "sort_order": 2,
+                "is_featured": True,
+                "affiliate_link": "https://shopify.pxf.io/c/123",
                 "capabilities": ["products", "orders", "customers", "analytics"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-shopify:latest"},
                 "is_official": True
@@ -64,6 +74,10 @@ def seed_mcp_registry():
             {
                 "name": "FluentCRM", "slug": "fluentcrm", "category_slug": "crm",
                 "description": "Self-hosted email marketing automation for WordPress.",
+                "vendor_name": "WPManageNinja",
+                "sort_order": 1,
+                "is_featured": True,
+                "affiliate_link": "https://fluentcrm.com/?ref=123",
                 "capabilities": ["contacts", "campaigns", "tags", "emails"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-fluentcrm:latest"},
                 "is_official": True
@@ -71,6 +85,10 @@ def seed_mcp_registry():
             {
                 "name": "HubSpot", "slug": "hubspot", "category_slug": "crm",
                 "description": "Powerful CRM platform for scaling businesses.",
+                "vendor_name": "HubSpot Inc",
+                "sort_order": 2,
+                "is_featured": False,
+                "affiliate_link": "https://hubspot.sjv.io/c/123",
                 "capabilities": ["contacts", "deals", "companies", "tickets"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-hubspot:latest"},
                 "is_official": True
@@ -248,6 +266,50 @@ def seed_mcp_registry():
                 "description": "Monitor and maintain your site's presence in Google Search results.",
                 "capabilities": ["performance", "sitemaps", "inspection"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-gsc:latest"},
+                "is_official": True
+            },
+            # --- HR & Payroll ---
+            {
+                "name": "Deel", "slug": "deel", "category_slug": "hr-payroll",
+                "description": "Global payroll and compliance for international teams.",
+                "capabilities": ["contracts", "payroll", "documents"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-deel:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Gusto", "slug": "gusto", "category_slug": "hr-payroll",
+                "description": "Payroll, benefits, and HR platform.",
+                "capabilities": ["payroll", "employees", "benefits"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-gusto:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Remote", "slug": "remote", "category_slug": "hr-payroll",
+                "description": "Global HR solution for distributed teams.",
+                "capabilities": ["employment", "payroll", "benefits"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-remote:latest"},
+                "is_official": True
+            },
+            # --- Hosting ---
+            {
+                "name": "WP Engine", "slug": "wp-engine", "category_slug": "hosting",
+                "description": "Managed WordPress hosting platform.",
+                "capabilities": ["sites", "backups", "domains"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-wpengine:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Kinsta", "slug": "kinsta", "category_slug": "hosting",
+                "description": "Premium managed WordPress hosting.",
+                "capabilities": ["sites", "analytics", "staging"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-kinsta:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Cloudways", "slug": "cloudways", "category_slug": "hosting",
+                "description": "Managed cloud hosting platform.",
+                "capabilities": ["servers", "apps", "backups"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-cloudways:latest"},
                 "is_official": True
             },
              # --- Project Management (New) ---

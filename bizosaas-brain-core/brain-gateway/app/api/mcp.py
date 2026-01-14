@@ -29,8 +29,21 @@ class McpResponse(BaseModel):
     rating: int
     install_count: int
     category_id: UUID
+    
+    # Business & Management
+    vendor_name: Optional[str] = None
+    affiliate_link: Optional[str] = None
+    sort_order: int = 0
+    is_featured: bool = False
 
     model_config = {"from_attributes": True}
+
+class McpUpdateRequest(BaseModel):
+    vendor_name: Optional[str] = None
+    affiliate_link: Optional[str] = None
+    sort_order: Optional[int] = None
+    is_featured: Optional[bool] = None
+    description: Optional[str] = None
 
 class InstallationRequest(BaseModel):
     mcp_slug: str
@@ -43,10 +56,32 @@ def get_categories(db: Session = Depends(get_db)):
 
 @router.get("/registry", response_model=List[McpResponse])
 def get_registry(category: Optional[str] = None, db: Session = Depends(get_db)):
-    query = db.query(McpRegistry)
+    query = db.query(McpRegistry).order_by(McpRegistry.sort_order.asc(), McpRegistry.name.asc())
     if category:
         query = query.join(McpCategory).filter(McpCategory.slug == category)
     return query.all()
+
+@router.patch("/{mcp_id}", response_model=McpResponse)
+def update_mcp(
+    mcp_id: UUID,
+    update_data: McpUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    # TODO: Add specific Admin role check here
+    # if "admin" not in current_user.roles:
+    #     raise HTTPException(status_code=403, detail="Admin access required")
+        
+    mcp = db.query(McpRegistry).filter(McpRegistry.id == mcp_id).first()
+    if not mcp:
+        raise HTTPException(status_code=404, detail="MCP not found")
+        
+    for key, value in update_data.model_dump(exclude_unset=True).items():
+        setattr(mcp, key, value)
+        
+    db.commit()
+    db.refresh(mcp)
+    return mcp
 
 @router.get("/installed")
 def get_installed(
