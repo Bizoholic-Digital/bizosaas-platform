@@ -25,8 +25,14 @@ async def lifespan(app: FastAPI):
         from init_db import init_db
         from seed_mcp import seed_mcp_registry
         from seed_subscription_plans import seed_subscription_plans
+        from migrate_mcp_columns import migrate as migrate_schema
+        
         logger.info("Running database initialization...")
         init_db()
+        
+        logger.info("Running schema migrations...")
+        migrate_schema()
+        
         logger.info("Running MCP registry seeding...")
         seed_mcp_registry()
         logger.info("Running subscription plans seeding...")
