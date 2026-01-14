@@ -5,7 +5,6 @@
 services:
   lago-db:
     image: postgres:14-alpine
-    container_name: lago-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${LAGO_POSTGRES_DB:-lago}
@@ -23,7 +22,6 @@ services:
 
   lago-redis:
     image: redis:7-alpine
-    container_name: lago-redis
     restart: unless-stopped
     volumes:
       - lago-redis-data:/data
@@ -32,7 +30,6 @@ services:
 
   lago-migrate:
     image: getlago/api:v1.16.0
-    container_name: lago-migrate
     depends_on:
       lago-db:
         condition: service_healthy
@@ -46,7 +43,6 @@ services:
 
   lago-api:
     image: getlago/api:v1.16.0
-    container_name: lago-api
     restart: unless-stopped
     depends_on:
       lago-migrate:
@@ -74,7 +70,6 @@ services:
 
   lago-worker:
     image: getlago/api:v1.16.0
-    container_name: lago-worker
     restart: unless-stopped
     depends_on:
       lago-migrate:
@@ -91,7 +86,6 @@ services:
 
   lago-front:
     image: getlago/front:v1.16.0
-    container_name: lago-front
     restart: unless-stopped
     depends_on:
       - lago-api
