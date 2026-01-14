@@ -39,6 +39,7 @@ async def lifespan(app: FastAPI):
         seed_subscription_plans()
     except Exception as e:
         logger.error(f"Startup migration failed: {e}")
+        raise e
 
     # Vault Integration for API Keys
     try:
