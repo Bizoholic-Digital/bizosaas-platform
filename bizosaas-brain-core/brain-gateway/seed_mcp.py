@@ -43,108 +43,250 @@ def seed_mcp_registry():
         
         db.flush() # Get IDs
         
-        # 2. MCPs
+        # 2. MCPs - Expanded for Global SMBs
         mcps_data = [
-            # E-commerce
+            # --- E-commerce ---
             {
                 "name": "WooCommerce", "slug": "woocommerce", "category_slug": "ecommerce",
-                "description": "Connect your WooCommerce store for products, orders, and customers.",
+                "description": "Flexible, open-source e-commerce for WordPress.",
                 "capabilities": ["products", "orders", "customers", "coupons"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-woocommerce:latest"},
                 "is_official": True
             },
             {
                 "name": "Shopify", "slug": "shopify", "category_slug": "ecommerce",
-                "description": "Integrate with Shopify for complete store management.",
+                "description": "All-in-one commerce platform to start, run, and grow a business.",
                 "capabilities": ["products", "orders", "customers", "analytics"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-shopify:latest"},
                 "is_official": True
             },
-            # CRM
+            # --- CRM ---
             {
                 "name": "FluentCRM", "slug": "fluentcrm", "category_slug": "crm",
-                "description": "WordPress-based CRM automation.",
+                "description": "Self-hosted email marketing automation for WordPress.",
                 "capabilities": ["contacts", "campaigns", "tags", "emails"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-fluentcrm:latest"},
                 "is_official": True
             },
             {
                 "name": "HubSpot", "slug": "hubspot", "category_slug": "crm",
-                "description": "Enterprise CRM platform.",
+                "description": "Powerful CRM platform for scaling businesses.",
                 "capabilities": ["contacts", "deals", "companies", "tickets"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-hubspot:latest"},
                 "is_official": True
             },
-            # Search
             {
-                "name": "Brave Search", "slug": "brave-search", "category_slug": "search",
-                "description": "Real-time web and local search capability.",
-                "capabilities": ["web_search", "local_search"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-brave-search:latest"},
+                "name": "Salesforce", "slug": "salesforce", "category_slug": "crm",
+                "description": "The world's #1 CRM. Connect with customers in a whole new way.",
+                "capabilities": ["leads", "opportunities", "accounts", "reports"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-salesforce:latest"},
                 "is_official": True
             },
-            # Utilities
-            {
-                "name": "Filesystem", "slug": "filesystem", "category_slug": "utilities",
-                "description": "Direct interactions with the provisioned storage volume.",
-                "capabilities": ["read_file", "write_file", "list_dir"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-filesystem:latest"},
+             {
+                "name": "Pipedrive", "slug": "pipedrive", "category_slug": "crm",
+                "description": "Sales CRM & pipeline management software.",
+                "capabilities": ["leads", "deals", "activities", "pipelines"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-pipedrive:latest"},
                 "is_official": True
             },
-            {
-                "name": "GitHub", "slug": "github", "category_slug": "utilities",
-                "description": "Manage repositories, issues, and pull requests.",
-                "capabilities": ["code_search", "repo_management", "issue_tracking"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-github:latest"},
-                "is_official": True
-            },
-            # Productivity
-            {
-                "name": "Google Drive", "slug": "google-drive", "category_slug": "communication",
-                "description": "Read and write files to Google Drive.",
-                "capabilities": ["file_upload", "file_list", "file_read"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-drive:latest"},
-                "is_official": True
-            },
-            {
-                "name": "Slack", "slug": "slack", "category_slug": "communication",
-                "description": "Send notifications and interact with channels.",
-                "capabilities": ["send_message", "channel_management"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-slack:latest"},
-                "is_official": True
-            },
-            # CMS
+            # --- CMS ---
             {
                 "name": "WordPress", "slug": "wordpress", "category_slug": "cms",
-                "description": "Manage posts, pages, and media.",
-                "capabilities": ["posts", "pages", "media", "comments"],
+                "description": "The world's most popular website builder.",
+                "capabilities": ["posts", "pages", "media", "comments", "themes"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-wordpress:latest"},
                 "is_official": True
             },
-            # Email
+            {
+                "name": "Wix", "slug": "wix", "category_slug": "cms",
+                "description": "Cloud-based web development platform.",
+                "capabilities": ["site_management", "blog", "store"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-wix:latest"},
+                "is_official": True
+            },
+            # --- Email Marketing ---
             {
                 "name": "Mailchimp", "slug": "mailchimp", "category_slug": "email-marketing",
-                "description": "Email marketing and automation.",
-                "capabilities": ["campaigns", "audiences", "reports"],
+                "description": "All-in-one marketing platform for small business.",
+                "capabilities": ["campaigns", "audiences", "reports", "automations"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-mailchimp:latest"},
                 "is_official": True
             },
-            # Payments
+            {
+                "name": "SendGrid", "slug": "sendgrid", "category_slug": "email-marketing",
+                "description": "Cloud-based email delivery platform.",
+                "capabilities": ["send_email", "stats", "contacts"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-sendgrid:latest"},
+                "is_official": True
+            },
+            # --- Payments / Finance ---
             {
                 "name": "Stripe", "slug": "stripe", "category_slug": "payments",
-                "description": "Payment processing and subscriptions.",
+                "description": "Financial infrastructure for the internet.",
                 "capabilities": ["payments", "subscriptions", "customers", "invoices"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-stripe:latest"},
                 "is_official": True
             },
-            # Analytics
+            {
+                "name": "PayPal", "slug": "paypal", "category_slug": "payments",
+                "description": "The safer, easier way to pay and get paid online.",
+                "capabilities": ["payments", "invoicing", "payouts"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-paypal:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Razorpay", "slug": "razorpay", "category_slug": "payments",
+                "description": "Payments for India-based businesses.",
+                "capabilities": ["payments", "orders", "subscriptions"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-razorpay:latest"},
+                "is_official": True
+            },
+             {
+                "name": "QuickBooks", "slug": "quickbooks", "category_slug": "payments",
+                "description": "Smart accounting software for small businesses.",
+                "capabilities": ["invoices", "expenses", "reports", "accounting"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-quickbooks:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Xero", "slug": "xero", "category_slug": "payments",
+                "description": "Beautiful accounting software for small business.",
+                "capabilities": ["invoices", "bank_feeds", "reports"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-xero:latest"},
+                "is_official": True
+            },
+            # --- Analytics ---
             {
                 "name": "Google Analytics 4", "slug": "google-analytics", "category_slug": "analytics",
-                "description": "Web traffic and user behavior analytics.",
-                "capabilities": ["traffic", "events", "conversions"],
+                "description": "Get essential customer insights.",
+                "capabilities": ["traffic", "events", "conversions", "realtime"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-analytics:latest"},
                 "is_official": True
-            }, 
+            },
+            {
+                "name": "PostHog", "slug": "posthog", "category_slug": "analytics",
+                "description": "Open source product analytics.",
+                "capabilities": ["events", "recordings", "feature_flags"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-posthog:latest"},
+                "is_official": True
+            },
+            # --- Advertising / Social ---
+            {
+                "name": "Meta Ads", "slug": "meta-ads", "category_slug": "advertising",
+                "description": "Advertise on Facebook and Instagram.",
+                "capabilities": ["campaigns", "adsets", "insights"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-meta-ads:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Google Ads", "slug": "google-ads", "category_slug": "advertising",
+                "description": "Reach customers with Google Ads.",
+                "capabilities": ["campaigns", "keywords", "performance"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-ads:latest"},
+                "is_official": True
+            },
+             {
+                "name": "LinkedIn", "slug": "linkedin", "category_slug": "advertising", # Also serves as Social
+                "description": "Professional network and B2B marketing.",
+                "capabilities": ["posts", "ads", "company_page"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-linkedin:latest"},
+                "is_official": True
+            },
+            # --- Communication ---
+            {
+                "name": "Slack", "slug": "slack", "category_slug": "communication",
+                "description": "Team communication and collaboration.",
+                "capabilities": ["send_message", "channels", "users"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-slack:latest"},
+                "is_official": True
+            },
+            {
+                "name": "WhatsApp Business", "slug": "whatsapp", "category_slug": "communication",
+                "description": "Connect with customers on WhatsApp.",
+                "capabilities": ["messages", "templates", "contacts"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-whatsapp:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Zoom", "slug": "zoom", "category_slug": "communication",
+                "description": "Video conferencing and meetings.",
+                "capabilities": ["meetings", "users", "recordings"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoom:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Twilio", "slug": "twilio", "category_slug": "communication",
+                "description": "SMS, voice, and video communication platform.",
+                "capabilities": ["sms", "voice", "video", "verify"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-twilio:latest"},
+                "is_official": True
+            },
+            {
+                "name": "MessageBird", "slug": "messagebird", "category_slug": "communication",
+                "description": "Omnichannel communication platform for SMS, Voice, and Chat.",
+                "capabilities": ["sms", "voice", "conversations", "verify"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-messagebird:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Plivo", "slug": "plivo", "category_slug": "communication",
+                "description": "Cloud communication platform for SMS and Voice.",
+                "capabilities": ["sms", "voice", "mms"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-plivo:latest"},
+                "is_official": True
+            },
+            # --- Search ---
+            {
+                "name": "Brave Search", "slug": "brave-search", "category_slug": "search",
+                "description": "Privacy-focused search engine.",
+                "capabilities": ["web_search", "news", "images"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-brave-search:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Google Search Console", "slug": "gsc", "category_slug": "search",
+                "description": "Monitor and maintain your site's presence in Google Search results.",
+                "capabilities": ["performance", "sitemaps", "inspection"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-gsc:latest"},
+                "is_official": True
+            },
+             # --- Project Management (New) ---
+            {
+                "name": "Notion", "slug": "notion", "category_slug": "utilities",
+                "description": "All-in-one workspace for notes, tasks, wikis, and databases.",
+                "capabilities": ["pages", "databases", "blocks"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-notion:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Trello", "slug": "trello", "category_slug": "utilities",
+                "description": "Collaborative project management with boards.",
+                "capabilities": ["boards", "lists", "cards"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-trello:latest"},
+                "is_official": True
+            },
+            # --- Utilities / Storage ---
+            {
+                "name": "Google Drive", "slug": "google-drive", "category_slug": "utilities",
+                "description": "Cloud file storage and synchronization.",
+                "capabilities": ["files", "folders", "permissions"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-drive:latest"},
+                "is_official": True
+            },
+             {
+                "name": "GitHub", "slug": "github", "category_slug": "utilities",
+                "description": "Software development platform.",
+                "capabilities": ["repos", "issues", "prs", "actions"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-github:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Zapier", "slug": "zapier", "category_slug": "utilities",
+                "description": "Automate workflows by connecting your apps.",
+                "capabilities": ["zaps", "triggers", "actions"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zapier:latest"},
+                "is_official": True
+            },
         ]
         
         for mcp_data in mcps_data:

@@ -33,6 +33,14 @@ class McpOrchestrator:
             # Mock delay to simulate Docker pull/run
             await asyncio.sleep(5)
             
+            # ZipWP Simulation Logic
+            if installation.mcp and installation.mcp.slug == "wordpress":
+                print(f"[Orchestrator] 🚀 Generating ZipWP-style WordPress Site for {installation_id}...")
+                await asyncio.sleep(2)
+                print(f"[Orchestrator] 🎨 Applying AI Theme and Content...")
+                await asyncio.sleep(2)
+                installation.config = {"wp_url": "https://generated-site.bizosaas.com", "admin_user": "admin"}
+
             # In a real scenario, we would store the container ID here
             # installation.container_id = "docker_123"
             

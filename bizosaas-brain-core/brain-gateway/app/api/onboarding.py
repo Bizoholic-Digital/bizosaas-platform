@@ -367,7 +367,17 @@ async def complete_onboarding(
     # Provision Selected MCPs
     from app.models.mcp import McpRegistry, UserMcpInstallation
     from app.services.mcp_orchestrator import McpOrchestrator
+    from app.services.billing_service import BillingService # Import BillingService
     
+    # Create Subscription
+    billing_service = BillingService(db)
+    try:
+        # Default to 'standard' plan for now. Future: connection to pricing selection step.
+        subscription = await billing_service.create_subscription(current_user.tenant_id, "standard")
+        print(f"Subscription created: {subscription.id}")
+    except Exception as e:
+        print(f"Subscription creation failed: {e}")
+
     provisioned_count = 0
     
     if state.tools.selectedMcps:

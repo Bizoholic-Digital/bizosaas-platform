@@ -13,11 +13,18 @@ services:
       - DISABLE_AUTH=true
       - VECTOR_DB_URL=${VECTOR_DB_URL}
       - LAGO_API_URL=http://lago-api:3000
-      - LAGO_API_KEY=d37f94d0-868b-40c9-871d-a6154d7704c4
+      - LAGO_API_KEY=df1933ae-50fd-4c06-972c-1b092be9d96b
     ports:
       - "8000:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
     networks:
       - dokploy-network
+      - brain-network
 
   # Client Portal (port 3003)
   client-portal:
@@ -25,7 +32,7 @@ services:
       context: ./portals/client-portal
       dockerfile: Dockerfile.dev
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
       - CLERK_SECRET_KEY=sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
       - PORT=3003
@@ -43,7 +50,7 @@ services:
       context: ./portals/admin-dashboard
       dockerfile: Dockerfile.dev
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
       - CLERK_SECRET_KEY=sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
       - PORT=3004
@@ -57,4 +64,6 @@ services:
 
 networks:
   dokploy-network:
+    external: true
+  brain-network:
     external: true
