@@ -9,7 +9,17 @@ All code changes have been successfully committed to GitHub and are ready for de
 
 ## Changes Committed to GitHub
 
-### Commit: b17ab45 (Latest)
+### Commit: [Latest]
+- **bizosaas-brain-core/brain-gateway/seed_mcp.py** - Added X, Pinterest, TikTok, Squarespace, Webflow
+- **docs/IMPLEMENTATION_STATUS.md** - Updated tool inventory
+- **bizosaas-brain-core/brain-gateway/migrate_mcp_columns.py** - New migration script
+- **bizosaas-brain-core/brain-gateway/main.py** - Integrated auto-migration on startup
+- **bizosaas-brain-core/brain-gateway/app/models/mcp.py** - Added vendor/admin columns
+- **bizosaas-brain-core/brain-gateway/app/api/mcp.py** - Added PATCH endpoint
+- **portals/admin-dashboard/app/dashboard/tools/page.tsx** - New Tool Registry Admin Page
+- **portals/admin-dashboard/components/ui/comprehensive-navigation.tsx** - Added sidebar link
+
+### Commit: b17ab45
 - **docs/DEPLOYMENT_SYNC_GUIDE.md** - Comprehensive deployment guide
 
 ### Commit: 7997480

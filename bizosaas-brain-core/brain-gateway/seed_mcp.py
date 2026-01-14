@@ -122,6 +122,26 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-wix:latest"},
                 "is_official": True
             },
+            {
+                "name": "Squarespace", "slug": "squarespace", "category_slug": "cms",
+                "description": "All-in-one website building and e-commerce platform.",
+                "capabilities": ["pages", "store", "analytics", "marketing"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-squarespace:latest"},
+                "vendor_name": "Squarespace",
+                "sort_order": 2,
+                "is_featured": True,
+                "is_official": True
+            },
+            {
+                "name": "Webflow", "slug": "webflow", "category_slug": "cms",
+                "description": "Visual web development platform for designers.",
+                "capabilities": ["sites", "collections", "forms", "ecommerce"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-webflow:latest"},
+                "vendor_name": "Webflow Inc",
+                "sort_order": 3,
+                "is_featured": True,
+                "is_official": True
+            },
             # --- Email Marketing ---
             {
                 "name": "Mailchimp", "slug": "mailchimp", "category_slug": "email-marketing",
@@ -208,6 +228,36 @@ def seed_mcp_registry():
                 "description": "Professional network and B2B marketing.",
                 "capabilities": ["posts", "ads", "company_page"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-linkedin:latest"},
+                "is_official": True
+            },
+            {
+                "name": "X Ads", "slug": "x-ads", "category_slug": "advertising",
+                "description": "Reach users on X (formerly Twitter).",
+                "capabilities": ["tweets", "ads", "analytics"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-x-ads:latest"},
+                "vendor_name": "X Corp",
+                "sort_order": 3,
+                "is_featured": False,
+                "is_official": True
+            },
+            {
+                "name": "Pinterest Ads", "slug": "pinterest-ads", "category_slug": "advertising",
+                "description": "Visual discovery and advertising platform.",
+                "capabilities": ["pins", "ads", "analytics"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-pinterest-ads:latest"},
+                "vendor_name": "Pinterest",
+                "sort_order": 4,
+                "is_featured": False,
+                "is_official": True
+            },
+            {
+                "name": "TikTok Ads", "slug": "tiktok-ads", "category_slug": "advertising",
+                "description": "Reach audiences on the leading short-form video platform.",
+                "capabilities": ["campaigns", "ads", "reports"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-tiktok-ads:latest"},
+                "vendor_name": "TikTok",
+                "sort_order": 5,
+                "is_featured": True,
                 "is_official": True
             },
             # --- Communication ---
