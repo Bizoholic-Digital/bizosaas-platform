@@ -25,8 +25,14 @@ fi
 
 echo "✅ RSA key fetched successfully"
 
-# Export for Lago to use
-export LAGO_RSA_PRIVATE_KEY="$RSA_KEY"
+# Write to a file as it's more robust than environment variables for multi-line keys
+echo "$RSA_KEY" > /tmp/lago_rsa.pem
+chmod 600 /tmp/lago_rsa.pem
+
+# Export the file path for Lago to use
+export LAGO_RSA_PRIVATE_KEY_FILE="/tmp/lago_rsa.pem"
+# Unset the string variable to avoid confusion
+unset LAGO_RSA_PRIVATE_KEY
 
 # Execute the original Lago command
 exec "$@"
