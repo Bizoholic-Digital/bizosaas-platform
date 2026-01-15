@@ -41,40 +41,67 @@ export function useOnboardingState() {
         }
     }, [state, isLoaded]);
 
-    const updateProfile = (profile: Partial<OnboardingState['profile']>) => {
-        setState(prev => ({ ...prev, profile: { ...prev.profile, ...profile } }));
+    const updateProfile = (profile: Partial<OnboardingState['profile']> | ((prev: OnboardingState['profile']) => Partial<OnboardingState['profile']>)) => {
+        setState(prev => ({
+            ...prev,
+            profile: { ...prev.profile, ...(typeof profile === 'function' ? profile(prev.profile) : profile) }
+        }));
     };
 
-    const updateDigitalPresence = (presence: Partial<OnboardingState['digitalPresence']>) => {
-        setState(prev => ({ ...prev, digitalPresence: { ...prev.digitalPresence, ...presence } }));
+    const updateDigitalPresence = (presence: Partial<OnboardingState['digitalPresence']> | ((prev: OnboardingState['digitalPresence']) => Partial<OnboardingState['digitalPresence']>)) => {
+        setState(prev => ({
+            ...prev,
+            digitalPresence: { ...prev.digitalPresence, ...(typeof presence === 'function' ? presence(prev.digitalPresence) : presence) }
+        }));
     };
 
-    const updateAnalytics = (analytics: Partial<OnboardingState['analytics']>) => {
-        setState(prev => ({ ...prev, analytics: { ...prev.analytics, ...analytics } }));
+    const updateAnalytics = (analytics: Partial<OnboardingState['analytics']> | ((prev: OnboardingState['analytics']) => Partial<OnboardingState['analytics']>)) => {
+        setState(prev => ({
+            ...prev,
+            analytics: { ...prev.analytics, ...(typeof analytics === 'function' ? analytics(prev.analytics) : analytics) }
+        }));
     };
 
-    const updateSocialMedia = (social: Partial<OnboardingState['socialMedia']>) => {
-        setState(prev => ({ ...prev, socialMedia: { ...prev.socialMedia, ...social } }));
+    const updateSocialMedia = (social: Partial<OnboardingState['socialMedia']> | ((prev: OnboardingState['socialMedia']) => Partial<OnboardingState['socialMedia']>)) => {
+        setState(prev => ({
+            ...prev,
+            socialMedia: { ...prev.socialMedia, ...(typeof social === 'function' ? social(prev.socialMedia) : social) }
+        }));
     };
 
-    const updateGoals = (goals: Partial<OnboardingState['goals']>) => {
-        setState(prev => ({ ...prev, goals: { ...prev.goals, ...goals } }));
+    const updateGoals = (goals: Partial<OnboardingState['goals']> | ((prev: OnboardingState['goals']) => Partial<OnboardingState['goals']>)) => {
+        setState(prev => ({
+            ...prev,
+            goals: { ...prev.goals, ...(typeof goals === 'function' ? goals(prev.goals) : goals) }
+        }));
     };
 
-    const updateTools = (tools: Partial<OnboardingState['tools']>) => {
-        setState(prev => ({ ...prev, tools: { ...prev.tools, ...tools } }));
+    const updateTools = (tools: Partial<OnboardingState['tools']> | ((prev: OnboardingState['tools']) => Partial<OnboardingState['tools']>)) => {
+        setState(prev => ({
+            ...prev,
+            tools: { ...prev.tools, ...(typeof tools === 'function' ? tools(prev.tools) : tools) }
+        }));
     };
 
-    const updateAgent = (agent: Partial<OnboardingState['agent']>) => {
-        setState(prev => ({ ...prev, agent: { ...prev.agent, ...agent } }));
+    const updateAgent = (agent: Partial<OnboardingState['agent']> | ((prev: OnboardingState['agent']) => Partial<OnboardingState['agent']>)) => {
+        setState(prev => ({
+            ...prev,
+            agent: { ...prev.agent, ...(typeof agent === 'function' ? agent(prev.agent) : agent) }
+        }));
     };
 
-    const updateMarketplace = (marketplace: Partial<OnboardingState['marketplace']>) => {
-        setState(prev => ({ ...prev, marketplace: { ...prev.marketplace, ...marketplace } }));
+    const updateMarketplace = (marketplace: Partial<OnboardingState['marketplace']> | ((prev: OnboardingState['marketplace']) => Partial<OnboardingState['marketplace']>)) => {
+        setState(prev => ({
+            ...prev,
+            marketplace: { ...prev.marketplace, ...(typeof marketplace === 'function' ? marketplace(prev.marketplace) : marketplace) }
+        }));
     };
 
-    const updateDiscovery = (discovery: Partial<OnboardingState['discovery']>) => {
-        setState(prev => ({ ...prev, discovery: { ...prev.discovery, ...discovery } }));
+    const updateDiscovery = (discovery: Partial<OnboardingState['discovery']> | ((prev: OnboardingState['discovery']) => Partial<OnboardingState['discovery']>)) => {
+        setState(prev => ({
+            ...prev,
+            discovery: { ...prev.discovery, ...(typeof discovery === 'function' ? discovery(prev.discovery) : discovery) }
+        }));
     };
 
     const setSocialLogin = (social: OnboardingState['socialLogin']) => {

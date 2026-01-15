@@ -143,20 +143,20 @@ export function OnboardingWizard() {
                 const clarity = clarityList[0];
                 const bing = bingList[0];
 
-                updateAnalytics({
-                    gtmId: state.analytics.gtmId || gtm?.id,
-                    gaId: state.analytics.gaId || ga4?.id,
-                    gscId: state.analytics.gscId || gsc?.id,
-                    fbId: state.analytics.fbId || fb?.id,
-                    clarityId: state.analytics.clarityId || clarity?.id,
-                    bingId: state.analytics.bingId || bing?.id,
+                updateAnalytics(current => ({
+                    gtmId: current.gtmId || gtm?.id,
+                    gaId: current.gaId || ga4?.id,
+                    gscId: current.gscId || gsc?.id,
+                    fbId: current.fbId || fb?.id,
+                    clarityId: current.clarityId || clarity?.id,
+                    bingId: current.bingId || bing?.id,
                     availableGtmContainers: gtmList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGaProperties: gaList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGscSites: gscList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableFbPixels: fbList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableClarityProjects: clarityList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableBingProfiles: bingList.map((s: any) => ({ id: s.id, name: s.name }))
-                });
+                }));
 
                 // Also update profile if names/details were found
                 if (data.profile) {
@@ -184,7 +184,7 @@ export function OnboardingWizard() {
             // Simulate the audit period
             await new Promise(resolve => setTimeout(resolve, 3500));
 
-            updateAnalytics({
+            updateAnalytics(current => ({
                 auditedServices: {
                     essential: [
                         { id: 'gtm-1', name: 'GTM-PRH6T87 (Primary)', service: 'Google Tag Manager', status: 'active' },
@@ -195,9 +195,9 @@ export function OnboardingWizard() {
                     ]
                 },
                 // Only set if not already discovered from account
-                gtmId: state.analytics.gtmId || 'GTM-PRH6T87',
-                gaId: state.analytics.gaId || 'G-V2X9L4B1'
-            });
+                gtmId: current.gtmId || 'GTM-PRH6T87',
+                gaId: current.gaId || 'G-V2X9L4B1'
+            }));
         } catch (e) {
             console.error("Audit failed", e);
         } finally {
@@ -206,20 +206,22 @@ export function OnboardingWizard() {
     };
 
     useEffect(() => {
-        if (state.currentStep === 5 && !isDiscovering) {
-            const hasDiscoveryData = state.discovery.google?.length || state.discovery.microsoft?.length;
+        if (state.currentStep >= 2 && !isDiscovering) {
+            const hasDiscoveryData = (state.discovery.google && state.discovery.google.length > 0) ||
+                (state.discovery.microsoft && state.discovery.microsoft.length > 0);
+
             if (!hasDiscoveryData) {
-                const primaryEmail = user?.primaryEmailAddress?.emailAddress || "";
+                const primaryEmail = user?.primaryEmailAddress?.emailAddress || state.profile.email || "";
                 const rawProvider = user?.externalAccounts[0]?.provider || 'none';
                 const normalizedProvider = rawProvider.includes('google') ? 'google' :
                     rawProvider.includes('microsoft') ? 'microsoft' : 'none';
 
-                if (normalizedProvider !== 'none') {
+                if (normalizedProvider !== 'none' && primaryEmail) {
                     triggerDiscovery(primaryEmail, normalizedProvider);
                 }
             }
         }
-    }, [state.currentStep, user, state.discovery, isDiscovering]);
+    }, [state.currentStep, user, state.discovery, isDiscovering, state.profile.email]);
 
     useEffect(() => {
         if (state.profile.website && state.digitalPresence.hasTracking && !state.analytics.auditedServices && !isAuditing) {
@@ -287,6 +289,7 @@ export function OnboardingWizard() {
                         agent={state.agent}
                         onUpdate={updateAgent}
                         onNext={nextStep}
+                        isDiscovering={isDiscovering}
                     />
                 );
             case 5:

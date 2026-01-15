@@ -2,16 +2,18 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Sparkles, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
+import { Bot, Sparkles, ShieldCheck, Zap, ArrowRight, RefreshCw } from 'lucide-react';
 
 interface Props {
     discovery: any;
     agent: any;
     onUpdate: (data: any) => void;
     onNext: () => void;
+    isDiscovering?: boolean;
 }
 
-export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Props) {
+export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext, isDiscovering }: Props) {
+    const [authorized, setAuthorized] = React.useState(false);
     const googleDetected = discovery?.google?.filter((s: any) => s.status === 'detected') || [];
     const microsoftDetected = discovery?.microsoft?.filter((s: any) => s.status === 'detected') || [];
     const totalDetected = googleDetected.length + microsoftDetected.length;
@@ -34,23 +36,40 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Pro
                             <h3 className="font-bold text-foreground">Programmatic Setup</h3>
                         </div>
                         <p className="text-sm text-muted-foreground mb-6">
-                            We've identified <strong>{totalDetected} services</strong> linked to your accounts.
-                            My team can automatically configure them for you, saving hours of manual work.
+                            {isDiscovering ? (
+                                <span className="flex items-center gap-2 text-blue-600 font-medium">
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                    Synchronizing with your cloud accounts...
+                                </span>
+                            ) : (
+                                <>
+                                    We've identified <strong>{totalDetected} services</strong> linked to your accounts.
+                                    My team can automatically configure them for you, saving hours of manual work.
+                                </>
+                            )}
                         </p>
 
                         <div className="space-y-2">
-                            {googleDetected.map((s: any) => (
-                                <div key={s.id} className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
-                                    <span className="text-foreground font-medium">{s.name}</span>
-                                    <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Ready</Badge>
-                                </div>
-                            ))}
-                            {microsoftDetected.map((s: any) => (
-                                <div key={s.id} className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
-                                    <span className="text-foreground font-medium">{s.name}</span>
-                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0">Ready</Badge>
-                                </div>
-                            ))}
+                            {isDiscovering ? (
+                                Array.from({ length: 3 }).map((_, i) => (
+                                    <div key={i} className="h-8 bg-blue-100/30 rounded-lg animate-pulse" />
+                                ))
+                            ) : (
+                                <>
+                                    {googleDetected.map((s: any) => (
+                                        <div key={s.id} className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
+                                            <span className="text-foreground font-medium">{s.name}</span>
+                                            <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 border-0">Ready</Badge>
+                                        </div>
+                                    ))}
+                                    {microsoftDetected.map((s: any) => (
+                                        <div key={s.id} className="flex items-center justify-between bg-card px-3 py-2 rounded-lg border border-blue-100 text-xs shadow-sm">
+                                            <span className="text-foreground font-medium">{s.name}</span>
+                                            <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0">Ready</Badge>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -76,17 +95,28 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext }: Pro
                         </div>
                     </div>
 
-                    <div className="pt-4">
+                    <div className="pt-4 space-y-4">
+                        <div className="flex items-center space-x-2 bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                            <input
+                                type="checkbox"
+                                id="authorize"
+                                className="w-5 h-5 rounded border-blue-200 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                onChange={(e) => setAuthorized(e.target.checked)}
+                            />
+                            <label htmlFor="authorize" className="text-xs text-muted-foreground cursor-pointer select-none">
+                                I authorize my **AI Success Manager** and its team of specialized agents to coordinate and configure my connected accounts for optimal performance.
+                            </label>
+                        </div>
+
                         <Button
                             onClick={onNext}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-xl shadow-lg flex items-center justify-center gap-2 group"
+                            disabled={!authorized}
+                            className={`w-full py-6 rounded-xl shadow-lg flex items-center justify-center gap-2 group transition-all ${authorized ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                }`}
                         >
                             Confirm Team & Proceed
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Button>
-                        <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
-                            By proceeding, you authorize your AI CSM to coordinate with your connected accounts.
-                        </p>
                     </div>
                 </div>
             </div>

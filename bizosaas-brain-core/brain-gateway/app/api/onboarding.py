@@ -197,7 +197,9 @@ async def discover_services(
             
             # Core Services
             {"id": "google-ads", "name": "Google Ads", "status": "detected", "type": "service", "cost": "$$$", "requiresEnablement": True},
-            {"id": "google-business-profile", "name": "Google Business Profile", "status": "detected", "type": "service", "requiresEnablement": False}
+            {"id": "google-business-profile", "name": "Google Business Profile", "status": "detected", "type": "service", "requiresEnablement": False},
+            {"id": "linkedin-ads", "name": "LinkedIn Ads", "status": "detected", "type": "service", "requiresEnablement": True},
+            {"id": "tiktok-ads", "name": "TikTok Ads", "status": "detected", "type": "service", "requiresEnablement": True}
         ]
         profile_updates = {
             "companyName": current_user.name or "My Business",
@@ -206,7 +208,9 @@ async def discover_services(
     elif "microsoft" in provider.lower():
         discovery_results["microsoft"] = [
             {"id": "clarity-proj-abc", "name": "Bizoholic Clarity", "status": "detected", "type": "clarity_project"},
-            {"id": "bing-site-123", "name": "bizoholic.net (Bing)", "status": "detected", "type": "bing_profile"}
+            {"id": "bing-site-123", "name": "bizoholic.net (Bing)", "status": "detected", "type": "bing_profile"},
+            {"id": "ms-365", "name": "Microsoft 365", "status": "detected", "type": "service", "requiresEnablement": False},
+            {"id": "ms-teams", "name": "Microsoft Teams", "status": "detected", "type": "service", "requiresEnablement": True}
         ]
 
     return {
