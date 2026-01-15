@@ -49,12 +49,92 @@ def seed_mcp_registry():
         
         # 2. MCPs - Expanded for Global SMBs
         mcps_data = [
-            # --- E-commerce ---
+            # --- E-commerce & Marketplaces ---
+            {
+                "name": "Amazon US", "slug": "amazon-us", "category_slug": "ecommerce",
+                "description": "Sell your products on Amazon.com (United States).",
+                "vendor_name": "Amazon",
+                "sort_order": 1,
+                "is_featured": True,
+                "capabilities": ["listings", "orders", "fba", "advertising"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-amazon:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Amazon India", "slug": "amazon-in", "category_slug": "ecommerce",
+                "description": "Sell your products on Amazon.in (India).",
+                "vendor_name": "Amazon",
+                "sort_order": 2,
+                "is_featured": True,
+                "capabilities": ["listings", "orders", "easy_ship", "advertising"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-amazon-in:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Etsy", "slug": "etsy", "category_slug": "ecommerce",
+                "description": "Global marketplace for unique and creative goods.",
+                "vendor_name": "Etsy Inc",
+                "sort_order": 3,
+                "is_featured": False,
+                "capabilities": ["listings", "orders", "shops", "reviews"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-etsy:latest"},
+                "is_official": True
+            },
+            {
+                "name": "eBay", "slug": "ebay", "category_slug": "ecommerce",
+                "description": "Global commerce leader that connects millions of buyers and sellers.",
+                "vendor_name": "eBay Inc",
+                "sort_order": 4,
+                "is_featured": False,
+                "capabilities": ["listings", "orders", "bidding", "payments"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-ebay:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Flipkart", "slug": "flipkart", "category_slug": "ecommerce",
+                "description": "India's leading e-commerce marketplace.",
+                "vendor_name": "Flipkart (Walmart)",
+                "sort_order": 5,
+                "is_featured": True,
+                "capabilities": ["listings", "orders", "fulfillment", "analytics"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-flipkart:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Meesho", "slug": "meesho", "category_slug": "ecommerce",
+                "description": "India's largest social commerce marketplace.",
+                "vendor_name": "Meesho",
+                "sort_order": 6,
+                "is_featured": False,
+                "capabilities": ["reselling", "listings", "orders", "catalogs"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-meesho:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Google Shopping", "slug": "google-shopping", "category_slug": "ecommerce",
+                "description": "List your products across Google Search, Shopping, and more.",
+                "vendor_name": "Google",
+                "sort_order": 7,
+                "is_featured": True,
+                "capabilities": ["feeds", "merchant_center", "ads", "verification"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-shopping:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Facebook Marketplace", "slug": "facebook-marketplace", "category_slug": "ecommerce",
+                "description": "Buy and sell items locally or across the country.",
+                "vendor_name": "Meta",
+                "sort_order": 8,
+                "is_featured": True,
+                "capabilities": ["listings", "messaging", "payments", "shops"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-facebook-marketplace:latest"},
+                "is_official": True
+            },
             {
                 "name": "WooCommerce", "slug": "woocommerce", "category_slug": "ecommerce",
                 "description": "Flexible, open-source e-commerce for WordPress.",
                 "vendor_name": "Automattic",
-                "sort_order": 1,
+                "sort_order": 9,
                 "is_featured": True,
                 "affiliate_link": "https://woocommerce.com/?aff=123",
                 "capabilities": ["products", "orders", "customers", "coupons"],
@@ -359,24 +439,33 @@ def seed_mcp_registry():
             },
             # --- Communication ---
             {
+                "name": "WhatsApp Business", "slug": "whatsapp-business", "category_slug": "communication",
+                "description": "Engage with your customers through WhatsApp messaging.",
+                "vendor_name": "Meta",
+                "sort_order": 1,
+                "is_featured": True,
+                "capabilities": ["messaging", "notifications", "catalogs", "automation"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-whatsapp:latest"},
+                "is_official": True
+            },
+            {
                 "name": "Slack", "slug": "slack", "category_slug": "communication",
-                "description": "Team communication and collaboration.",
-                "capabilities": ["send_message", "channels", "users"],
+                "description": "Internal team communication and collaboration.",
+                "vendor_name": "Salesforce",
+                "sort_order": 2,
+                "is_featured": False,
+                "capabilities": ["channels", "messaging", "integrations"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-slack:latest"},
                 "is_official": True
             },
             {
-                "name": "WhatsApp Business", "slug": "whatsapp", "category_slug": "communication",
-                "description": "Connect with customers on WhatsApp.",
-                "capabilities": ["messages", "templates", "contacts"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-whatsapp:latest"},
-                "is_official": True
-            },
-             {
-                "name": "Zoom", "slug": "zoom", "category_slug": "communication",
-                "description": "Video conferencing and meetings.",
-                "capabilities": ["meetings", "users", "recordings"],
-                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoom:latest"},
+                "name": "Microsoft Teams", "slug": "ms-teams", "category_slug": "communication",
+                "description": "Video conferencing and team collaboration.",
+                "vendor_name": "Microsoft",
+                "sort_order": 3,
+                "is_featured": False,
+                "capabilities": ["meetings", "chat", "files"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-ms-teams:latest"},
                 "is_official": True
             },
             {

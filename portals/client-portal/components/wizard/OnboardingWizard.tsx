@@ -255,101 +255,85 @@ export function OnboardingWizard() {
     const isLastStep = state.currentStep === STEPS.length - 1;
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center p-4 md:p-8 font-sans">
-
-            {/* Header */}
-            <div className="w-full max-w-5xl flex justify-between items-center mb-8">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">B</div>
-                        <span className="font-bold text-xl text-foreground tracking-tight">BizOSaaS</span>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <ThemeToggle />
-                    <div className="text-sm text-muted-foreground font-medium hidden sm:block">
-                        Step {state.currentStep + 1} of {STEPS.length}
-                    </div>
-                </div>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 md:p-8 font-sans relative overflow-hidden">
+            {/* Immersive Background */}
+            <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.05)_0%,transparent_50%)]" />
+                <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_80%,rgba(59,130,246,0.05)_0%,transparent_50%)]" />
+                <div className="absolute inset-0 bg-grid-slate-100/[0.03] bg-[bottom_1px_center] dark:bg-grid-slate-900/[0.05]" />
             </div>
 
-            <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="w-full max-w-5xl z-10">
+                {/* Content Area - Focused Modal Look */}
+                <Card className="relative shadow-2xl bg-card/80 backdrop-blur-xl border-border/50 overflow-hidden min-h-[600px] flex flex-col rounded-2xl md:rounded-3xl">
+                    <CardContent className="p-0 flex-1 flex flex-col">
 
-                {/* Sidebar Navigation */}
-                <div className="hidden lg:block lg:col-span-3 space-y-1">
-                    {STEPS.map((step, idx) => {
-                        const isActive = idx === state.currentStep;
-                        const isCompleted = idx < state.currentStep;
-
-                        return (
-                            <div
-                                key={step.id}
-                                className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${isActive ? 'bg-card shadow-sm text-blue-700' :
-                                    isCompleted ? 'text-muted-foreground' : 'text-muted-foreground/50'
-                                    }`}
-                            >
-                                <div className={`p-1.5 rounded-md ${isActive ? 'bg-blue-100' :
-                                    isCompleted ? 'bg-green-100 text-green-600' : 'bg-transparent'
-                                    }`}>
-                                    <step.icon size={18} />
+                        {/* Top Progress Bar */}
+                        <div className="w-full flex flex-col pt-6 px-6 md:px-10">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="flex flex-col">
+                                    <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+                                        {STEPS[state.currentStep].title}
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground font-medium">
+                                        Phase {state.currentStep + 1} of {STEPS.length}
+                                    </p>
                                 </div>
-                                <span className={`text-sm font-medium ${isActive ? 'font-semibold' : ''}`}>
-                                    {step.title}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <div className="hidden lg:flex -space-x-1">
+                                        {STEPS.map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`h-1.5 w-6 rounded-full transition-all duration-300 ${i <= state.currentStep ? 'bg-blue-600' : 'bg-muted'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <ThemeToggle />
+                                </div>
                             </div>
-                        );
-                    })}
-                </div>
-
-                {/* Main Card */}
-                <div className="lg:col-span-9">
-                    <Card className="shadow-xl bg-card border border-border overflow-hidden min-h-[500px] flex flex-col">
-                        <CardContent className="p-0 flex-1 flex flex-col">
-
-                            {/* Progress Bar (Mobile) */}
-                            <div className="lg:hidden h-1.5 bg-muted w-full">
+                            <div className="h-1.5 bg-muted w-full rounded-full overflow-hidden mb-2">
                                 <div
-                                    className="h-full bg-blue-600 transition-all duration-300"
+                                    className="h-full bg-blue-600 transition-all duration-500 ease-out"
                                     style={{ width: `${((state.currentStep + 1) / STEPS.length) * 100}%` }}
                                 />
                             </div>
+                        </div>
 
-                            {/* Step Content */}
-                            <div className="flex-1 p-6 md:p-10 flex flex-col justify-center">
-                                {renderStepContent()}
-                            </div>
+                        {/* Step Content */}
+                        <div className="flex-1 p-4 md:p-10 flex flex-col">
+                            {renderStepContent()}
+                        </div>
 
-                            {/* Footer Actions */}
-                            <div className="border-t bg-muted/30 p-6 flex justify-between items-center">
+                        {/* Footer Actions */}
+                        <div className="border-t bg-muted/30 p-4 md:p-6 flex flex-row justify-between items-center gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={prevStep}
+                                disabled={state.currentStep === 0 || isSubmitting}
+                                className="border-border text-foreground hover:bg-muted flex-initial"
+                            >
+                                Back
+                            </Button>
+
+                            {isLastStep ? (
                                 <Button
-                                    variant="outline"
-                                    onClick={prevStep}
-                                    disabled={state.currentStep === 0 || isSubmitting}
-                                    className="border-border text-foreground hover:bg-muted"
+                                    onClick={handleLaunch}
+                                    disabled={isSubmitting}
+                                    className="bg-green-600 hover:bg-green-700 text-white px-4 md:px-8 py-6 text-base md:text-lg shadow-lg hover:shadow-xl transition-all flex-1 md:flex-none"
                                 >
-                                    Back
+                                    {isSubmitting ? 'Launching...' : 'Approve & Launch 🚀'}
                                 </Button>
-
-                                {isLastStep ? (
-                                    <Button
-                                        onClick={handleLaunch}
-                                        disabled={isSubmitting}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all w-full md:w-auto"
-                                    >
-                                        {isSubmitting ? 'Launching...' : 'Approve & Launch 🚀'}
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        onClick={handleNext}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-md hover:shadow-lg transition-all"
-                                    >
-                                        Continue
-                                    </Button>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                            ) : (
+                                <Button
+                                    onClick={handleNext}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-md hover:shadow-lg transition-all flex-1 md:flex-none"
+                                >
+                                    Continue
+                                </Button>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

@@ -90,33 +90,34 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                 <p className="text-muted-foreground">Choose the platforms you use to power your business.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 min-h-[400px]">
-                {/* Categories Sidebar */}
-                <div className="md:col-span-1 space-y-2 border-r pr-4">
-                    {categories.map(cat => {
-                        const Icon = (Icons as any)[cat.icon] || Icons.Box;
-                        const isSelected = selectedCategory === cat.slug;
-                        const count = mcps[cat.slug]?.length || 0;
+            <div className="flex flex-col md:grid md:grid-cols-4 gap-6 min-h-[400px]">
+                {/* Categories - Horizontal Scroll on Mobile, Sidebar on Desktop */}
+                <div className="md:col-span-1 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-4">
+                    <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar">
+                        {categories.map(cat => {
+                            const Icon = (Icons as any)[cat.icon] || Icons.Box;
+                            const isSelected = selectedCategory === cat.slug;
 
-                        return (
-                            <button
-                                key={cat.id}
-                                onClick={() => setSelectedCategory(cat.slug)}
-                                className={`w-full flex items-center justify-between p-3 rounded-lg text-sm transition-all ${isSelected
-                                    ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 font-medium'
-                                    : 'text-muted-foreground hover:bg-muted'
-                                    }`}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Icon size={16} />
-                                    <span>{cat.name}</span>
-                                </div>
-                                {data.selectedMcps?.some(s => mcps[cat.slug]?.some(m => m.slug === s)) && (
-                                    <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                                )}
-                            </button>
-                        );
-                    })}
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setSelectedCategory(cat.slug)}
+                                    className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 md:w-full md:justify-between rounded-full md:rounded-lg text-sm transition-all whitespace-nowrap ${isSelected
+                                        ? 'bg-blue-600 text-white shadow-md md:bg-blue-500/10 md:text-blue-700 md:dark:text-blue-400 md:shadow-none font-medium'
+                                        : 'text-muted-foreground hover:bg-muted'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Icon size={16} />
+                                        <span>{cat.name}</span>
+                                    </div>
+                                    {data.selectedMcps?.some(s => mcps[cat.slug]?.some(m => m.slug === s)) && (
+                                        <div className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`} />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* MCP Grid */}

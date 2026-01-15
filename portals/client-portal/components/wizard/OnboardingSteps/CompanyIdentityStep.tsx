@@ -73,11 +73,11 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         <Label className="text-blue-700 dark:text-blue-400 font-semibold mb-2 block">
                             🚀 Quick Setup with Google Maps
                         </Label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
                                 <Input
-                                    placeholder="Paste your Google Maps link to auto-fill"
+                                    placeholder="Paste Google Maps link"
                                     className="pl-9 bg-card"
                                     value={data.gmbLink || ''}
                                     onChange={(e) => onUpdate({ gmbLink: e.target.value })}
@@ -86,7 +86,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                             <Button
                                 onClick={fetchGmbData}
                                 disabled={loadingGmb || !data.gmbLink}
-                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                             >
                                 {loadingGmb ? 'Fetching...' : 'Auto-Fill'}
                             </Button>

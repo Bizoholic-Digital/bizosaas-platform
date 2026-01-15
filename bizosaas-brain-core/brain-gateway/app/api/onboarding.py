@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel, Field, HttpUrl
 from typing import List, Optional, Dict, Any
 import os
+from datetime import datetime
 from enum import Enum
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_identity_port, get_current_user, get_secret_service
@@ -367,14 +368,39 @@ async def complete_onboarding(
     # Provision Selected MCPs
     from app.models.mcp import McpRegistry, UserMcpInstallation
     from app.services.mcp_orchestrator import McpOrchestrator
-    from app.services.billing_service import BillingService # Import BillingService
+    from app.services.billing_service import BillingService
+    from app.models.user import Tenant
     
-    # Create Subscription
+    # 0. Save Onboarding Data to Tenant Profile (for Business Directory/Manta-style use)
+    tenant = db.query(Tenant).filter(Tenant.id == current_user.tenant_id).first()
+    if tenant:
+        # Store comprehensive data in tenant settings
+        onboarding_data = state.model_dump()
+        tenant.settings = {
+            **(tenant.settings or {}),
+            "business_profile": onboarding_data.get("profile"),
+            "digital_presence": onboarding_data.get("digital_presence"),
+            "social_media": onboarding_data.get("social_media"),
+            "marketing_goals": onboarding_data.get("goals"),
+            "ai_agent_config": onboarding_data.get("agent"),
+            "onboarding_completed_at": str(datetime.utcnow())
+        }
+        tenant.name = state.profile.companyName
+        db.add(tenant)
+        db.commit()
+        print(f"Stored comprehensive profile data for tenant: {tenant.name}")
+
+    # 1. Create Subscription in Lago
     billing_service = BillingService(db)
     try:
         # Default to 'standard' plan for now. Future: connection to pricing selection step.
-        subscription = await billing_service.create_subscription(current_user.tenant_id, "standard")
-        print(f"Subscription created: {subscription.id}")
+        subscription = await billing_service.create_subscription(
+            current_user.tenant_id, 
+            "standard",
+            email=current_user.email,
+            name=state.profile.companyName or current_user.name
+        )
+        print(f"Subscription created: {subscription.id if hasattr(subscription, 'id') else 'OK'}")
     except Exception as e:
         print(f"Subscription creation failed: {e}")
 
@@ -416,6 +442,28 @@ async def complete_onboarding(
             except Exception as e:
                 print(f"Failed to schedule provision for {mcp_slug}: {e}")
                 
+    # Sync to CRM
+    try:
+        from app.api.crm import get_active_crm_connector
+        from app.dependencies import get_secret_service
+        
+        secret_service = get_secret_service()
+        # Default to FluentCRM or first available CRM
+        crm_connector = await get_active_crm_connector(current_user.tenant_id, secret_service)
+        
+        if crm_connector:
+            await crm_connector.create_contact({
+                "first_name": current_user.name.split(' ')[0] if current_user.name else "",
+                "last_name": ' '.join(current_user.name.split(' ')[1:]) if current_user.name and ' ' in current_user.name else "",
+                "email": current_user.email,
+                "company": state.profile.companyName,
+                "status": "lead",
+                "tags": ["onboarded", "new_tenant"]
+            })
+            print(f"CRM Sync successful for {current_user.email}")
+    except Exception as e:
+        print(f"CRM Sync failed: {e}")
+
     # Mark user as onboarded in Clerk
     try:
         await identity.update_user_metadata(current_user.id, {"onboarded": True})

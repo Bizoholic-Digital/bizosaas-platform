@@ -45,7 +45,7 @@ class BillingService:
         
         return self.db.query(SubscriptionPlan).filter(SubscriptionPlan.is_active == True).all()
 
-    async def create_subscription(self, tenant_id: str, plan_slug: str) -> Union[Subscription, PortSubscription]:
+    async def create_subscription(self, tenant_id: str, plan_slug: str, email: str = None, name: str = None) -> Union[Subscription, PortSubscription]:
         lago = self._get_lago_connector(tenant_id)
         if lago:
             try:
@@ -55,8 +55,8 @@ class BillingService:
                 if not customer:
                     customer = await lago.create_customer(Customer(
                         id=tenant_id,
-                        email=f"admin@{tenant.slug}.com", # Placeholder
-                        name=tenant.name
+                        email=email or f"admin@{tenant.slug}.com",
+                        name=name or tenant.name
                     ))
                 
                 return await lago.create_subscription(tenant_id, plan_slug)

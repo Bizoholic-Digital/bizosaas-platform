@@ -90,18 +90,20 @@ export function ThemePluginSelectionStep({ data, onUpdate }: Props) {
                 </p>
             </div>
 
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-2 md:gap-4 px-2">
                 <Button
                     variant={activeTab === 'themes' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('themes')}
-                    className="gap-2"
+                    className="flex-1 md:flex-none gap-2"
+                    size="sm"
                 >
                     <Layout className="h-4 w-4" /> Themes
                 </Button>
                 <Button
                     variant={activeTab === 'plugins' ? 'default' : 'outline'}
                     onClick={() => setActiveTab('plugins')}
-                    className="gap-2"
+                    className="flex-1 md:flex-none gap-2"
+                    size="sm"
                 >
                     <Puzzle className="h-4 w-4" /> Plugins
                 </Button>
@@ -137,7 +139,7 @@ export function ThemePluginSelectionStep({ data, onUpdate }: Props) {
                         >
                             <CardContent className="p-0">
                                 {asset.image && (
-                                    <div className="h-32 w-full overflow-hidden bg-muted">
+                                    <div className="h-24 md:h-32 w-full overflow-hidden bg-muted">
                                         <img src={asset.image} alt={asset.name} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                                     </div>
                                 )}
