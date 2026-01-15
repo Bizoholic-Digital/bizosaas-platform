@@ -74,25 +74,29 @@ export function OnboardingWizard() {
 
     // Sync Clerk user with onboarding state
     useEffect(() => {
-        if (isClerkLoaded && user && !state.socialLogin) {
+        if (isClerkLoaded && user) {
             const primaryEmail = user.primaryEmailAddress?.emailAddress || "";
-            const provider = user.externalAccounts[0]?.provider || 'none';
+            const rawProvider = user.externalAccounts[0]?.provider || 'none';
+            const normalizedProvider = rawProvider.includes('google') ? 'google' :
+                rawProvider.includes('microsoft') ? 'microsoft' :
+                    rawProvider.includes('facebook') ? 'facebook' : 'none';
 
-            setSocialLogin({
-                provider: provider.includes('google') ? 'google' :
-                    provider.includes('microsoft') ? 'microsoft' :
-                        provider.includes('facebook') ? 'facebook' : 'none',
-                email: primaryEmail,
-                name: user.fullName || undefined,
-                profileImageUrl: user.imageUrl
-            });
+            if (!state.socialLogin) {
+                setSocialLogin({
+                    provider: normalizedProvider,
+                    email: primaryEmail,
+                    name: user.fullName || undefined,
+                    profileImageUrl: user.imageUrl
+                });
+            }
 
-            // If we have a provider, trigger initial discovery
-            if (provider !== 'none') {
-                triggerDiscovery(primaryEmail, provider);
+            // Trigger discovery if we have a valid provider and no discovery results yet
+            const hasDiscoveryData = state.discovery.google?.length || state.discovery.microsoft?.length;
+            if (normalizedProvider !== 'none' && !hasDiscoveryData && !isDiscovering) {
+                triggerDiscovery(primaryEmail, normalizedProvider);
             }
         }
-    }, [isClerkLoaded, user, state.socialLogin, setSocialLogin]);
+    }, [isClerkLoaded, user, state.socialLogin, state.discovery, isDiscovering]);
 
     const triggerDiscovery = async (email: string, provider: string) => {
         setIsDiscovering(true);
@@ -119,18 +123,25 @@ export function OnboardingWizard() {
                     s.type === 'gsc_site' || s.name.includes('.')
                 ) || [];
 
+                const fbList = data.discovery.google?.filter((s: any) =>
+                    s.type === 'fb_analytics' || s.id.includes('fb')
+                ) || [];
+
                 // Pre-fill tracking if found in cloud accounts
                 const gtm = gtmList[0];
                 const ga4 = gaList[0];
                 const gsc = gscList[0];
+                const fb = fbList[0];
 
                 updateAnalytics({
                     gtmId: gtm?.id || state.analytics.gtmId,
                     gaId: ga4?.id || state.analytics.gaId,
                     gscId: gsc?.id || state.analytics.gscId,
+                    fbId: fb?.id || state.analytics.fbId,
                     availableGtmContainers: gtmList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGaProperties: gaList.map((s: any) => ({ id: s.id, name: s.name })),
-                    availableGscSites: gscList.map((s: any) => ({ id: s.id, name: s.name }))
+                    availableGscSites: gscList.map((s: any) => ({ id: s.id, name: s.name })),
+                    availableFbPixels: fbList.map((s: any) => ({ id: s.id, name: s.name }))
                 });
 
                 // Also update profile if names/details were found

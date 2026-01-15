@@ -177,7 +177,7 @@ async def discover_services(
     # Logic to fetch tokens from Clerk (simulated or real)
     # real_token = await identity_port.get_oauth_token(current_user.id, provider)
     
-    if "google" in provider:
+    if "google" in provider.lower():
         # Mock Discovery - Returning detailed properties for GTM, GA4, GSC
         discovery_results["google"] = [
             # GTM Containers
@@ -185,12 +185,15 @@ async def discover_services(
             {"id": "GTM-WLZK2N9", "name": "Staging/Dev Container", "status": "detected", "type": "gtm_container"},
             
             # GA4 Properties
-            {"id": "315422891", "name": "Bizoholic - GA4 (Primary)", "status": "detected", "type": "ga4_property"},
-            {"id": "284771203", "name": "Marketing Sandbox", "status": "detected", "type": "ga4_property"},
+            {"id": "315422891", "name": "Marketing GA4 (Primary)", "status": "detected", "type": "ga4_property"},
+            {"id": "284771203", "name": "E-commerce Analytics", "status": "detected", "type": "ga4_property"},
             
             # GSC Sites
             {"id": "https://bizoholic.net/", "name": "bizoholic.net", "status": "detected", "type": "gsc_site"},
             {"id": "sc-domain:bizoholic.net", "name": "bizoholic.net (Domain)", "status": "detected", "type": "gsc_site"},
+
+            # Facebook Analytics (Integrated here for convenience in discovery results)
+            {"id": "fb-pixel-12345", "name": "Meta Pixel (Primary)", "status": "detected", "type": "fb_analytics"},
             
             # Core Services
             {"id": "google-ads", "name": "Google Ads", "status": "detected", "type": "service", "cost": "$$$", "requiresEnablement": True},

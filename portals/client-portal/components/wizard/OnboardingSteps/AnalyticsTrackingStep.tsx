@@ -14,7 +14,8 @@ import {
     Rocket,
     AlertCircle,
     ChevronRight,
-    Globe
+    Globe,
+    Facebook
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
@@ -345,6 +346,52 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                                 className="h-10 text-sm"
                                 value={data.gscId}
                                 onChange={(e) => onUpdate({ gscId: e.target.value })}
+                            />
+                        )}
+                    </div>
+                </div>
+
+                {/* Meta Pixel / Facebook Analytics */}
+                <div className="border rounded-xl p-5 bg-card/50 backdrop-blur-sm space-y-4 hover:border-slate-300 transition-colors">
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-50 dark:bg-blue-950/20 p-2 rounded-lg text-blue-700">
+                                <Facebook size={24} />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-base font-semibold">Meta Pixel</Label>
+                                <p className="text-xs text-muted-foreground">Track conversions for Facebook ads.</p>
+                            </div>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] font-normal">Optional</Badge>
+                    </div>
+
+                    <div className="pt-2 border-t mt-2 space-y-2">
+                        {data.availableFbPixels && data.availableFbPixels.length > 0 ? (
+                            <Select
+                                value={data.fbId}
+                                onValueChange={(val) => onUpdate({ fbId: val })}
+                            >
+                                <SelectTrigger className="w-full bg-background/50">
+                                    <SelectValue placeholder="Choose Meta Pixel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {data.availableFbPixels.map(pixel => (
+                                        <SelectItem key={pixel.id} value={pixel.id}>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium">{pixel.name}</span>
+                                                <span className="text-[10px] text-muted-foreground">{pixel.id}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input
+                                placeholder="Pixel ID (e.g. 123456789)"
+                                className="h-10 text-sm"
+                                value={data.fbId}
+                                onChange={(e) => onUpdate({ fbId: e.target.value })}
                             />
                         )}
                     </div>
