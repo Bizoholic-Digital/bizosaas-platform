@@ -144,12 +144,12 @@ export function OnboardingWizard() {
                 const bing = bingList[0];
 
                 updateAnalytics({
-                    gtmId: gtm?.id || state.analytics.gtmId,
-                    gaId: ga4?.id || state.analytics.gaId,
-                    gscId: gsc?.id || state.analytics.gscId,
-                    fbId: fb?.id || state.analytics.fbId,
-                    clarityId: clarity?.id || state.analytics.clarityId,
-                    bingId: bing?.id || state.analytics.bingId,
+                    gtmId: state.analytics.gtmId || gtm?.id,
+                    gaId: state.analytics.gaId || ga4?.id,
+                    gscId: state.analytics.gscId || gsc?.id,
+                    fbId: state.analytics.fbId || fb?.id,
+                    clarityId: state.analytics.clarityId || clarity?.id,
+                    bingId: state.analytics.bingId || bing?.id,
                     availableGtmContainers: gtmList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGaProperties: gaList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGscSites: gscList.map((s: any) => ({ id: s.id, name: s.name })),
@@ -194,8 +194,9 @@ export function OnboardingWizard() {
                         { id: 'fb-1', name: 'FaceBook Pixel (Detected)', service: 'Facebook Pixel', status: 'active' }
                     ]
                 },
-                gtmId: 'GTM-PRH6T87',
-                gaId: 'G-V2X9L4B1'
+                // Only set if not already discovered from account
+                gtmId: state.analytics.gtmId || 'GTM-PRH6T87',
+                gaId: state.analytics.gaId || 'G-V2X9L4B1'
             });
         } catch (e) {
             console.error("Audit failed", e);
@@ -205,10 +206,26 @@ export function OnboardingWizard() {
     };
 
     useEffect(() => {
-        if (state.digitalPresence.hasTracking && state.profile.website && !state.analytics.auditedServices) {
+        if (state.currentStep === 5 && !isDiscovering) {
+            const hasDiscoveryData = state.discovery.google?.length || state.discovery.microsoft?.length;
+            if (!hasDiscoveryData) {
+                const primaryEmail = user?.primaryEmailAddress?.emailAddress || "";
+                const rawProvider = user?.externalAccounts[0]?.provider || 'none';
+                const normalizedProvider = rawProvider.includes('google') ? 'google' :
+                    rawProvider.includes('microsoft') ? 'microsoft' : 'none';
+
+                if (normalizedProvider !== 'none') {
+                    triggerDiscovery(primaryEmail, normalizedProvider);
+                }
+            }
+        }
+    }, [state.currentStep, user, state.discovery, isDiscovering]);
+
+    useEffect(() => {
+        if (state.profile.website && state.digitalPresence.hasTracking && !state.analytics.auditedServices && !isAuditing) {
             triggerTrackingAudit(state.profile.website);
         }
-    }, [state.digitalPresence.hasTracking, state.profile.website]);
+    }, [state.profile.website, state.digitalPresence.hasTracking, isAuditing]);
 
     if (!isLoaded || !isClerkLoaded) return null;
 
@@ -278,6 +295,7 @@ export function OnboardingWizard() {
                         data={state.analytics}
                         onUpdate={updateAnalytics}
                         websiteUrl={state.profile.website}
+                        isDiscoveringCloud={isDiscovering}
                     />
                 );
             case 6:

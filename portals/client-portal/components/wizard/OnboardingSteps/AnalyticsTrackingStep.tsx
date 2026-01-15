@@ -34,14 +34,17 @@ interface Props {
     data: AnalyticsConfig;
     onUpdate: (data: Partial<AnalyticsConfig>) => void;
     websiteUrl?: string;
+    isDiscoveringCloud?: boolean;
 }
 
-export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
+export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoveringCloud }: Props) {
     const { user } = useUser();
     const [isDiscovering, setIsDiscovering] = React.useState(false);
     const [discovered, setDiscovered] = React.useState(false);
 
-    const isGmailUser = user?.primaryEmailAddress?.emailAddress.endsWith('@gmail.com');
+    const hasGoogleLink = user?.externalAccounts.some(acc => acc.provider.includes('google'));
+    const hasMicrosoftLink = user?.externalAccounts.some(acc => acc.provider.includes('microsoft'));
+    const isCloudConnected = hasGoogleLink || hasMicrosoftLink;
 
     const handleMagicConnect = async () => {
         setIsDiscovering(true);
@@ -156,7 +159,13 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                 <p className="text-muted-foreground">We use a GTM-First approach to centralize your marketing data.</p>
             </div>
 
-            {isGmailUser && !data.auditedServices && (
+            {isDiscoveringCloud ? (
+                <div className="bg-blue-600/5 dark:bg-blue-600/10 border border-blue-600/20 rounded-xl p-8 mb-8 flex flex-col items-center justify-center text-center animate-pulse">
+                    <RefreshCw className="w-10 h-10 text-blue-600 animate-spin mb-4" />
+                    <h3 className="text-xl font-bold text-foreground mb-2">Syncing Cloud Intelligence...</h3>
+                    <p className="text-muted-foreground max-w-sm">We are pulling your property IDs from your connected Google and Microsoft accounts to pre-populate this view.</p>
+                </div>
+            ) : isCloudConnected && !data.auditedServices && (
                 <div className="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-xl p-6 text-white mb-8 shadow-xl relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-card/10 rounded-full blur-2xl group-hover:bg-card/20 transition-all" />
                     <div className="flex items-center gap-4 mb-4 relative z-10">
