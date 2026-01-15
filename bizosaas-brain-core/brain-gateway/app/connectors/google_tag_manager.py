@@ -107,14 +107,21 @@ class GoogleTagManagerConnector(BaseConnector, OAuthMixin):
             if not containers:
                 return {"status": "error", "message": "No GTM containers found"}
             
-            container = containers[0]
-            self.credentials["container_id"] = container["publicId"]
-            self.credentials["account_id"] = container["accountId"]
+            if len(containers) == 1:
+                container = containers[0]
+                self.credentials["container_id"] = container["publicId"]
+                self.credentials["account_id"] = container["accountId"]
+                
+                return {
+                    "status": "success",
+                    "message": f"Successfully linked container: {container['name']}",
+                    "container_id": container["publicId"]
+                }
             
             return {
-                "status": "success",
-                "message": f"Successfully linked container: {container['name']}",
-                "container_id": container["publicId"]
+                "status": "multiple_found",
+                "message": "Multiple GTM containers found. Please select one manually.",
+                "containers": containers
             }
         
         raise ValueError(f"Unsupported action: {action}")

@@ -252,7 +252,8 @@ async def discover_google_services(
         ("google-analytics", "app.connectors.google_analytics.GoogleAnalyticsConnector"),
         ("google-search-console", "app.connectors.google_search_console.GoogleSearchConsoleConnector"),
         ("google-ads", "app.connectors.google_ads.GoogleAdsConnector"),
-        ("google-business-profile", "app.connectors.google_business_profile.GoogleBusinessProfileConnector")
+        ("google-business-profile", "app.connectors.google_business_profile.GoogleBusinessProfileConnector"),
+        ("google-tag-manager", "app.connectors.google_tag_manager.GoogleTagManagerConnector")
     ]
     
     # Filter if selected_connectors is provided and not empty, and not a dry_run
@@ -327,6 +328,8 @@ async def discover_google_services(
     
     for connector_id, result in discovery_results:
         results[connector_id] = result
+        
+    return results
 
 @router.post("/gtm/analyze")
 async def analyze_gtm_onboarding(

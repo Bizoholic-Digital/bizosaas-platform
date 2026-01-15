@@ -52,19 +52,87 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
             // Determine provider
             const provider = hasGoogleLink ? 'oauth_google' : hasMicrosoftLink ? 'oauth_microsoft' : 'oauth_google';
 
-            // 1. Kick off background provisioning
+            // 1. Try Deep Discovery (Real API)
             if (provider.includes('google')) {
-                fetch('/api/brain/onboarding/google/discover', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        access_token: "user_session_token",
-                        dry_run: true
-                    })
-                }).catch(err => console.error("Background discovery trigger failed", err));
+                try {
+                    const res = await fetch('/api/brain/onboarding/google/discover', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            access_token: "user_session_token", // In prod, this should be handled by cookie/session
+                            dry_run: true // We just want to list options, not force link first one
+                        })
+                    });
+
+                    if (res.ok) {
+                        const results = await res.json();
+                        // results is { "google-tag-manager": { ... }, "google-analytics": { ... }, ... }
+
+                        const gtmRes = results['google-tag-manager'] || {};
+                        const gaRes = results['google-analytics'] || {};
+                        const gscRes = results['google-search-console'] || {};
+                        const fbRes = results['facebook-analytics'] || {}; // If we added it
+
+                        // Map GTM
+                        const gtmContainers = (gtmRes.containers || []).map((c: any) => ({
+                            id: c.publicId,
+                            name: c.name
+                        }));
+                        if (gtmRes.status === 'success' && gtmRes.container_id) {
+                            // If auto-linked single option
+                            gtmContainers.push({ id: gtmRes.container_id, name: 'Linked Container' });
+                        }
+
+                        // Map GA4
+                        // GA4 properties have 'name' like 'properties/12345' and 'displayName'
+                        const gaProperties = (gaRes.properties || []).map((p: any) => ({
+                            id: p.name.split('/').pop(), // Extract ID from resource name
+                            name: p.displayName
+                        }));
+                        if (gaRes.status === 'success' && gaRes.property_id) {
+                            gaProperties.push({ id: gaRes.property_id, name: 'Linked Property' });
+                        }
+
+                        // Map GSC
+                        // GSC sites have 'siteUrl'
+                        const gscSites = (gscRes.sites || []).map((s: any) => ({
+                            id: s.siteUrl,
+                            name: s.siteUrl
+                        }));
+                        if (gscRes.status === 'success' && gscRes.site_url) {
+                            gscSites.push({ id: gscRes.site_url, name: gscRes.site_url });
+                        }
+
+                        if (gtmContainers.length > 0 || gaProperties.length > 0 || gscSites.length > 0) {
+                            onUpdate({
+                                availableGtmContainers: gtmContainers,
+                                availableGaProperties: gaProperties,
+                                availableGscSites: gscSites,
+
+                                // Auto-select matches
+                                gtmId: data.gtmId || gtmContainers[0]?.id,
+                                gaId: data.gaId || gaProperties[0]?.id,
+                                gscId: data.gscId || gscSites[0]?.id,
+
+                                auditedServices: {
+                                    essential: [
+                                        { id: '1', name: 'Google Cloud Assets', service: 'Google API', status: 'active' }
+                                    ],
+                                    optional: []
+                                }
+                            });
+                            setDiscovered(true);
+                            toast.success("Successfully retrieved real assets from Google!");
+                            setIsDiscovering(false);
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Deep discovery failed, falling back to standard discovery", err);
+                }
             }
 
-            // 2. Standard Discovery
+            // 2. Fallback to Standard/Mock Discovery
             const discoverRes = await fetch('/api/brain/onboarding/discover', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
