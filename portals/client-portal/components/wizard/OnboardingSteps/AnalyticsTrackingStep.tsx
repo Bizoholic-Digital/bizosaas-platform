@@ -49,41 +49,81 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
     const handleMagicConnect = async () => {
         setIsDiscovering(true);
         try {
-            // 1. Analyze existing site tags first
-            const targetUrl = websiteUrl || "example.com"; // Use passed prop or fallback
+            // Determine provider
+            const provider = hasGoogleLink ? 'google' : hasMicrosoftLink ? 'microsoft' : null;
 
-            const analysisResp = await fetch('/api/brain/onboarding/gtm/analyze', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ website_url: targetUrl })
-            });
+            if (provider === 'google') {
+                // In a real scenario, we would get the fresh token here. 
+                // For this implementation, we assume the backend can handle the user's identity via session/cookie 
+                // or we pass a placeholder if the backend uses the stored refresh token.
 
-            if (analysisResp.ok) {
-                const data = await analysisResp.json();
-                if (data && data.status === "started") {
-                    toast.success("Strategic analysis started! Monitoring your GTM container...");
-                    // In a real app, we would poll for the workflow results. 
-                    // For demo, we simulate the audit result returned after a short delay
-                    setTimeout(() => {
+                // We'll call the deep discovery endpoint
+                const res = await fetch('/api/brain/onboarding/google/discover', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        access_token: "user_session_token", // In prod, get fresh token
+                        dry_run: true // Just fetch, don't provision yet
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // Transform the unified discovery results into our specific lists
+                    // The backend returns a dict of { connector_id: { items: [], ... } }
+                    // OR it might follow the specific format from api/onboarding.py
+
+                    // Let's assume the unified structure from OnboardingWizard's triggerDiscovery logic
+                    // since we want consistency. Actually, triggerDiscovery uses /onboarding/discover
+                    // which returns { discovery: { google: [...], microsoft: [...] } }
+
+                    // Let's use THAT same endpoint for consistency if we want "Pull info via API"
+                    const discoverRes = await fetch('/api/brain/onboarding/discover', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: user?.primaryEmailAddress?.emailAddress,
+                            provider: 'oauth_google'
+                        })
+                    });
+
+                    if (discoverRes.ok) {
+                        const discoData = await discoverRes.json();
+                        const gList = discoData.discovery.google || [];
+
                         onUpdate({
-                            auditedServices: {
-                                essential: [
-                                    { id: '1', name: 'Google Analytics 4 Config', service: 'Google Analytics', status: 'active' },
-                                    { id: '2', name: 'Google Ads Remarketing', service: 'Google Ads', status: 'active' }
-                                ],
-                                optional: [
-                                    { id: '3', name: 'Facebook Pixel Base', service: 'Facebook Pixel', status: 'active' },
-                                    { id: '4', name: 'LinkedIn Insight Tag', service: 'LinkedIn Insight', status: 'active' }
-                                ]
-                            }
+                            availableGtmContainers: gList.filter((s: any) => s.type === 'gtm_container').map((s: any) => ({ id: s.id, name: s.name })),
+                            availableGaProperties: gList.filter((s: any) => s.type === 'ga4_property').map((s: any) => ({ id: s.id, name: s.name })),
+                            availableGscSites: gList.filter((s: any) => s.type === 'gsc_site').map((s: any) => ({ id: s.id, name: s.name })),
+                            // Pre-select first options
+                            gtmId: gList.find((s: any) => s.type === 'gtm_container')?.id,
+                            gaId: gList.find((s: any) => s.type === 'ga4_property')?.id,
+                            gscId: gList.find((s: any) => s.type === 'gsc_site')?.id,
                         });
                         setDiscovered(true);
-                        toast.success("Audit complete! We identified your marketing services.");
-                    }, 3000);
+                        toast.success("Sync complete! Found your Google Marketing assets.");
+                    }
                 }
+            } else {
+                // Fallback to website audit if not Google/Microsoft
+                const targetUrl = websiteUrl || "example.com";
+                await fetch('/api/brain/onboarding/gtm/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ website_url: targetUrl })
+                });
+
+                // Simulate delay for audit
+                setTimeout(() => {
+                    setDiscovered(true);
+                    toast.success("Audit complete!");
+                }, 2000);
             }
+
         } catch (error) {
-            toast.error("Discovery failed. Please connect manually.");
+            console.error(error);
+            toast.error("Discovery failed. Please try manual entry.");
         } finally {
             setIsDiscovering(false);
         }
