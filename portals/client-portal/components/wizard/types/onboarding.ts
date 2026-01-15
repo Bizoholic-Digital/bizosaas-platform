@@ -24,6 +24,7 @@ export interface AIAgentConfig {
     name: string;
     tone: 'professional' | 'friendly' | 'urgent' | 'witty';
     clientAdvocate: boolean;
+    authorized?: boolean;
 }
 
 export interface BusinessProfile {

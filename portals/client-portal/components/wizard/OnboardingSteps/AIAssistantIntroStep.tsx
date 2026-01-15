@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext, isDiscovering }: Props) {
-    const [authorized, setAuthorized] = React.useState(false);
+    // Local state removed, using agent.authorized
     const googleDetected = discovery?.google?.filter((s: any) => s.status === 'detected') || [];
     const microsoftDetected = discovery?.microsoft?.filter((s: any) => s.status === 'detected') || [];
     const totalDetected = googleDetected.length + microsoftDetected.length;
@@ -100,23 +100,14 @@ export function AIAssistantIntroStep({ discovery, agent, onUpdate, onNext, isDis
                             <input
                                 type="checkbox"
                                 id="authorize"
+                                checked={agent.authorized || false}
                                 className="w-5 h-5 rounded border-blue-200 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                onChange={(e) => setAuthorized(e.target.checked)}
+                                onChange={(e) => onUpdate({ ...agent, authorized: e.target.checked })}
                             />
                             <label htmlFor="authorize" className="text-xs text-muted-foreground cursor-pointer select-none">
                                 I authorize my **AI Success Manager** and its team of specialized agents to coordinate and configure my connected accounts for optimal performance.
                             </label>
                         </div>
-
-                        <Button
-                            onClick={onNext}
-                            disabled={!authorized}
-                            className={`w-full py-6 rounded-xl shadow-lg flex items-center justify-center gap-2 group transition-all ${authorized ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                }`}
-                        >
-                            Confirm Team & Proceed
-                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </Button>
                     </div>
                 </div>
             </div>

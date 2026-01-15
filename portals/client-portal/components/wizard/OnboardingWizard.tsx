@@ -388,6 +388,7 @@ export function OnboardingWizard() {
                             ) : (
                                 <Button
                                     onClick={handleNext}
+                                    disabled={state.currentStep === 4 && !state.agent.authorized}
                                     className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-md hover:shadow-lg transition-all flex-1 md:flex-none"
                                 >
                                     Continue
