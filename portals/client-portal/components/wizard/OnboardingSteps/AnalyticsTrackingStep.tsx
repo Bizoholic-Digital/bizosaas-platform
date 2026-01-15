@@ -1,3 +1,23 @@
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { AnalyticsConfig } from '../types/onboarding';
+import {
+    BarChart3,
+    Search,
+    Sparkles,
+    RefreshCw,
+    CheckCircle2,
+    Target,
+    Rocket,
+    AlertCircle,
+    ChevronRight,
+    Globe
+} from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
 import {
     Select,
     SelectContent,
@@ -6,7 +26,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, ChevronRight, Globe } from 'lucide-react';
 
 interface Props {
     data: AnalyticsConfig;
