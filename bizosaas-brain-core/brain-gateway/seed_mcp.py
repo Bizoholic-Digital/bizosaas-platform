@@ -1,6 +1,8 @@
 import os
 import sys
 import uuid
+import uuid  # Ensure uuid is imported 
+
 
 # Add current directory to path so imports work
 sys.path.append(os.getcwd())
@@ -94,6 +96,27 @@ def seed_mcp_registry():
                 "is_official": True
             },
             {
+                "name": "Zoho CRM", "slug": "zoho-crm", "category_slug": "crm",
+                "description": "Award-winning CRM software for growing businesses.",
+                "vendor_name": "Zoho Corporation",
+                "sort_order": 3,
+                "is_featured": True,
+                "affiliate_link": "https://go.zoho.com/123", # Placeholder
+                "capabilities": ["leads", "contacts", "deals", "tasks"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-crm:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Bitrix24", "slug": "bitrix24", "category_slug": "crm",
+                "description": "All-in-one business workspace: CRM, tasks, chats.",
+                "vendor_name": "Bitrix Inc",
+                "sort_order": 4,
+                "is_featured": False,
+                "capabilities": ["crm", "tasks", "sites", "communications"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-bitrix24:latest"},
+                "is_official": True
+            },
+            {
                 "name": "Salesforce", "slug": "salesforce", "category_slug": "crm",
                 "description": "The world's #1 CRM. Connect with customers in a whole new way.",
                 "capabilities": ["leads", "opportunities", "accounts", "reports"],
@@ -142,6 +165,13 @@ def seed_mcp_registry():
                 "is_featured": True,
                 "is_official": True
             },
+            {
+                "name": "Zoho Sites", "slug": "zoho-sites", "category_slug": "cms",
+                "description": "Website builder for small businesses.",
+                "capabilities": ["sites", "pages", "forms"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-sites:latest"},
+                "is_official": True
+            },
             # --- Email Marketing ---
             {
                 "name": "Mailchimp", "slug": "mailchimp", "category_slug": "email-marketing",
@@ -155,6 +185,20 @@ def seed_mcp_registry():
                 "description": "Cloud-based email delivery platform.",
                 "capabilities": ["send_email", "stats", "contacts"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-sendgrid:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Campaigns", "slug": "zoho-campaigns", "category_slug": "email-marketing",
+                "description": "Email marketing automation software.",
+                "capabilities": ["campaigns", "lists", "automation"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-campaigns:latest"},
+                "is_official": True
+            },
+             {
+                "name": "ActiveCampaign", "slug": "activecampaign", "category_slug": "email-marketing",
+                "description": "Customer experience automation platform.",
+                "capabilities": ["automations", "email", "crm"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-activecampaign:latest"},
                 "is_official": True
             },
             # --- Payments / Finance ---
@@ -193,6 +237,31 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-xero:latest"},
                 "is_official": True
             },
+            {
+                "name": "Zoho Books", "slug": "zoho-books", "category_slug": "payments",
+                "description": "Online accounting software for small businesses.",
+                "vendor_name": "Zoho Corporation",
+                "is_featured": True,
+                "capabilities": ["accounting", "invoices", "expenses", "gst"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-books:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Billing", "slug": "zoho-billing", "category_slug": "payments", # Formerly Zoho Subscriptions
+                "description": "End-to-end billing and subscription management.",
+                "vendor_name": "Zoho Corporation",
+                "is_featured": True,
+                "capabilities": ["subscriptions", "recurring_billing", "invoices"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-billing:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Zoho Invoice", "slug": "zoho-invoice", "category_slug": "payments",
+                "description": "Free online invoicing software.",
+                "capabilities": ["invoicing", "time_tracking", "payments"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-invoice:latest"},
+                "is_official": True
+            },
             # --- Analytics ---
             {
                 "name": "Google Analytics 4", "slug": "google-analytics", "category_slug": "analytics",
@@ -206,6 +275,20 @@ def seed_mcp_registry():
                 "description": "Open source product analytics.",
                 "capabilities": ["events", "recordings", "feature_flags"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-posthog:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Analytics", "slug": "zoho-analytics", "category_slug": "analytics",
+                "description": "Self-service BI and analytics software.",
+                "capabilities": ["reports", "dashboards", "data_blending"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-analytics:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Microsoft Power BI", "slug": "power-bi", "category_slug": "analytics",
+                "description": "Interactive data visualization BI tool.",
+                "capabilities": ["reports", "dashboards", "datasets"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-power-bi:latest"},
                 "is_official": True
             },
             # --- Advertising / Social ---
@@ -260,6 +343,20 @@ def seed_mcp_registry():
                 "is_featured": True,
                 "is_official": True
             },
+            {
+                "name": "Microsoft Advertising", "slug": "microsoft-ads", "category_slug": "advertising",
+                "description": "Reach customers on the Microsoft Search Network.",
+                "capabilities": ["campaigns", "keywords", "reports"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-microsoft-ads:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Zoho Social", "slug": "zoho-social", "category_slug": "advertising", # Or social logic
+                "description": "Social media management platform.",
+                "capabilities": ["posts", "monitoring", "analytics"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-social:latest"},
+                "is_official": True
+            },
             # --- Communication ---
             {
                 "name": "Slack", "slug": "slack", "category_slug": "communication",
@@ -303,6 +400,27 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-plivo:latest"},
                 "is_official": True
             },
+            {
+                "name": "Microsoft Teams", "slug": "teams", "category_slug": "communication",
+                "description": "Hub for teamwork in Microsoft 365.",
+                "capabilities": ["chat", "meetings", "calls", "files"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-teams:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Google Meet", "slug": "google-meet", "category_slug": "communication",
+                "description": "Secure video meetings for everyone.",
+                "capabilities": ["meetings", "video", "screen_sharing"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-meet:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Cliq", "slug": "zoho-cliq", "category_slug": "communication",
+                "description": "Team chat and collaboration software.",
+                "capabilities": ["chat", "channels", "calls"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-cliq:latest"},
+                "is_official": True
+            },
             # --- Search ---
             {
                 "name": "Brave Search", "slug": "brave-search", "category_slug": "search",
@@ -340,6 +458,20 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-remote:latest"},
                 "is_official": True
             },
+            {
+                "name": "Zoho People", "slug": "zoho-people", "category_slug": "hr-payroll",
+                "description": "Cloud-based HR management software.",
+                "capabilities": ["employee_management", "leave_tracking", "attendance"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-people:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Payroll", "slug": "zoho-payroll", "category_slug": "hr-payroll",
+                "description": "Tax-compliant payroll software.",
+                "capabilities": ["payroll", "taxes", "payslips"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-payroll:latest"},
+                "is_official": True
+            },
             # --- Hosting ---
             {
                 "name": "WP Engine", "slug": "wp-engine", "category_slug": "hosting",
@@ -362,6 +494,66 @@ def seed_mcp_registry():
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-cloudways:latest"},
                 "is_official": True
             },
+            {
+                "name": "Hostinger", "slug": "hostinger", "category_slug": "hosting",
+                "description": "Affordable web hosting with excellent performance.",
+                "vendor_name": "Hostinger",
+                "sort_order": 4,
+                "is_featured": True,
+                "capabilities": ["hosting", "domains", "email"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-hostinger:latest"},
+                "is_official": True
+            },
+            {
+                "name": "AWS", "slug": "aws", "category_slug": "hosting",
+                "description": "Amazon Web Services - Cloud computing platform.",
+                "vendor_name": "Amazon",
+                "sort_order": 5,
+                "is_featured": True,
+                "capabilities": ["ec2", "s3", "rds", "lambda"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-aws:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Azure", "slug": "azure", "category_slug": "hosting",
+                "description": "Microsoft Azure - Cloud computing services.",
+                "vendor_name": "Microsoft",
+                "sort_order": 6,
+                "is_featured": True,
+                "capabilities": ["vms", "storage", "databases", "functions"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-azure:latest"},
+                "is_official": True
+            },
+            {
+                "name": "DigitalOcean", "slug": "digitalocean", "category_slug": "hosting",
+                "description": "Simple cloud hosting for developers.",
+                "vendor_name": "DigitalOcean",
+                "sort_order": 7,
+                "is_featured": True,
+                "capabilities": ["droplets", "spaces", "databases", "kubernetes"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-digitalocean:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Vultr", "slug": "vultr", "category_slug": "hosting",
+                "description": "High-performance SSD cloud servers.",
+                "vendor_name": "Vultr",
+                "sort_order": 8,
+                "is_featured": False,
+                "capabilities": ["instances", "block_storage", "snapshots"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-vultr:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Utho", "slug": "utho", "category_slug": "hosting",
+                "description": "Indian cloud infrastructure provider.",
+                "vendor_name": "Utho",
+                "sort_order": 9,
+                "is_featured": False,
+                "capabilities": ["cloud", "servers", "storage"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-utho:latest"},
+                "is_official": True
+            },
              # --- Project Management (New) ---
             {
                 "name": "Notion", "slug": "notion", "category_slug": "utilities",
@@ -371,10 +563,38 @@ def seed_mcp_registry():
                 "is_official": True
             },
             {
-                "name": "Trello", "slug": "trello", "category_slug": "utilities",
+                "name": "Trello", "slug": "trello", "category_slug": "utilities", # Can also be Project Management
                 "description": "Collaborative project management with boards.",
                 "capabilities": ["boards", "lists", "cards"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-trello:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Projects", "slug": "zoho-projects", "category_slug": "utilities", # PM tool
+                "description": "Cloud-based project management tool.",
+                "capabilities": ["projects", "tasks", "gantt", "timesheets"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-projects:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Asana", "slug": "asana", "category_slug": "utilities",
+                "description": "Work management platform for teams.",
+                "capabilities": ["projects", "tasks", "timelines"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-asana:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Monday.com", "slug": "monday", "category_slug": "utilities",
+                "description": "Work OS for managing projects and workflows.",
+                "capabilities": ["boards", "items", "automations"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-monday:latest"},
+                "is_official": True
+            },
+             {
+                "name": "ClickUp", "slug": "clickup", "category_slug": "utilities",
+                "description": "One app to replace them all - tasks, docs, goals.",
+                "capabilities": ["tasks", "docs", "goals"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-clickup:latest"},
                 "is_official": True
             },
             # --- Utilities / Storage ---
@@ -397,6 +617,34 @@ def seed_mcp_registry():
                 "description": "Automate workflows by connecting your apps.",
                 "capabilities": ["zaps", "triggers", "actions"],
                 "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zapier:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Zoho Flow", "slug": "zoho-flow", "category_slug": "utilities",
+                "description": "Integration platform to connect web apps.",
+                "capabilities": ["flows", "integrations", "logic"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-zoho-flow:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Microsoft 365", "slug": "microsoft-365", "category_slug": "utilities",
+                "description": "Productivity cloud with Office apps.",
+                "capabilities": ["files", "mail", "calendar"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-microsoft-365:latest"},
+                "is_official": True
+            },
+            {
+                "name": "Make", "slug": "make", "category_slug": "utilities", # Formerly Integromat
+                "description": "Visual platform to automate tasks.",
+                "capabilities": ["scenarios", "modules", "webhooks"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-make:latest"},
+                "is_official": True
+            },
+             {
+                "name": "Google Workspace", "slug": "google-workspace", "category_slug": "utilities",
+                "description": "Collaboration and productivity apps.",
+                "capabilities": ["docs", "drive", "calendar", "mail"],
+                "mcp_config": {"type": "docker", "image": "bizosaas/mcp-google-workspace:latest"},
                 "is_official": True
             },
         ]

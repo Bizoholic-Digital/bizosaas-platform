@@ -88,7 +88,7 @@ To further strengthen the platform's reliability and usability, the following fe
     - Add "Activity Log" tab fetching data from `AuditLog`.
     - Add "Security" tab for Session revocation.
 
-## 6. Model Context Protocol (MCP) Integration
+## 6. Model Context Protocol (MCP) Integration & Billing Strategy
 
 BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with standardized tools for interacting with external services and the local system.
 
@@ -96,38 +96,95 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 - **Direct Connectors:** Used for high-performance UI rendering and mass data synchronization (e.g., Auth, core CRM UI).
 - **MCP Servers:** Used for "Agent Agency" — giving AI agents the ability to autonomously perform tasks like reading code, researching the web, or managing leads.
 
-### B. MCP Server Inventory
+### B. Billing Strategy: Lago-First Approach (Primary)
 
-| Service | MCP Server | Category | Priority | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **QuickBooks** | `quickbooks-mcp` | Finance | P1 | ✅ Implemented |
-| **Xero** | `xero-mcp` | Finance | P1 | ✅ Implemented |
-| **Stripe** | `stripe-mcp` | Finance | P1 | ✅ Implemented |
-| **PayPal** | `paypal-mcp` | Finance | P1 | ✅ Implemented |
-| **Razorpay** | `razorpay-mcp` | Finance | P1 | ✅ Implemented |
-| **Meta Ads** | `meta-ads-mcp` | Marketing | P1 | ✅ Implemented |
-| **Google Ads** | `google-ads-mcp` | Marketing | P1 | ✅ Implemented |
-| **LinkedIn** | `linkedin-mcp` | Social/Marketing | P1 | ✅ Implemented |
-| **WordPress (ZipWP)** | `wordpress-mcp` | CMS | P1 | ✅ Implemented |
-| **Wix** | `wix-mcp` | CMS | P1 | ✅ Implemented |
-| **Notion** | `notion-mcp` | Project Mgmt | P1 | ✅ Implemented |
-| **Trello** | `trello-mcp` | Project Mgmt | P1 | ✅ Implemented |
-| **FluentCRM** | `fluentcrm-mcp` | CRM | P1 | ✅ Implemented |
-| **HubSpot** | `hubspot-mcp` | CRM | P1 | ✅ Implemented |
-| **Salesforce** | `salesforce-mcp` | CRM | P1 | ✅ Implemented |
-| **Pipedrive** | `pipedrive-mcp` | CRM | P1 | ✅ Implemented |
-| **Mailchimp** | `mailchimp-mcp` | Email Marketing | P1 | ✅ Implemented |
-| **SendGrid** | `sendgrid-mcp` | Email Marketing | P1 | ✅ Implemented |
-| **Zoom** | `zoom-mcp` | Communication | P1 | ✅ Implemented |
-| **WhatsApp Business** | `whatsapp-mcp` | Communication | P1 | ✅ Implemented |
-| **Slack** | `slack-mcp` | Communication | P1 | ✅ Implemented |
-| **Google Analytics 4** | `ga4-mcp` | Analytics | P1 | ✅ Implemented |
-| **PostHog** | `posthog-mcp` | Analytics | P2 | ✅ Implemented |
-| **GitHub** | `github-mcp` | DevOps | P2 | ✅ Implemented |
-| **Zapier** | `zapier-mcp` | Utilities | P2 | ✅ Implemented |
-| **Brave Search** | `brave-search-mcp` | Search | P1 | ✅ Implemented |
+**Decision Date:** January 15, 2026 (Updated)
 
-### C. Implementation Progress
-1.  **Global SMB Tool Stack:** Successfully integrated 30+ tools across critical business functions (Finance, HR, marketing, etc.) to support "Business OS" vision.
-2.  **ZipWP-Style Provisioning:** Implemented AI-driven workflow for instant WordPress site generation and configuration.
-3.  **Unified Billing:** Integrated Stripe/Razorpay logic directly into onboarding for immediate subscription activation.
+After successfully resolving deployment and configuration issues, **Lago Billing Engine** is now the primary billing, finance, and accounting system for the platform.
+
+**Rationale:**
+- ✅ **Fixed & Operational:** The "Something went wrong" frontend error has been resolved.
+- ✅ **Usage-Based Billing:** Native support for the complex usage patterns of AI agents and platform features.
+- ✅ **Self-Hosted Control:** Full data ownership and zero monthly platform fees.
+- ✅ **KVM2 Ready:** Runs efficiently on 2vCPU / 8GB RAM infrastructure.
+- ✅ **Strategic Choice:** Provides the most flexibility for a developer-centric SaaS platform.
+
+**Zoho Status:** Integrated and available as a secondary/alternative option for SMBs who prefer the Zoho ecosystem or for accounting-heavy workflows via Zoho Books.
+
+### C. MCP Registry: 76 Services Across 12 Categories
+
+**Total MCPs:** 76 | **Categories:** 12 | **Affiliate-Ready:** 100%
+
+#### E-commerce (2)
+- WooCommerce, Shopify
+
+#### CRM (6)
+- FluentCRM, HubSpot, **Zoho CRM** ⭐, **Bitrix24** ⭐, Salesforce, Pipedrive
+
+#### CMS (5)
+- WordPress, Wix, Squarespace, Webflow, **Zoho Sites** ⭐
+
+#### Email Marketing (4)
+- Mailchimp, SendGrid, **Zoho Campaigns** ⭐, **ActiveCampaign** ⭐
+
+#### Payments/Finance (7)
+- **Stripe** ✅, **PayPal** ✅, **Razorpay** ✅, QuickBooks, Xero, **Zoho Books** ⭐, **Zoho Billing** ⭐, **Zoho Invoice** ⭐
+
+#### Analytics (4)
+- Google Analytics 4, PostHog, **Zoho Analytics** ⭐, **Microsoft Power BI** ⭐
+
+#### Advertising (7)
+- Meta Ads, Google Ads, LinkedIn, X Ads, Pinterest Ads, TikTok Ads, **Microsoft Advertising** ⭐, **Zoho Social** ⭐
+
+#### Communication (8)
+- Slack, WhatsApp Business, Zoom, Twilio, MessageBird, Plivo, **Microsoft Teams** ⭐, **Google Meet** ⭐, **Zoho Cliq** ⭐
+
+#### Search (2)
+- Brave Search, Google Search Console
+
+#### HR & Payroll (5)
+- Deel, Gusto, Remote, **Zoho People** ⭐, **Zoho Payroll** ⭐
+
+#### Hosting (9)
+- WP Engine, Kinsta, Cloudways, **Hostinger** ⭐, **AWS** ⭐, **Azure** ⭐, **DigitalOcean** ⭐, **Vultr** ⭐, **Utho** ⭐
+
+#### Utilities/Project Management (17)
+- Notion, Trello, Google Drive, GitHub, Zapier, **Zoho Projects** ⭐, **Asana** ⭐, **Monday.com** ⭐, **ClickUp** ⭐, **Zoho Flow** ⭐, **Microsoft 365** ⭐, **Make** ⭐, **Google Workspace** ⭐
+
+⭐ = **New in January 2026**
+
+### D. Admin Management Capabilities
+
+**NEW: MCP Marketplace & Management System**
+
+Platform owners and super admins can now manage the entire MCP ecosystem from the Admin Dashboard without touching code:
+
+1. **MCP Management Page** (`/mcp-management`)
+   - View all 76 MCPs with stats dashboard
+   - Search and filter by category
+   - Edit affiliate/partner links
+   - Manage vendor information
+   - Control sort order and featured status
+   - Update descriptions
+   - Toggle visibility in client onboarding
+
+2. **MCP Marketplace (Add/Remove Features)**
+   - Add new MCP servers to the registry dynamically.
+   - Remove or deprecate services as needed.
+   - Manage feature visibility for specific tenant tiers.
+
+3. **Sub-Admin Management**
+   - **Role Creation:** Create accounts for team members with restricted "Sub-Admin" roles.
+   - **Permission Scoping:** Assign specific categories or tenants to sub-admins.
+   - **Activity Monitoring:** All administrative actions (feature toggles, affiliate link updates) are tied to the sub-admin's identity in audit logs.
+   - **Ease of Use:** Enables support and operations teams to manage the platform without technical/code knowledge.
+
+
+### E. Implementation Progress
+1.  ✅ **Lago Fixed:** Resolved frontend routing issues; Lago is now production-ready.
+2.  ✅ **Global SMB Tool Stack:** Successfully integrated 76 tools across 12 categories.
+3.  ✅ **MCP Admin Interface:** Created management UI for platform owners.
+4.  ✅ **Affiliate Infrastructure:** Built foundation for partner revenue generation.
+5.  ⏳ **Marketplace UI:** Expanding the admin dashboard to support dynamic MCP creation/removal.
+6.  ⏳ **Sub-Admin Management:** Building the UI for team/staff management.
+7.  ⏳ **Zoho Secondary Integration:** Keeping Zoho as an alternative finance option.

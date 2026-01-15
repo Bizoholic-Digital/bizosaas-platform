@@ -45,6 +45,20 @@ class McpUpdateRequest(BaseModel):
     is_featured: Optional[bool] = None
     description: Optional[str] = None
 
+class McpCreateRequest(BaseModel):
+    name: str
+    slug: str
+    category_id: UUID
+    description: Optional[str] = None
+    capabilities: List[str] = []
+    mcp_config: dict
+    vendor_name: Optional[str] = None
+    affiliate_link: Optional[str] = None
+    is_official: bool = False
+    sort_order: int = 0
+    is_featured: bool = False
+
+
 class InstallationRequest(BaseModel):
     mcp_slug: str
     config: Optional[dict] = None
@@ -60,6 +74,41 @@ def get_registry(category: Optional[str] = None, db: Session = Depends(get_db)):
     if category:
         query = query.join(McpCategory).filter(McpCategory.slug == category)
     return query.all()
+
+@router.post("/", response_model=McpResponse, status_code=status.HTTP_201_CREATED)
+def create_mcp(
+    request: McpCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    # TODO: Proper RBAC - if "admin" not in current_user.roles: ...
+    
+    # Check if slug exists
+    if db.query(McpRegistry).filter(McpRegistry.slug == request.slug).first():
+        raise HTTPException(status_code=400, detail="MCP with this slug already exists")
+    
+    mcp = McpRegistry(**request.model_dump())
+    db.add(mcp)
+    db.commit()
+    db.refresh(mcp)
+    return mcp
+
+@router.delete("/{mcp_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_mcp(
+    mcp_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: AuthenticatedUser = Depends(get_current_user)
+):
+    # TODO: Proper RBAC
+    
+    mcp = db.query(McpRegistry).filter(McpRegistry.id == mcp_id).first()
+    if not mcp:
+        raise HTTPException(status_code=404, detail="MCP not found")
+        
+    db.delete(mcp)
+    db.commit()
+    return None
+
 
 @router.patch("/{mcp_id}", response_model=McpResponse)
 def update_mcp(

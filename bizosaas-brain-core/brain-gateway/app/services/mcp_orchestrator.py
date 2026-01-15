@@ -33,13 +33,25 @@ class McpOrchestrator:
             # Mock delay to simulate Docker pull/run
             await asyncio.sleep(5)
             
-            # ZipWP Simulation Logic
-            if installation.mcp and installation.mcp.slug == "wordpress":
-                print(f"[Orchestrator] 🚀 Generating ZipWP-style WordPress Site for {installation_id}...")
-                await asyncio.sleep(2)
-                print(f"[Orchestrator] 🎨 Applying AI Theme and Content...")
-                await asyncio.sleep(2)
-                installation.config = {"wp_url": "https://generated-site.bizosaas.com", "admin_user": "admin"}
+            # ZipWP & AI Provisioning Logic
+            if installation.mcp:
+                if installation.mcp.slug == "wordpress":
+                    print(f"[Orchestrator] 🚀 Generating ZipWP-style WordPress Site for {installation_id}...")
+                    await asyncio.sleep(2)
+                    print(f"[Orchestrator] 🎨 Applying AI Theme and Content...")
+                    await asyncio.sleep(2)
+                    installation.config = {**installation.config, "wp_url": "https://generated-site.bizosaas.com", "admin_user": "admin"}
+                
+                elif "zoho" in installation.mcp.slug:
+                    print(f"[Orchestrator] 🏢 Provisioning Zoho {installation.mcp.name} instance...")
+                    await asyncio.sleep(3)
+                    installation.config = {**installation.config, "portal_url": f"https://{installation.mcp.slug}.zoho.com/portal/bizosaas"}
+                
+                elif installation.mcp.category.slug == "hosting":
+                    print(f"[Orchestrator] ☁️ Deploying cloud resources on {installation.mcp.name}...")
+                    await asyncio.sleep(4)
+                    installation.config = {**installation.config, "status": "resource_provisioned", "region": "us-east-1"}
+
 
             # In a real scenario, we would store the container ID here
             # installation.container_id = "docker_123"

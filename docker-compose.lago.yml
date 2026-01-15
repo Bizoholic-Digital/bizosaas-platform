@@ -89,8 +89,20 @@ services:
       - lago-api
     env_file:
       - .env.lago
-    command: >
-      /bin/sh -c " echo \"window.API_URL = 'https://billing-api.bizoholic.net';\" > /usr/share/nginx/html/env-config.js && echo \"window.LAGO_DOMAIN = 'https://billing.bizoholic.net';\" >> /usr/share/nginx/html/env-config.js && echo \"window.APP_ENV = 'production';\" >> /usr/share/nginx/html/env-config.js && echo \"window.LAGO_OAUTH_PROXY_URL = '';\" >> /usr/share/nginx/html/env-config.js && echo \"window.LAGO_DISABLE_SIGNUP = 'true';\" >> /usr/share/nginx/html/env-config.js && nginx -g 'daemon off;' "
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        cat << EOF > /usr/share/nginx/html/env-config.js
+        window.API_URL = 'https://billing-api.bizoholic.net';
+        window.LAGO_DOMAIN = 'https://billing.bizoholic.net';
+        window.APP_ENV = 'production';
+        window.LAGO_OAUTH_PROXY_URL = '';
+        window.LAGO_DISABLE_SIGNUP = 'true';
+        window.NANGO_PUBLIC_KEY = '';
+        window.SENTRY_DSN = '';
+        EOF
+        nginx -g 'daemon off;'
     networks:
       - brain-network
       - dokploy-network
