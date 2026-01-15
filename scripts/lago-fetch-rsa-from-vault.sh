@@ -13,6 +13,7 @@ echo "🔐 Fetching RSA key from Vault..."
 # We assume jq is installed in the Lago container (it usually is or we can add it)
 # If jq is not available, we can use a python one-liner
 
+# Fetch the key from Vault using curl and ruby
 RSA_KEY=$(curl -s \
   -H "X-Vault-Token: ${VAULT_TOKEN}" \
   "${VAULT_ADDR}/v1/secret/data/lago/rsa-key" | \
@@ -25,14 +26,12 @@ fi
 
 echo "✅ RSA key fetched successfully"
 
-# Write to a file as it's more robust than environment variables for multi-line keys
-echo "$RSA_KEY" > /tmp/lago_rsa.pem
-chmod 600 /tmp/lago_rsa.pem
+# Lago expects the key to be Base64 encoded in production
+# See config/initializers/rsa_keys.rb
+B64_KEY=$(echo "$RSA_KEY" | base64 -w 0)
 
-# Export the file path for Lago to use
-export LAGO_RSA_PRIVATE_KEY_FILE="/tmp/lago_rsa.pem"
-# Unset the string variable to avoid confusion
-unset LAGO_RSA_PRIVATE_KEY
+# Export for Lago to use
+export LAGO_RSA_PRIVATE_KEY="$B64_KEY"
 
 # Execute the original Lago command
 exec "$@"
