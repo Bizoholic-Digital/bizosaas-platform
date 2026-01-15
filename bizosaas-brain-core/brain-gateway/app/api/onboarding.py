@@ -86,6 +86,7 @@ class DiscoveryService(BaseModel):
     id: str
     name: str
     status: str
+    type: Optional[str] = "service"
     cost: Optional[str] = None
     requiresEnablement: Optional[bool] = False
 
@@ -177,11 +178,23 @@ async def discover_services(
     # real_token = await identity_port.get_oauth_token(current_user.id, provider)
     
     if "google" in provider:
-        # Mock Discovery for now - will integrate with real connectors in next step
+        # Mock Discovery - Returning detailed properties for GTM, GA4, GSC
         discovery_results["google"] = [
-            {"id": "google-analytics", "name": "Google Analytics 4", "status": "detected", "requiresEnablement": False},
-            {"id": "google-ads", "name": "Google Ads", "status": "detected", "cost": "$$$", "requiresEnablement": True},
-            {"id": "google-business-profile", "name": "Google Business Profile", "status": "detected", "requiresEnablement": False}
+            # GTM Containers
+            {"id": "GTM-PRH6T87", "name": "Bizoholic Main Container", "status": "detected", "type": "gtm_container"},
+            {"id": "GTM-WLZK2N9", "name": "Staging/Dev Container", "status": "detected", "type": "gtm_container"},
+            
+            # GA4 Properties
+            {"id": "315422891", "name": "Bizoholic - GA4 (Primary)", "status": "detected", "type": "ga4_property"},
+            {"id": "284771203", "name": "Marketing Sandbox", "status": "detected", "type": "ga4_property"},
+            
+            # GSC Sites
+            {"id": "https://bizoholic.net/", "name": "bizoholic.net", "status": "detected", "type": "gsc_site"},
+            {"id": "sc-domain:bizoholic.net", "name": "bizoholic.net (Domain)", "status": "detected", "type": "gsc_site"},
+            
+            # Core Services
+            {"id": "google-ads", "name": "Google Ads", "status": "detected", "type": "service", "cost": "$$$", "requiresEnablement": True},
+            {"id": "google-business-profile", "name": "Google Business Profile", "status": "detected", "type": "service", "requiresEnablement": False}
         ]
         profile_updates = {
             "companyName": current_user.name or "My Business",
@@ -189,8 +202,8 @@ async def discover_services(
         }
     elif "microsoft" in provider:
         discovery_results["microsoft"] = [
-            {"id": "microsoft-clarity", "name": "Microsoft Clarity", "status": "detected", "requiresEnablement": False},
-            {"id": "bing-webmaster", "name": "Bing Webmaster Tools", "status": "not_detected", "requiresEnablement": True}
+            {"id": "microsoft-clarity", "name": "Microsoft Clarity", "status": "detected", "type": "service", "requiresEnablement": False},
+            {"id": "bing-webmaster", "name": "Bing Webmaster Tools", "status": "not_detected", "type": "service", "requiresEnablement": True}
         ]
 
     return {

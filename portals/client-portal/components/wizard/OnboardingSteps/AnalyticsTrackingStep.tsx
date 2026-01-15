@@ -1,12 +1,12 @@
-import React from 'react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { AnalyticsConfig } from '../types/onboarding';
-import { BarChart3, Search, Sparkles, RefreshCw, CheckCircle2, Target, Rocket } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
-import { toast } from 'sonner';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Badge } from '@/components/ui/badge';
+import { AlertCircle, ChevronRight, Globe } from 'lucide-react';
 
 interface Props {
     data: AnalyticsConfig;
@@ -178,77 +178,156 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
 
             <div className="space-y-4">
                 {/* Google Tag Manager - PRIORITY */}
-                <div className="border-2 border-blue-200 rounded-xl p-5 bg-blue-50/30 space-y-4 relative overflow-hidden group hover:border-blue-400 transition-colors">
-                    <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] px-2 py-0.5 font-bold uppercase tracking-widest rounded-bl-lg">
+                <div className="border-2 border-primary/20 rounded-xl p-5 bg-primary/5 space-y-4 relative overflow-hidden group hover:border-primary/40 transition-colors">
+                    <div className="absolute top-0 right-0 bg-primary text-white text-[10px] px-2 py-0.5 font-bold uppercase tracking-widest rounded-bl-lg">
                         Priority
                     </div>
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="bg-blue-600 p-2 rounded-lg text-white shadow-md">
+                            <div className="bg-primary p-2 rounded-lg text-white shadow-md">
                                 <Sparkles size={24} />
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-bold">Google Tag Manager</Label>
-                                <p className="text-xs text-muted-foreground">Includes GA4, Ads, and FB Pixel automatically.</p>
+                                <p className="text-xs text-muted-foreground">Central hub for tracking pixels & events.</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="bg-card border-blue-200 text-blue-700 font-bold">Priority Setup</Button>
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-none">
+                            Required
+                        </Badge>
                     </div>
-                    <div className="pt-2 border-t border-blue-100 mt-2">
-                        <Input
-                            placeholder="GTM-XXXXXXX"
-                            className="h-9 text-sm border-blue-100 focus:border-blue-500"
-                            value={data.gtmId}
-                            onChange={(e) => onUpdate({ gtmId: e.target.value })}
-                        />
+
+                    <div className="pt-2 border-t border-primary/10 mt-2 space-y-3">
+                        {data.availableGtmContainers && data.availableGtmContainers.length > 0 ? (
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Select Container</p>
+                                <Select
+                                    value={data.gtmId}
+                                    onValueChange={(val) => onUpdate({ gtmId: val })}
+                                >
+                                    <SelectTrigger className="w-full bg-card/50 backdrop-blur-sm border-primary/20">
+                                        <SelectValue placeholder="Choose GTM Container" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {data.availableGtmContainers.map(container => (
+                                            <SelectItem key={container.id} value={container.id}>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{container.name}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{container.id}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ) : (
+                            <Input
+                                placeholder="GTM-XXXXXXX"
+                                className="h-10 text-sm bg-card/50"
+                                value={data.gtmId}
+                                onChange={(e) => onUpdate({ gtmId: e.target.value })}
+                            />
+                        )}
                     </div>
                 </div>
 
-                {/* Google Analytics */}
-                <div className="border rounded-xl p-5 bg-card space-y-4 relative overflow-hidden group hover:border-slate-300 transition-colors">
+                {/* Google Analytics 4 */}
+                <div className="border rounded-xl p-5 bg-card/50 backdrop-blur-sm space-y-4 group hover:border-slate-300 transition-colors">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="bg-orange-100 p-2 rounded-lg text-orange-600">
+                            <div className="bg-orange-100 dark:bg-orange-950/30 p-2 rounded-lg text-orange-600">
                                 <BarChart3 size={24} />
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-semibold">Google Analytics 4</Label>
-                                <p className="text-xs text-muted-foreground">Standalone GA4 connection</p>
+                                <p className="text-xs text-muted-foreground">Property for user behavioral insights.</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="bg-card">Connect</Button>
+                        {data.gaId ? (
+                            <div className="flex items-center gap-1 text-green-600 text-xs font-bold">
+                                <CheckCircle2 size={12} /> Linked
+                            </div>
+                        ) : (
+                            <Button variant="ghost" size="sm" className="h-8 text-xs">Manual Link</Button>
+                        )}
                     </div>
-                    <div className="pt-2 border-t mt-2">
-                        <Input
-                            placeholder="G-XXXXXXXXXX"
-                            className="h-8 text-sm"
-                            value={data.gaId}
-                            onChange={(e) => onUpdate({ gaId: e.target.value })}
-                        />
+
+                    <div className="pt-2 border-t mt-2 space-y-3">
+                        {data.availableGaProperties && data.availableGaProperties.length > 0 ? (
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Select Property</p>
+                                <Select
+                                    value={data.gaId}
+                                    onValueChange={(val) => onUpdate({ gaId: val })}
+                                >
+                                    <SelectTrigger className="w-full bg-background/50">
+                                        <SelectValue placeholder="Choose GA4 Property" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {data.availableGaProperties.map(prop => (
+                                            <SelectItem key={prop.id} value={prop.id}>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium">{prop.name}</span>
+                                                    <span className="text-[10px] text-muted-foreground">ID: {prop.id}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ) : (
+                            <Input
+                                placeholder="G-XXXXXXXXXX"
+                                className="h-10 text-sm"
+                                value={data.gaId}
+                                onChange={(e) => onUpdate({ gaId: e.target.value })}
+                            />
+                        )}
                     </div>
                 </div>
 
-                {/* Google Search Console */}
-                <div className="border rounded-xl p-5 bg-card space-y-4 hover:border-slate-300 transition-colors">
+                {/* Search Console */}
+                <div className="border rounded-xl p-5 bg-card/50 backdrop-blur-sm space-y-4 hover:border-slate-300 transition-colors">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                            <div className="bg-blue-100 dark:bg-blue-950/30 p-2 rounded-lg text-blue-600">
                                 <Search size={24} />
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-base font-semibold">Search Console</Label>
-                                <p className="text-xs text-muted-foreground">For SEO performance and keywords</p>
+                                <p className="text-xs text-muted-foreground">Verified site for SEO health.</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="bg-card">Connect</Button>
                     </div>
-                    <div className="pt-2 border-t mt-2">
-                        <Input
-                            placeholder="example.com"
-                            className="h-8 text-sm"
-                            value={data.gscId}
-                            onChange={(e) => onUpdate({ gscId: e.target.value })}
-                        />
+
+                    <div className="pt-2 border-t mt-2 space-y-2">
+                        {data.availableGscSites && data.availableGscSites.length > 0 ? (
+                            <Select
+                                value={data.gscId}
+                                onValueChange={(val) => onUpdate({ gscId: val })}
+                            >
+                                <SelectTrigger className="w-full bg-background/50">
+                                    <SelectValue placeholder="Choose Site Profile" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {data.availableGscSites.map(site => (
+                                        <SelectItem key={site.id} value={site.id}>
+                                            <div className="flex items-center gap-2">
+                                                <Globe size={14} className="text-muted-foreground" />
+                                                <span>{site.name}</span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input
+                                placeholder="https://example.com"
+                                className="h-10 text-sm"
+                                value={data.gscId}
+                                onChange={(e) => onUpdate({ gscId: e.target.value })}
+                            />
+                        )}
                     </div>
                 </div>
 

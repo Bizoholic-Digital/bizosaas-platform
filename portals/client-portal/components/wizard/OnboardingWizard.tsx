@@ -106,16 +106,24 @@ export function OnboardingWizard() {
                 const data = await res.json();
                 updateDiscovery(data.discovery);
 
-                // Pre-fill tracking if found in cloud accounts
-                const gtm = data.discovery.google?.find((s: any) => s.name.toLowerCase().includes('tag manager') && s.status === 'detected');
-                const ga4 = data.discovery.google?.find((s: any) => s.name.toLowerCase().includes('analytics') && s.status === 'detected');
+                // Extraction logic for tool lists
+                const gtmList = data.discovery.google?.filter((s: any) => s.type === 'gtm_container' || s.id.includes('gtm')) || [];
+                const gaList = data.discovery.google?.filter((s: any) => s.type === 'ga4_property' || s.id.startsWith('G-')) || [];
+                const gscList = data.discovery.google?.filter((s: any) => s.type === 'gsc_site' || s.name.includes('.')) || [];
 
-                if (gtm || ga4) {
-                    updateAnalytics({
-                        gtmId: gtm?.id || state.analytics.gtmId,
-                        gaId: ga4?.id || state.analytics.gaId
-                    });
-                }
+                // Pre-fill tracking if found in cloud accounts
+                const gtm = gtmList[0];
+                const ga4 = gaList[0];
+                const gsc = gscList[0];
+
+                updateAnalytics({
+                    gtmId: gtm?.id || state.analytics.gtmId,
+                    gaId: ga4?.id || state.analytics.gaId,
+                    gscId: gsc?.id || state.analytics.gscId,
+                    availableGtmContainers: gtmList.map((s: any) => ({ id: s.id, name: s.name })),
+                    availableGaProperties: gaList.map((s: any) => ({ id: s.id, name: s.name })),
+                    availableGscSites: gscList.map((s: any) => ({ id: s.id, name: s.name }))
+                });
 
                 // Also update profile if names/details were found
                 if (data.profile) {

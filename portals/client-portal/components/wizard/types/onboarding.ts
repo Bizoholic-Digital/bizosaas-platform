@@ -43,11 +43,20 @@ export interface DigitalPresence {
     hasTracking?: boolean;
 }
 
+export interface AnalyticsProperty {
+    id: string;
+    name: string;
+    type?: string;
+}
+
 export interface AnalyticsConfig {
     gtmId?: string;
     gaId?: string;
     gscId?: string;
     setupLater: boolean;
+    availableGtmContainers?: AnalyticsProperty[];
+    availableGaProperties?: AnalyticsProperty[];
+    availableGscSites?: AnalyticsProperty[];
     auditedServices?: {
         essential: Array<{ id: string, name: string, service: string, status: string }>;
         optional: Array<{ id: string, name: string, service: string, status: string }>;
