@@ -42,6 +42,7 @@ echo "✅ RSA key loaded and encoded"
 # 3. Synchronize Standard Rails Vars (for maximum compatibility)
 export SECRET_KEY_BASE="$LAGO_SECRET_KEY_BASE"
 export DATABASE_URL="$LAGO_DATABASE_URL"
+export REDIS_URL="$LAGO_REDIS_URL"
 
 echo "🚀 Starting Lago: $@"
 
