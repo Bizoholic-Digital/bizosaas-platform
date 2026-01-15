@@ -211,7 +211,7 @@ export function OnboardingWizard() {
                 (state.discovery.microsoft && state.discovery.microsoft.length > 0);
 
             if (!hasDiscoveryData) {
-                const primaryEmail = user?.primaryEmailAddress?.emailAddress || state.profile.email || "";
+                const primaryEmail = user?.primaryEmailAddress?.emailAddress || state.socialLogin?.email || "";
                 const rawProvider = user?.externalAccounts[0]?.provider || 'none';
                 const normalizedProvider = rawProvider.includes('google') ? 'google' :
                     rawProvider.includes('microsoft') ? 'microsoft' : 'none';
@@ -221,7 +221,7 @@ export function OnboardingWizard() {
                 }
             }
         }
-    }, [state.currentStep, user, state.discovery, isDiscovering, state.profile.email]);
+    }, [state.currentStep, user, state.discovery, isDiscovering, state.socialLogin?.email]);
 
     useEffect(() => {
         if (state.profile.website && state.digitalPresence.hasTracking && !state.analytics.auditedServices && !isAuditing) {
