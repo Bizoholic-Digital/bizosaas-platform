@@ -107,9 +107,17 @@ export function OnboardingWizard() {
                 updateDiscovery(data.discovery);
 
                 // Extraction logic for tool lists
-                const gtmList = data.discovery.google?.filter((s: any) => s.type === 'gtm_container' || s.id.includes('gtm')) || [];
-                const gaList = data.discovery.google?.filter((s: any) => s.type === 'ga4_property' || s.id.startsWith('G-')) || [];
-                const gscList = data.discovery.google?.filter((s: any) => s.type === 'gsc_site' || s.name.includes('.')) || [];
+                const gtmList = data.discovery.google?.filter((s: any) =>
+                    s.type === 'gtm_container' || s.id.toLowerCase().includes('gtm')
+                ) || [];
+
+                const gaList = data.discovery.google?.filter((s: any) =>
+                    s.type === 'ga4_property' || s.id.startsWith('G-') || /^\d+$/.test(s.id)
+                ) || [];
+
+                const gscList = data.discovery.google?.filter((s: any) =>
+                    s.type === 'gsc_site' || s.name.includes('.')
+                ) || [];
 
                 // Pre-fill tracking if found in cloud accounts
                 const gtm = gtmList[0];
