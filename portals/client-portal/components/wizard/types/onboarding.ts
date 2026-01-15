@@ -54,11 +54,15 @@ export interface AnalyticsConfig {
     gaId?: string;
     gscId?: string;
     fbId?: string;
+    clarityId?: string;
+    bingId?: string;
     setupLater: boolean;
     availableGtmContainers?: AnalyticsProperty[];
     availableGaProperties?: AnalyticsProperty[];
     availableGscSites?: AnalyticsProperty[];
     availableFbPixels?: AnalyticsProperty[];
+    availableClarityProjects?: AnalyticsProperty[];
+    availableBingProfiles?: AnalyticsProperty[];
     auditedServices?: {
         essential: Array<{ id: string, name: string, service: string, status: string }>;
         optional: Array<{ id: string, name: string, service: string, status: string }>;
@@ -170,6 +174,8 @@ export const INITIAL_STATE: OnboardingState = {
         gaId: '',
         gscId: '',
         fbId: '',
+        clarityId: '',
+        bingId: '',
         setupLater: false,
     },
     socialMedia: {

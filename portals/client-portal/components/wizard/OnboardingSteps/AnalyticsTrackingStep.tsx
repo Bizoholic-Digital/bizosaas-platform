@@ -15,7 +15,9 @@ import {
     AlertCircle,
     ChevronRight,
     Globe,
-    Facebook
+    Facebook,
+    Activity,
+    TrendingUp
 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { toast } from 'sonner';
@@ -394,6 +396,92 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl }: Props) {
                                 onChange={(e) => onUpdate({ fbId: e.target.value })}
                             />
                         )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Microsoft Clarity */}
+                    <div className="border rounded-xl p-5 bg-card/50 backdrop-blur-sm space-y-4 hover:border-slate-300 transition-colors">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-orange-50 dark:bg-orange-950/20 p-2 rounded-lg text-orange-600">
+                                    <Activity size={20} />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-sm font-semibold">Microsoft Clarity</Label>
+                                    <p className="text-[10px] text-muted-foreground">Heatmaps & recordings.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-2 border-t mt-2">
+                            {data.availableClarityProjects && data.availableClarityProjects.length > 0 ? (
+                                <Select
+                                    value={data.clarityId}
+                                    onValueChange={(val) => onUpdate({ clarityId: val })}
+                                >
+                                    <SelectTrigger className="w-full bg-background/50 h-9 text-xs">
+                                        <SelectValue placeholder="Select Project" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {data.availableClarityProjects.map(proj => (
+                                            <SelectItem key={proj.id} value={proj.id} className="text-xs">
+                                                {proj.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Input
+                                    placeholder="Project ID"
+                                    className="h-9 text-xs"
+                                    value={data.clarityId}
+                                    onChange={(e) => onUpdate({ clarityId: e.target.value })}
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Bing Analytics */}
+                    <div className="border rounded-xl p-5 bg-card/50 backdrop-blur-sm space-y-4 hover:border-slate-300 transition-colors">
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-teal-50 dark:bg-teal-950/20 p-2 rounded-lg text-teal-600">
+                                    <TrendingUp size={20} />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-sm font-semibold">Bing Webmaster</Label>
+                                    <p className="text-[10px] text-muted-foreground">Microsoft search performance.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-2 border-t mt-2">
+                            {data.availableBingProfiles && data.availableBingProfiles.length > 0 ? (
+                                <Select
+                                    value={data.bingId}
+                                    onValueChange={(val) => onUpdate({ bingId: val })}
+                                >
+                                    <SelectTrigger className="w-full bg-background/50 h-9 text-xs">
+                                        <SelectValue placeholder="Select Profile" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {data.availableBingProfiles.map(prof => (
+                                            <SelectItem key={prof.id} value={prof.id} className="text-xs">
+                                                {prof.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <Input
+                                    placeholder="Profile ID"
+                                    className="h-9 text-xs"
+                                    value={data.bingId}
+                                    onChange={(e) => onUpdate({ bingId: e.target.value })}
+                                />
+                            )}
+                        </div>
                     </div>
                 </div>
 

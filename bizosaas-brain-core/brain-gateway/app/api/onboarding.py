@@ -203,10 +203,10 @@ async def discover_services(
             "companyName": current_user.name or "My Business",
             "industry": "Marketing"
         }
-    elif "microsoft" in provider:
+    elif "microsoft" in provider.lower():
         discovery_results["microsoft"] = [
-            {"id": "microsoft-clarity", "name": "Microsoft Clarity", "status": "detected", "type": "service", "requiresEnablement": False},
-            {"id": "bing-webmaster", "name": "Bing Webmaster Tools", "status": "not_detected", "type": "service", "requiresEnablement": True}
+            {"id": "clarity-proj-abc", "name": "Bizoholic Clarity", "status": "detected", "type": "clarity_project"},
+            {"id": "bing-site-123", "name": "bizoholic.net (Bing)", "status": "detected", "type": "bing_profile"}
         ]
 
     return {

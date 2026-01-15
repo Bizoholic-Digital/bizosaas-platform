@@ -127,21 +127,35 @@ export function OnboardingWizard() {
                     s.type === 'fb_analytics' || s.id.includes('fb')
                 ) || [];
 
+                const clarityList = data.discovery.microsoft?.filter((s: any) =>
+                    s.type === 'clarity_project' || s.id.includes('clarity')
+                ) || [];
+
+                const bingList = data.discovery.microsoft?.filter((s: any) =>
+                    s.type === 'bing_profile' || s.id.includes('bing')
+                ) || [];
+
                 // Pre-fill tracking if found in cloud accounts
                 const gtm = gtmList[0];
                 const ga4 = gaList[0];
                 const gsc = gscList[0];
                 const fb = fbList[0];
+                const clarity = clarityList[0];
+                const bing = bingList[0];
 
                 updateAnalytics({
                     gtmId: gtm?.id || state.analytics.gtmId,
                     gaId: ga4?.id || state.analytics.gaId,
                     gscId: gsc?.id || state.analytics.gscId,
                     fbId: fb?.id || state.analytics.fbId,
+                    clarityId: clarity?.id || state.analytics.clarityId,
+                    bingId: bing?.id || state.analytics.bingId,
                     availableGtmContainers: gtmList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGaProperties: gaList.map((s: any) => ({ id: s.id, name: s.name })),
                     availableGscSites: gscList.map((s: any) => ({ id: s.id, name: s.name })),
-                    availableFbPixels: fbList.map((s: any) => ({ id: s.id, name: s.name }))
+                    availableFbPixels: fbList.map((s: any) => ({ id: s.id, name: s.name })),
+                    availableClarityProjects: clarityList.map((s: any) => ({ id: s.id, name: s.name })),
+                    availableBingProfiles: bingList.map((s: any) => ({ id: s.id, name: s.name }))
                 });
 
                 // Also update profile if names/details were found
