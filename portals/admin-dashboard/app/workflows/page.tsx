@@ -5,14 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Play, 
-  Pause, 
-  Square, 
-  RefreshCw, 
-  Settings, 
-  TrendingUp, 
-  Users, 
+import {
+  Play,
+  Pause,
+  Square,
+  RefreshCw,
+  Settings,
+  TrendingUp,
+  Users,
   Activity,
   AlertCircle,
   CheckCircle,
@@ -47,6 +47,11 @@ interface SystemMetrics {
   apiRequests: number;
 }
 
+import { adminApi } from '@/lib/api/admin';
+import { toast } from 'sonner';
+
+// ... (imports)
+
 export default function WorkflowManagementPage() {
   const [workflows, setWorkflows] = useState<WorkflowStatus[]>([]);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
@@ -55,99 +60,46 @@ export default function WorkflowManagementPage() {
 
   useEffect(() => {
     loadWorkflowData();
-    const interval = setInterval(loadWorkflowData, 30000); // Refresh every 30 seconds
+    const interval = setInterval(loadWorkflowData, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const loadWorkflowData = async () => {
     try {
       setLoading(true);
-      
-      // Mock data for demonstration - replace with actual API calls
-      const mockWorkflows: WorkflowStatus[] = [
-        {
-          id: 'wf-001',
-          name: 'API Key Management Wizard',
-          type: 'integration',
-          status: 'running',
-          lastRun: '2 minutes ago',
-          nextRun: 'Continuous',
-          successRate: 98.5,
-          executionCount: 1247,
-          tenantCount: 45
-        },
-        {
-          id: 'wf-002', 
-          name: 'Product Sourcing Workflow',
-          type: 'ai-agent',
-          status: 'running',
-          lastRun: '5 minutes ago',
-          nextRun: 'Every 15 minutes',
-          successRate: 94.2,
-          executionCount: 856,
-          tenantCount: 23
-        },
-        {
-          id: 'wf-003',
-          name: 'Supplier Validation Workflow', 
-          type: 'ai-agent',
-          status: 'paused',
-          lastRun: '1 hour ago',
-          nextRun: 'Manual trigger',
-          successRate: 91.7,
-          executionCount: 432,
-          tenantCount: 18
-        },
-        {
-          id: 'wf-004',
-          name: 'Marketing Strategist AI',
-          type: 'ai-agent',
-          status: 'running',
-          lastRun: '3 minutes ago',
-          nextRun: 'Every 10 minutes',
-          successRate: 96.8,
-          executionCount: 2134,
-          tenantCount: 67
-        },
-        {
-          id: 'wf-005',
-          name: 'Commerce Advisor AI',
-          type: 'ai-agent',
-          status: 'running',
-          lastRun: '1 minute ago',
-          nextRun: 'Continuous',
-          successRate: 97.3,
-          executionCount: 1689,
-          tenantCount: 34
-        },
-        {
-          id: 'wf-006',
-          name: 'BizOSaaS Admin AI Assistant',
-          type: 'system',
-          status: 'running',
-          lastRun: 'Just now',
-          nextRun: 'Continuous',
-          successRate: 99.1,
-          executionCount: 892,
-          tenantCount: 1
-        }
-      ];
+      const res = await adminApi.getWorkflows();
 
-      const mockMetrics: SystemMetrics = {
-        totalWorkflows: 6,
-        activeWorkflows: 5,
-        successfulRuns: 7250,
-        failedRuns: 128,
-        avgExecutionTime: 2.4,
-        totalTenants: 87,
-        activeUsers: 342,
-        apiRequests: 15678
-      };
+      if (res.data) {
+        // Transform API data to UI model if needed, or use directly if matching
+        // Assuming API returns comparable structure. We might need to map 'type'
+        const mapped: WorkflowStatus[] = res.data.map((w: any) => ({
+          id: w.id,
+          name: w.name,
+          type: (w.type?.toLowerCase() || 'system') as any, // fallback
+          status: w.status,
+          lastRun: w.lastRun ? new Date(w.lastRun).toLocaleString() : 'Never',
+          nextRun: 'Scheduled', // API might not return next_run yet
+          successRate: w.successRate || 0,
+          executionCount: w.runsToday || 0,
+          tenantCount: 1 // Default for now
+        }));
+        setWorkflows(mapped);
 
-      setWorkflows(mockWorkflows);
-      setMetrics(mockMetrics);
+        // Calculate metrics
+        setMetrics({
+          totalWorkflows: mapped.length,
+          activeWorkflows: mapped.filter(w => w.status === 'running').length,
+          successfulRuns: mapped.reduce((acc, w) => acc + (w.executionCount || 0), 0), // Mock calc
+          failedRuns: 0,
+          avgExecutionTime: 0,
+          totalTenants: 1,
+          activeUsers: 0,
+          apiRequests: 0
+        });
+      }
     } catch (error) {
       console.error('Error loading workflow data:', error);
+      toast.error('Failed to load workflows');
     } finally {
       setLoading(false);
     }
@@ -155,17 +107,12 @@ export default function WorkflowManagementPage() {
 
   const handleWorkflowAction = async (workflowId: string, action: 'start' | 'pause' | 'stop') => {
     try {
-      // Implement workflow control API calls here
-      console.log(`${action} workflow ${workflowId}`);
-      
-      // Update local state optimistically
-      setWorkflows(prev => prev.map(wf => 
-        wf.id === workflowId 
-          ? { ...wf, status: action === 'start' ? 'running' : action === 'pause' ? 'paused' : 'stopped' }
-          : wf
-      ));
+      await adminApi.toggleWorkflow(workflowId);
+      toast.success(`Workflow ${action}ed`); // simple grammar logic
+      loadWorkflowData(); // Refresh list
     } catch (error) {
       console.error(`Error ${action}ing workflow:`, error);
+      toast.error(`Failed to ${action} workflow`);
     }
   };
 

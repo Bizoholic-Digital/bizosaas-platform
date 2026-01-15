@@ -344,6 +344,37 @@ async def analyze_gtm_onboarding(
         raise HTTPException(status_code=400, detail="website_url is required")
 
     try:
+        from app.models.workflow import Workflow
+        
+        # Ensure Workflow Record Exists
+        wf_name = f"GTM Onboarding: {website_url}"
+        tenant_id = str(current_user.tenant_id or current_user.id)
+        
+        existing_wf = db.query(Workflow).filter(
+            Workflow.tenant_id == tenant_id,
+            Workflow.name == wf_name
+        ).first()
+        
+        if not existing_wf:
+            existing_wf = Workflow(
+                tenant_id=tenant_id,
+                name=wf_name,
+                type="Integration",
+                status="running",
+                description=f"Automated GTM/GA4 setup for {website_url}",
+                config={"retries": 3, "priority": "high"},
+                created_at=datetime.utcnow()
+            )
+            db.add(existing_wf)
+            db.commit()
+            db.refresh(existing_wf)
+            
+        # Update run stats
+        existing_wf.status = "running"
+        existing_wf.runs_today = (existing_wf.runs_today or 0) + 1
+        existing_wf.last_run = datetime.utcnow()
+        db.commit()
+
         from temporalio.client import Client
         client = await Client.connect(os.getenv("TEMPORAL_HOST", "localhost:7233"))
         
@@ -352,7 +383,8 @@ async def analyze_gtm_onboarding(
             {
                 "website_url": website_url,
                 "google_access_token": access_token,
-                "tenant_id": str(current_user.tenant_id or current_user.id)
+                "tenant_id": str(current_user.tenant_id or current_user.id),
+                "workflow_db_id": str(existing_wf.id)
             },
             id=f"gtm-onboarding-{current_user.id}",
             task_queue="connector-tasks"

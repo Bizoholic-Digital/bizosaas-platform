@@ -71,6 +71,14 @@ export class AdminApi {
     async impersonateUser(userId: string): Promise<ApiResponse<{ token: string }>> {
         return brainApi.post<{ token: string }>(`/admin/users/${userId}/impersonate`, {});
     }
+
+    async getWorkflows(): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>('/workflows/');
+    }
+
+    async toggleWorkflow(workflowId: string): Promise<ApiResponse<any>> {
+        return brainApi.post<any>(`/workflows/${workflowId}/toggle`, {});
+    }
 }
 
 export const adminApi = new AdminApi();
