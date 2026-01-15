@@ -55,14 +55,32 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
             // 1. Try Deep Discovery (Real API)
             if (provider.includes('google')) {
                 try {
-                    const res = await fetch('/api/brain/onboarding/google/discover', {
+                    // PARALLEL EXECUTION: API Discovery + Website Scan
+                    const accountPromise = fetch('/api/brain/onboarding/google/discover', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            access_token: "user_session_token", // In prod, this should be handled by cookie/session
-                            dry_run: true // We just want to list options, not force link first one
+                            access_token: "user_session_token",
+                            dry_run: true
                         })
                     });
+
+                    const scanPromise = data.websiteUrl ? fetch('/api/brain/onboarding/scan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ website_url: data.websiteUrl })
+                    }) : Promise.resolve(null);
+
+                    const [res, scanRes] = await Promise.all([accountPromise, scanPromise]);
+
+                    // Process Scan Results
+                    let scannnedTags = { gtm: [], ga4: [], meta: [] };
+                    if (scanRes && scanRes.ok) {
+                        const scanData = await scanRes.json();
+                        if (scanData.status === 'success') {
+                            scannnedTags = scanData.scanned_tags || scannnedTags;
+                        }
+                    }
 
                     if (res.ok) {
                         const results = await res.json();
@@ -104,14 +122,19 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                         }
 
                         if (gtmContainers.length > 0 || gaProperties.length > 0 || gscSites.length > 0) {
+                            // INTELLIGENT SELECTION
+                            // Prefer matched tags from scan, else first available
+                            const matchedGtm = gtmContainers.find((c: any) => scannnedTags.gtm.includes(c.id))?.id;
+                            const matchedGa = gaProperties.find((p: any) => scannnedTags.ga4.includes(p.id))?.id;
+
                             onUpdate({
                                 availableGtmContainers: gtmContainers,
                                 availableGaProperties: gaProperties,
                                 availableGscSites: gscSites,
 
                                 // Auto-select matches
-                                gtmId: data.gtmId || gtmContainers[0]?.id,
-                                gaId: data.gaId || gaProperties[0]?.id,
+                                gtmId: matchedGtm || data.gtmId || gtmContainers[0]?.id,
+                                gaId: matchedGa || data.gaId || gaProperties[0]?.id,
                                 gscId: data.gscId || gscSites[0]?.id,
 
                                 auditedServices: {
@@ -121,8 +144,12 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                                     optional: []
                                 }
                             });
+
+                            const msg = matchedGtm || matchedGa
+                                ? "Sync complete! We detected existing tags on your site and matched them to your account."
+                                : "Sync complete! Retrieved assets from your Google account.";
                             setDiscovered(true);
-                            toast.success("Successfully retrieved real assets from Google!");
+                            toast.success(msg);
                             setIsDiscovering(false);
                             return;
                         }

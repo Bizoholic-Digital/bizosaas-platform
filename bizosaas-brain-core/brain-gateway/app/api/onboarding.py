@@ -406,6 +406,64 @@ async def analyze_gtm_onboarding(
         "discovered": results
     }
 
+@router.post("/scan")
+async def scan_website_tags(payload: Dict[str, Any]):
+    """
+    Synchronous Website Scan:
+    Quickly checks the homepage for installed tags (GTM, GA4, Meta).
+    Used to auto-select the correct container/property from the authenticated user's list.
+    """
+    website_url = payload.get("website_url")
+    if not website_url:
+         return {"status": "error", "message": "No URL provided"}
+
+    if not website_url.startswith("http"):
+        website_url = "https://" + website_url
+
+    detected = {
+        "gtm": [],
+        "ga4": [],
+        "ua": [],
+        "meta": [],
+        "clarity": []
+    }
+
+    try:
+        import re
+        import httpx
+        
+        async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
+            resp = await client.get(website_url, timeout=5.0)
+            html = resp.text
+
+            # GTM Patterns (GTM-XXXXX)
+            gtm_matches = re.findall(r'GTM-[A-Z0-9]{4,10}', html)
+            detected["gtm"] = list(set(gtm_matches))
+
+            # GA4 Patterns (G-XXXXX)
+            ga4_matches = re.findall(r'G-[A-Z0-9]{6,12}', html)
+            detected["ga4"] = list(set(ga4_matches))
+
+            # UA Patterns (UA-XXXXX)
+            ua_matches = re.findall(r'UA-\d{4,10}-\d{1,2}', html)
+            detected["ua"] = list(set(ua_matches))
+            
+            # Meta Pixel (fbq init) - rough check, usually can't get ID easily without parsing
+            if "fbq('init'" in html or "fbevents.js" in html:
+                 # Try to extract ID: fbq('init', '123456789')
+                 fb_matches = re.findall(r"fbq\(['\"]init['\"],\s*['\"](\d+)['\"]", html)
+                 detected["meta"] = list(set(fb_matches))
+
+    except Exception as e:
+        print(f"Quick scan failed for {website_url}: {e}")
+        return {"status": "error", "message": str(e)}
+
+    return {
+        "status": "success",
+        "website_url": website_url,
+        "scanned_tags": detected
+    }
+
 @router.post("/complete")
 async def complete_onboarding(
     state: OnboardingState,
