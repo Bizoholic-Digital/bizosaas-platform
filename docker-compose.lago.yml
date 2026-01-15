@@ -35,14 +35,12 @@ services:
         condition: service_healthy
       lago-redis:
         condition: service_started
-    env_file:
-      - .env.lago
     environment:
       - VAULT_ADDR=http://brain-vault:8200
       - VAULT_TOKEN=staging-root-token-bizosaas-2025
     volumes:
-      - ./scripts/lago-fetch-rsa-from-vault.sh:/usr/local/bin/fetch-rsa.sh:ro
-    entrypoint: [ "/bin/bash", "/usr/local/bin/fetch-rsa.sh" ]
+      - ./scripts/lago-init-all-from-vault.sh:/usr/local/bin/lago-init.sh:ro
+    entrypoint: [ "/bin/bash", "/usr/local/bin/lago-init.sh" ]
     command: [ "./scripts/migrate.sh" ]
     networks:
       - brain-network
@@ -57,14 +55,12 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    env_file:
-      - .env.lago
     environment:
       - VAULT_ADDR=http://brain-vault:8200
       - VAULT_TOKEN=staging-root-token-bizosaas-2025
     volumes:
-      - ./scripts/lago-fetch-rsa-from-vault.sh:/usr/local/bin/fetch-rsa.sh:ro
-    entrypoint: [ "/bin/bash", "/usr/local/bin/fetch-rsa.sh" ]
+      - ./scripts/lago-init-all-from-vault.sh:/usr/local/bin/lago-init.sh:ro
+    entrypoint: [ "/bin/bash", "/usr/local/bin/lago-init.sh" ]
     command: [ "./scripts/start.api.sh" ]
     networks:
       - brain-network
@@ -88,14 +84,12 @@ services:
         condition: service_started
       lago-redis:
         condition: service_started
-    env_file:
-      - .env.lago
     environment:
       - VAULT_ADDR=http://brain-vault:8200
       - VAULT_TOKEN=staging-root-token-bizosaas-2025
     volumes:
-      - ./scripts/lago-fetch-rsa-from-vault.sh:/usr/local/bin/fetch-rsa.sh:ro
-    entrypoint: [ "/bin/bash", "/usr/local/bin/fetch-rsa.sh" ]
+      - ./scripts/lago-init-all-from-vault.sh:/usr/local/bin/lago-init.sh:ro
+    entrypoint: [ "/bin/bash", "/usr/local/bin/lago-init.sh" ]
     command: [ "./scripts/start.worker.sh" ]
     networks:
       - brain-network
@@ -105,8 +99,6 @@ services:
     restart: unless-stopped
     depends_on:
       - lago-api
-    env_file:
-      - .env.lago
     entrypoint: /bin/sh
     command:
       - -c
