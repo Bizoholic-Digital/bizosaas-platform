@@ -82,8 +82,6 @@ services:
       - VAULT_TOKEN=${VAULT_TOKEN}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-api.bizoholic.net,localhost}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://app.bizoholic.net,https://admin.bizoholic.net,https://bizoholic.net}
     networks:
       - brain-network
@@ -97,7 +95,6 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
       - "traefik.http.routers.brain-gateway.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
-      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls=true"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
@@ -196,7 +193,7 @@ services:
 
 networks:
   brain-network:
-    driver: bridge
+    external: true
     name: brain-network
   dokploy-network:
     external: true
