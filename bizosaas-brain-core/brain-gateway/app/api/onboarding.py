@@ -410,7 +410,7 @@ async def analyze_gtm_onboarding(
 async def scan_website_tags(payload: Dict[str, Any]):
     """
     Synchronous Website Scan:
-    Quickly checks the homepage for installed tags (GTM, GA4, Meta).
+    Quickly checks the homepage for installed tags (GTM, GA4, Meta) and Plugins.
     Used to auto-select the correct container/property from the authenticated user's list.
     """
     website_url = payload.get("website_url")
@@ -425,7 +425,9 @@ async def scan_website_tags(payload: Dict[str, Any]):
         "ga4": [],
         "ua": [],
         "meta": [],
-        "clarity": []
+        "clarity": [],
+        "site_kit": False,
+        "plugins": []
     }
 
     try:
@@ -433,7 +435,7 @@ async def scan_website_tags(payload: Dict[str, Any]):
         import httpx
         
         async with httpx.AsyncClient(verify=False, follow_redirects=True) as client:
-            resp = await client.get(website_url, timeout=5.0)
+            resp = await client.get(website_url, timeout=10.0)
             html = resp.text
 
             # GTM Patterns (GTM-XXXXX)
@@ -448,11 +450,34 @@ async def scan_website_tags(payload: Dict[str, Any]):
             ua_matches = re.findall(r'UA-\d{4,10}-\d{1,2}', html)
             detected["ua"] = list(set(ua_matches))
             
-            # Meta Pixel (fbq init) - rough check, usually can't get ID easily without parsing
+            # Meta Pixel (fbq init)
             if "fbq('init'" in html or "fbevents.js" in html:
-                 # Try to extract ID: fbq('init', '123456789')
                  fb_matches = re.findall(r"fbq\(['\"]init['\"],\s*['\"](\d+)['\"]", html)
                  detected["meta"] = list(set(fb_matches))
+            
+            # Google Site Kit Detection
+            if 'Check for Google Site Kit' in html or 'name="generator" content="Site Kit' in html:
+                detected["site_kit"] = True
+
+            # Plugin Detection via Asset Paths
+            common_plugins = {
+                "woocommerce": "WooCommerce",
+                "elementor": "Elementor",
+                "wordpress-seo": "Yoast SEO",
+                "fluent-crm": "FluentCRM",
+                "hubspot": "HubSpot",
+                "contact-form-7": "Contact Form 7",
+                "wpforms": "WPForms",
+                "rank-math": "RankMath",
+                "bizosaas-connect": "BizoSaaS Bridge"
+            }
+
+            matched_plugins = []
+            for slug, name in common_plugins.items():
+                if f"/wp-content/plugins/{slug}" in html:
+                    matched_plugins.append({"slug": slug, "name": name, "status": "active"})
+            
+            detected["plugins"] = matched_plugins
 
     except Exception as e:
         print(f"Quick scan failed for {website_url}: {e}")

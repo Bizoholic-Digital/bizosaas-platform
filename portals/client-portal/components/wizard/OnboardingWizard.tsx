@@ -227,6 +227,21 @@ export function OnboardingWizard() {
         if (state.profile.website && state.digitalPresence.hasTracking && !state.analytics.auditedServices && !isAuditing) {
             triggerTrackingAudit(state.profile.website);
         }
+
+        // RESET Analytics if Website Changes
+        // If the user changed the website URL in pervious steps, we should invalidate the
+        // auto-selected assets to ensure they aren't stale (e.g. from the previous domain).
+        // We check if the current gscId looks like a URL and doesn't match the new website.
+        const currentGsc = state.analytics.gscId || '';
+        const newWebsite = state.profile.website || '';
+
+        if (currentGsc && newWebsite && currentGsc.includes('http') && !currentGsc.includes(newWebsite)) {
+            updateAnalytics({
+                gscId: '', // Reset so it can be re-discovered
+                gtmId: '',
+                gaId: ''
+            });
+        }
     }, [state.profile.website, state.digitalPresence.hasTracking, isAuditing]);
 
     if (!isLoaded || !isClerkLoaded) return null;
