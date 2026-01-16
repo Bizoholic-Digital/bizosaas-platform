@@ -189,6 +189,7 @@ export function PluginConnectionStep({ websiteUrl, onVerified, onSkip }: Props) 
                                             </Button>
                                         </div>
                                     </CardContent>
+                                </Card>
                             </TabsContent>
 
                             <TabsContent value="auto">

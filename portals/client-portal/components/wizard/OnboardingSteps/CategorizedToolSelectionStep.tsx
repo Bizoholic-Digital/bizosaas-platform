@@ -46,7 +46,10 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
         const load = async () => {
             try {
                 const cats = await brainApi.mcp.listCategories();
-                if (mounted) setCategories(cats);
+                if (mounted) {
+                    setCategories(cats);
+                    if (cats.length > 0) setSelectedCategory(cats[0].slug);
+                }
 
                 const allMcps = await brainApi.mcp.getRegistry();
                 const grouped = allMcps.reduce((acc: any, mcp: Mcp) => {
@@ -60,7 +63,6 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                 if (mounted) setMcps(grouped);
             } catch (err) {
                 console.error("Failed to load tools", err);
-                // Define logic for retry here if needed
             } finally {
                 if (mounted) setLoading(false);
             }
@@ -69,153 +71,143 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
         return () => { mounted = false; };
     }, []);
 
-    if (cats.length > 0) setSelectedCategory(cats[0].slug);
-} catch (e) {
-    console.error("Failed to load MCP marketplace", e);
-} finally {
-    setLoading(false);
-}
-        };
-load();
-    }, []);
+    const toggleMcp = (slug: string) => {
+        const current = new Set(data.selectedMcps || []);
+        if (current.has(slug)) {
+            current.delete(slug);
+        } else {
+            current.add(slug);
+        }
+        onUpdate({ selectedMcps: Array.from(current) });
+    };
 
-const toggleMcp = (slug: string) => {
-    const current = new Set(data.selectedMcps || []);
-    if (current.has(slug)) {
-        current.delete(slug);
-    } else {
-        current.add(slug);
+    if (loading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="animate-spin text-blue-600" size={32} />
+            </div>
+        );
     }
-    onUpdate({ selectedMcps: Array.from(current) });
-};
 
-if (loading) {
-    return (
-        <div className="flex h-64 items-center justify-center">
-            <Loader2 className="animate-spin text-blue-600" size={32} />
-        </div>
+    const currentMcps = selectedCategory ? mcps[selectedCategory] || [] : [];
+    const filteredMcps = currentMcps.filter(m =>
+        m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        m.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
-}
 
-const currentMcps = selectedCategory ? mcps[selectedCategory] || [] : [];
-const filteredMcps = currentMcps.filter(m =>
-    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.description.toLowerCase().includes(searchTerm.toLowerCase())
-);
+    const featuredMcps = filteredMcps.filter(m => m.is_featured);
+    const standardMcps = filteredMcps.filter(m => !m.is_featured);
 
-const featuredMcps = filteredMcps.filter(m => m.is_featured);
-const standardMcps = filteredMcps.filter(m => !m.is_featured);
-
-return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-        <div className="text-center mb-8">
-            <h2 className="text-3xl font-extrabold text-foreground tracking-tight">Power Up Your Business</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2">
-                Select the platforms you already use. We'll automatically integrate them into your BizOSaaS dashboard.
-            </p>
-        </div>
-
-        <div className="flex flex-col md:grid md:grid-cols-4 gap-8 min-h-[500px]">
-            {/* Categories */}
-            <div className="md:col-span-1 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-6">
-                <div className="sticky top-4 space-y-2">
-                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-4">Categories</Label>
-                    <div className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar">
-                        {categories.map(cat => {
-                            const Icon = (Icons as any)[cat.icon] || Box;
-                            const isSelected = selectedCategory === cat.slug;
-
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => {
-                                        setSelectedCategory(cat.slug);
-                                        setSearchTerm('');
-                                    }}
-                                    className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 md:w-full rounded-xl text-sm transition-all whitespace-nowrap ${isSelected
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none font-semibold'
-                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                                        }`}
-                                >
-                                    <Icon size={18} />
-                                    <span>{cat.name}</span>
-                                    {data.selectedMcps?.some(s => mcps[cat.slug]?.some(m => m.slug === s)) && (
-                                        <div className={`ml-auto h-2 w-2 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500 animate-pulse'}`} />
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
+    return (
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="text-center mb-8">
+                <h2 className="text-3xl font-extrabold text-foreground tracking-tight">Power Up Your Business</h2>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2">
+                    Select the platforms you already use. We'll automatically integrate them into your BizOSaaS dashboard.
+                </p>
             </div>
 
-            {/* MCP Grid */}
-            <div className="md:col-span-3 space-y-6">
-                {/* Search & Stats */}
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/30 p-4 rounded-2xl border border-muted">
-                    <div className="relative w-full sm:max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                        <Input
-                            placeholder="Search tools..."
-                            className="pl-10 bg-background border-none ring-1 ring-muted focus:ring-2 focus:ring-blue-500"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="text-xs font-medium text-muted-foreground px-3 py-1 bg-background rounded-full border border-muted">
-                        {data.selectedMcps?.length || 0} tools selected
+            <div className="flex flex-col md:grid md:grid-cols-4 gap-8 min-h-[500px]">
+                {/* Categories */}
+                <div className="md:col-span-1 border-b md:border-b-0 md:border-r pb-4 md:pb-0 md:pr-6">
+                    <div className="sticky top-4 space-y-2">
+                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-4">Categories</Label>
+                        <div className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 no-scrollbar">
+                            {categories.map(cat => {
+                                const Icon = (Icons as any)[cat.icon] || Box;
+                                const isSelected = selectedCategory === cat.slug;
+
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => {
+                                            setSelectedCategory(cat.slug);
+                                            setSearchTerm('');
+                                        }}
+                                        className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 md:w-full rounded-xl text-sm transition-all whitespace-nowrap ${isSelected
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none font-semibold'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                            }`}
+                                    >
+                                        <Icon size={18} />
+                                        <span>{cat.name}</span>
+                                        {data.selectedMcps?.some(s => mcps[cat.slug]?.some(m => m.slug === s)) && (
+                                            <div className={`ml-auto h-2 w-2 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500 animate-pulse'}`} />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
-                {selectedCategory ? (
-                    <div className="space-y-8">
-                        {/* Featured Tools */}
-                        {featuredMcps.length > 0 && !searchTerm && (
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 px-1">
-                                    <Sparkles size={16} className="text-amber-500" />
-                                    <h3 className="text-sm font-bold text-foreground">Recommended for You</h3>
+                {/* MCP Grid */}
+                <div className="md:col-span-3 space-y-6">
+                    {/* Search & Stats */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-muted/30 p-4 rounded-2xl border border-muted">
+                        <div className="relative w-full sm:max-w-xs">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                            <Input
+                                placeholder="Search tools..."
+                                className="pl-10 bg-background border-none ring-1 ring-muted focus:ring-2 focus:ring-blue-500"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="text-xs font-medium text-muted-foreground px-3 py-1 bg-background rounded-full border border-muted">
+                            {data.selectedMcps?.length || 0} tools selected
+                        </div>
+                    </div>
+
+                    {selectedCategory ? (
+                        <div className="space-y-8">
+                            {/* Featured Tools */}
+                            {featuredMcps.length > 0 && !searchTerm && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <Sparkles size={16} className="text-amber-500" />
+                                        <h3 className="text-sm font-bold text-foreground">Recommended for You</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {featuredMcps.map(mcp => (
+                                            <McpCard key={mcp.id} mcp={mcp} selected={data.selectedMcps?.includes(mcp.slug)} onToggle={() => toggleMcp(mcp.slug)} />
+                                        ))}
+                                    </div>
                                 </div>
+                            )}
+
+                            {/* Standard Tools */}
+                            <div className="space-y-4">
+                                {featuredMcps.length > 0 && !searchTerm && (
+                                    <div className="px-1">
+                                        <h3 className="text-sm font-bold text-muted-foreground">All Tools</h3>
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {featuredMcps.map(mcp => (
+                                    {standardMcps.map(mcp => (
                                         <McpCard key={mcp.id} mcp={mcp} selected={data.selectedMcps?.includes(mcp.slug)} onToggle={() => toggleMcp(mcp.slug)} />
                                     ))}
                                 </div>
                             </div>
-                        )}
 
-                        {/* Standard Tools */}
-                        <div className="space-y-4">
-                            {featuredMcps.length > 0 && !searchTerm && (
-                                <div className="px-1">
-                                    <h3 className="text-sm font-bold text-muted-foreground">All Tools</h3>
+                            {filteredMcps.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground/60 bg-muted/10 rounded-3xl border-2 border-dashed border-muted">
+                                    <PackageOpen size={64} className="mb-4 opacity-20" />
+                                    <p className="text-lg font-medium">No tools found matching "{searchTerm}"</p>
+                                    <Button variant="ghost" className="mt-2 text-blue-600" onClick={() => setSearchTerm('')}>Clear search</Button>
                                 </div>
                             )}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {standardMcps.map(mcp => (
-                                    <McpCard key={mcp.id} mcp={mcp} selected={data.selectedMcps?.includes(mcp.slug)} onToggle={() => toggleMcp(mcp.slug)} />
-                                ))}
-                            </div>
                         </div>
-
-                        {filteredMcps.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground/60 bg-muted/10 rounded-3xl border-2 border-dashed border-muted">
-                                <PackageOpen size={64} className="mb-4 opacity-20" />
-                                <p className="text-lg font-medium">No tools found matching "{searchTerm}"</p>
-                                <Button variant="ghost" className="mt-2 text-blue-600" onClick={() => setSearchTerm('')}>Clear search</Button>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground/60">
-                        <LayoutGrid size={64} className="mb-4 opacity-20" />
-                        <p>Select a category to explore tools</p>
-                    </div>
-                )}
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground/60">
+                            <LayoutGrid size={64} className="mb-4 opacity-20" />
+                            <p>Select a category to explore tools</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
 }
 
 function McpCard({ mcp, selected, onToggle }: { mcp: any, selected: boolean, onToggle: () => void }) {
