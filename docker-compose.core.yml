@@ -191,33 +191,6 @@ services:
     tty: true
     restart: unless-stopped
 
-  business-directory:
-    image: ghcr.io/bizoholic-digital/business-directory:staging
-    build:
-      context: ./portals/business-directory/business-directory
-      dockerfile: Dockerfile
-    container_name: bizosaas-directory-staging
-    expose:
-      - "3004"
-    environment:
-      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-https://api.bizoholic.net}
-      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
-      - NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN:-bizoholic.net}
-    networks:
-      - brain-network
-      - dokploy-network
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.business-directory.rule=Host(`directory.bizoholic.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.bizoholic.net`)"
-      - "traefik.http.routers.business-directory.tls=true"
-      - "traefik.http.routers.business-directory.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.business-directory.priority=1"
-      - "traefik.http.services.business-directory.loadbalancer.server.port=3004"
     restart: unless-stopped
 
 networks:
