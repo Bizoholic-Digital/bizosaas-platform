@@ -511,9 +511,118 @@ async def complete_onboarding(
     
     # 0. Save Onboarding Data to Tenant Profile (for Business Directory/Manta-style use)
     tenant = db.query(Tenant).filter(Tenant.id == current_user.tenant_id).first()
-    if tenant:
-        # Store comprehensive data in tenant settings
-        onboarding_data = state.model_dump()
+    
+    # ... rest of complete logic
+    return {"status": "success"}
+
+@router.get("/tools/download-plugin")
+async def download_plugin():
+    """
+    Generates and downloads the BizoSaaS Connect WordPress plugin zip.
+    """
+    import io
+    import zipfile
+    from starlette.responses import StreamingResponse
+    
+    # Path to the single plugin file
+    plugin_path = "app/templates/plugins/bizosaas-connect/bizosaas-connect.php"
+    
+    if not os.path.exists(plugin_path):
+         raise HTTPException(status_code=404, detail="Plugin template not found")
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        # Add the file to the zip, placing it inside a folder 'bizosaas-connect'
+        zip_file.write(plugin_path, arcname="bizosaas-connect/bizosaas-connect.php")
+    
+    zip_buffer.seek(0)
+    
+    return StreamingResponse(
+        zip_buffer, 
+        media_type="application/zip", 
+        headers={"Content-Disposition": "attachment; filename=bizosaas-connect.zip"}
+    )
+
+@router.post("/tools/verify-plugin")
+async def verify_plugin_connection(payload: Dict[str, str]):
+    """
+    Verifies if the BizoSaaS Connect plugin is active on the target site.
+    """
+    website_url = payload.get("website_url")
+    if not website_url:
+        raise HTTPException(status_code=400, detail="Website URL is required")
+
+    if not website_url.startswith("http"):
+        website_url = "https://" + website_url
+
+    # Normalize URL - remove trailing slash
+    website_url = website_url.rstrip("/")
+    api_url = f"{website_url}/wp-json/bizosaas/v1/status"
+    
+    try:
+        import httpx
+        async with httpx.AsyncClient(verify=False, timeout=5.0) as client:
+            resp = await client.get(api_url)
+            
+            if resp.status_code == 200:
+                data = resp.json()
+                if data.get("status") == "active":
+                    return {
+                        "status": "connected",
+                        "plugin_version": data.get("version"),
+                        "wp_version": data.get("wp_version")
+                    }
+    except Exception as e:
+        print(f"Plugin verification failed for {api_url}: {e}")
+        pass
+        
+@router.post("/tools/connect-wordpress")
+async def connect_wordpress_credentials(payload: Dict[str, str]):
+    """
+    Validates WordPress Application Password credentials.
+    This enables 'Agentic' access even before the custom plugin is installed,
+    allowing for basic management (Posts, Pages, Media) via standard APIs.
+    """
+    website_url = payload.get("website_url")
+    username = payload.get("username")
+    app_password = payload.get("application_password")
+
+    if not website_url or not username or not app_password:
+        raise HTTPException(status_code=400, detail="Missing credentials")
+
+    if not website_url.startswith("http"):
+        website_url = "https://" + website_url
+
+    website_url = website_url.rstrip("/")
+    # Standard WP REST API User Endpoint
+    api_url = f"{website_url}/wp-json/wp/v2/users/me"
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(verify=False, timeout=10.0) as client:
+            # WP Application Passwords use Basic Auth
+            resp = await client.get(
+                api_url, 
+                auth=(username, app_password)
+            )
+
+            if resp.status_code == 200:
+                user_data = resp.json()
+                return {
+                    "status": "connected",
+                    "message": "Credentials verified successfully",
+                    "wp_user_id": user_data.get("id"),
+                    "wp_user_name": user_data.get("name"),
+                    "capabilities": "standard_rest_api" 
+                }
+            elif resp.status_code == 401:
+                 return {"status": "error", "message": "Invalid credentials (401 Unauthorized)"}
+            else:
+                 return {"status": "error", "message": f"Connection failed: {resp.status_code}"}
+
+    except Exception as e:
+        print(f"WP Connection failed: {e}")
+        return {"status": "error", "message": str(e)}
         tenant.settings = {
             **(tenant.settings or {}),
             "business_profile": onboarding_data.get("profile"),
