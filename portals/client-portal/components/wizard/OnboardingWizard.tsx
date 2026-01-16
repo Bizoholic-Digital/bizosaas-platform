@@ -30,6 +30,7 @@ import { SocialMediaStep } from './OnboardingSteps/SocialMediaStep';
 import { CampaignGoalsStep } from './OnboardingSteps/CampaignGoalsStep';
 import { CategorizedToolSelectionStep } from './OnboardingSteps/CategorizedToolSelectionStep';
 import { ThemePluginSelectionStep } from './OnboardingSteps/ThemePluginSelectionStep';
+import { PluginConnectionStep } from './OnboardingSteps/PluginConnectionStep';
 import { AgentSelectionStep } from './OnboardingSteps/AgentSelectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
 import { AIAssistantIntroStep } from './OnboardingSteps/AIAssistantIntroStep';
@@ -38,14 +39,11 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
     { id: 'presence', title: 'Presence', icon: Globe },
-    { id: 'tools', title: 'Select Tools', icon: Plug },
+    { id: 'tools', title: 'Tools', icon: Plug },
     { id: 'design', title: 'Design', icon: Layout },
-    { id: 'ai_intro', title: 'AI Team', icon: Sparkles },
-    { id: 'analytics', title: 'Analytics', icon: BarChart3 },
-    { id: 'social', title: 'Social', icon: Share2 },
-    { id: 'goals', title: 'Goals', icon: Target },
-    { id: 'agent', title: 'AI Agent', icon: Bot },
-    { id: 'approval', title: 'Strategy', icon: Rocket }
+    { id: 'plugin', title: 'Connect', icon: Plug },
+    { id: 'intelligence', title: 'Intelligence', icon: BarChart3 },
+    { id: 'strategy', title: 'Strategy', icon: Rocket }
 ];
 
 export function OnboardingWizard() {
@@ -278,14 +276,14 @@ export function OnboardingWizard() {
 
     const renderStepContent = () => {
         switch (state.currentStep) {
-            case 0:
+            case 0: // Identity
                 return <CompanyIdentityStep
                     data={state.profile}
                     onUpdate={updateProfile}
                     discovery={state.discovery}
                     isDiscovering={isDiscovering}
                 />;
-            case 1:
+            case 1: // Presence
                 return <DigitalPresenceStep
                     data={state.digitalPresence}
                     websiteUrl={state.profile.website}
@@ -293,36 +291,31 @@ export function OnboardingWizard() {
                     isAuditing={isAuditing}
                     auditedServices={state.analytics.auditedServices}
                 />;
-            case 2: // New Tools Step
+            case 2: // Tools
                 return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
-            case 3: // Marketplace / Design Step
+            case 3: // Design (Theme/Plugins)
                 return <ThemePluginSelectionStep data={state.marketplace} onUpdate={updateMarketplace} />;
-            case 4:
+            case 4: // Plugin Connection
+                return <PluginConnectionStep
+                    websiteUrl={state.profile.website}
+                    onVerified={() => console.log('Plugin verified')}
+                    onSkip={nextStep}
+                />;
+            case 5: // Intelligence (Analytics + Social combined)
                 return (
-                    <AIAssistantIntroStep
-                        discovery={state.discovery}
-                        agent={state.agent}
-                        onUpdate={updateAgent}
-                        onNext={nextStep}
-                        isDiscovering={isDiscovering}
-                    />
+                    <div className="space-y-8">
+                        <AnalyticsTrackingStep
+                            data={state.analytics}
+                            onUpdate={updateAnalytics}
+                            websiteUrl={state.profile.website}
+                            isDiscoveringCloud={isDiscovering}
+                        />
+                        <div className="border-t pt-8">
+                            <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />
+                        </div>
+                    </div>
                 );
-            case 5:
-                return (
-                    <AnalyticsTrackingStep
-                        data={state.analytics}
-                        onUpdate={updateAnalytics}
-                        websiteUrl={state.profile.website}
-                        isDiscoveringCloud={isDiscovering}
-                    />
-                );
-            case 6:
-                return <SocialMediaStep data={state.socialMedia} onUpdate={updateSocialMedia} />;
-            case 7:
-                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
-            case 8:
-                return <AgentSelectionStep data={state.agent} onUpdate={updateAgent} />;
-            case 9:
+            case 6: // Strategy & Launch
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;

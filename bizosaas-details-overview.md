@@ -131,3 +131,119 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 1.  **Global SMB Tool Stack:** Successfully integrated 30+ tools across critical business functions (Finance, HR, marketing, etc.) to support "Business OS" vision.
 2.  **ZipWP-Style Provisioning:** Implemented AI-driven workflow for instant WordPress site generation and configuration.
 3.  **Unified Billing:** Integrated Stripe/Razorpay logic directly into onboarding for immediate subscription activation.
+
+
+## Admin Portal Features
+
+### Platform Health & Monitoring
+- [ ] **Real-time CPU Load Monitoring** - Fix current logic showing incorrect values (24.5% → 2.6%)
+- [ ] **Service Status Dashboard** - Accurate detection of all core services (Brain Gateway, AI Core, MCP Servers)
+- [ ] **Container Health Checks** - Real-time status of all Docker containers with resource usage
+- [ ] **Alert System** - Proactive notifications for service degradation or failures
+- [ ] **Performance Metrics** - Historical data visualization for CPU, Memory, Network I/O
+- [ ] **Log Aggregation** - Centralized logging with search and filtering capabilities
+
+### Tenant Management
+- [ ] **Tenant Overview Dashboard** - List all tenants with key metrics (users, subscriptions, usage)
+- [ ] **Tenant Onboarding Status** - Track completion of onboarding steps per tenant
+- [ ] **Tenant Analytics** - Usage patterns, feature adoption, engagement metrics
+- [ ] **Tenant Configuration** - Manage tenant-specific settings, limits, and features
+- [ ] **Impersonation Mode** - Admin ability to view portal as specific tenant for support
+- [ ] **Bulk Operations** - Mass updates, migrations, or configuration changes
+
+### User & Access Management
+- [ ] **User Directory** - Complete list of all users across all tenants
+- [ ] **Role Management** - Define and assign roles with granular permissions
+- [ ] **Access Logs** - Audit trail of all user activities and admin actions
+- [ ] **Session Management** - View active sessions, force logout capability
+- [ ] **OAuth Provider Management** - Configure and monitor Google/Microsoft/Facebook SSO
+
+### Billing & Subscriptions (Lago Integration)
+- [ ] **Subscription Dashboard** - Overview of all active/inactive subscriptions
+- [ ] **Revenue Analytics** - MRR, ARR, churn rate, LTV calculations
+- [ ] **Invoice Management** - Generate, view, and send invoices
+- [ ] **Payment Gateway Status** - Monitor Stripe/Razorpay health and transactions
+- [ ] **Usage-Based Billing** - Track metered usage (API calls, storage, etc.)
+- [ ] **Dunning Management** - Automated retry logic for failed payments
+
+### MCP (Model Context Protocol) Management
+- [ ] **MCP Registry Admin** - Add, edit, remove MCPs from the marketplace
+- [ ] **Category Management** - Create and organize MCP categories
+- [ ] **MCP Analytics** - Track adoption rates, usage statistics per MCP
+- [ ] **Version Control** - Manage MCP versions and deprecation
+- [ ] **Featured MCPs** - Promote specific MCPs to all tenants
+- [ ] **MCP Health Monitoring** - Status of all running MCP servers
+
+### WordPress Integration Management
+- [ ] **Plugin Distribution** - Manage BizoSaaS Connect plugin versions
+- [ ] **Connected Sites Dashboard** - List all WordPress sites with connection status
+- [ ] **Plugin Analytics** - Track installation rates, active installations
+- [ ] **Remote Management** - Trigger plugin updates, configuration changes
+- [ ] **Site Health Checks** - Monitor connected WordPress sites for issues
+- [ ] **Bulk Plugin Deployment** - Push plugin to multiple sites simultaneously
+
+### Analytics & Intelligence
+- [ ] **GTM Container Management** - View and manage all connected GTM containers
+- [ ] **GA4 Property Overview** - Aggregate analytics across all tenant properties
+- [ ] **Search Console Integration** - Platform-wide SEO performance metrics
+- [ ] **Tag Audit System** - Detect and report tag implementation issues
+- [ ] **Cross-Tenant Analytics** - Benchmarking and comparative insights
+
+### AI Agent Management
+- [ ] **Agent Registry** - List all available AI agents with capabilities
+- [ ] **Agent Assignment** - Assign agents to specific tenants or use cases
+- [ ] **Agent Performance Metrics** - Track success rates, response times, errors
+- [ ] **Agent Configuration** - Manage prompts, models, and behavior settings
+- [ ] **Agent Logs** - Detailed execution logs for debugging and optimization
+- [ ] **Agent Marketplace** - Admin-curated agent templates
+
+### Workflow & Automation (Temporal)
+- [ ] **Workflow Dashboard** - View all running and completed workflows
+- [ ] **Workflow Templates** - Create and manage reusable workflow templates
+- [ ] **Workflow Analytics** - Success rates, execution times, failure analysis
+- [ ] **Manual Triggers** - Admin ability to manually trigger workflows
+- [ ] **Workflow Debugging** - Step-by-step execution visualization
+- [ ] **Schedule Management** - Manage cron jobs and scheduled tasks
+
+### System Configuration
+- [ ] **Environment Variables** - Secure management of all system configs
+- [ ] **Feature Flags** - Enable/disable features globally or per tenant
+- [ ] **API Key Management** - Generate, rotate, and revoke API keys
+- [ ] **Webhook Configuration** - Manage outbound webhooks for integrations
+- [ ] **Email Templates** - Customize transactional email templates
+- [ ] **Branding Settings** - White-label configuration options
+
+### Support & Debugging
+- [ ] **Support Ticket System** - Integrated ticketing for tenant issues
+- [ ] **Error Tracking** - Centralized error monitoring (Sentry-style)
+- [ ] **Database Query Tool** - Safe admin interface for database queries
+- [ ] **Cache Management** - Clear Redis cache, view cache statistics
+- [ ] **API Playground** - Test internal APIs directly from admin panel
+- [ ] **System Diagnostics** - One-click health check for all services
+
+### Reporting & Exports
+- [ ] **Custom Report Builder** - Create ad-hoc reports with filters
+- [ ] **Scheduled Reports** - Automated report generation and delivery
+- [ ] **Data Export** - Bulk export of tenant data (CSV, JSON)
+- [ ] **Compliance Reports** - GDPR, SOC2, audit trail exports
+- [ ] **Usage Reports** - Detailed breakdowns of resource consumption
+
+### Security & Compliance
+- [ ] **Security Dashboard** - Overview of security posture
+- [ ] **Vulnerability Scanning** - Automated security scans of containers
+- [ ] **Compliance Checklist** - Track GDPR, HIPAA, SOC2 requirements
+- [ ] **Encryption Management** - Manage Vault secrets and encryption keys
+- [ ] **Audit Logs** - Immutable logs of all admin and system actions
+- [ ] **IP Whitelisting** - Restrict admin access by IP range
+
+### Priority Implementation Order (Based on Client Portal Parity)
+1. **Platform Health Monitoring** (Critical - currently showing incorrect data)
+2. **Tenant Management Dashboard** (High - needed to manage onboarded clients)
+3. **MCP Registry Admin** (High - supports Tool Selection step)
+4. **WordPress Plugin Management** (High - supports new Plugin Connection step)
+5. **Billing Dashboard** (Medium - revenue visibility)
+6. **Analytics Integration** (Medium - supports Analytics step)
+7. **AI Agent Management** (Medium - supports Agent Selection step)
+8. **Support & Debugging Tools** (Medium - operational efficiency)
+9. **Reporting & Exports** (Low - nice-to-have)
+10. **Advanced Security Features** (Low - can use existing Vault/Auth)
