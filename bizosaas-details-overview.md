@@ -236,14 +236,168 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 - [ ] **Audit Logs** - Immutable logs of all admin and system actions
 - [ ] **IP Whitelisting** - Restrict admin access by IP range
 
+### Business Directory Platform
+- [x] **Directory Landing Pages** - Auto-generated pages for businesses without websites
+  - Format: `{business-slug}.bizoholic.net` (Phase 1)
+  - Future: `{business-slug}.bizolocal.com` (Phase 2)
+- [ ] **Claim Management** - Business owners can claim and verify their listings
+- [ ] **Directory Analytics** - Track views, clicks, and conversions per listing
+- [ ] **SEO Optimization** - Automated meta tags, sitemaps, structured data
+- [ ] **Premium Listings** - Paid upgrades for enhanced visibility and features
+- [ ] **Directory Search** - Public search interface for finding local businesses
+- [ ] **Review Integration** - Sync and display Google reviews
+- [ ] **Photo Management** - Gallery management for claimed businesses
+
+**Revenue Model:**
+- Free Tier: Basic listing with "Powered by Bizoholic" branding
+- Premium ($29/mo): Remove branding, custom photos, priority placement
+- Enterprise ($99/mo): Custom domain, full website builder, CRM integration
+
+**Implementation Status:**
+- [x] Specification document created
+- [ ] Database schema deployed
+- [ ] Landing page template created
+- [ ] Slug generation service
+- [ ] Google Places data sync
+- [ ] Claim request workflow
+- [ ] Admin approval interface
+
+### Domain Automation & Management
+- [ ] **Domain Search** - Multi-provider domain availability checking
+  - Namecheap (Primary - best margins)
+  - Hostinger (Secondary - hosting bundles)
+  - GoDaddy (Tertiary - brand recognition)
+- [ ] **Domain Purchase** - One-click domain registration with markup
+- [ ] **Domain Management** - DNS configuration, renewals, transfers
+- [ ] **Auto-Renewal System** - Automated domain renewal with payment processing
+- [ ] **Domain Inventory** - Admin view of all domains across tenants
+- [ ] **Revenue Dashboard** - Track domain sales, renewals, and profit margins
+- [ ] **Provider Credentials** - Secure API key management for registrars
+- [ ] **Bulk Operations** - Mass domain operations for enterprise clients
+
+**Revenue Model:**
+```
+Example: .com domain
+Provider Cost: $10.99 (Namecheap)
+Platform Markup: $4.00 (36% margin)
+Customer Price: $14.99
+
+Projected Revenue (100 clients/month):
+- 60% purchase domains = 60 domains
+- Monthly revenue: $899.40
+- Annual revenue: $10,792.80
+- Year 2 (with renewals): $21,585.60
+```
+
+**Add-on Services:**
+- Privacy Protection: +$2.99/year
+- Email Hosting: +$9.99/year
+- SSL Certificates: +$19.99/year
+
+**Implementation Status:**
+- [x] Specification document created
+- [ ] Database schema (domains, transactions, search history)
+- [ ] Namecheap API integration
+- [ ] Hostinger API integration
+- [ ] GoDaddy API integration
+- [ ] Domain search endpoint
+- [ ] Domain purchase flow
+- [ ] Lago billing integration
+- [ ] Client portal domain UI
+- [ ] Admin domain management dashboard
+- [ ] Auto-renewal cron jobs
+- [ ] Revenue analytics dashboard
+
+**Integration Points:**
+- **Onboarding Wizard**: Optional domain purchase step
+- **Client Portal**: Full domain management interface
+- **Admin Portal**: Domain inventory and revenue tracking
+- **Lago Billing**: Automated invoicing for purchases and renewals
+- **Email Service**: Confirmation and renewal reminder emails
+
 ### Priority Implementation Order (Based on Client Portal Parity)
 1. **Platform Health Monitoring** (Critical - currently showing incorrect data)
-2. **Tenant Management Dashboard** (High - needed to manage onboarded clients)
-3. **MCP Registry Admin** (High - supports Tool Selection step)
-4. **WordPress Plugin Management** (High - supports new Plugin Connection step)
-5. **Billing Dashboard** (Medium - revenue visibility)
-6. **Analytics Integration** (Medium - supports Analytics step)
-7. **AI Agent Management** (Medium - supports Agent Selection step)
-8. **Support & Debugging Tools** (Medium - operational efficiency)
-9. **Reporting & Exports** (Low - nice-to-have)
-10. **Advanced Security Features** (Low - can use existing Vault/Auth)
+2. **Business Directory MVP** (High - immediate value creation, lead generation)
+3. **Tenant Management Dashboard** (High - needed to manage onboarded clients)
+4. **Domain Automation Phase 1** (High - revenue generation, Namecheap integration)
+5. **MCP Registry Admin** (High - supports Tool Selection step)
+6. **WordPress Plugin Management** (High - supports new Plugin Connection step)
+7. **Directory Claims & Premium** (Medium - monetization of directory)
+8. **Domain Automation Phase 2** (Medium - additional providers, bulk operations)
+9. **Billing Dashboard** (Medium - revenue visibility)
+10. **Analytics Integration** (Medium - supports Analytics step)
+11. **AI Agent Management** (Medium - supports Agent Selection step)
+12. **Support & Debugging Tools** (Medium - operational efficiency)
+13. **Reporting & Exports** (Low - nice-to-have)
+14. **Advanced Security Features** (Low - can use existing Vault/Auth)
+
+## 7. Revenue Diversification Strategy
+
+### Current Revenue Streams
+1. **SaaS Subscriptions** - Monthly/annual platform fees
+2. **MCP Marketplace** - Commission on third-party integrations
+3. **WordPress Services** - Plugin licensing and support
+
+### New Revenue Streams (2026)
+4. **Business Directory**
+   - Premium listings: $29/month
+   - Enterprise listings: $99/month
+   - Projected Year 1: $50,000-$100,000
+
+5. **Domain Services**
+   - Domain registration markup: 30-40%
+   - Annual renewals: Recurring revenue
+   - Add-on services (privacy, email, SSL)
+   - Projected Year 1: $120,000-$200,000
+
+6. **Website Builder** (Future)
+   - Upgrade path from directory listings
+   - $49-$199/month tiers
+   - Projected Year 2: $200,000-$500,000
+
+### Total Addressable Market
+- **Small Businesses Without Websites**: 40-50% of market
+- **Businesses Needing Domain Services**: 80% of new clients
+- **Directory Listing Potential**: Every business discovered during onboarding
+
+## 8. Technical Architecture Updates
+
+### New Services
+```
+bizosaas-platform/
+├── bizosaas-brain-core/brain-gateway/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── directory.py          # NEW - Directory endpoints
+│   │   │   └── domains.py            # NEW - Domain management
+│   │   ├── connectors/
+│   │   │   ├── namecheap/            # NEW - Domain registrar
+│   │   │   ├── hostinger/            # NEW - Domain registrar
+│   │   │   └── godaddy/              # NEW - Domain registrar
+│   │   └── services/
+│   │       └── directory/            # NEW - Landing page generation
+│   └── templates/
+│       └── directory/                # NEW - HTML templates
+```
+
+### Database Additions
+- `directory_listings` - Business directory entries
+- `directory_analytics` - Traffic and engagement metrics
+- `directory_claim_requests` - Ownership verification
+- `domains` - Domain inventory
+- `domain_transactions` - Purchase and renewal history
+- `domain_search_history` - Search analytics
+- `provider_credentials` - API keys for registrars
+
+### External Integrations
+- **Namecheap API** - Primary domain registrar
+- **Hostinger API** - Secondary registrar + hosting
+- **GoDaddy API** - Tertiary registrar
+- **Google Places API** - Business data enrichment (existing)
+- **Lago Billing** - Payment processing (existing)
+
+---
+
+**Last Updated**: 2026-01-16
+**Version**: 2.0
+**Next Review**: 2026-02-01

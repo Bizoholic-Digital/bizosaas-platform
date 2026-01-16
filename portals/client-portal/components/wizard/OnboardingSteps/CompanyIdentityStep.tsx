@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessProfile } from '../types/onboarding';
 import { Search, MapPin, Globe, Phone, Building2, CheckCircle2 } from 'lucide-react';
+import { generateDirectoryUrl } from '@/lib/business-slug';
 
 interface Props {
     data: BusinessProfile;
@@ -130,11 +131,26 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
             const details = await res.json();
 
-            // Auto-fill everything
+            // IMPORTANT: Clear all fields first to avoid stale data
+            onUpdate({
+                companyName: '',
+                location: '',
+                website: '',
+                phone: '',
+                gmbLink: ''
+            });
+
+            // Generate directory URL if business doesn't have a website
+            const directoryUrl = !details.website
+                ? generateDirectoryUrl(details.companyName || searchQuery, details.location)
+                : null;
+
+            // Then populate with new data
             onUpdate({
                 companyName: details.companyName || searchQuery,
                 location: details.location,
-                website: details.website,
+                website: details.website || directoryUrl || '', // Use directory URL as fallback
+                websiteType: details.website ? 'owned' : 'directory', // Flag for backend
                 phone: details.phone, // Use GMB phone directly if available
                 gmbLink: details.gmbLink
             });
