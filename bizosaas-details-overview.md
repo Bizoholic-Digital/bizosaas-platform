@@ -238,12 +238,11 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 
 ### Business Directory Platform
 - [x] **Directory Landing Pages** - Auto-generated pages for businesses without websites
-  - Format: `{business-slug}.bizoholic.net` (Phase 1)
-  - Future: `{business-slug}.bizolocal.com` (Phase 2)
+  - Supports both `{slug}.bizoholic.net` and `directory.bizoholic.net/{slug}`
+- [x] **Admin Hub Integration** - Management interface at `admin.bizoholic.net/dashboard/directory`
+- [x] **Discovery Analytics** - Track views, clicks, and conversions per listing
 - [ ] **Claim Management** - Business owners can claim and verify their listings
-- [ ] **Directory Analytics** - Track views, clicks, and conversions per listing
 - [ ] **SEO Optimization** - Automated meta tags, sitemaps, structured data
-- [ ] **Premium Listings** - Paid upgrades for enhanced visibility and features
 - [ ] **Directory Search** - Public search interface for finding local businesses
 - [ ] **Review Integration** - Sync and display Google reviews
 - [ ] **Photo Management** - Gallery management for claimed businesses
@@ -263,6 +262,8 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 - [ ] Admin approval interface
 
 ### Domain Automation & Management
+- [x] **Domain Inventory** - Admin view of all domains across tenants
+- [x] **Revenue Dashboard** - Track domain sales, renewals, and profit margins
 - [ ] **Domain Search** - Multi-provider domain availability checking
   - Namecheap (Primary - best margins)
   - Hostinger (Secondary - hosting bundles)
@@ -270,8 +271,6 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 - [ ] **Domain Purchase** - One-click domain registration with markup
 - [ ] **Domain Management** - DNS configuration, renewals, transfers
 - [ ] **Auto-Renewal System** - Automated domain renewal with payment processing
-- [ ] **Domain Inventory** - Admin view of all domains across tenants
-- [ ] **Revenue Dashboard** - Track domain sales, renewals, and profit margins
 - [ ] **Provider Credentials** - Secure API key management for registrars
 - [ ] **Bulk Operations** - Mass domain operations for enterprise clients
 
