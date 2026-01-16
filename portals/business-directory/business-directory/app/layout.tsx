@@ -1,23 +1,27 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Header } from '@/components/layout/header'
 import { cn } from '@/lib/utils'
 
 // Using system fonts to avoid network calls during Docker build
-const inter = { variable: '--font-sans' }
+const inter = { variable: '--font-sans', className: 'font-sans' }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   title: 'BizDirectory - Find Local Businesses',
   description: 'Discover and connect with local businesses in your area. Search restaurants, services, healthcare, retail stores and more.',
   keywords: ['business directory', 'local businesses', 'restaurants', 'services', 'healthcare', 'retail'],
   authors: [{ name: 'BizOSaaS Platform' }],
-  viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
   openGraph: {
     title: 'BizDirectory - Find Local Businesses',
     description: 'Discover and connect with local businesses in your area.',
     type: 'website',
-    url: 'https://directory.bizosaas.com',
+    url: 'https://directory.bizoholic.net',
     siteName: 'BizDirectory',
   },
   twitter: {
