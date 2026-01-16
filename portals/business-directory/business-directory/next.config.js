@@ -13,9 +13,7 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ['axios'],
-  },
+  serverExternalPackages: ['axios'],
   images: {
     remotePatterns: [
       {

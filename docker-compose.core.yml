@@ -191,8 +191,6 @@ services:
     tty: true
     restart: unless-stopped
 
-    restart: unless-stopped
-
 networks:
   brain-network:
     external: true
