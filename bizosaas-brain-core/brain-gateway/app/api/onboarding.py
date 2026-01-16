@@ -732,10 +732,11 @@ async def connect_wordpress_credentials(payload: Dict[str, str]):
 # --- Google Places API Integration ---
 
 @router.get("/places/autocomplete")
-async def places_autocomplete(input: str):
+async def places_autocomplete(input: str, types: str = "establishment"):
     """
     Proxy to Google Places Autocomplete API.
     Returns a list of business predictions.
+    types: 'establishment' for businesses, 'geocode' for addresses
     """
     if not input:
         return {"predictions": []}
@@ -746,7 +747,7 @@ async def places_autocomplete(input: str):
             params={
                 "input": input,
                 "key": GOOGLE_MAPS_API_KEY,
-                "types": "establishment",  # Restrict to businesses
+                "types": types, 
             }
         )
         
