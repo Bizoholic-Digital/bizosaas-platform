@@ -4,9 +4,9 @@
   "private": true,
   "description": "Business Directory - Search and Discovery Platform",
   "scripts": {
-    "dev": "next dev --port 3004",
+    "dev": "next dev --port 3005",
     "build": "next build",
-    "start": "next start --port 3004",
+    "start": "next start --port 3005",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write ."
