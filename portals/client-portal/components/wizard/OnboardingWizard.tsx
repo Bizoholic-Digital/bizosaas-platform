@@ -43,6 +43,7 @@ const STEPS = [
     { id: 'design', title: 'Design', icon: Layout },
     { id: 'plugin', title: 'Connect', icon: Plug },
     { id: 'intelligence', title: 'Intelligence', icon: BarChart3 },
+    { id: 'goals', title: 'Goals', icon: Target },
     { id: 'strategy', title: 'Strategy', icon: Rocket }
 ];
 
@@ -315,7 +316,9 @@ export function OnboardingWizard() {
                         </div>
                     </div>
                 );
-            case 6: // Strategy & Launch
+            case 6: // Goals & Budget (Critical for Strategy AI)
+                return <CampaignGoalsStep data={state.goals} onUpdate={updateGoals} />;
+            case 7: // Strategy & Launch (AI-Generated)
                 return <StrategyApprovalStep data={state} onConfirm={handleLaunch} />;
             default:
                 return null;
