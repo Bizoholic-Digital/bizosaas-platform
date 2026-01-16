@@ -206,10 +206,9 @@ async def discover_services(
             {"id": "linkedin-ads", "name": "LinkedIn Ads", "status": "detected", "type": "service", "requiresEnablement": True},
             {"id": "tiktok-ads", "name": "TikTok Ads", "status": "detected", "type": "service", "requiresEnablement": True}
         ]
-        profile_updates = {
-            "companyName": current_user.name or "My Business",
-            "industry": "Marketing"
-        }
+        profile_updates = {}
+        if current_user.name:
+             profile_updates["companyName"] = current_user.name
     elif "microsoft" in provider.lower():
         discovery_results["microsoft"] = [
             {"id": "clarity-proj-abc", "name": "Bizoholic Clarity", "status": "detected", "type": "clarity_project"},

@@ -39,6 +39,16 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
+    // Clear generic defaults if present (fix for legacy data)
+    useEffect(() => {
+        const defaults = ['My Company', 'My Business', 'Acme Corp'];
+        if (defaults.includes(data.companyName) || data.location?.includes('BK Enclave')) {
+            onUpdate({ companyName: '', location: '', phone: '', website: '', gmbLink: '' });
+            setSearchQuery('');
+            setGmbConnected(false);
+        }
+    }, []);
+
     const searchBusiness = async (query: string) => {
         setIsSearching(true);
         try {
