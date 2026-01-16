@@ -89,17 +89,16 @@ export async function GET(request: NextRequest) {
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': 'Business-Directory-Frontend/1.0.0'
-        },
-        timeout: 5000
+        }
       });
 
       if (backendResponse.ok) {
         const backendData = await backendResponse.json();
         console.log(`[BUSINESS-DIRECTORY] Backend response successful: ${backendData.businesses?.length || 0} businesses`);
-        
+
         // Transform backend data to match frontend expectations
         const businesses = transformBusinessList(backendData.businesses || backendData.data || []);
-        
+
         const response = {
           businesses,
           total: backendData.total || 0,
@@ -117,10 +116,10 @@ export async function GET(request: NextRequest) {
       }
     } catch (backendError) {
       console.error('[BUSINESS-DIRECTORY] Backend connection failed:', backendError);
-      
+
       // Fallback to mock data
       console.log('[BUSINESS-DIRECTORY] Using fallback mock data');
-      
+
       // Filter mock businesses based on search criteria
       let filteredBusinesses = mockBusinesses;
 

@@ -8,15 +8,35 @@ const mockFeaturedBusinesses = [
   {
     id: 'biz_001',
     name: 'Bizoholic Marketing Agency',
-    category: 'Marketing',
+    category: {
+      id: 'marketing',
+      name: 'Marketing',
+      slug: 'marketing',
+      icon: '📈',
+      description: 'Digital marketing services',
+      subcategories: [],
+      businessCount: 15
+    },
     subcategory: 'Digital Marketing',
     description: 'Full-service digital marketing agency specializing in AI-powered marketing automation',
-    address: '123 Marketing St, Business City, BC 12345',
-    phone: '+1-555-MARKETING',
-    email: 'hello@bizoholic.com',
-    website: 'https://bizoholic.com',
+    location: {
+      address: '123 Marketing St',
+      city: 'Business City',
+      state: 'BC',
+      zipCode: '12345',
+      country: 'USA',
+      coordinates: {
+        lat: 40.7128,
+        lng: -74.0060
+      }
+    },
+    contact: {
+      phone: '+1-555-MARKETING',
+      email: 'hello@bizoholic.com',
+      website: 'https://bizoholic.com'
+    },
     rating: 4.8,
-    total_reviews: 127,
+    reviewCount: 127,
     verified: true,
     claimed: true,
     featured: true,
@@ -24,7 +44,17 @@ const mockFeaturedBusinesses = [
       'https://bizoholic.com/images/office1.jpg',
       'https://bizoholic.com/images/team.jpg'
     ],
-    services: ['SEO', 'PPC', 'Social Media Marketing', 'Content Marketing', 'Email Marketing']
+    services: ['SEO', 'PPC', 'Social Media Marketing', 'Content Marketing', 'Email Marketing'],
+    pricing: {
+      range: '$$',
+      currency: 'USD',
+      description: 'Moderate pricing'
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/bizoholic',
+      twitter: 'https://twitter.com/bizoholic'
+    },
+    hours: {}
   }
 ];
 
@@ -45,7 +75,7 @@ export async function GET(request: NextRequest) {
       if (response.ok) {
         const data = await response.json();
         console.log(`[BUSINESS-DIRECTORY] Featured businesses success: ${data.businesses?.length || 0} businesses`);
-        
+
         // Extract just the businesses array for the featured endpoint
         return NextResponse.json(data.businesses || []);
       } else {
@@ -55,7 +85,7 @@ export async function GET(request: NextRequest) {
     } catch (backendError) {
       console.error('[BUSINESS-DIRECTORY] Backend connection failed:', backendError);
       console.log('[BUSINESS-DIRECTORY] Using fallback featured businesses');
-      
+
       return NextResponse.json(mockFeaturedBusinesses);
     }
   } catch (error) {

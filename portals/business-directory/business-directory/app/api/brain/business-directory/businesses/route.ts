@@ -7,36 +7,36 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhos
 // Helper function to convert hours format
 function convertBusinessHours(businessHours: any) {
   if (!businessHours) return null;
-  
+
   const convertDayHours = (hours: string) => {
     if (hours === 'Closed' || hours === 'closed') {
       return { open: '', close: '', closed: true };
     }
-    
+
     // Parse time range like "9:00 AM - 6:00 PM"
     const timeRange = hours.split(' - ');
     if (timeRange.length !== 2) {
       return { open: '', close: '', closed: true };
     }
-    
+
     // Convert 12-hour format to 24-hour format
     const convertTo24Hour = (time: string) => {
       const [timeStr, period] = time.trim().split(' ');
       let [hours, minutes] = timeStr.split(':').map(Number);
-      
+
       if (period === 'PM' && hours !== 12) hours += 12;
       if (period === 'AM' && hours === 12) hours = 0;
-      
+
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     };
-    
+
     return {
       open: convertTo24Hour(timeRange[0]),
       close: convertTo24Hour(timeRange[1]),
       closed: false
     };
   };
-  
+
   return {
     monday: convertDayHours(businessHours.monday || 'Closed'),
     tuesday: convertDayHours(businessHours.tuesday || 'Closed'),
@@ -221,12 +221,12 @@ export async function GET(request: NextRequest) {
       if (response.ok) {
         const data = await response.json();
         console.log(`[BUSINESS-DIRECTORY] Backend success: ${data.businesses?.length || 0} businesses`);
-        
+
         // Transform business hours data for frontend compatibility
         if (data.businesses) {
           data.businesses = transformBusinessList(data.businesses);
         }
-        
+
         return NextResponse.json(data);
       } else {
         console.warn(`[BUSINESS-DIRECTORY] Backend error: ${response.status}`);
@@ -235,27 +235,28 @@ export async function GET(request: NextRequest) {
     } catch (backendError) {
       console.error('[BUSINESS-DIRECTORY] Backend connection failed:', backendError);
       console.log('[BUSINESS-DIRECTORY] Using fallback data');
-      
+
       // Apply filters to mock data
       let filteredBusinesses = mockBusinesses;
-      
+
       if (query) {
         filteredBusinesses = filteredBusinesses.filter(business =>
           business.name.toLowerCase().includes(query.toLowerCase()) ||
           business.description.toLowerCase().includes(query.toLowerCase())
         );
       }
-      
+
       if (category) {
         filteredBusinesses = filteredBusinesses.filter(business =>
-          business.category.toLowerCase() === category.toLowerCase()
+          business.category.id.toLowerCase() === category.toLowerCase() ||
+          business.category.slug.toLowerCase() === category.toLowerCase()
         );
       }
-      
+
       if (verified !== undefined) {
         filteredBusinesses = filteredBusinesses.filter(business => business.verified === verified);
       }
-      
+
       // Simulate pagination
       const startIdx = (page - 1) * size;
       const endIdx = startIdx + size;
@@ -282,7 +283,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const businessData = await request.json();
-    
+
     const backendUrl = `${BACKEND_API_URL}/api/brain/business-directory/businesses`;
     console.log(`[BUSINESS-DIRECTORY] POST business: ${backendUrl}`);
 
@@ -307,7 +308,7 @@ export async function POST(request: NextRequest) {
     } catch (backendError) {
       console.error('[BUSINESS-DIRECTORY] Backend connection failed:', backendError);
       console.log('[BUSINESS-DIRECTORY] Simulating business creation');
-      
+
       // Simulate business creation
       const newBusiness = {
         id: `biz_${Date.now()}`,
