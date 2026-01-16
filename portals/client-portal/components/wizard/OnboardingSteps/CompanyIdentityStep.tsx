@@ -155,6 +155,31 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 gmbLink: details.gmbLink
             });
 
+            // Create directory listing in backend if it doesn't have a website
+            if (!details.website && directoryUrl) {
+                try {
+                    const slug = directoryUrl.split('//')[1].split('.')[0];
+                    await fetch('/api/brain/business-directory/businesses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: details.companyName || searchQuery,
+                            slug: slug,
+                            google_place_id: placeId,
+                            location: details.location,
+                            phone: details.phone,
+                            website: directoryUrl,
+                            category: details.category || 'Local Business',
+                            google_data: details,
+                            google_rating: details.rating,
+                            google_reviews_count: details.user_ratings_total
+                        })
+                    });
+                } catch (err) {
+                    console.error("Failed to create directory listing:", err);
+                }
+            }
+
             setSearchQuery(details.companyName);
             setLocationQuery(details.location);
             setGmbConnected(true);

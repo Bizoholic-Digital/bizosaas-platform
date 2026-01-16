@@ -255,10 +255,10 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 
 **Implementation Status:**
 - [x] Specification document created
-- [ ] Database schema deployed
-- [ ] Landing page template created
-- [ ] Slug generation service
-- [ ] Google Places data sync
+- [x] Database schema deployed (migrations created)
+- [x] Landing page template created (Next.js directory app)
+- [x] Slug generation service
+- [x] Google Places data sync (during onboarding)
 - [ ] Claim request workflow
 - [ ] Admin approval interface
 
@@ -317,7 +317,7 @@ Projected Revenue (100 clients/month):
 
 ### Priority Implementation Order (Based on Client Portal Parity)
 1. **Platform Health Monitoring** (Critical - currently showing incorrect data)
-2. **Business Directory MVP** (High - immediate value creation, lead generation)
+2. [x] **Business Directory MVP & Admin Integration** (High - immediate value creation, lead generation)
 3. **Tenant Management Dashboard** (High - needed to manage onboarded clients)
 4. **Domain Automation Phase 1** (High - revenue generation, Namecheap integration)
 5. **MCP Registry Admin** (High - supports Tool Selection step)

@@ -130,6 +130,8 @@ app.include_router(workflows.router)
 app.include_router(discovery.router, prefix="/api/discovery", tags=["discovery"])
 app.include_router(metrics_api.router)
 app.include_router(websockets.router)
+from app.api import directory
+app.include_router(directory.router)
 
 from app.routers import oauth
 from app.api import rag

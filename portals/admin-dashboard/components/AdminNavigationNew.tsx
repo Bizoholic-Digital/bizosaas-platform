@@ -80,6 +80,7 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
     if (pathname === '/') setActiveTab('dashboard');
     else if (pathname.startsWith('/tenants')) setActiveTab('tenants');
     else if (pathname.startsWith('/users')) setActiveTab('users');
+    else if (pathname.startsWith('/directory')) setActiveTab('directory');
     else if (pathname.startsWith('/workflows')) setActiveTab('workflows');
     else if (pathname.startsWith('/dropshipping')) setActiveTab('dropshipping');
     else if (pathname.startsWith('/ai-agents')) setActiveTab('ai-agents');
@@ -122,6 +123,7 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
       children: [
         { id: 'tenants', label: 'Tenant Management', icon: Building2, href: '/dashboard/tenants' },
         { id: 'users', label: 'User Management', icon: User, href: '/dashboard/users' },
+        { id: 'directory', label: 'Business Directory', icon: Globe, href: '/dashboard/directory' },
         { id: 'crm', label: 'Global CRM Monitor', icon: Target, href: '/dashboard/crm' },
         { id: 'revenue', label: 'Revenue Analytics', icon: DollarSign, href: '/dashboard/revenue' }
       ]

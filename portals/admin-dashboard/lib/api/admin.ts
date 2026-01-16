@@ -79,6 +79,33 @@ export class AdminApi {
     async toggleWorkflow(workflowId: string): Promise<ApiResponse<any>> {
         return brainApi.post<any>(`/workflows/${workflowId}/toggle`, {});
     }
+
+    // Directory Management
+    async getDirectoryStats(): Promise<ApiResponse<any>> {
+        return brainApi.get<any>('/admin/directory/stats');
+    }
+
+    async getDirectoryListings(query?: string, page: number = 1): Promise<ApiResponse<any>> {
+        const q = query ? `&query=${encodeURIComponent(query)}` : '';
+        return brainApi.get<any>(`/admin/directory/listings?page=${page}${q}`);
+    }
+
+    async getDirectoryClaims(): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>('/admin/directory/claims');
+    }
+
+    // Revenue & Partnerships
+    async getRevenueStats(): Promise<ApiResponse<any>> {
+        return brainApi.get<any>('/admin/revenue/stats');
+    }
+
+    async getRevenueTransactions(limit: number = 50): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>(`/admin/revenue/transactions?limit=${limit}`);
+    }
+
+    async getGlobalDomains(): Promise<ApiResponse<any[]>> {
+        return brainApi.get<any[]>('/admin/domains');
+    }
 }
 
 export const adminApi = new AdminApi();

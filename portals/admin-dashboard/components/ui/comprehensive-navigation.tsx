@@ -52,7 +52,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
   useEffect(() => {
     let activeSection = 'workspace'; // Default
 
-    if (pathname.includes('/tenants') || pathname.includes('/users') || pathname.includes('/dashboard/tools') || pathname === '/dashboard/partner' || pathname === '/dashboard/plugin-analytics') {
+    if (pathname.includes('/tenants') || pathname.includes('/users') || pathname.includes('/directory') || pathname.includes('/dashboard/tools') || pathname === '/dashboard/partner' || pathname === '/dashboard/plugin-analytics') {
       activeSection = 'management';
     } else if (pathname.includes('/system-status') || pathname.includes('/connectors')) {
       activeSection = 'connectivity';
@@ -121,6 +121,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/users',
           icon: <Users className="w-4 h-4" />,
           active: pathname === '/dashboard/users'
+        },
+        {
+          id: 'business-directory',
+          name: 'Business Directory',
+          href: '/dashboard/directory',
+          icon: <Globe className="w-4 h-4 text-emerald-500" />,
+          active: pathname === '/dashboard/directory'
         },
         {
           id: 'partner-program',

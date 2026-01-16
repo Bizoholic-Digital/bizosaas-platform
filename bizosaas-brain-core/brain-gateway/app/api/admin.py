@@ -385,3 +385,77 @@ async def get_audit_logs(
             
     logs = query.order_by(AuditLog.created_at.desc()).limit(limit).all()
     return logs
+
+@router.get("/directory/stats")
+async def get_directory_stats(
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.directory_service import DirectoryService
+    service = DirectoryService(db)
+    return await service.get_directory_stats()
+
+@router.get("/directory/listings")
+async def list_directory_listings(
+    query: Optional[str] = None,
+    city: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.directory_service import DirectoryService
+    service = DirectoryService(db)
+    return await service.search(query=query, location=city, page=page, limit=limit)
+
+@router.get("/directory/claims")
+async def list_directory_claims(
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.models.directory import DirectoryClaimRequest
+    from app.models.user import User
+    
+    claims = db.query(DirectoryClaimRequest).order_by(DirectoryClaimRequest.created_at.desc()).all()
+    
+    results = []
+    for claim in claims:
+        user = db.query(User).filter(User.id == claim.user_id).first()
+        results.append({
+            "id": str(claim.id),
+            "listing_id": str(claim.listing_id),
+            "user_id": str(claim.user_id),
+            "user_email": user.email if user else "Unknown",
+            "method": claim.method,
+            "status": claim.status,
+            "created_at": claim.created_at
+        })
+    return results
+
+@router.get("/revenue/stats")
+async def get_platform_revenue_stats(
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.revenue_service import RevenueService
+    service = RevenueService(db)
+    return await service.get_stats()
+
+@router.get("/revenue/transactions")
+async def list_revenue_transactions(
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.revenue_service import RevenueService
+    service = RevenueService(db)
+    return await service.get_recent_transactions(limit=limit)
+
+@router.get("/domains")
+async def list_global_domains(
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.revenue_service import DomainService
+    service = DomainService(db)
+    return await service.get_all_domains()

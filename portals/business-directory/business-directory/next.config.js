@@ -33,7 +33,7 @@ const nextConfig = {
     return [
       {
         source: '/api/brain/:path*',
-        destination: 'http://localhost:8001/api/brain/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/brain/:path*`,
       },
     ]
   },
