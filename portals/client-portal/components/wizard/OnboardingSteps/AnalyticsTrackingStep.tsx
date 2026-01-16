@@ -53,22 +53,28 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
             const provider = hasGoogleLink ? 'oauth_google' : hasMicrosoftLink ? 'oauth_microsoft' : 'oauth_google';
 
             // 1. Try Deep Discovery (Real API)
-            if (provider.includes('google')) {
+            // 1. Try Deep Discovery (Real API)
+            // Always try if we have a provider OR a website to scan
+            if (provider.includes('google') || websiteUrl) {
                 try {
                     // PARALLEL EXECUTION: API Discovery + Website Scan
-                    const accountPromise = fetch('/api/brain/onboarding/google/discover', {
+
+                    // Only fetch account assets if we actually have a link
+                    const shouldFetchAccount = hasGoogleLink && provider.includes('google');
+                    const accountPromise = shouldFetchAccount ? fetch('/api/brain/onboarding/google/discover', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             access_token: "user_session_token",
                             dry_run: true
                         })
-                    });
+                    }) : Promise.resolve(null);
 
-                    const scanPromise = data.websiteUrl ? fetch('/api/brain/onboarding/scan', {
+                    // Always scan if URL provided (Fix: use websiteUrl prop)
+                    const scanPromise = websiteUrl ? fetch('/api/brain/onboarding/scan', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ website_url: data.websiteUrl })
+                        body: JSON.stringify({ website_url: websiteUrl })
                     }) : Promise.resolve(null);
 
                     const [res, scanRes] = await Promise.all([accountPromise, scanPromise]);
@@ -82,14 +88,14 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                         }
                     }
 
-                    if (res.ok) {
+                    // Process Account Results (if available)
+                    if (res && res.ok) {
                         const results = await res.json();
                         // results is { "google-tag-manager": { ... }, "google-analytics": { ... }, ... }
 
                         const gtmRes = results['google-tag-manager'] || {};
                         const gaRes = results['google-analytics'] || {};
                         const gscRes = results['google-search-console'] || {};
-                        const fbRes = results['facebook-analytics'] || {}; // If we added it
 
                         // Map GTM
                         const gtmContainers = (gtmRes.containers || []).map((c: any) => ({
@@ -97,14 +103,12 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                             name: c.name
                         }));
                         if (gtmRes.status === 'success' && gtmRes.container_id) {
-                            // If auto-linked single option
                             gtmContainers.push({ id: gtmRes.container_id, name: 'Linked Container' });
                         }
 
                         // Map GA4
-                        // GA4 properties have 'name' like 'properties/12345' and 'displayName'
                         const gaProperties = (gaRes.properties || []).map((p: any) => ({
-                            id: p.name.split('/').pop(), // Extract ID from resource name
+                            id: p.name.split('/').pop(),
                             name: p.displayName
                         }));
                         if (gaRes.status === 'success' && gaRes.property_id) {
@@ -112,7 +116,6 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                         }
 
                         // Map GSC
-                        // GSC sites have 'siteUrl'
                         const gscSites = (gscRes.sites || []).map((s: any) => ({
                             id: s.siteUrl,
                             name: s.siteUrl
@@ -123,7 +126,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
 
                         if (gtmContainers.length > 0 || gaProperties.length > 0 || gscSites.length > 0) {
                             // INTELLIGENT SELECTION
-                            // Prefer matched tags from scan, else first available
+                            // Prefer matched tags from scan
                             const matchedGtm = gtmContainers.find((c: any) => scannnedTags.gtm.includes(c.id))?.id;
                             const matchedGa = gaProperties.find((p: any) => scannnedTags.ga4.includes(p.id))?.id;
 
@@ -132,9 +135,9 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                                 availableGaProperties: gaProperties,
                                 availableGscSites: gscSites,
 
-                                // Auto-select matches
-                                gtmId: matchedGtm || data.gtmId || gtmContainers[0]?.id,
-                                gaId: matchedGa || data.gaId || gaProperties[0]?.id,
+                                // Auto-select matches -> Fallback to detected tag -> Fallback to first available
+                                gtmId: matchedGtm || (scannnedTags.gtm.length > 0 ? scannnedTags.gtm[0] : null) || data.gtmId || gtmContainers[0]?.id,
+                                gaId: matchedGa || (scannnedTags.ga4.length > 0 ? scannnedTags.ga4[0] : null) || data.gaId || gaProperties[0]?.id,
                                 gscId: data.gscId || gscSites[0]?.id,
 
                                 auditedServices: {
@@ -146,14 +149,35 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                             });
 
                             const msg = matchedGtm || matchedGa
-                                ? "Sync complete! We detected existing tags on your site and matched them to your account."
+                                ? "Sync complete! We detected your existing tags and matched them to your account."
                                 : "Sync complete! Retrieved assets from your Google account.";
                             setDiscovered(true);
                             toast.success(msg);
                             setIsDiscovering(false);
                             return;
                         }
+                    } else if (scanRes && scanRes.ok && (!res || !res.ok)) {
+                        // Case: Only scan succeeded (User not connected to Google, but has tags)
+                        // We populate the inputs with the detected tags
+                        if (scannnedTags.gtm.length > 0 || scannnedTags.ga4.length > 0) {
+                            onUpdate({
+                                gtmId: scannnedTags.gtm[0] || data.gtmId,
+                                gaId: scannnedTags.ga4[0] || data.gaId,
+
+                                auditedServices: {
+                                    essential: [
+                                        { id: '1', name: 'Website Scan', service: 'Detected Tags', status: 'active' }
+                                    ],
+                                    optional: []
+                                }
+                            });
+                            setDiscovered(true);
+                            toast.success(`Scan complete! Found existing tags: ${scannnedTags.gtm[0] || ''} ${scannnedTags.ga4[0] || ''}`);
+                            setIsDiscovering(false);
+                            return;
+                        }
                     }
+
                 } catch (err) {
                     console.warn("Deep discovery failed, falling back to standard discovery", err);
                 }
@@ -325,7 +349,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                     <h3 className="text-xl font-bold text-foreground mb-2">Syncing Cloud Intelligence...</h3>
                     <p className="text-muted-foreground max-w-sm">We are pulling your property IDs from your connected Google and Microsoft accounts to pre-populate this view.</p>
                 </div>
-            ) : isCloudConnected && !data.auditedServices && (
+            ) : (isCloudConnected || websiteUrl) && !data.auditedServices && (
                 <div className="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-xl p-6 text-white mb-8 shadow-xl relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-card/10 rounded-full blur-2xl group-hover:bg-card/20 transition-all" />
                     <div className="flex items-center gap-4 mb-4 relative z-10">
@@ -333,8 +357,8 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                             <Sparkles className="w-6 h-6 text-yellow-300" />
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg">GTM-First Discovery</h3>
-                            <p className="text-blue-100 text-sm">We'll scan your site for existing tags and consolidate them into a single managed GTM container.</p>
+                            <h3 className="font-bold text-lg">Digital Intelligence Scan</h3>
+                            <p className="text-blue-100 text-sm">We'll scan your site for existing tags and fetch assets from your connected accounts.</p>
                         </div>
                     </div>
                     <Button
@@ -345,7 +369,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                         {isDiscovering ? (
                             <>
                                 <RefreshCw className="w-5 h-5 mr-3 animate-spin" />
-                                Auditing Digital Presence...
+                                Auditing {websiteUrl ? new URL(websiteUrl).hostname : 'Digital Presence'}...
                             </>
                         ) : (
                             <>
