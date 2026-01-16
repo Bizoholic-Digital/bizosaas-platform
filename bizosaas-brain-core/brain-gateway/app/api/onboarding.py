@@ -10,7 +10,12 @@ from app.domain.services.secret_service import SecretService
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 
 
+import httpx
+
 router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
+
+# Google Maps API Key
+GOOGLE_MAPS_API_KEY = "AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto"
 
 # --- Enums & Models ---
 
@@ -722,5 +727,70 @@ async def connect_wordpress_credentials(payload: Dict[str, str]):
         "message": f"Onboarding completed. {provisioned_count} tools provisioning.", 
         "redirect": "/dashboard",
         "strategyId": "strat_12345" 
+    }
+
+
+# --- Google Places API Integration ---
+
+@router.get("/places/autocomplete")
+async def places_autocomplete(input: str):
+    """
+    Proxy to Google Places Autocomplete API.
+    Returns a list of business predictions.
+    """
+    if not input:
+        return {"predictions": []}
+        
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://maps.googleapis.com/maps/api/place/autocomplete/json",
+            params={
+                "input": input,
+                "key": GOOGLE_MAPS_API_KEY,
+                "types": "establishment",  # Restrict to businesses
+            }
+        )
+        
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Failed to fetch from Google Places API")
+        
+    data = response.json()
+    return {"predictions": data.get("predictions", [])}
+
+@router.get("/places/details")
+async def place_details(place_id: str):
+    """
+    Proxy to Google Places Details API.
+    Returns detailed information about a selected place.
+    """
+    if not place_id:
+        raise HTTPException(status_code=400, detail="Place ID is required")
+        
+    # Fields to request from Places API
+    fields = "name,formatted_address,formatted_phone_number,website,url,geometry"
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://maps.googleapis.com/maps/api/place/details/json",
+            params={
+                "place_id": place_id,
+                "fields": fields,
+                "key": GOOGLE_MAPS_API_KEY,
+            }
+        )
+        
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="Failed to fetch from Google Places API")
+        
+    data = response.json()
+    result = data.get("result", {})
+    
+    return {
+        "companyName": result.get("name"),
+        "location": result.get("formatted_address"),
+        "phone": result.get("formatted_phone_number"),
+        "website": result.get("website"),
+        "gmbLink": result.get("url"), # Google Maps URL
+        "placeId": place_id
     }
 

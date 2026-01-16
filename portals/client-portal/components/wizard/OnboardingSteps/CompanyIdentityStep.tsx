@@ -1,39 +1,95 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { BusinessProfile } from '../types/onboarding';
-import { Search, MapPin, Globe, Phone } from 'lucide-react';
+import { Search, MapPin, Globe, Phone, Building2, CheckCircle2 } from 'lucide-react';
 
 interface Props {
     data: BusinessProfile;
     onUpdate: (data: Partial<BusinessProfile>) => void;
+    discovery?: any;
+    isDiscovering?: boolean;
 }
 
-export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }: Props & { discovery?: any, isDiscovering?: boolean }) {
-    const [loadingGmb, setLoadingGmb] = React.useState(false);
+interface Prediction {
+    description: string;
+    place_id: string;
+    structured_formatting: {
+        main_text: string;
+        secondary_text: string;
+    };
+}
 
-    const fetchGmbData = async () => {
-        if (!data.gmbLink) return;
-        setLoadingGmb(true);
-        // Simulate API call to fetch data from GMB
-        setTimeout(() => {
+export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }: Props) {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [predictions, setPredictions] = useState<Prediction[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showPredictions, setShowPredictions] = useState(false);
+    const [gmbConnected, setGmbConnected] = useState(!!data.gmbLink);
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery.length > 2 && !gmbConnected) {
+                searchBusiness(searchQuery);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    const searchBusiness = async (query: string) => {
+        setIsSearching(true);
+        try {
+            const res = await fetch(`/api/brain/onboarding/places/autocomplete?input=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            setPredictions(data.predictions || []);
+            setShowPredictions(true);
+        } catch (error) {
+            console.error("Failed to search business:", error);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const selectBusiness = async (placeId: string) => {
+        setIsSearching(true);
+        setShowPredictions(false);
+        try {
+            const res = await fetch(`/api/brain/onboarding/places/details?place_id=${placeId}`);
+            if (!res.ok) throw new Error('Failed to fetch details');
+
+            const details = await res.json();
+
             onUpdate({
-                companyName: "Acme Corp (Fetched)",
-                location: "123 Business Rd, Tech City",
-                website: "https://acme.example.com",
-                phone: "+1 555 123 4567"
+                companyName: details.companyName || searchQuery,
+                location: details.location,
+                website: details.website,
+                phone: details.phone,
+                gmbLink: details.gmbLink
             });
-            setLoadingGmb(false);
-        }, 1500);
+            setGmbConnected(true);
+            setSearchQuery(details.companyName);
+        } catch (error) {
+            console.error("Failed to fetch business details:", error);
+            // Fallback: just use what we have from prediction if partial
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleManualMode = () => {
+        setShowPredictions(false);
+        setGmbConnected(false);
+        // Don't clear fields, just allow editing
     };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-foreground">Company Identity</h2>
-                <p className="text-muted-foreground">Let's start with your business basics.</p>
+                <p className="text-muted-foreground">Start by finding your business on Google.</p>
             </div>
 
             <div className="space-y-4">
@@ -48,49 +104,82 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         <Label className="text-green-700 dark:text-green-400 font-semibold mb-3 block flex items-center gap-2">
                             ✨ Services Detected Automatically
                         </Label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {[...(discovery.google || []), ...(discovery.microsoft || [])].map((svc: any) => (
-                                <div key={svc.id} className="bg-card p-2.5 rounded border border-green-500/20 flex justify-between items-center text-sm shadow-sm">
-                                    <div className="flex flex-col">
-                                        <span className="font-medium text-foreground">{svc.name}</span>
-                                        {svc.cost && <span className="text-[10px] text-orange-600 font-bold uppercase">{svc.cost} May Apply</span>}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {svc.requiresEnablement && (
-                                            <span className="text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-1.5 py-0.5 rounded font-bold">Needs Enablement</span>
-                                        )}
-                                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <p className="text-xs text-green-600 dark:text-green-400/80 mt-3 font-medium">
-                            We've pre-filled your business details based on these profiles.
+                        <p className="text-xs text-green-600 dark:text-green-400/80 font-medium">
+                            We've pre-filled your business details based on detected profiles.
                         </p>
                     </div>
                 ) : (
-                    <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
-                        <Label className="text-blue-700 dark:text-blue-400 font-semibold mb-2 block">
-                            🚀 Quick Setup with Google Maps
-                        </Label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
-                                <Input
-                                    placeholder="Paste Google Maps link"
-                                    className="pl-9 bg-card"
-                                    value={data.gmbLink || ''}
-                                    onChange={(e) => onUpdate({ gmbLink: e.target.value })}
-                                />
+                    // --- NEW GOOGLE PLACES SEARCH UI ---
+                    <div className={`p-4 rounded-lg border transition-all ${gmbConnected ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
+                        {gmbConnected ? (
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-green-100 p-2 rounded-full">
+                                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-green-900">Business Found</h3>
+                                        <p className="text-xs text-green-700">We've auto-filled your details from Google.</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={handleManualMode} className="text-green-700 hover:text-green-800 hover:bg-green-100">
+                                    Edit manually
+                                </Button>
                             </div>
-                            <Button
-                                onClick={fetchGmbData}
-                                disabled={loadingGmb || !data.gmbLink}
-                                className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
-                            >
-                                {loadingGmb ? 'Fetching...' : 'Auto-Fill'}
-                            </Button>
-                        </div>
+                        ) : (
+                            <div>
+                                <Label className="text-blue-700 dark:text-blue-400 font-semibold mb-2 block flex items-center gap-2">
+                                    <Search size={16} /> Search your business
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        placeholder="Type your business name... (e.g. Acme Corp)"
+                                        className="pl-4 bg-white dark:bg-black/20 border-blue-200 focus-visible:ring-blue-500"
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            setShowPredictions(true);
+                                            if (e.target.value === '') {
+                                                setPredictions([]);
+                                                onUpdate({ companyName: '' });
+                                            } else {
+                                                onUpdate({ companyName: e.target.value });
+                                            }
+                                        }}
+                                    />
+                                    {isSearching && (
+                                        <div className="absolute right-3 top-2.5">
+                                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    )}
+
+                                    {/* Predictions Dropdown */}
+                                    {showPredictions && predictions.length > 0 && (
+                                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                            {predictions.map((pred) => (
+                                                <div
+                                                    key={pred.place_id}
+                                                    className="p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 cursor-pointer text-sm border-b last:border-0 border-gray-100 dark:border-zinc-800"
+                                                    onClick={() => selectBusiness(pred.place_id)}
+                                                >
+                                                    <div className="font-medium text-foreground">{pred.structured_formatting.main_text}</div>
+                                                    <div className="text-xs text-muted-foreground">{pred.structured_formatting.secondary_text}</div>
+                                                </div>
+                                            ))}
+                                            <div
+                                                className="p-2 text-xs text-center text-blue-600 cursor-pointer hover:underline bg-gray-50 dark:bg-zinc-900/50"
+                                                onClick={handleManualMode}
+                                            >
+                                                Can't find it? Enter details manually
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-xs text-blue-600/70 mt-2">
+                                    Start typing to find your business on Google Maps.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -101,6 +190,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                             value={data.companyName}
                             onChange={(e) => onUpdate({ companyName: e.target.value })}
                             placeholder="e.g. Acme Corp"
+                            disabled={gmbConnected} // Disable if auto-filled to encourage correct selection
                         />
                     </div>
                     <div className="space-y-2">
@@ -122,6 +212,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                             onChange={(e) => onUpdate({ location: e.target.value })}
                             className="pl-9"
                             placeholder="Full business address"
+                            disabled={gmbConnected}
                         />
                     </div>
                 </div>
@@ -136,6 +227,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                 onChange={(e) => onUpdate({ website: e.target.value })}
                                 className="pl-9"
                                 placeholder="https://..."
+                            // Website is often wrong/missing in Maps, keep editable
                             />
                         </div>
                     </div>
@@ -148,6 +240,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                 onChange={(e) => onUpdate({ phone: e.target.value })}
                                 className="pl-9"
                                 placeholder="+1..."
+                                disabled={gmbConnected}
                             />
                         </div>
                     </div>
