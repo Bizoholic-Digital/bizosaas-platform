@@ -16,14 +16,24 @@
 9. AI Agent
 10. Strategy
 
-**New Optimized Flow (7 Steps):**
+**New Optimized Flow (8 Steps):**
 1. **Identity** - Company profile and branding
 2. **Presence** - Website and digital footprint
 3. **Tools** - MCP marketplace selection
 4. **Design** - Theme and plugin selection
 5. **Connect** - WordPress plugin installation (NEW)
 6. **Intelligence** - Analytics + Social (COMBINED)
-7. **Strategy** - Review and launch
+7. **Goals** - Objectives, budget, target audience (CRITICAL FOR AI)
+8. **Strategy** - AI-generated strategy review and launch
+
+**Why 8 Steps (Not 7)?**
+After review, we determined that the **Goals & Budget** step is **non-negotiable** for the Strategy AI Agent. This step collects:
+- Primary business objective (lead gen, sales, awareness, etc.)
+- Monthly marketing budget
+- Target audience demographics
+- Geographic targeting
+
+Without this data, the Strategy AI cannot generate a meaningful, personalized strategy. The step was re-added as Step 7, positioned right before Strategy to ensure all context is fresh.
 
 ### 2. Key Improvements
 
@@ -80,6 +90,45 @@
 - Often configured together in practice
 - Reduces step count without losing functionality
 - Single "Digital Intelligence" narrative
+
+### 5. Strategy AI Agent Data Flow
+
+**Complete Data Inputs to Strategy AI:**
+
+```mermaid
+graph TD
+    A[Step 1: Identity] -->|Company Name, Industry, Brand| H[Strategy AI Agent]
+    B[Step 2: Presence] -->|Website URL, Existing Tracking| H
+    C[Step 3: Tools] -->|Selected MCPs, Integrations| H
+    D[Step 4: Design] -->|Theme, Plugins| H
+    E[Step 5: Connect] -->|WordPress Connection Status| H
+    F[Step 6: Intelligence] -->|GTM, GA4, Social Platforms| H
+    G[Step 7: Goals] -->|Objective, Budget, Audience| H
+    H -->|AI-Generated Strategy| I[Step 8: Strategy Approval]
+```
+
+**Data Completeness Scoring:**
+The Strategy step now calculates a "Data Completeness Score" (0-100%) based on:
+- Company Name (15%)
+- Website URL (15%)
+- Has Tracking (10%)
+- Selected Tools (10%)
+- GTM/Analytics (15%)
+- Social Platforms (15%)
+- Primary Goal (10%)
+- Monthly Budget (10%)
+
+**AI Strategy Generation Process:**
+1. **Data Aggregation** - Collect all onboarding inputs
+2. **Presence Analysis** - Research AI Agent analyzes website and competitors
+3. **Tool Mapping** - Match selected MCPs to strategy requirements
+4. **Budget Optimization** - Allocate budget across channels based on goal
+5. **Agent Assignment** - Assign specific AI agents to execute strategy
+6. **Strategy Synthesis** - Generate personalized recommendation
+7. **Continuous Refinement** - Strategy adapts based on performance data
+
+**Example Strategy Output:**
+> "Based on your **lead generation** goal with a **$2,500** monthly budget, our AI recommends a **multi-channel growth** strategy targeting **25-34** audience in **United States, Canada**. We'll deploy Research, Content, Analytics, Social, and Tracking Agents to execute a 60% Acquisition / 40% Retention approach across Facebook, LinkedIn, and SEO channels."
 
 ## Recommendations for Further Optimization
 
