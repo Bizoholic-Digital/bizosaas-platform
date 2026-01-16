@@ -24,11 +24,21 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
+      # HTTP Router (redirect to HTTPS)
+      - "traefik.http.routers.business-directory-http.rule=Host(`directory.bizoholic.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.bizoholic.net`)"
+      - "traefik.http.routers.business-directory-http.entrypoints=web"
+      - "traefik.http.routers.business-directory-http.middlewares=redirect-to-https"
+      # HTTPS Router
       - "traefik.http.routers.business-directory.rule=Host(`directory.bizoholic.net`) || HostRegexp(`{subdomain:[a-z0-9-]+}.bizoholic.net`)"
+      - "traefik.http.routers.business-directory.entrypoints=websecure"
       - "traefik.http.routers.business-directory.tls=true"
       - "traefik.http.routers.business-directory.tls.certresolver=letsencrypt"
       - "traefik.http.routers.business-directory.priority=1"
+      # Service
       - "traefik.http.services.business-directory.loadbalancer.server.port=3005"
+      # Middleware for HTTPS redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     restart: unless-stopped
 
 networks:
