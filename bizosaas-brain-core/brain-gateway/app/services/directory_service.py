@@ -4,6 +4,12 @@ from sqlalchemy import or_, desc
 from app.models.directory import DirectoryListing, DirectoryAnalytics, DirectoryClaimRequest
 from typing import List, Optional, Dict, Any
 from datetime import datetime, date
+import os
+import httpx
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DirectoryService:
     def __init__(self, db: Session):
@@ -311,3 +317,113 @@ class DirectoryService:
         self.db.commit()
         self.db.refresh(coupon)
         return coupon
+
+    async def approve_claim(self, claim_id: UUID, admin_id: UUID) -> DirectoryClaimRequest:
+        from app.models.directory import DirectoryClaimRequest, DirectoryListing
+        claim = self.db.query(DirectoryClaimRequest).filter(DirectoryClaimRequest.id == claim_id).first()
+        if not claim:
+            raise ValueError("Claim request not found")
+        
+        claim.status = 'approved'
+        claim.reviewed_by = admin_id
+        claim.reviewed_at = datetime.utcnow()
+        
+        # Update listing ownership
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == claim.listing_id).first()
+        if listing:
+            listing.claimed = True
+            listing.claimed_by = claim.user_id
+            listing.claimed_at = datetime.utcnow()
+            listing.verification_status = 'verified'
+        
+        self.db.commit()
+        self.db.refresh(claim)
+        return claim
+
+    async def reject_claim(self, claim_id: UUID, admin_id: UUID, reason: str = None) -> DirectoryClaimRequest:
+        from app.models.directory import DirectoryClaimRequest
+        claim = self.db.query(DirectoryClaimRequest).filter(DirectoryClaimRequest.id == claim_id).first()
+        if not claim:
+            raise ValueError("Claim request not found")
+        
+        claim.status = 'rejected'
+        claim.reviewed_by = admin_id
+        claim.reviewed_at = datetime.utcnow()
+        claim.rejection_reason = reason
+        
+        self.db.commit()
+        self.db.refresh(claim)
+        return claim
+
+    async def soft_delete_listing(self, listing_id: UUID):
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == listing_id).first()
+        if not listing:
+            raise ValueError("Listing not found")
+        
+        listing.status = 'deleted'
+        self.db.commit()
+        return True
+
+    async def optimize_listing_seo(self, listing_id: UUID) -> Dict[str, Any]:
+        """Use AI to optimize listing content for SEO"""
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == listing_id).first()
+        if not listing:
+            raise ValueError("Listing not found")
+            
+        # Try to get from SecretService first
+        from app.dependencies import get_secret_service
+        secret_service = get_secret_service()
+        openai_key = secret_service.get_secret("OPENAI_API_KEY")
+        
+        if not openai_key:
+            openai_key = os.getenv("OPENAI_API_KEY")
+            
+        if not openai_key:
+            return {"error": "AI optimization not configured (missing API key)"}
+
+        prompt = f"""
+        Optimize the following business listing for SEO. 
+        Business Name: {listing.business_name}
+        Current Description: {listing.description or "No description provided."}
+        Category: {listing.category or "General Business"}
+        Location: {listing.city or "Unknown"}, {listing.state or ""}, {listing.country or ""}
+        
+        Provide the result in JSON format with the following fields:
+        1. optimized_description: A rich, keyword-optimized description (100-150 words).
+        2. meta_title: An SEO title (max 60 chars).
+        3. meta_description: An SEO meta description (max 160 chars).
+        4. suggested_tags: A list of 5-8 relevant tags like ["service", "keyword", ...].
+        """
+
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [
+                            {"role": "system", "content": "You are an SEO expert specializing in local business directories."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "response_format": { "type": "json_object" }
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                result_text = data["choices"][0]["message"]["content"]
+                optimization_data = json.loads(result_text)
+                
+                # Update listing with optimized data
+                listing.description = optimization_data.get("optimized_description", listing.description)
+                if "suggested_tags" in optimization_data:
+                    listing.tags = optimization_data["suggested_tags"]
+                
+                listing.updated_at = datetime.utcnow()
+                self.db.commit()
+                
+                return optimization_data
+            except Exception as e:
+                logger.error(f"AI Optimization error: {e}")
+                return {"error": str(e)}

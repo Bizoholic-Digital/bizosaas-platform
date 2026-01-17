@@ -106,6 +106,22 @@ export class AdminApi {
     async getGlobalDomains(): Promise<ApiResponse<any[]>> {
         return brainApi.get<any[]>('/admin/domains');
     }
+
+    async approveClaim(claimId: string): Promise<ApiResponse<any>> {
+        return brainApi.post<any>(`/admin/directory/claims/${claimId}/approve`, {});
+    }
+
+    async rejectClaim(claimId: string, reason?: string): Promise<ApiResponse<any>> {
+        return brainApi.post<any>(`/admin/directory/claims/${claimId}/reject`, { reason });
+    }
+
+    async deleteListing(listingId: string): Promise<ApiResponse<any>> {
+        return brainApi.delete<any>(`/admin/directory/listings/${listingId}`);
+    }
+
+    async optimizeListing(listingId: string): Promise<ApiResponse<any>> {
+        return brainApi.post<any>(`/admin/directory/listings/${listingId}/optimize`, {});
+    }
 }
 
 export const adminApi = new AdminApi();

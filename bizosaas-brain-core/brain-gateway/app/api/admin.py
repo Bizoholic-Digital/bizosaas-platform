@@ -426,11 +426,72 @@ async def list_directory_claims(
             "listing_id": str(claim.listing_id),
             "user_id": str(claim.user_id),
             "user_email": user.email if user else "Unknown",
-            "method": claim.method,
+            "method": claim.verification_method,
             "status": claim.status,
             "created_at": claim.created_at
         })
     return results
+
+@router.post("/directory/claims/{claim_id}/approve")
+async def approve_directory_claim(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.directory_service import DirectoryService
+    from uuid import UUID
+    service = DirectoryService(db)
+    try:
+        claim = await service.approve_claim(UUID(claim_id), UUID(admin_user.id))
+        return {"status": "success", "message": "Claim approved successfully", "claim_id": str(claim.id)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/directory/claims/{claim_id}/reject")
+async def reject_directory_claim(
+    claim_id: str,
+    reason: Optional[str] = Body(None, embed=True),
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.directory_service import DirectoryService
+    from uuid import UUID
+    service = DirectoryService(db)
+    try:
+        claim = await service.reject_claim(UUID(claim_id), UUID(admin_user.id), reason)
+        return {"status": "success", "message": "Claim rejected", "claim_id": str(claim.id)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/directory/listings/{listing_id}")
+async def delete_directory_listing(
+    listing_id: str,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.directory_service import DirectoryService
+    from uuid import UUID
+    service = DirectoryService(db)
+    try:
+        await service.soft_delete_listing(UUID(listing_id))
+        return {"status": "success", "message": "Listing soft-deleted"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/directory/listings/{listing_id}/optimize")
+async def optimize_directory_listing(
+    listing_id: str,
+    db: Session = Depends(get_db),
+    admin_user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    from app.services.directory_service import DirectoryService
+    from uuid import UUID
+    service = DirectoryService(db)
+    try:
+        optimization = await service.optimize_listing_seo(UUID(listing_id))
+        return {"status": "success", "data": optimization}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/revenue/stats")
 async def get_platform_revenue_stats(

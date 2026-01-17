@@ -24,7 +24,8 @@ import {
     MapPin,
     RefreshCw,
     PieChart,
-    BarChart3
+    BarChart3,
+    Sparkles
 } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { adminApi } from '@/lib/api/admin';
@@ -61,6 +62,58 @@ export default function DirectoryPage() {
             toast.error("Failed to sync directory data");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleApproveClaim = async (claimId: string) => {
+        if (!confirm("Are you sure you want to approve this claim? The user will become the owner of the listing.")) return;
+
+        try {
+            const res = await adminApi.approveClaim(claimId);
+            if (res.error) throw new Error(res.error);
+            toast.success("Claim approved successfully");
+            loadData();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to approve claim");
+        }
+    };
+
+    const handleRejectClaim = async (claimId: string) => {
+        const reason = prompt("Reason for rejection (optional):");
+        if (reason === null) return;
+
+        try {
+            const res = await adminApi.rejectClaim(claimId, reason);
+            if (res.error) throw new Error(res.error);
+            toast.success("Claim rejected");
+            loadData();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to reject claim");
+        }
+    };
+
+    const handleDeleteListing = async (listingId: string) => {
+        if (!confirm("Are you sure you want to delete this listing? It will be hidden from the directory.")) return;
+
+        try {
+            const res = await adminApi.deleteListing(listingId);
+            if (res.error) throw new Error(res.error);
+            toast.success("Listing deleted");
+            loadData();
+        } catch (error: any) {
+            toast.error(error.message || "Failed to delete listing");
+        }
+    };
+
+    const handleOptimizeListing = async (listingId: string) => {
+        const toastId = toast.loading("AI is optimizing listing SEO...");
+        try {
+            const res = await adminApi.optimizeListing(listingId);
+            if (res.error) throw new Error(res.error);
+            toast.success("SEO Optimization complete!", { id: toastId });
+            loadData();
+        } catch (error: any) {
+            toast.error(error.message || "Optimization failed", { id: toastId });
         }
     };
 
@@ -136,8 +189,8 @@ export default function DirectoryPage() {
                 <button
                     onClick={() => setActiveTab('listings')}
                     className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'listings'
-                            ? 'text-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Active Listings
@@ -146,8 +199,8 @@ export default function DirectoryPage() {
                 <button
                     onClick={() => setActiveTab('claims')}
                     className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'claims'
-                            ? 'text-blue-600'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     Claim Requests
@@ -227,6 +280,15 @@ export default function DirectoryPage() {
                                                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Category</p>
                                                 <p className="text-sm font-bold">{item.category || 'Local Business'}</p>
                                             </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="rounded-xl flex items-center gap-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                                onClick={() => handleOptimizeListing(item.id)}
+                                            >
+                                                <Sparkles className="w-4 h-4" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">AI Optimize</span>
+                                            </Button>
                                             <a
                                                 href={`https://${item.business_slug}.bizoholic.net`}
                                                 target="_blank"
@@ -235,8 +297,13 @@ export default function DirectoryPage() {
                                             >
                                                 <ExternalLink className="w-5 h-5" />
                                             </a>
-                                            <Button variant="ghost" size="icon" className="rounded-xl">
-                                                <MoreVertical className="w-5 h-5" />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                onClick={() => handleDeleteListing(item.id)}
+                                            >
+                                                <MoreVertical className="w-5 h-5 text-gray-400" />
                                             </Button>
                                         </div>
                                     </div>
@@ -278,6 +345,26 @@ export default function DirectoryPage() {
                                             }>
                                                 {claim.status.toUpperCase()}
                                             </Badge>
+                                            {claim.status === 'pending' && (
+                                                <div className="flex items-center gap-1">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="rounded-lg h-8 text-[11px] font-bold text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                        onClick={() => handleApproveClaim(claim.id)}
+                                                    >
+                                                        APPROVE
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="rounded-lg h-8 text-[11px] font-bold text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => handleRejectClaim(claim.id)}
+                                                    >
+                                                        REJECT
+                                                    </Button>
+                                                </div>
+                                            )}
                                             <Button size="sm" variant="outline" className="rounded-lg h-8 text-[11px] font-bold">MANAGE</Button>
                                         </div>
                                     </div>

@@ -498,11 +498,17 @@ export const brainApi = {
                 method: 'PUT'
             }, token);
         },
+        getEvents: async (listingId: string, token?: string) => {
+            return apiFetch(`/api/brain/business-directory/businesses/${listingId}/events`, {}, token);
+        },
         createEvent: async (listingId: string, data: any, token?: string) => {
             return apiFetch(`/api/brain/business-directory/businesses/${listingId}/events`, {
                 method: 'POST',
                 body: JSON.stringify(data)
             }, token);
+        },
+        getCoupons: async (listingId: string, token?: string) => {
+            return apiFetch(`/api/brain/business-directory/businesses/${listingId}/coupons`, {}, token);
         },
         createCoupon: async (listingId: string, data: any, token?: string) => {
             return apiFetch(`/api/brain/business-directory/businesses/${listingId}/coupons`, {
