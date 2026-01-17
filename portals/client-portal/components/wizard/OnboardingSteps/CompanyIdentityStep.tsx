@@ -79,8 +79,18 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             return { code: '+1', number: '', country: 'US' };
         }
 
-        // Take the first number if multiple provided (Google sometimes returns "num1, num2" or "num1 num2")
-        const firstPart = phone.split(/[\s,]+/)[0];
+        // HEURISTIC: Fix redundant string (e.g. "+91-91... +91-91...")
+        // Take the first occurrence of a number pattern
+        const segments = phone.split(/[\s,]+/);
+        let firstPart = segments[0];
+
+        // If the segment itself is redundant (like "91487663489148766348")
+        if (firstPart.length > 15) {
+            const half = Math.floor(firstPart.length / 2);
+            const s1 = firstPart.substring(0, half);
+            const s2 = firstPart.substring(half);
+            if (s1 === s2) firstPart = s1;
+        }
 
         // Remove formatting but keep leading +
         const cleaned = firstPart.startsWith('+')
@@ -92,9 +102,10 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         const match = sortedCodes.find(c => cleaned.startsWith(c.code));
 
         if (match) {
+            const finalNum = cleaned.substring(match.code.length).replace(/^0+/, '');
             return {
                 code: match.code,
-                number: cleaned.substring(match.code.length).replace(/^0+/, ''),
+                number: finalNum,
                 country: match.country
             };
         }
@@ -116,17 +127,11 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             setLocationQuery(data.location || '');
 
             if (data.phone) {
-                const phoneStr = data.phone.trim();
-                // Find matching country code from the start
-                const sorted = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length);
-                const match = sorted.find(c => phoneStr.startsWith(c.code));
-
-                if (match) {
-                    setCountryISO(match.country);
-                    setPhoneNumber(phoneStr.substring(match.code.length).trim());
-                } else {
-                    setPhoneNumber(phoneStr);
-                }
+                const { country, number } = parsePhone(data.phone, data.location || '');
+                setCountryISO(country);
+                setPhoneNumber(number);
+                // Immediately fix the polluted prop data
+                onUpdate({ phone: `${COUNTRY_CODES.find(c => c.country === country)?.code} ${number}`.trim() });
             } else if (data.location) {
                 const { country } = parsePhone('', data.location);
                 setCountryISO(country);
@@ -137,10 +142,10 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     // Effect to update parent phone state when parts change
     useEffect(() => {
         const code = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '+1';
-        if (phoneNumber) {
-            onUpdate({ phone: `${code} ${phoneNumber}` });
-        } else {
-            onUpdate({ phone: '' });
+        // Only trigger update if it's different from current data.phone to avoid loops
+        const newPhone = phoneNumber ? `${code} ${phoneNumber}` : '';
+        if (data.phone !== newPhone) {
+            onUpdate({ phone: newPhone });
         }
     }, [countryISO, phoneNumber]);
 
@@ -267,8 +272,8 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     };
 
     const handleManualMode = () => {
-        setShowPredictions(false);
         setGmbConnected(false);
+        setShowPredictions(true); // Allow searching again
     };
 
     return (
