@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  Star, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  ExternalLink, 
+import {
+  Star,
+  MapPin,
+  Phone,
+  Mail,
+  ExternalLink,
   Clock,
   Share,
   Heart,
-  Directions,
+  Navigation,
   Camera,
   MessageCircle,
   Calendar,
@@ -65,7 +65,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
           businessAPI.getBusinessProducts(business.id),
           businessAPI.getBusinessCoupons(business.id)
         ]);
-        
+
         setReviews(reviewsData);
         setEvents(eventsData);
         setProducts(productsData);
@@ -83,7 +83,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
   const handleShare = (platform?: string) => {
     const url = window.location.href;
     const text = `Check out ${business.name} on BizDirectory`;
-    
+
     switch (platform) {
       case 'facebook':
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
@@ -136,7 +136,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               />
             </motion.div>
           </AnimatePresence>
-          
+
           {/* Image Navigation */}
           {business.images.length > 1 && (
             <>
@@ -154,7 +154,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               >
                 →
               </button>
-              
+
               {/* Image Indicators */}
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                 {business.images.map((_, index) => (
@@ -170,7 +170,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               </div>
             </>
           )}
-          
+
           {/* Action Buttons */}
           <div className="absolute top-4 right-4 flex space-x-2">
             <Button
@@ -181,7 +181,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
             >
               <Heart className={cn("w-4 h-4", isFavorited ? "fill-red-500 text-red-500" : "")} />
             </Button>
-            
+
             <div className="relative">
               <Button
                 onClick={() => handleShare()}
@@ -191,7 +191,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               >
                 <Share className="w-4 h-4" />
               </Button>
-              
+
               {showShareMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border p-2 z-10">
                   <div className="flex flex-col space-y-1">
@@ -226,7 +226,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                 </div>
               )}
             </div>
-            
+
             <Button
               onClick={() => setShowAllPhotos(true)}
               variant="secondary"
@@ -237,7 +237,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               {business.images.length}
             </Button>
           </div>
-          
+
           {/* Status Badges */}
           <div className="absolute top-4 left-4 flex flex-col space-y-2">
             {business.featured && (
@@ -257,7 +257,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
             </Badge>
           </div>
         </div>
-        
+
         {/* Photo Grid Preview */}
         {business.images.length > 1 && (
           <div className="grid grid-cols-4 gap-2 mt-4">
@@ -267,8 +267,8 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                 onClick={() => setActiveImageIndex(index)}
                 className={cn(
                   "relative aspect-square overflow-hidden rounded-lg border-2 transition-all",
-                  index === activeImageIndex 
-                    ? "border-primary ring-2 ring-primary/20" 
+                  index === activeImageIndex
+                    ? "border-primary ring-2 ring-primary/20"
                     : "border-gray-200 hover:border-gray-300"
                 )}
               >
@@ -291,7 +291,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white">
               {business.name}
             </h1>
-            
+
             <div className="flex flex-wrap items-center gap-4 text-gray-600 dark:text-gray-400">
               <div className="flex items-center">
                 <div className="rating-stars mr-2">
@@ -308,17 +308,17 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                 <span className="font-medium">{formatRating(business.rating)}</span>
                 <span className="text-gray-500 ml-1">({business.reviewCount} reviews)</span>
               </div>
-              
+
               <span>•</span>
               <span>{business.category.name}</span>
               <span>•</span>
               <span className="pricing-display">{business.pricing?.range || 'Price not available'}</span>
             </div>
-            
+
             <p className="text-gray-700 dark:text-gray-300 max-w-3xl">
               {business.description}
             </p>
-            
+
             {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {(business.tags || []).map((tag) => (
@@ -328,7 +328,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               ))}
             </div>
           </div>
-          
+
           {/* Quick Actions */}
           <div className="flex flex-col space-y-2 lg:w-48">
             <Button onClick={handleCallBusiness} size="lg" className="w-full">
@@ -336,7 +336,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
               Call Now
             </Button>
             <Button onClick={handleGetDirections} variant="outline" className="w-full">
-              <Directions className="w-4 h-4 mr-2" />
+              <Navigation className="w-4 h-4 mr-2" />
               Get Directions
             </Button>
             <Button variant="outline" className="w-full">
@@ -478,7 +478,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                       {formatPhoneNumber(business.contact?.phone || '')}
                     </a>
                   </div>
-                  
+
                   {business.contact?.email && (
                     <div className="flex items-center">
                       <Mail className="w-5 h-5 text-gray-400 mr-3" />
@@ -490,7 +490,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                       </a>
                     </div>
                   )}
-                  
+
                   {business.contact?.website && (
                     <div className="flex items-center">
                       <ExternalLink className="w-5 h-5 text-gray-400 mr-3" />
@@ -504,7 +504,7 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                       </a>
                     </div>
                   )}
-                  
+
                   <div className="flex items-start">
                     <MapPin className="w-5 h-5 text-gray-400 mr-3 mt-0.5" />
                     <div>
@@ -630,24 +630,24 @@ export function EnhancedBusinessProfile({ business, className }: EnhancedBusines
                         </div>
                       </div>
                     </div>
-                    
+
                     {review.verified && (
                       <Badge variant="outline" className="text-xs">
                         Verified
                       </Badge>
                     )}
                   </div>
-                  
+
                   {review.title && (
                     <h4 className="font-medium mb-2 text-gray-900 dark:text-white">
                       {review.title}
                     </h4>
                   )}
-                  
+
                   <p className="text-gray-700 dark:text-gray-300 mb-4">
                     {review.content}
                   </p>
-                  
+
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     <button className="flex items-center hover:text-gray-700">
                       <ThumbsUp className="w-4 h-4 mr-1" />

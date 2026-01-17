@@ -20,13 +20,24 @@ class DirectoryListing(Base):
     country = Column(String(100), nullable=True)
     postal_code = Column(String(20), nullable=True)
     phone = Column(String(50), nullable=True)
+    whatsapp = Column(String(50), nullable=True)
     email = Column(String(320), nullable=True)
     website = Column(String(255), nullable=True)
+    video_url = Column(String(512), nullable=True)
     
     # Business Details
     category = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
     hours_of_operation = Column(JSON, nullable=True)
+    amenities = Column(JSON, nullable=True, default=[]) # List of amenity strings
+    tags = Column(ARRAY(String), nullable=True, default=[])
+    
+    # Rich Content
+    social_media = Column(JSON, nullable=True, default={}) # {facebook, twitter, instagram, linkedin, etc}
+    pricing_info = Column(JSON, nullable=True, default={}) # {range, currency, description}
+    events = Column(JSON, nullable=True, default=[]) # List of event objects
+    products = Column(JSON, nullable=True, default=[]) # List of product objects
+    coupons = Column(JSON, nullable=True, default=[]) # List of coupon objects
     
     # Google Places Data
     google_rating = Column(Numeric(2, 1), nullable=True)
@@ -44,6 +55,7 @@ class DirectoryListing(Base):
     meta_title = Column(String(255), nullable=True)
     meta_description = Column(Text, nullable=True)
     keywords = Column(ARRAY(String), nullable=True)
+    canonical_url = Column(String(255), nullable=True)
     
     # Status
     status = Column(String(50), default="active") # active, inactive, suspended
@@ -57,6 +69,73 @@ class DirectoryListing(Base):
     # Relationships
     analytics = relationship("DirectoryAnalytics", back_populates="listing", cascade="all, delete-orphan")
     claim_requests = relationship("DirectoryClaimRequest", back_populates="listing")
+    enquiries = relationship("DirectoryEnquiry", back_populates="listing")
+    events_list = relationship("DirectoryEvent", back_populates="listing", cascade="all, delete-orphan")
+    coupons_list = relationship("DirectoryCoupon", back_populates="listing", cascade="all, delete-orphan")
+
+class DirectoryEnquiry(Base):
+    __tablename__ = "directory_enquiries"
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    listing_id = Column(GUID, ForeignKey("directory_listings.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    name = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False)
+    phone = Column(String(50), nullable=True)
+    subject = Column(String(255), nullable=True)
+    message = Column(Text, nullable=False)
+    
+    status = Column(String(20), default="new") # new, read, replied, spam
+    source = Column(String(50), default="directory") # listing_page, contact_form
+    
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # Relationships
+    listing = relationship("DirectoryListing", back_populates="enquiries")
+
+class DirectoryEvent(Base):
+    __tablename__ = "directory_events"
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    listing_id = Column(GUID, ForeignKey("directory_listings.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    start_date = Column(DateTime(timezone=True), nullable=False)
+    end_date = Column(DateTime(timezone=True), nullable=True)
+    location = Column(String(255), nullable=True)
+    image_url = Column(String(512), nullable=True)
+    external_link = Column(String(512), nullable=True)
+    
+    status = Column(String(20), default="upcoming") # upcoming, ongoing, past, cancelled
+    
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # Relationships
+    listing = relationship("DirectoryListing", back_populates="events_list")
+
+class DirectoryCoupon(Base):
+    __tablename__ = "directory_coupons"
+
+    id = Column(GUID, primary_key=True, default=uuid.uuid4)
+    listing_id = Column(GUID, ForeignKey("directory_listings.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    code = Column(String(50), nullable=True)
+    discount_value = Column(String(100), nullable=True) # e.g. "20% OFF", "$10 OFF"
+    expiry_date = Column(DateTime(timezone=True), nullable=True)
+    terms_link = Column(String(512), nullable=True)
+    
+    status = Column(String(20), default="active") # active, expired, disabled
+    
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    # Relationships
+    listing = relationship("DirectoryListing", back_populates="coupons_list")
 
 class DirectoryAnalytics(Base):
     __tablename__ = "directory_analytics"

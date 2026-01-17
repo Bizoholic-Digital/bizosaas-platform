@@ -48,6 +48,13 @@ class DirectoryService:
         """Get listing by business slug"""
         return self.db.query(DirectoryListing).filter(DirectoryListing.business_slug == slug).first()
 
+    async def get_user_listings(self, user_id: UUID) -> List[DirectoryListing]:
+        """Get all listings claimed by a user"""
+        return self.db.query(DirectoryListing).filter(
+            DirectoryListing.claimed == True,
+            DirectoryListing.claimed_by == user_id
+        ).order_by(desc(DirectoryListing.created_at)).all()
+
     async def create_from_places_data(self, data: Dict[str, Any], user_id: Optional[UUID] = None) -> DirectoryListing:
         """Create a listing from Google Places data"""
         slug = data.get("slug")
@@ -183,3 +190,124 @@ class DirectoryService:
         self.db.commit()
         self.db.refresh(listing)
         return listing
+
+    async def create_enquiry(self, listing_id: UUID, data: dict):
+        from app.models.directory import DirectoryEnquiry
+        from fastapi import HTTPException
+        
+        enquiry = DirectoryEnquiry(
+            listing_id=listing_id,
+            name=data["name"],
+            email=data["email"],
+            phone=data.get("phone"),
+            subject=data.get("subject"),
+            message=data["message"]
+        )
+        self.db.add(enquiry)
+        self.db.commit()
+        self.db.refresh(enquiry)
+        
+        # TODO: Trigger automation workflow (email notification, AI enrichment)
+        
+        return enquiry
+
+    async def get_enquiries(self, listing_id: UUID, user_id: UUID):
+        from app.models.directory import DirectoryListing, DirectoryEnquiry
+        from fastapi import HTTPException
+        
+        # Verify ownership
+        listing = self.db.query(DirectoryListing).filter(
+            DirectoryListing.id == listing_id,
+            DirectoryListing.claimed == True,
+            DirectoryListing.claimed_by == user_id
+        ).first()
+        
+        if not listing:
+            raise HTTPException(status_code=403, detail="Not authorized to view enquiries for this listing")
+            
+        return self.db.query(DirectoryEnquiry).filter(
+            DirectoryEnquiry.listing_id == listing_id
+        ).order_by(desc(DirectoryEnquiry.created_at)).all()
+
+    async def update_enquiry_status(self, enquiry_id: UUID, user_id: UUID, status: str):
+        from app.models.directory import DirectoryListing, DirectoryEnquiry
+        from fastapi import HTTPException
+        
+        enquiry = self.db.query(DirectoryEnquiry).filter(DirectoryEnquiry.id == enquiry_id).first()
+        if not enquiry:
+            raise HTTPException(status_code=404, detail="Enquiry not found")
+            
+        # Verify ownership of the listing
+        listing = self.db.query(DirectoryListing).filter(
+            DirectoryListing.id == enquiry.listing_id,
+            DirectoryListing.claimed == True,
+            DirectoryListing.claimed_by == user_id
+        ).first()
+        
+        if not listing:
+            raise HTTPException(status_code=403, detail="Not authorized to update this enquiry")
+            
+        enquiry.status = status
+        self.db.commit()
+        self.db.refresh(enquiry)
+        return enquiry
+
+    async def get_events(self, listing_id: uuid.UUID):
+        from app.models.directory import DirectoryEvent
+        return self.db.query(DirectoryEvent).filter(
+            DirectoryEvent.listing_id == listing_id,
+            DirectoryEvent.status != 'cancelled'
+        ).order_by(DirectoryEvent.start_date.asc()).all()
+
+    async def create_event(self, listing_id: uuid.UUID, user_id: uuid.UUID, data: dict):
+        from app.models.directory import DirectoryListing, DirectoryEvent
+        from fastapi import HTTPException
+        
+        # Verify ownership
+        listing = self.db.query(DirectoryListing).filter(
+            DirectoryListing.id == listing_id,
+            DirectoryListing.claimed == True,
+            DirectoryListing.claimed_by == user_id
+        ).first()
+        
+        if not listing:
+            raise HTTPException(status_code=403, detail="Not authorized to add events to this listing")
+            
+        event = DirectoryEvent(
+            listing_id=listing_id,
+            **data
+        )
+        self.db.add(event)
+        self.db.commit()
+        self.db.refresh(event)
+        return event
+
+    async def get_coupons(self, listing_id: uuid.UUID):
+        from app.models.directory import DirectoryCoupon
+        return self.db.query(DirectoryCoupon).filter(
+            DirectoryCoupon.listing_id == listing_id,
+            DirectoryCoupon.status == 'active'
+        ).order_by(DirectoryCoupon.created_at.desc()).all()
+
+    async def create_coupon(self, listing_id: uuid.UUID, user_id: uuid.UUID, data: dict):
+        from app.models.directory import DirectoryListing, DirectoryCoupon
+        from fastapi import HTTPException
+        
+        # Verify ownership
+        listing = self.db.query(DirectoryListing).filter(
+            DirectoryListing.id == listing_id,
+            DirectoryListing.claimed == True,
+            DirectoryListing.claimed_by == user_id
+        ).first()
+        
+        if not listing:
+            raise HTTPException(status_code=403, detail="Not authorized to add coupons to this listing")
+            
+        coupon = DirectoryCoupon(
+            listing_id=listing_id,
+            **data
+        )
+        self.db.add(coupon)
+        self.db.commit()
+        self.db.refresh(coupon)
+        return coupon

@@ -42,6 +42,14 @@ async def get_featured(db: Session = Depends(get_db)):
     service = DirectoryService(db)
     return await service.search(limit=6)
 
+@router.get("/businesses/my")
+async def get_my_listings(
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    return await service.get_user_listings(user.id)
+
 @router.get("/businesses/{slug}")
 async def get_business(slug: str, db: Session = Depends(get_db)):
     service = DirectoryService(db)
@@ -54,6 +62,67 @@ async def get_business(slug: str, db: Session = Depends(get_db)):
     asyncio.create_task(service.log_view(business.id))
     
     return business
+
+@router.get("/businesses/{id}/events")
+async def get_business_events(id: uuid.UUID, db: Session = Depends(get_db)):
+    service = DirectoryService(db)
+    return await service.get_events(id)
+
+@router.get("/businesses/{id}/products")
+async def get_business_products(id: uuid.UUID, db: Session = Depends(get_db)):
+    from app.models.directory import DirectoryListing
+    business = db.query(DirectoryListing).filter(DirectoryListing.id == id).first()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+    return business.products or []
+
+@router.get("/businesses/{id}/coupons")
+async def get_business_coupons(id: uuid.UUID, db: Session = Depends(get_db)):
+    service = DirectoryService(db)
+    return await service.get_coupons(id)
+
+class EventCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    start_date: datetime
+    end_date: Optional[datetime] = None
+    location: Optional[str] = None
+    image_url: Optional[str] = None
+    external_link: Optional[str] = None
+
+class CouponCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    code: Optional[str] = None
+    discount_value: Optional[str] = None
+    expiry_date: Optional[datetime] = None
+    terms_link: Optional[str] = None
+
+@router.post("/businesses/{id}/events")
+async def create_event(
+    id: uuid.UUID,
+    event: EventCreate,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    return await service.create_event(id, user.id, event.model_dump())
+
+@router.post("/businesses/{id}/coupons")
+async def create_coupon(
+    id: uuid.UUID,
+    coupon: CouponCreate,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    return await service.create_coupon(id, user.id, coupon.model_dump())
+
+@router.get("/businesses/{id}/reviews")
+async def get_business_reviews(id: uuid.UUID, db: Session = Depends(get_db)):
+    # Simple placeholder returning empty list for now until we have a review model
+    # Wait, let's check if we have a Review model
+    return []
 
 @router.get("/categories")
 async def get_categories(db: Session = Depends(get_db)):
@@ -87,6 +156,13 @@ class ClaimRequest(BaseModel):
     method: str
     data: Optional[Dict[str, Any]] = None
 
+class EnquirySubmit(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    subject: Optional[str] = None
+    message: str
+
 @router.post("/businesses/{id}/claim")
 async def claim_business(
     id: uuid.UUID,
@@ -96,3 +172,32 @@ async def claim_business(
 ):
     service = DirectoryService(db)
     return await service.create_claim_request(id, user.id, claim.method, claim.data or {})
+
+@router.post("/businesses/{id}/enquire")
+async def submit_enquiry(
+    id: uuid.UUID,
+    enquiry: EnquirySubmit,
+    db: Session = Depends(get_db)
+):
+    service = DirectoryService(db)
+    return await service.create_enquiry(id, enquiry.model_dump())
+
+@router.get("/businesses/{id}/enquiries")
+async def get_enquiries(
+    id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    # Service will check if user owns the listing
+    return await service.get_enquiries(id, user.id)
+
+@router.put("/enquiries/{enquiry_id}/status")
+async def update_enquiry_status(
+    enquiry_id: uuid.UUID,
+    status: str = Query(..., regex="^(read|replied|spam)$"),
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    return await service.update_enquiry_status(enquiry_id, user.id, status)

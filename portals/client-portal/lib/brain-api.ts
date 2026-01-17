@@ -480,6 +480,37 @@ export const brainApi = {
             return apiFetch('/api/workflows/optimizations', {}, token);
         }
     },
+    directory: {
+        getMyListings: async (token?: string) => {
+            return apiFetch('/api/brain/business-directory/businesses/my', {}, token);
+        },
+        createListing: async (data: any, token?: string) => {
+            return apiFetch('/api/brain/business-directory/businesses', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }, token);
+        },
+        getEnquiries: async (listingId: string, token?: string) => {
+            return apiFetch(`/api/brain/business-directory/businesses/${listingId}/enquiries`, {}, token);
+        },
+        updateEnquiryStatus: async (enquiryId: string, status: string, token?: string) => {
+            return apiFetch(`/api/brain/business-directory/enquiries/${enquiryId}/status?status=${status}`, {
+                method: 'PUT'
+            }, token);
+        },
+        createEvent: async (listingId: string, data: any, token?: string) => {
+            return apiFetch(`/api/brain/business-directory/businesses/${listingId}/events`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }, token);
+        },
+        createCoupon: async (listingId: string, data: any, token?: string) => {
+            return apiFetch(`/api/brain/business-directory/businesses/${listingId}/coupons`, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            }, token);
+        }
+    },
     discovery: {
         getRecommendations: async (token?: string) => {
             return apiFetch('/api/discovery/recommendations', {}, token);

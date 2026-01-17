@@ -177,6 +177,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/marketing',
           icon: <Mail className="w-4 h-4" />,
           active: pathname.startsWith('/dashboard/marketing')
+        },
+        {
+          id: 'directory',
+          name: 'Directory Listings',
+          href: '/dashboard/directory',
+          icon: <Building2 className="w-4 h-4" />,
+          active: pathname.startsWith('/dashboard/directory'),
         }
       ]
     },

@@ -18,7 +18,7 @@ interface BusinessCardProps {
 export function BusinessCard({ business, featured = false, className }: BusinessCardProps) {
   const isOpen = isBusinessOpen(business.hours);
   const hasHoursData = business.hours && typeof business.hours === 'object';
-  
+
   return (
     <Card className={cn(
       featured ? 'featured-business' : 'business-card',
@@ -47,7 +47,7 @@ export function BusinessCard({ business, featured = false, className }: Business
           </div>
         )}
       </div>
-      
+
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2">
           <h3 className="font-semibold text-lg text-gray-900 dark:text-white line-clamp-1">
@@ -63,11 +63,11 @@ export function BusinessCard({ business, featured = false, className }: Business
             </span>
           </div>
         </div>
-        
+
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
           {business.description}
         </p>
-        
+
         <div className="space-y-2">
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
@@ -75,29 +75,29 @@ export function BusinessCard({ business, featured = false, className }: Business
               {business.location?.address || 'Address not available'}, {business.location?.city || 'City not available'}
             </span>
           </div>
-          
+
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
             <span>{formatPhoneNumber(business.contact?.phone || 'Phone not available')}</span>
           </div>
-          
+
           <div className="flex items-center text-sm">
             <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
             <span className={cn(
               hasHoursData
-                ? isOpen 
-                  ? 'text-green-600 dark:text-green-400' 
+                ? isOpen
+                  ? 'text-green-600 dark:text-green-400'
                   : 'text-red-600 dark:text-red-400'
                 : 'text-gray-500 dark:text-gray-400'
             )}>
-              {hasHoursData 
+              {hasHoursData
                 ? (isOpen ? 'Open now' : 'Closed')
                 : 'Hours not available'
               }
             </span>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between mt-3">
           <div className="flex flex-wrap gap-1">
             {(business.tags || []).slice(0, 2).map((tag) => (
@@ -109,20 +109,20 @@ export function BusinessCard({ business, featured = false, className }: Business
               </span>
             ))}
           </div>
-          
+
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {business.pricing?.range || 'Price not available'}
           </span>
         </div>
       </CardContent>
-      
+
       <CardFooter className="p-4 pt-0 flex space-x-2">
         <Button asChild className="flex-1">
-          <Link href={`/business/${business.id}`}>
+          <Link href={`/business/${business.slug || business.id}`}>
             View Details
           </Link>
         </Button>
-        
+
         {business.contact?.website && (
           <Button
             variant="outline"
