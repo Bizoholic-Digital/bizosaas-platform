@@ -25,16 +25,24 @@ interface Prediction {
 }
 
 const COUNTRY_CODES = [
-    { code: '+1', country: 'US', label: '🇺🇸 United States (+1)' },
-    { code: '+44', country: 'GB', label: '🇬🇧 United Kingdom (+44)' },
-    { code: '+91', country: 'IN', label: '🇮🇳 India (+91)' },
-    { code: '+61', country: 'AU', label: '🇦🇺 Australia (+61)' },
-    { code: '+86', country: 'CN', label: '🇨🇳 China (+86)' },
-    { code: '+49', country: 'DE', label: '🇩🇪 Germany (+49)' },
-    { code: '+33', country: 'FR', label: '🇫🇷 France (+33)' },
-    { code: '+81', country: 'JP', label: '🇯🇵 Japan (+81)' },
-    { code: '+971', country: 'AE', label: '🇦🇪 UAE (+971)' },
-    // Add more as needed
+    { code: '+1', country: 'US', label: '🇺🇸 US (+1)' },
+    { code: '+44', country: 'GB', label: '🇬🇧 UK (+44)' },
+    { code: '+91', country: 'IN', label: '🇮🇳 IN (+91)' },
+    { code: '+61', country: 'AU', label: '🇦🇺 AU (+61)' },
+    { code: '+971', country: 'AE', label: '🇦🇪 AE (+971)' },
+    { code: '+65', country: 'SG', label: '🇸🇬 SG (+65)' },
+    { code: '+1', country: 'CA', label: '🇨🇦 CA (+1)' },
+    { code: '+49', country: 'DE', label: '🇩🇪 DE (+49)' },
+    { code: '+33', country: 'FR', label: '🇫🇷 FR (+33)' },
+    { code: '+39', country: 'IT', label: '🇮🇹 IT (+39)' },
+    { code: '+34', country: 'ES', label: '🇪🇸 ES (+34)' },
+    { code: '+81', country: 'JP', label: '🇯🇵 JP (+81)' },
+    { code: '+86', country: 'CN', label: '🇨🇳 CN (+86)' },
+    { code: '+82', country: 'KR', label: '🇰🇷 KR (+82)' },
+    { code: '+64', country: 'NZ', label: '🇳🇿 NZ (+64)' },
+    { code: '+27', country: 'ZA', label: '🇿🇦 ZA (+27)' },
+    { code: '+55', country: 'BR', label: '🇧🇷 BR (+55)' },
+    { code: '+52', country: 'MX', label: '🇲🇽 MX (+52)' },
 ];
 
 export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }: Props) {
@@ -54,8 +62,42 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     const [gmbConnected, setGmbConnected] = useState(!!data.gmbLink);
 
     // Phone State
-    const [countryCode, setCountryCode] = useState(data.phone?.split(' ')[0] || '+1');
-    const [phoneNumber, setPhoneNumber] = useState(data.phone?.split(' ').slice(1).join(' ') || '');
+    const [countryCode, setCountryCode] = useState('+1');
+    const [phoneNumber, setPhoneNumber] = useState('');
+
+    const parsePhone = (phone: string, location: string) => {
+        if (!phone) {
+            // Check location for default country
+            if (location) {
+                const l = location.toLowerCase();
+                if (l.includes('india')) return { code: '+91', number: '' };
+                if (l.includes('uk') || l.includes('united kingdom')) return { code: '+44', number: '' };
+                if (l.includes('australia')) return { code: '+61', number: '' };
+                if (l.includes('uae') || l.includes('emirates')) return { code: '+971', number: '' };
+            }
+            return { code: '+1', number: '' };
+        }
+
+        // Take the first number if multiple provided (Google sometimes returns "num1, num2" or "num1 num2")
+        const firstPart = phone.split(/[\s,]+/)[0];
+
+        // Remove formatting but keep leading +
+        const cleaned = firstPart.startsWith('+')
+            ? '+' + firstPart.replace(/[^0-9]/g, '')
+            : firstPart.replace(/[^0-9]/g, '');
+
+        const sortedCodes = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length);
+        const match = sortedCodes.find(c => cleaned.startsWith(c.code));
+
+        if (match) {
+            return {
+                code: match.code,
+                number: cleaned.substring(match.code.length).replace(/^0+/, '') // Remove leading zeros often found in local formats
+            };
+        }
+
+        return { code: '+1', number: cleaned.replace('+', '') };
+    };
 
     // Initialize/Fix Data
     useEffect(() => {
@@ -69,13 +111,18 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             // Ensure local state syncs with props if coming back to step
             setSearchQuery(data.companyName || '');
             setLocationQuery(data.location || '');
-            if (data.phone && data.phone.includes(' ')) {
-                const parts = data.phone.split(' ');
-                if (COUNTRY_CODES.some(c => c.code === parts[0])) {
-                    setCountryCode(parts[0]);
-                    setPhoneNumber(parts.slice(1).join(' '));
+
+            if (data.phone) {
+                const phoneStr = data.phone.trim();
+                // Find matching country code from the start
+                const match = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length)
+                    .find(c => phoneStr.startsWith(c.code));
+
+                if (match) {
+                    setCountryCode(match.code);
+                    setPhoneNumber(phoneStr.substring(match.code.length).trim());
                 } else {
-                    setPhoneNumber(data.phone);
+                    setPhoneNumber(phoneStr);
                 }
             }
         }
@@ -186,8 +233,13 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
             // Try parsing phone
             if (details.phone) {
-                // Simple heurestic or just set it
-                setPhoneNumber(details.phone); // Might need manual cleanup if GMB format is weird
+                const { code, number } = parsePhone(details.phone, details.location);
+                setCountryCode(code);
+                setPhoneNumber(number);
+                onUpdate({ phone: `${code} ${number}`.trim() });
+            } else if (details.location) {
+                const { code } = parsePhone('', details.location);
+                setCountryCode(code);
             }
 
         } catch (error) {
@@ -367,13 +419,16 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         <div className="flex gap-2">
                             <div className="w-[140px]">
                                 <Select value={countryCode} onValueChange={setCountryCode} disabled={gmbConnected && !!data.phone}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="bg-white dark:bg-black/20 border-blue-200">
                                         <SelectValue placeholder="Code" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        {COUNTRY_CODES.map((c) => (
-                                            <SelectItem key={c.code} value={c.code}>
-                                                {c.label}
+                                    <SelectContent className="max-h-[300px]">
+                                        {COUNTRY_CODES.map((c, i) => (
+                                            <SelectItem key={`${c.code}-${c.country}-${i}`} value={c.code}>
+                                                <span className="flex items-center gap-2">
+                                                    <span className="text-base">{c.label.split(' ')[0]}</span>
+                                                    <span className="font-medium">{c.label.split(' ').slice(1).join(' ')}</span>
+                                                </span>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -387,8 +442,8 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                         const val = e.target.value.replace(/[^0-9]/g, ''); // Validate number only
                                         setPhoneNumber(val);
                                     }}
-                                    className="pl-9"
-                                    placeholder="Mobile number..."
+                                    className="pl-9 bg-white dark:bg-black/20 border-blue-200"
+                                    placeholder="Number without code"
                                     disabled={gmbConnected && !!data.phone}
                                     type="tel"
                                 />
