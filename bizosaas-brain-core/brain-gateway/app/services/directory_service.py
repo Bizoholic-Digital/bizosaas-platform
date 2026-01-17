@@ -565,14 +565,14 @@ class DirectoryService:
         self.db.refresh(enquiry)
         return enquiry
 
-    async def get_events(self, listing_id: uuid.UUID):
+    async def get_events(self, listing_id: UUID):
         from app.models.directory import DirectoryEvent
         return self.db.query(DirectoryEvent).filter(
             DirectoryEvent.listing_id == listing_id,
             DirectoryEvent.status != 'cancelled'
         ).order_by(DirectoryEvent.start_date.asc()).all()
 
-    async def create_event(self, listing_id: uuid.UUID, user_id: uuid.UUID, data: dict):
+    async def create_event(self, listing_id: UUID, user_id: UUID, data: dict):
         from app.models.directory import DirectoryListing, DirectoryEvent
         from fastapi import HTTPException
         
@@ -595,14 +595,14 @@ class DirectoryService:
         self.db.refresh(event)
         return event
 
-    async def get_coupons(self, listing_id: uuid.UUID):
+    async def get_coupons(self, listing_id: UUID):
         from app.models.directory import DirectoryCoupon
         return self.db.query(DirectoryCoupon).filter(
             DirectoryCoupon.listing_id == listing_id,
             DirectoryCoupon.status == 'active'
         ).order_by(DirectoryCoupon.created_at.desc()).all()
 
-    async def create_coupon(self, listing_id: uuid.UUID, user_id: uuid.UUID, data: dict):
+    async def create_coupon(self, listing_id: UUID, user_id: UUID, data: dict):
         from app.models.directory import DirectoryListing, DirectoryCoupon
         from fastapi import HTTPException
         
