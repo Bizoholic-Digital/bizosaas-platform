@@ -33,6 +33,7 @@ export interface BusinessProfile {
     location: string;
     gmbLink?: string;
     website?: string;
+    websiteType?: 'owned' | 'directory';
     phone?: string;
     description?: string;
 }
