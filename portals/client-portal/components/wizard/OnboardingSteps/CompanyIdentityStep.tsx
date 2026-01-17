@@ -62,7 +62,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     const [gmbConnected, setGmbConnected] = useState(!!data.gmbLink);
 
     // Phone State
-    const [countryCode, setCountryCode] = useState('+1');
+    const [countryISO, setCountryISO] = useState('US');
     const [phoneNumber, setPhoneNumber] = useState('');
 
     const parsePhone = (phone: string, location: string) => {
@@ -70,12 +70,13 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             // Check location for default country
             if (location) {
                 const l = location.toLowerCase();
-                if (l.includes('india')) return { code: '+91', number: '' };
-                if (l.includes('uk') || l.includes('united kingdom')) return { code: '+44', number: '' };
-                if (l.includes('australia')) return { code: '+61', number: '' };
-                if (l.includes('uae') || l.includes('emirates')) return { code: '+971', number: '' };
+                if (l.includes('india')) return { code: '+91', number: '', country: 'IN' };
+                if (l.includes('uk') || l.includes('united kingdom')) return { code: '+44', number: '', country: 'GB' };
+                if (l.includes('australia')) return { code: '+61', number: '', country: 'AU' };
+                if (l.includes('uae') || l.includes('emirates')) return { code: '+971', number: '', country: 'AE' };
+                if (l.includes('singapore')) return { code: '+65', number: '', country: 'SG' };
             }
-            return { code: '+1', number: '' };
+            return { code: '+1', number: '', country: 'US' };
         }
 
         // Take the first number if multiple provided (Google sometimes returns "num1, num2" or "num1 num2")
@@ -86,17 +87,19 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             ? '+' + firstPart.replace(/[^0-9]/g, '')
             : firstPart.replace(/[^0-9]/g, '');
 
+        // Sort by code length descending to match longest code first (+1 vs +1 242)
         const sortedCodes = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length);
         const match = sortedCodes.find(c => cleaned.startsWith(c.code));
 
         if (match) {
             return {
                 code: match.code,
-                number: cleaned.substring(match.code.length).replace(/^0+/, '') // Remove leading zeros often found in local formats
+                number: cleaned.substring(match.code.length).replace(/^0+/, ''),
+                country: match.country
             };
         }
 
-        return { code: '+1', number: cleaned.replace('+', '') };
+        return { code: '+1', number: cleaned.replace('+', ''), country: 'US' };
     };
 
     // Initialize/Fix Data
@@ -115,25 +118,31 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             if (data.phone) {
                 const phoneStr = data.phone.trim();
                 // Find matching country code from the start
-                const match = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length)
-                    .find(c => phoneStr.startsWith(c.code));
+                const sorted = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length);
+                const match = sorted.find(c => phoneStr.startsWith(c.code));
 
                 if (match) {
-                    setCountryCode(match.code);
+                    setCountryISO(match.country);
                     setPhoneNumber(phoneStr.substring(match.code.length).trim());
                 } else {
                     setPhoneNumber(phoneStr);
                 }
+            } else if (data.location) {
+                const { country } = parsePhone('', data.location);
+                setCountryISO(country);
             }
         }
     }, []);
 
     // Effect to update parent phone state when parts change
     useEffect(() => {
+        const code = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '+1';
         if (phoneNumber) {
-            onUpdate({ phone: `${countryCode} ${phoneNumber}` });
+            onUpdate({ phone: `${code} ${phoneNumber}` });
+        } else {
+            onUpdate({ phone: '' });
         }
-    }, [countryCode, phoneNumber]);
+    }, [countryISO, phoneNumber]);
 
     // --- BUSINESS SEARCH LOGIC ---
     useEffect(() => {
@@ -233,13 +242,15 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
             // Try parsing phone
             if (details.phone) {
-                const { code, number } = parsePhone(details.phone, details.location);
-                setCountryCode(code);
+                const { country, number } = parsePhone(details.phone, details.location);
+                setCountryISO(country);
                 setPhoneNumber(number);
-                onUpdate({ phone: `${code} ${number}`.trim() });
-            } else if (details.location) {
-                const { code } = parsePhone('', details.location);
-                setCountryCode(code);
+            } else {
+                setPhoneNumber('');
+                if (details.location) {
+                    const { country } = parsePhone('', details.location);
+                    setCountryISO(country);
+                }
             }
 
         } catch (error) {
@@ -297,13 +308,16 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                     className="pl-4 bg-white dark:bg-black/20 border-blue-200 focus-visible:ring-blue-500"
                                     value={searchQuery}
                                     onChange={(e) => {
-                                        setSearchQuery(e.target.value);
+                                        const val = e.target.value;
+                                        setSearchQuery(val);
                                         setShowPredictions(true);
-                                        if (e.target.value === '') {
+                                        if (val === '') {
                                             setPredictions([]);
-                                            onUpdate({ companyName: '' });
+                                            setGmbConnected(false);
+                                            onUpdate({ companyName: '', gmbLink: '', phone: '', location: '', website: '' });
+                                            setPhoneNumber('');
                                         } else {
-                                            onUpdate({ companyName: e.target.value });
+                                            onUpdate({ companyName: val });
                                         }
                                     }}
                                 />
@@ -418,17 +432,14 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         <Label>Phone (Optional)</Label>
                         <div className="flex gap-2">
                             <div className="w-[140px]">
-                                <Select value={countryCode} onValueChange={setCountryCode} disabled={gmbConnected && !!data.phone}>
+                                <Select value={countryISO} onValueChange={setCountryISO} disabled={gmbConnected && !!data.phone}>
                                     <SelectTrigger className="bg-white dark:bg-black/20 border-blue-200">
                                         <SelectValue placeholder="Code" />
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-[300px]">
-                                        {COUNTRY_CODES.map((c, i) => (
-                                            <SelectItem key={`${c.code}-${c.country}-${i}`} value={c.code}>
-                                                <span className="flex items-center gap-2">
-                                                    <span className="text-base">{c.label.split(' ')[0]}</span>
-                                                    <span className="font-medium">{c.label.split(' ').slice(1).join(' ')}</span>
-                                                </span>
+                                    <SelectContent className="max-h-[300px] z-[100]">
+                                        {COUNTRY_CODES.map((c) => (
+                                            <SelectItem key={c.country} value={c.country}>
+                                                {c.label}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
