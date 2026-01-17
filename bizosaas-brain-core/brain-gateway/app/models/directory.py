@@ -176,6 +176,8 @@ class DirectoryClaimRequest(Base):
     # Verification Details
     verification_method = Column(String(50)) # email, phone, document
     verification_data = Column(JSON, nullable=True)
+    verification_code = Column(String(20), nullable=True)
+    verification_expiry = Column(DateTime(timezone=True), nullable=True)
     
     # Status
     status = Column(String(50), default="pending") # pending, approved, rejected

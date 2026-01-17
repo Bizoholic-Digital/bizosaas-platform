@@ -41,10 +41,10 @@ export function Header() {
               Search
             </Link>
             <Link
-              href="/featured"
+              href="/dashboard/my-businesses"
               className="text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors"
             >
-              Featured
+              My Businesses
             </Link>
           </nav>
 
@@ -111,10 +111,10 @@ export function Header() {
               Search
             </Link>
             <Link
-              href="/featured"
+              href="/dashboard/my-businesses"
               className="text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors py-2"
             >
-              Featured
+              My Businesses
             </Link>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
               <Button asChild className="w-full">

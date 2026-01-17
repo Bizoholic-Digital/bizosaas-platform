@@ -15,7 +15,7 @@ import httpx
 router = APIRouter(prefix="/api/onboarding", tags=["onboarding"])
 
 # Google Maps API Key
-GOOGLE_MAPS_API_KEY = "AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto"
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto")
 
 # --- Enums & Models ---
 

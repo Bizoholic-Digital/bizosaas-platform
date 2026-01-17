@@ -110,12 +110,59 @@ export const businessAPI = {
 
     getSearchSuggestions: async (query: string, location?: string): Promise<SearchSuggestion[]> => {
         try {
-            const { data } = await api.get('/api/brain/business-directory/suggestions', {
+            // Call local proxy instead of direct backend to get transformed suggestions
+            const { data } = await axios.get('/api/brain/business-directory/suggestions', {
                 params: { q: query, location }
             });
             return data;
         } catch (error) {
             console.error('Error fetching suggestions:', error);
+            return [];
+        }
+    },
+
+    claimBusiness: async (id: string, method: string, contactData: any): Promise<any> => {
+        try {
+            const { data } = await api.post(`/api/brain/business-directory/businesses/${id}/claim`, {
+                method,
+                data: contactData
+            });
+            return data;
+        } catch (error) {
+            console.error(`Error claiming business ${id}:`, error);
+            throw error;
+        }
+    },
+
+    verifyClaim: async (claimId: string, code: string): Promise<any> => {
+        try {
+            const { data } = await api.post(`/api/brain/business-directory/claims/${claimId}/verify`, {
+                code
+            });
+            return data;
+        } catch (error) {
+            console.error(`Error verifying claim ${claimId}:`, error);
+            throw error;
+        }
+    },
+
+    resendVerificationCode: async (claimId: string): Promise<any> => {
+        try {
+            const { data } = await api.post(`/api/brain/business-directory/claims/${claimId}/resend`);
+            return data;
+        } catch (error) {
+            console.error(`Error resending code for claim ${claimId}:`, error);
+            throw error;
+        }
+    },
+
+    getMyListings: async (): Promise<Business[]> => {
+        try {
+            // Using a specific proxy route to ensure valid auth context is passed
+            const { data } = await api.get('/api/brain/business-directory/businesses/my');
+            return data;
+        } catch (error) {
+            console.error('Error fetching user listings:', error);
             return [];
         }
     }

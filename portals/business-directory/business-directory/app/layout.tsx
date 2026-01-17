@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   keywords: ['business directory', 'local businesses', 'restaurants', 'services', 'healthcare', 'retail'],
   authors: [{ name: 'BizOSaaS Platform' }],
   robots: 'index, follow',
+  manifest: '/manifest.json',
+  themeColor: '#10b981',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'BizDirectory',
+  },
   openGraph: {
     title: 'BizDirectory - Find Local Businesses',
     description: 'Discover and connect with local businesses in your area.',

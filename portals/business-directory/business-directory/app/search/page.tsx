@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Grid, List, MapPin, Filter } from 'lucide-react';
-import { SearchBar } from '@/components/search/search-bar';
+import { Grid, List, MapPin, Filter, Map as MapIcon } from 'lucide-react';
+import { AdvancedSearchBar } from '@/components/search/advanced-search-bar';
 import { BusinessCard } from '@/components/business/business-card';
+import { InteractiveMap } from '@/components/map/interactive-map';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { businessAPI } from '@/lib/api';
@@ -14,7 +15,7 @@ function SearchPageContent() {
   const searchParams = useSearchParams();
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [showFilters, setShowFilters] = useState(false);
 
   const initialFilters: SearchFilters = {
@@ -23,34 +24,19 @@ function SearchPageContent() {
     category: searchParams.get('category') || '',
   };
 
-  useEffect(() => {
-    const performSearch = async () => {
-      setLoading(true);
-      try {
-        const result = await businessAPI.searchBusinesses(initialFilters);
-        setSearchResult(result);
-      } catch (error) {
-        console.error('Error performing search:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    performSearch();
-  }, [searchParams]);
-
-  const handleSearch = async (filters: SearchFilters) => {
-    setLoading(true);
+  const performSearch = async (filters: SearchFilters) => {
+    // We don't want to show global loading for background "as you type" searches
+    // but we need a visual indicator. For now let's keep it simple.
     try {
       const result = await businessAPI.searchBusinesses(filters);
       setSearchResult(result);
-      
-      // Update URL without page refresh
+
+      // Update URL without page refresh only on explicit search or after debounce
       const params = new URLSearchParams();
       if (filters.query) params.set('q', filters.query);
       if (filters.location) params.set('location', filters.location);
       if (filters.category) params.set('category', filters.category);
-      
+
       window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
     } catch (error) {
       console.error('Error performing search:', error);
@@ -59,18 +45,26 @@ function SearchPageContent() {
     }
   };
 
-  if (loading) {
+  useEffect(() => {
+    performSearch(initialFilters);
+  }, [searchParams]);
+
+  const handleSearch = async (filters: SearchFilters) => {
+    performSearch(filters);
+  };
+
+  if (loading && !searchResult) {
     return (
       <div className="min-h-screen">
         <div className="bg-gray-50 dark:bg-gray-900 py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SearchBar onSearch={handleSearch} initialFilters={initialFilters} />
+            <AdvancedSearchBar onSearch={handleSearch} onChange={handleSearch} initialFilters={initialFilters} />
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Searching businesses...</p>
+            <p className="mt-4 text-muted-foreground">Initializing search...</p>
           </div>
         </div>
       </div>
@@ -82,7 +76,7 @@ function SearchPageContent() {
       <div className="min-h-screen">
         <div className="bg-gray-50 dark:bg-gray-900 py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <SearchBar onSearch={handleSearch} initialFilters={initialFilters} />
+            <AdvancedSearchBar onSearch={handleSearch} onChange={handleSearch} initialFilters={initialFilters} />
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -99,7 +93,11 @@ function SearchPageContent() {
       {/* Search Header */}
       <div className="bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SearchBar onSearch={handleSearch} initialFilters={initialFilters} />
+          <AdvancedSearchBar
+            onSearch={handleSearch}
+            onChange={handleSearch}
+            initialFilters={initialFilters}
+          />
         </div>
       </div>
 
@@ -148,7 +146,10 @@ function SearchPageContent() {
             </Button>
 
             {/* Map View */}
-            <Button variant="outline">
+            <Button
+              variant={viewMode === 'map' ? 'default' : 'outline'}
+              onClick={() => setViewMode('map')}
+            >
               <MapPin className="w-4 h-4 mr-2" />
               Map View
             </Button>
@@ -184,7 +185,7 @@ function SearchPageContent() {
               <Card>
                 <CardContent className="p-6">
                   <h3 className="font-semibold mb-4">Refine Search</h3>
-                  
+
                   {/* Rating Filter */}
                   <div className="mb-6">
                     <h4 className="font-medium mb-2">Rating</h4>
@@ -239,7 +240,7 @@ function SearchPageContent() {
             </div>
           )}
 
-          {/* Results Grid */}
+          {/* Results Grid / Map */}
           <div className="flex-1">
             {searchResult.businesses.length === 0 ? (
               <div className="text-center py-12">
@@ -249,6 +250,24 @@ function SearchPageContent() {
                 <Button onClick={() => handleSearch({ query: '', location: '' })}>
                   View All Businesses
                 </Button>
+              </div>
+            ) : viewMode === 'map' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[700px]">
+                <div className="h-full overflow-y-auto pr-2 space-y-4">
+                  {searchResult.businesses.map((business) => (
+                    <BusinessCard
+                      key={business.id}
+                      business={business}
+                      className="md:flex md:flex-row md:h-auto"
+                    />
+                  ))}
+                </div>
+                <div className="sticky top-8 h-full">
+                  <InteractiveMap
+                    businesses={searchResult.businesses}
+                    height="100%"
+                  />
+                </div>
               </div>
             ) : (
               <div className={

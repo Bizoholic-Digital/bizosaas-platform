@@ -13,6 +13,7 @@ export interface Business {
   images: string[];
   featured: boolean;
   verified: boolean;
+  verification_status?: 'verified' | 'unverified' | 'pending';
   status: 'open' | 'closed' | 'temporarily_closed';
   tags: string[];
   socialMedia: SocialMedia;
@@ -22,6 +23,12 @@ export interface Business {
   products?: BusinessProduct[];
   coupons?: BusinessCoupon[];
   viewCount: number;
+  analytics?: {
+    views?: number;
+    website_clicks?: number;
+    phone_clicks?: number;
+    direction_clicks?: number;
+  };
   claimStatus: 'claimed' | 'unclaimed' | 'pending';
   lastUpdated: string;
   seoMetadata?: {

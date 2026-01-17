@@ -31,6 +31,7 @@ export function Sidebar() {
         { name: 'My Services', href: '/dashboard/services', icon: Bot },
         { name: 'Campaigns', href: '/dashboard/campaigns', icon: Megaphone },
         { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+        { name: 'Credits', href: '/billing/credits', icon: CreditCard },
         // AI Agents menu - only visible to admins
         ...(isAdmin ? [{
             name: 'AI Agents',

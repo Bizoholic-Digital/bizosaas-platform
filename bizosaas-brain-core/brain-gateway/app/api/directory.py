@@ -31,10 +31,20 @@ async def search_directory(
     category: Optional[str] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
+    use_google: bool = True,
     db: Session = Depends(get_db)
 ):
     service = DirectoryService(db)
-    return await service.search(query, location, category, page, limit)
+    return await service.search(query, location, category, page, limit, use_google)
+
+@router.get("/autocomplete")
+async def autocomplete_directory(
+    query: str,
+    location: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    service = DirectoryService(db)
+    return await service.autocomplete(query, location)
 
 @router.get("/businesses/featured")
 async def get_featured(db: Session = Depends(get_db)):
@@ -173,6 +183,28 @@ async def claim_business(
     service = DirectoryService(db)
     return await service.create_claim_request(id, user.id, claim.method, claim.data or {})
 
+class VerifyRequest(BaseModel):
+    code: str
+
+@router.post("/claims/{claim_id}/verify")
+async def verify_claim(
+    claim_id: uuid.UUID,
+    data: VerifyRequest,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    return await service.verify_claim_code(claim_id, user.id, data.code)
+
+@router.post("/claims/{claim_id}/resend")
+async def resend_claim_code(
+    claim_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    return await service.resend_claim_code(claim_id, user.id)
+
 @router.post("/businesses/{id}/enquire")
 async def submit_enquiry(
     id: uuid.UUID,
@@ -201,3 +233,41 @@ async def update_enquiry_status(
 ):
     service = DirectoryService(db)
     return await service.update_enquiry_status(enquiry_id, user.id, status)
+
+@router.post("/businesses/{id}/analyze")
+async def analyze_business_website(
+    id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    
+    # Check ownership
+    from app.models.directory import DirectoryListing
+    listing = db.query(DirectoryListing).filter(DirectoryListing.id == id).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+        
+    if listing.claimed_by != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to analyze this listing")
+        
+    return await service.analyze_website(id)
+
+@router.post("/businesses/{id}/optimize-seo")
+async def optimize_business_seo(
+    id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    service = DirectoryService(db)
+    
+    # Check ownership
+    from app.models.directory import DirectoryListing
+    listing = db.query(DirectoryListing).filter(DirectoryListing.id == id).first()
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+        
+    if listing.claimed_by != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to optimize this listing")
+        
+    return await service.optimize_listing_seo(id)

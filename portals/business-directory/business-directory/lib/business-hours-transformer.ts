@@ -3,16 +3,41 @@
  * Specifically handles the transformation of business hours.
  */
 
-export function transformBusinessData(business: any) {
-    if (!business) return null;
+export function transformBusinessData(b: any) {
+    if (!b) return null;
 
-    // Ensure hours are in the correct format for the frontend
-    if (business.hours) {
-        if (typeof business.hours === 'object' && !business.hours.monday && !business.hours.tuesday) {
-            // It might be in a different format or empty, let's normalize it if possible
-            // This is a placeholder for more complex transformation logic if needed
-        }
-    }
+    // Map backend snake_case fields to frontend camelCase fields
+    const business = {
+        id: b.id,
+        name: b.business_name || b.name, // Handle both backend and potential Google data
+        slug: b.business_slug || b.slug,
+        description: b.description || "",
+        category: typeof b.category === 'string'
+            ? { id: b.category, name: b.category, slug: b.category.toLowerCase().replace(/ /g, '-') }
+            : b.category || { id: 'unknown', name: 'General', slug: 'general' },
+        rating: b.google_rating || b.rating || 0,
+        reviewCount: b.google_reviews_count || b.reviewCount || 0,
+        contact: {
+            phone: b.phone || (b.contact?.phone) || "",
+            email: b.email || (b.contact?.email) || "",
+            website: b.website || (b.contact?.website) || "",
+        },
+        location: {
+            address: b.address || (b.location?.address) || "",
+            city: b.city || (b.location?.city) || "",
+            state: b.state || (b.location?.state) || "",
+            zipCode: b.postal_code || (b.location?.zipCode) || "",
+            country: b.country || (b.location?.country) || "",
+            coordinates: b.coordinates || { lat: 0, lng: 0 }
+        },
+        hours: b.hours_of_operation || b.hours || null,
+        featured: !!b.featured,
+        verified: b.verification_status === 'verified' || !!b.verified,
+        claimStatus: b.claimed ? 'claimed' : 'unclaimed',
+        tags: b.tags || [],
+        images: (b.google_photos && Array.isArray(b.google_photos)) ? b.google_photos : (b.images || []),
+        pricing: b.pricing_info || b.pricing || { range: '$$', currency: 'USD', description: '' },
+    };
 
     return business;
 }

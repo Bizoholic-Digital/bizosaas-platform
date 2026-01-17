@@ -3,11 +3,18 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc
 from app.models.directory import DirectoryListing, DirectoryAnalytics, DirectoryClaimRequest
 from typing import List, Optional, Dict, Any
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import os
 import httpx
 import json
 import logging
+import random
+import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from app.connectors.twilio import TwilioConnector
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,34 +28,185 @@ class DirectoryService:
         location: Optional[str] = None,
         category: Optional[str] = None,
         page: int = 1,
-        limit: int = 20
+        limit: int = 20,
+        use_google: bool = True
     ) -> Dict[str, Any]:
-        """Search directory listings with filters"""
-        q = self.db.query(DirectoryListing).filter(DirectoryListing.status == 'active')
+        """Search directory listings with hybrid internal + Google logic"""
+        # 1. Search internal DB
+        db_q = self.db.query(DirectoryListing).filter(DirectoryListing.status == 'active')
 
         if query:
             search_filter = or_(
                 DirectoryListing.business_name.ilike(f"%{query}%"),
                 DirectoryListing.description.ilike(f"%{query}%"),
-                DirectoryListing.category.ilike(f"%{query}%")
+                DirectoryListing.category.ilike(f"%{query}%"),
+                DirectoryListing.keywords.any(query)
             )
-            q = q.filter(search_filter)
+            db_q = db_q.filter(search_filter)
 
         if location:
-            q = q.filter(DirectoryListing.city.ilike(f"%{location}%"))
+            db_q = db_q.filter(or_(
+                DirectoryListing.city.ilike(f"%{location}%"),
+                DirectoryListing.address.ilike(f"%{location}%")
+            ))
 
         if category:
-            q = q.filter(DirectoryListing.category == category)
+            db_q = db_q.filter(DirectoryListing.category == category)
 
-        total = q.count()
-        listings = q.order_by(desc(DirectoryListing.created_at)).offset((page - 1) * limit).limit(limit).all()
+        total_internal = db_q.count()
+        listings = db_q.order_by(desc(DirectoryListing.created_at)).offset((page - 1) * limit).limit(limit).all()
+
+        # 2. If we have query and want to augment with Google
+        if use_google and query and len(listings) < limit:
+            google_results = await self._search_google_places(query, location)
+            
+            # Incorporate Google results that don't already exist in our DB
+            existing_place_ids = {l.google_place_id for l in listings if l.google_place_id}
+            
+            for g_res in google_results:
+                place_id = g_res.get("place_id")
+                if place_id and place_id not in existing_place_ids:
+                    # Check if it exists in DB but wasn't in the initial listing search
+                    exists_in_db = self.db.query(DirectoryListing).filter(DirectoryListing.google_place_id == place_id).first()
+                    
+                    if not exists_in_db:
+                        # Create a "ghost" listing to populate the directory
+                        new_listing = await self._create_ghost_listing(g_res)
+                        if new_listing:
+                            listings.append(new_listing)
+                            total_internal += 1
+                    else:
+                        # If it exists in DB but was missed by filters, add it to current view
+                        if exists_in_db not in listings:
+                            listings.append(exists_in_db)
+
+        # Sort combined results: Featured/Claimed first, then by rating, then by date
+        listings.sort(key=lambda x: (x.claimed, float(x.google_rating or 0), x.created_at), reverse=True)
+        
+        # Paginate the combined results
+        paginated_listings = listings[(page - 1) * limit : page * limit]
 
         return {
-            "businesses": listings,
-            "total": total,
+            "businesses": paginated_listings,
+            "total": total_internal,
             "page": page,
-            "limit": limit
+            "limit": limit,
+            "source": "hybrid"
         }
+
+    async def _search_google_places(self, query: str, location: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Helper to call Google Places Text Search API"""
+        api_key = os.getenv("GOOGLE_MAPS_API_KEY", "AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto")
+        search_query = f"{query} {location}" if location else query
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    "https://maps.googleapis.com/maps/api/place/textsearch/json",
+                    params={
+                        "query": search_query,
+                        "key": api_key
+                    }
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("results", [])
+            except Exception as e:
+                logger.error(f"Google Places search error: {e}")
+        return []
+
+    async def _create_ghost_listing(self, google_res: Dict[str, Any]) -> Optional[DirectoryListing]:
+        """Create an unclaimed listing from Google data"""
+        try:
+            name = google_res.get("name")
+            place_id = google_res.get("place_id")
+            address = google_res.get("formatted_address")
+            
+            # Generate slug
+            import re
+            slug_base = f"{name} {address.split(',')[0] if address else ''}".lower()
+            slug = re.sub(r'[^a-zA-Z0-9]', '-', slug_base)
+            slug = re.sub(r'-+', '-', slug).strip('-')
+            
+            # Ensure unique slug
+            unique_slug = slug
+            counter = 1
+            while self.db.query(DirectoryListing).filter(DirectoryListing.business_slug == unique_slug).first():
+                unique_slug = f"{slug}-{counter}"
+                counter += 1
+
+            listing = DirectoryListing(
+                business_slug=unique_slug,
+                business_name=name,
+                google_place_id=place_id,
+                address=address,
+                google_rating=google_res.get("rating"),
+                google_reviews_count=google_res.get("user_ratings_total"),
+                google_data=google_res,
+                status='active',
+                visibility='public',
+                claimed=False,
+                verification_status='unverified'
+            )
+            
+            # Extract city/country from formatted address if possible
+            if address:
+                parts = address.split(',')
+                if len(parts) >= 2:
+                    listing.city = parts[-3].strip() if len(parts) >= 3 else parts[-2].strip()
+                    listing.country = parts[-1].strip()
+
+            self.db.add(listing)
+            self.db.commit()
+            self.db.refresh(listing)
+            
+            # Trigger AI optimization in background to enrich the listing
+            import asyncio
+            asyncio.create_task(self.optimize_listing_seo(listing.id))
+            
+            return listing
+        except Exception as e:
+            logger.error(f"Failed to create ghost listing: {e}")
+            self.db.rollback()
+            return None
+
+    async def autocomplete(self, query: str, location: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Fast autocomplete for directory search"""
+        # 1. Internal matches
+        internal_matches = self.db.query(DirectoryListing).filter(
+            DirectoryListing.business_name.ilike(f"%{query}%")
+        ).limit(5).all()
+        
+        results = [
+            {"text": l.business_name, "id": str(l.id), "type": "internal", "slug": l.business_slug}
+            for l in internal_matches
+        ]
+        
+        # 2. Add Google suggestions if needed
+        if len(results) < 10:
+            api_key = os.getenv("GOOGLE_MAPS_API_KEY", "AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto")
+            async with httpx.AsyncClient() as client:
+                try:
+                    params = {"input": query, "key": api_key, "types": "establishment"}
+                    if location:
+                        params["location"] = location # Note: This needs lat,lng or bias
+                    
+                    response = await client.get(
+                        "https://maps.googleapis.com/maps/api/place/autocomplete/json",
+                        params=params
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        for pred in data.get("predictions", []):
+                            results.append({
+                                "text": pred.get("description"),
+                                "id": pred.get("place_id"),
+                                "type": "google"
+                            })
+                except Exception as e:
+                    logger.error(f"Google autocomplete error: {e}")
+                    
+        return results
 
     async def get_by_slug(self, slug: str) -> Optional[DirectoryListing]:
         """Get listing by business slug"""
@@ -152,18 +310,167 @@ class DirectoryService:
         self.db.commit()
 
     async def create_claim_request(self, listing_id: UUID, user_id: UUID, method: str, data: Dict[str, Any]) -> DirectoryClaimRequest:
-        """Create a new claim request for a listing"""
+        """Create a new claim request with a verification code"""
+        # Generate 6-digit code
+        code = ''.join(random.choices(string.digits, k=6))
+        expiry = datetime.utcnow() + timedelta(minutes=60) # 1 hour expiry
+        
         request = DirectoryClaimRequest(
             listing_id=listing_id,
             user_id=user_id,
             verification_method=method,
             verification_data=data,
+            verification_code=code,
+            verification_expiry=expiry,
             status='pending'
         )
         self.db.add(request)
         self.db.commit()
         self.db.refresh(request)
+        
+        # Try to send the code
+        send_success = False
+        try:
+            if method == 'email' and data.get('email'):
+                await self._send_email_code(data['email'], code)
+                send_success = True
+            elif method == 'phone' and data.get('phone'):
+                await self._send_sms_code(data['phone'], code)
+                send_success = True
+            else:
+                logger.warning(f"Unknown verification method or missing data: {method}, {data}")
+        except Exception as e:
+            logger.error(f"Failed to send verification code: {e}")
+            # We don't raise here, we let the request be created but maybe show a warning?
+            # For now, we assume it might be dev mode where we just log.
+            pass
+
+        # Log the code (dev mode / backup)
+        target = data.get("email") or data.get("phone") or "unknown"
+        logger.info(f"DIRECTORY CLAIM: Code {code} generated for listing {listing_id}. Method: {method}, Target: {target}. Send Success: {send_success}")
+        
         return request
+
+    async def resend_claim_code(self, claim_id: UUID, user_id: UUID) -> Dict[str, Any]:
+        """Resend verification code for an existing claim"""
+        from app.models.directory import DirectoryClaimRequest
+        claim = self.db.query(DirectoryClaimRequest).filter(
+            DirectoryClaimRequest.id == claim_id,
+            DirectoryClaimRequest.user_id == user_id,
+            DirectoryClaimRequest.status == 'pending'
+        ).first()
+        
+        if not claim:
+            return {"error": "Claim request not found"}
+            
+        # Generate new code
+        code = ''.join(random.choices(string.digits, k=6))
+        expiry = datetime.utcnow() + timedelta(minutes=60)
+        
+        claim.verification_code = code
+        claim.verification_expiry = expiry
+        self.db.commit()
+        
+        # Resend logic
+        method = claim.verification_method
+        data = claim.verification_data or {}
+        
+        try:
+            if method == 'email' and data.get('email'):
+                await self._send_email_code(data['email'], code)
+            elif method == 'phone' and data.get('phone'):
+                await self._send_sms_code(data['phone'], code)
+            else:
+                return {"error": "Invalid verification data for resend"}
+        except Exception as e:
+            logger.error(f"Failed to resend code: {e}")
+            return {"error": str(e)}
+            
+        return {"success": True, "message": "Verification code resent successfully"}
+
+    async def _send_email_code(self, to_email: str, code: str):
+        """Send verification code via SMTP"""
+        smtp_host = os.getenv("SMTP_HOST")
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        smtp_user = os.getenv("SMTP_USER")
+        smtp_pass = os.getenv("SMTP_PASSWORD")
+        smtp_from = os.getenv("SMTP_FROM_EMAIL", "noreply@bizdirectory.com")
+
+        if not (smtp_host and smtp_user and smtp_pass):
+            logger.warning("SMTP not configured, skipping email send")
+            return
+
+        msg = MIMEMultipart()
+        msg['From'] = smtp_from
+        msg['To'] = to_email
+        msg['Subject'] = "Your Business Verification Code"
+
+        body = f"""
+        <html>
+            <body>
+                <h2>Verify your Business Claim</h2>
+                <p>Use the following code to verify your claim for the business listing:</p>
+                <h1 style="font-size: 32px; letter-spacing: 5px; color: #333;">{code}</h1>
+                <p>This code will expire in 1 hour.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+            </body>
+        </html>
+        """
+        msg.attach(MIMEText(body, 'html'))
+
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+            
+    async def _send_sms_code(self, to_phone: str, code: str):
+        """Send verification code via Twilio"""
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+        from_number = os.getenv("TWILIO_FROM_NUMBER")
+
+        if not (account_sid and auth_token and from_number):
+            logger.warning("Twilio not configured, skipping SMS send")
+            return
+
+        connector = TwilioConnector()
+        # Manually inject credentials since we are using system envs
+        connector.credentials = {
+            "account_sid": account_sid,
+            "auth_token": auth_token,
+            "from_number": from_number
+        }
+        
+        await connector.perform_action("send_sms", {
+            "to": to_phone,
+            "body": f"Your verification code is: {code}. Expires in 1 hour."
+        })
+
+    async def verify_claim_code(self, claim_id: UUID, user_id: UUID, code: str) -> Dict[str, Any]:
+        """Verify the code and automatically approve claim if valid"""
+        claim = self.db.query(DirectoryClaimRequest).filter(
+            DirectoryClaimRequest.id == claim_id,
+            DirectoryClaimRequest.user_id == user_id,
+            DirectoryClaimRequest.status == 'pending'
+        ).first()
+        
+        if not claim:
+            return {"success": False, "error": "Claim request not found or unauthorized"}
+            
+        if datetime.utcnow() > claim.verification_expiry:
+            return {"success": False, "error": "Verification code expired"}
+            
+        if claim.verification_code != code:
+            return {"success": False, "error": "Invalid verification code"}
+            
+        # Success! Approve it
+        await self.approve_claim(claim.id, user_id)
+        
+        return {
+            "success": True, 
+            "message": "Business claim verified and approved!",
+            "listing_id": str(claim.listing_id)
+        }
 
     async def get_directory_stats(self) -> Dict[str, Any]:
         """Get high-level stats for directory management"""
@@ -370,15 +677,21 @@ class DirectoryService:
         if not listing:
             raise ValueError("Listing not found")
             
-        # Try to get from SecretService first
         from app.dependencies import get_secret_service
+        from app.connectors.registry import ConnectorRegistry
         secret_service = get_secret_service()
-        openai_key = secret_service.get_secret("OPENAI_API_KEY")
         
-        if not openai_key:
-            openai_key = os.getenv("OPENAI_API_KEY")
+        # Determine which connector to use using SecretService
+        connector_id = "openai"
+        api_key = secret_service.get_secret("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        
+        # Check if OpenRouter is preferred/available
+        openrouter_key = secret_service.get_secret("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+        if openrouter_key:
+            connector_id = "openrouter"
+            api_key = openrouter_key
             
-        if not openai_key:
+        if not api_key:
             return {"error": "AI optimization not configured (missing API key)"}
 
         prompt = f"""
@@ -395,35 +708,143 @@ class DirectoryService:
         4. suggested_tags: A list of 5-8 relevant tags like ["service", "keyword", ...].
         """
 
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openai_key}"},
-                    json={
-                        "model": "gpt-4o-mini",
-                        "messages": [
-                            {"role": "system", "content": "You are an SEO expert specializing in local business directories."},
-                            {"role": "user", "content": prompt}
-                        ],
-                        "response_format": { "type": "json_object" }
-                    },
-                    timeout=30.0
-                )
+        try:
+            # Instantiate the connector dynamically
+            connector = ConnectorRegistry.create_connector(
+                connector_id, 
+                "system", 
+                {"api_key": api_key}
+            )
+            
+            payload = {
+                "messages": [
+                    {"role": "system", "content": "You are an SEO expert specializing in local business directories."},
+                    {"role": "user", "content": prompt}
+                ],
+                "response_format": { "type": "json_object" },
+                # OpenRouter might need full model name, OpenAI handles default if None, or we specify
+                "model": "openai/gpt-4o-mini" if connector_id == "openrouter" else "gpt-4o-mini"
+            }
+            
+            response_data = await connector.perform_action("chat", payload)
+            
+            if "error" in response_data:
+                 raise Exception(response_data["error"])
+                 
+            result_text = response_data["choices"][0]["message"]["content"]
+            optimization_data = json.loads(result_text)
+            
+            # Update listing with optimized data
+            listing.description = optimization_data.get("optimized_description", listing.description)
+            if "suggested_tags" in optimization_data:
+                listing.tags = optimization_data["suggested_tags"]
+            
+            listing.updated_at = datetime.utcnow()
+            self.db.commit()
+            
+            return optimization_data
+        except Exception as e:
+            logger.error(f"AI Optimization error: {e}")
+            return {"error": str(e)}
+
+    async def analyze_website(self, listing_id: UUID) -> Dict[str, Any]:
+        """Analyze business website using AI to enrich profile"""
+        import re
+        
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == listing_id).first()
+        if not listing or not listing.website:
+            return {"error": "Listing not found or missing website URL"}
+
+        from app.dependencies import get_secret_service
+        from app.connectors.registry import ConnectorRegistry
+        secret_service = get_secret_service()
+        
+        # Determine which connector to use using SecretService
+        connector_id = "openai"
+        api_key = secret_service.get_secret("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY")
+        
+        # Check for OpenRouter configuration first
+        openrouter_key = secret_service.get_secret("OPENROUTER_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+        if openrouter_key:
+            connector_id = "openrouter"
+            api_key = openrouter_key
+
+        if not api_key:
+            return {"error": "AI service not configured"}
+
+        try:
+            # 1. Fetch website content
+            async with httpx.AsyncClient(verify=False, follow_redirects=True, timeout=10.0) as client:
+                response = await client.get(listing.website)
                 response.raise_for_status()
-                data = response.json()
-                result_text = data["choices"][0]["message"]["content"]
-                optimization_data = json.loads(result_text)
+                html_content = response.text
+
+            # 2. Extract text (simple regex cleanup)
+            text_content = re.sub(r'<[^>]+>', ' ', html_content)
+            text_content = re.sub(r'\s+', ' ', text_content).strip()[:4000] # Limit to ~4k chars
+
+            # 3. Analyze with AI
+            prompt = f"""
+            Analyze the following business website text and extract structured data.
+            Return ONLY valid JSON with these keys:
+            - description (summary of business, max 300 chars)
+            - keywords (list of 5-10 SEO keywords)
+            - social_media (dict with keys like facebook, twitter, instagram if found)
+            - amenities (list of features founds e.g. "Wifi", "Parking", "Wheelchair Accessible")
+            - hours_text (raw hours text if found)
+
+            Website Text:
+            {text_content}
+            """
+
+            # Instantiate the connector dynamically
+            connector = ConnectorRegistry.create_connector(
+                connector_id, 
+                "system", 
+                {"api_key": api_key}
+            )
+            
+            payload = {
+                "messages": [
+                    {"role": "system", "content": "You are a business data extraction assistant. Output JSON only."},
+                    {"role": "user", "content": prompt}
+                ],
+                "response_format": { "type": "json_object" },
+                "temperature": 0.3,
+                "model": "openai/gpt-3.5-turbo-0125" if connector_id == "openrouter" else "gpt-3.5-turbo-0125"
+            }
+            
+            ai_response = await connector.perform_action("chat", payload)
+            
+            if "error" in ai_response:
+                 raise Exception(ai_response["error"])
+                 
+            content = ai_response["choices"][0]["message"]["content"]
+
+            result = json.loads(content)
+            
+            # 4. Update Listing (Only fill missing fields or append)
+            if result.get('description') and not listing.description:
+                listing.description = result['description']
                 
-                # Update listing with optimized data
-                listing.description = optimization_data.get("optimized_description", listing.description)
-                if "suggested_tags" in optimization_data:
-                    listing.tags = optimization_data["suggested_tags"]
+            if result.get('keywords'):
+                existing_tags = set(listing.tags or [])
+                new_tags = set(result['keywords'])
+                listing.tags = list(existing_tags.union(new_tags))
                 
-                listing.updated_at = datetime.utcnow()
-                self.db.commit()
+            if result.get('social_media'):
+                current_social = dict(listing.social_media or {})
+                current_social.update(result['social_media'])
+                listing.social_media = current_social
                 
-                return optimization_data
-            except Exception as e:
-                logger.error(f"AI Optimization error: {e}")
-                return {"error": str(e)}
+            if result.get('amenities'):
+                listing.amenities = list(set((listing.amenities or []) + result['amenities']))
+            
+            listing.updated_at = datetime.utcnow()
+            self.db.commit()
+            
+            return {"success": True, "enriched_data": result}
+
+        except Exception as e:
+            logger.error(f"Website analysis failed: {e}")
+            return {"error": str(e)}

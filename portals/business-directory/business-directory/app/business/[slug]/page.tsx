@@ -3,18 +3,19 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 import { businessAPI } from '@/lib/api';
 import { EnhancedBusinessProfile } from '@/components/business/enhanced-business-profile';
-import Header from '@/components/layout/header';
+import { Header } from '@/components/layout/header';
 
 interface Props {
-    params: { slug: string };
-    searchParams: { [key: string]: string | string[] | undefined };
+    params: Promise<{ slug: string }>;
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata(
     { params }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const business = await businessAPI.getBusinessBySlug(params.slug);
+    const { slug } = await params;
+    const business = await businessAPI.getBusinessBySlug(slug);
 
     if (!business) {
         return {
@@ -51,7 +52,8 @@ export async function generateMetadata(
 }
 
 export default async function BusinessProfilePage({ params }: Props) {
-    const business = await businessAPI.getBusinessBySlug(params.slug);
+    const { slug } = await params;
+    const business = await businessAPI.getBusinessBySlug(slug);
 
     if (!business) {
         notFound();

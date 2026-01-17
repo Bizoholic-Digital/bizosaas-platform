@@ -169,15 +169,26 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         return () => clearTimeout(timer);
     }, [locationQuery, gmbConnected, showAddressPredictions]);
 
+    const [searchError, setSearchError] = useState<string | null>(null);
+
     const searchPlaces = async (query: string, type: string, setter: any) => {
         const isAddr = type === 'geocode';
         isAddr ? setIsSearchingAddress(true) : setIsSearching(true);
+        setSearchError(null);
         try {
             const res = await fetch(`/api/brain/onboarding/places/autocomplete?input=${encodeURIComponent(query)}&types=${type}`);
             const data = await res.json();
-            setter(data.predictions || []);
+
+            if (data.error) {
+                console.error(`API Error searching ${type}:`, data.error);
+                setSearchError(data.error);
+                setter([]);
+            } else {
+                setter(data.predictions || []);
+            }
         } catch (error) {
             console.error(`Failed to search ${type}:`, error);
+            setSearchError("Search failed. Please try again or enter manually.");
         } finally {
             isAddr ? setIsSearchingAddress(false) : setIsSearching(false);
         }
@@ -258,8 +269,9 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 }
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch business details:", error);
+            setSearchError("Could not fetch business details. Please enter manually.");
         } finally {
             setIsSearching(false);
         }
@@ -329,6 +341,12 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                 {isSearching && (
                                     <div className="absolute right-3 top-2.5">
                                         <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                    </div>
+                                )}
+
+                                {searchError && (
+                                    <div className="absolute z-20 w-full mt-1 px-3 py-2 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-md shadow-sm">
+                                        {searchError}
                                     </div>
                                 )}
 

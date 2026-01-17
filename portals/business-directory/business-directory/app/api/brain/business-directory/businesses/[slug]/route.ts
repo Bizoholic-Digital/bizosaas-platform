@@ -6,9 +6,9 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhos
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ slug: string }> }
 ) {
-    const slug = params.slug;
+    const { slug } = await params;
 
     try {
         const backendUrl = `${BACKEND_API_URL}/api/brain/business-directory/businesses/${slug}`;
@@ -38,7 +38,7 @@ export async function GET(
                     { status: 404 }
                 );
             }
-        } catch (backendError) {
+        } catch (backendError: any) {
             console.error(`[BUSINESS-DIRECTORY] Backend connection failed for slug ${slug}:`, backendError);
 
             // Attempt fallback from mock data if needed (optional)
@@ -48,7 +48,7 @@ export async function GET(
                 { status: 503 }
             );
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('[BUSINESS-DIRECTORY] API proxy error:', error);
         return NextResponse.json(
             { error: 'Internal server error', details: error.message },

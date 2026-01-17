@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[BUSINESS-DIRECTORY] API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: (error as any).message },
       { status: 500 }
     );
   }

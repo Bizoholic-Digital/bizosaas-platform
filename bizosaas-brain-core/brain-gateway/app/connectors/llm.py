@@ -63,6 +63,35 @@ class OpenAIConnector(LLMBaseConnector):
                 logger.error(f"OpenAI validation failed: {e}")
                 return False
 
+    async def _chat(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        api_key = self.credentials.get("api_key")
+        messages = payload.get("messages", [])
+        model = payload.get("model", "gpt-3.5-turbo")
+        temperature = payload.get("temperature", 0.7)
+        response_format = payload.get("response_format", None)
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                data = {
+                    "model": model,
+                    "messages": messages,
+                    "temperature": temperature
+                }
+                if response_format:
+                    data["response_format"] = response_format
+                    
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    json=data,
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                return response.json()
+            except Exception as e:
+                logger.error(f"OpenAI chat failed: {e}")
+                return {"error": str(e)}
+
 @ConnectorRegistry.register
 class AnthropicConnector(LLMBaseConnector):
     @classmethod
@@ -108,6 +137,34 @@ class AnthropicConnector(LLMBaseConnector):
                 logger.error(f"Anthropic validation failed: {e}")
                 return False
 
+    async def _chat(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        api_key = self.credentials.get("api_key")
+        messages = payload.get("messages", [])
+        model = payload.get("model", "claude-3-haiku-20240307")
+        max_tokens = payload.get("max_tokens", 1024)
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": api_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json"
+                    },
+                    json={
+                        "model": model,
+                        "messages": messages,
+                        "max_tokens": max_tokens
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                return response.json()
+            except Exception as e:
+                logger.error(f"Anthropic chat failed: {e}")
+                return {"error": str(e)}
+
 @ConnectorRegistry.register
 class OpenRouterConnector(LLMBaseConnector):
     @classmethod
@@ -140,6 +197,41 @@ class OpenRouterConnector(LLMBaseConnector):
             except Exception as e:
                 logger.error(f"OpenRouter validation failed: {e}")
                 return False
+
+    async def _chat(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        api_key = self.credentials.get("api_key")
+        messages = payload.get("messages", [])
+        model = payload.get("model", "openai/gpt-3.5-turbo")
+        temperature = payload.get("temperature", 0.7)
+        response_format = payload.get("response_format", None)
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "HTTP-Referer": "https://bizdirectory.com/",
+            "X-Title": "BizDirectory"
+        }
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                data = {
+                    "model": model,
+                    "messages": messages,
+                    "temperature": temperature
+                }
+                if response_format:
+                    data["response_format"] = response_format
+
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers=headers,
+                    json=data,
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                return response.json()
+            except Exception as e:
+                logger.error(f"OpenRouter chat failed: {e}")
+                return {"error": str(e)}
 
 @ConnectorRegistry.register
 class GoogleAIConnector(LLMBaseConnector):

@@ -116,18 +116,27 @@ export function BusinessCard({ business, featured = false, className }: Business
         </div>
       </CardContent>
 
-      <CardFooter className="p-4 pt-0 flex space-x-2">
-        <Button asChild className="flex-1">
+      <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
+        <Button asChild className="flex-1 min-w-[120px]">
           <Link href={`/business/${business.slug || business.id}`}>
             View Details
           </Link>
         </Button>
+
+        {business.claimStatus === 'unclaimed' && (
+          <Button asChild variant="outline" className="flex-1 min-w-[120px] border-orange-200 text-orange-700 hover:bg-orange-50">
+            <Link href={`/claim/${business.slug || business.id}`}>
+              Claim Business
+            </Link>
+          </Button>
+        )}
 
         {business.contact?.website && (
           <Button
             variant="outline"
             size="icon"
             asChild
+            className="flex-shrink-0"
           >
             <a
               href={business.contact?.website}

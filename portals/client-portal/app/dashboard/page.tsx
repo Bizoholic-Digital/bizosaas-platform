@@ -7,6 +7,7 @@ import { Plug, Sparkles, BarChart3, TrendingUp } from 'lucide-react';
 import { getUserDisplayInfoFromSession } from '@/utils/rbac';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
 import { MagicDiscovery } from '@/components/discovery/MagicDiscovery';
+import { CreditBalanceWidget } from '@/components/billing/CreditBalanceWidget';
 
 import { useSetHeader } from '@/lib/contexts/HeaderContext';
 
@@ -28,62 +29,69 @@ export default function DashboardPage() {
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       <MagicDiscovery />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link href="/dashboard/connectors" className="group">
-          <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
-            <div className="flex items-center">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                <Plug className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors" />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link href="/dashboard/connectors" className="group">
+              <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                    <Plug className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="ml-3 md:ml-4">
+                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Connectors</p>
+                    <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">3</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-3 md:ml-4">
-                <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Connectors</p>
-                <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">3</p>
-              </div>
-            </div>
-          </div>
-        </Link>
+            </Link>
 
-        <Link href="/dashboard/ai-agents" className="group">
-          <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
-            <div className="flex items-center">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-green-600 dark:text-green-400 group-hover:text-white transition-colors" />
+            <Link href="/dashboard/ai-agents" className="group">
+              <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-green-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:bg-green-600 transition-colors">
+                    <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-green-600 dark:text-green-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="ml-3 md:ml-4">
+                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">AI Tasks</p>
+                    <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">128</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-3 md:ml-4">
-                <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">AI Tasks</p>
-                <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">128</p>
-              </div>
-            </div>
-          </div>
-        </Link>
+            </Link>
 
-        <Link href="/dashboard/analytics" className="group">
-          <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
-            <div className="flex items-center">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
-                <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-purple-600 dark:text-purple-400 group-hover:text-white transition-colors" />
+            <Link href="/dashboard/analytics" className="group">
+              <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-600 transition-colors">
+                    <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-purple-600 dark:text-purple-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="ml-3 md:ml-4">
+                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Traffic</p>
+                    <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">12.5k</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-3 md:ml-4">
-                <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Traffic</p>
-                <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">12.5k</p>
-              </div>
-            </div>
-          </div>
-        </Link>
+            </Link>
 
-        <Link href="/dashboard/analytics" className="group">
-          <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
-            <div className="flex items-center">
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center group-hover:bg-orange-600 transition-colors">
-                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600 dark:text-orange-400 group-hover:text-white transition-colors" />
+            <Link href="/dashboard/analytics" className="group">
+              <div className="bg-white dark:bg-gray-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-orange-500 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer h-full">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center group-hover:bg-orange-600 transition-colors">
+                    <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-orange-600 dark:text-orange-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="ml-3 md:ml-4">
+                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Conv.</p>
+                    <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">4.2%</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-3 md:ml-4">
-                <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tight">Conv.</p>
-                <p className="text-lg md:text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">4.2%</p>
-              </div>
-            </div>
+            </Link>
           </div>
-        </Link>
+        </div>
+        <div className="lg:col-span-1">
+          <CreditBalanceWidget balance={1125} used={250} available={875} />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

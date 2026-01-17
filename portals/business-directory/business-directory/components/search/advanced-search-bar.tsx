@@ -14,16 +14,18 @@ import { cn } from '@/lib/utils';
 
 interface AdvancedSearchBarProps {
   onSearch: (filters: SearchFilters) => void;
+  onChange?: (filters: SearchFilters) => void;
   initialFilters?: SearchFilters;
   className?: string;
   showAdvancedFilters?: boolean;
 }
 
-export function AdvancedSearchBar({ 
-  onSearch, 
-  initialFilters, 
+export function AdvancedSearchBar({
+  onSearch,
+  onChange,
+  initialFilters,
   className,
-  showAdvancedFilters = false 
+  showAdvancedFilters = false
 }: AdvancedSearchBarProps) {
   const [filters, setFilters] = useState<SearchFilters>(
     initialFilters || {
@@ -41,9 +43,16 @@ export function AdvancedSearchBar({
   const [debouncedLocation] = useDebounce(filters.location, 300);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(showAdvancedFilters);
-  
+
   const searchRef = useRef<HTMLDivElement>(null);
   const queryInputRef = useRef<HTMLInputElement>(null);
+
+  // Trigger onChange when debounced values change
+  useEffect(() => {
+    if (onChange) {
+      onChange(filters);
+    }
+  }, [debouncedQuery, debouncedLocation, filters.category, filters.rating, filters.priceRange]);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -59,7 +68,7 @@ export function AdvancedSearchBar({
 
   // Get search suggestions
   useEffect(() => {
-    if (debouncedQuery.length >= 2) {
+    if (debouncedQuery.trim().length >= 2) {
       setLoading(true);
       businessAPI.getSearchSuggestions(debouncedQuery, debouncedLocation)
         .then((data) => {
@@ -99,14 +108,14 @@ export function AdvancedSearchBar({
   const performSearch = (searchFilters: SearchFilters) => {
     onSearch(searchFilters);
     setShowSuggestions(false);
-    
+
     // Save to recent searches
     if (searchFilters.query && searchFilters.query.trim()) {
       const newRecentSearches = [
         searchFilters.query.trim(),
         ...recentSearches.filter(s => s !== searchFilters.query.trim())
       ].slice(0, 5);
-      
+
       setRecentSearches(newRecentSearches);
       localStorage.setItem('recent-searches', JSON.stringify(newRecentSearches));
     }
@@ -121,7 +130,7 @@ export function AdvancedSearchBar({
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
     const newFilters = { ...filters };
-    
+
     switch (suggestion.type) {
       case 'business':
         if (suggestion.metadata?.businessId) {
@@ -144,7 +153,7 @@ export function AdvancedSearchBar({
         newFilters.query = suggestion.text;
         break;
     }
-    
+
     setFilters(newFilters);
     performSearch(newFilters);
   };
@@ -199,7 +208,7 @@ export function AdvancedSearchBar({
                     <X className="w-4 h-4" />
                   </button>
                 )}
-                
+
                 {/* Search Suggestions Dropdown */}
                 {showSuggestions && (
                   <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto dark:bg-gray-900 dark:border-gray-700">
@@ -209,7 +218,7 @@ export function AdvancedSearchBar({
                         <p className="mt-2 text-sm text-muted-foreground">Searching...</p>
                       </div>
                     )}
-                    
+
                     {!loading && suggestions.length > 0 && (
                       <div>
                         <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
@@ -240,7 +249,7 @@ export function AdvancedSearchBar({
                         ))}
                       </div>
                     )}
-                    
+
                     {!loading && suggestions.length === 0 && recentSearches.length > 0 && (
                       <div>
                         <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
@@ -301,7 +310,7 @@ export function AdvancedSearchBar({
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 Quick filters:
               </span>
-              
+
               {/* Category Filters */}
               {['Restaurants', 'Healthcare', 'Retail', 'Services'].map((category) => (
                 <Button
@@ -320,7 +329,7 @@ export function AdvancedSearchBar({
                   {category}
                 </Button>
               ))}
-              
+
               {/* Open Now Filter */}
               <Button
                 type="button"
@@ -336,7 +345,7 @@ export function AdvancedSearchBar({
                 <Clock className="w-3 h-3 mr-1" />
                 Open Now
               </Button>
-              
+
               {/* Verified Filter */}
               <Button
                 type="button"
@@ -371,7 +380,7 @@ export function AdvancedSearchBar({
                   </Badge>
                 )}
               </Button>
-              
+
               {/* Active Filters */}
               {getActiveFiltersCount() > 0 && (
                 <div className="flex flex-wrap gap-1">
