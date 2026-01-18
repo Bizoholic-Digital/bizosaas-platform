@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { Business, Category, SearchFilters, SearchResult, Review, SearchSuggestion } from '@/types/business';
 
-const API_BASE_URL = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL) || 'https://api.bizoholic.net';
+// For client-side requests, use relative path to hit Next.js API routes
+// For server-side requests (SSR), use the configured API URL or localhost
+const API_BASE_URL = typeof window !== 'undefined'
+    ? ''
+    : ((process.env.NEXT_PUBLIC_API_BASE_URL) || 'http://localhost:3005');
 
 const api = axios.create({
     baseURL: API_BASE_URL,

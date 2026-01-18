@@ -6,6 +6,10 @@ services:
     build:
       context: ./portals/business-directory/business-directory
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://api.bizoholic.net}
+        NEXT_PUBLIC_ROOT_DOMAIN: ${NEXT_PUBLIC_ROOT_DOMAIN:-bizoholic.net}
+        NODE_ENV: production
     container_name: bizosaas-directory-staging
     expose:
       - "3005"
