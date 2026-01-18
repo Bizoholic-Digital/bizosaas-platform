@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   business-directory:
-    image: ghcr.io/bizoholic-digital/business-directory:staging
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/business-directory:staging
     build:
       context: ./portals/business-directory/business-directory
       dockerfile: Dockerfile
