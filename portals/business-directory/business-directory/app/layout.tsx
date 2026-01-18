@@ -9,6 +9,7 @@ const inter = { variable: '--font-sans', className: 'font-sans' }
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: '#10b981',
 }
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'BizOSaaS Platform' }],
   robots: 'index, follow',
   manifest: '/manifest.json',
-  themeColor: '#10b981',
+  // themeColor removed from metadata
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -66,10 +67,10 @@ export default function RootLayout({
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold">Categories</h4>
                   <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li><a href="/categories/restaurants" className="hover:text-foreground">Restaurants</a></li>
-                    <li><a href="/categories/healthcare" className="hover:text-foreground">Healthcare</a></li>
-                    <li><a href="/categories/retail" className="hover:text-foreground">Retail</a></li>
-                    <li><a href="/categories/services" className="hover:text-foreground">Services</a></li>
+                    <li><a href="/c/restaurants" className="hover:text-foreground">Restaurants</a></li>
+                    <li><a href="/c/healthcare" className="hover:text-foreground">Healthcare</a></li>
+                    <li><a href="/c/retail" className="hover:text-foreground">Retail</a></li>
+                    <li><a href="/c/services" className="hover:text-foreground">Services</a></li>
                   </ul>
                 </div>
                 <div className="space-y-3">

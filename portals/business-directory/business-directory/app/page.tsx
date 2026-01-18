@@ -47,7 +47,7 @@ export default function HomePage() {
         }
       }
     });
-    
+
     router.push(`/search?${params.toString()}`);
   };
 
@@ -74,7 +74,7 @@ export default function HomePage() {
             Discover restaurants, services, healthcare providers, and more in your community.
             Connect with trusted local businesses.
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-4xl mx-auto">
             <AdvancedSearchBar onSearch={handleSearch} />
@@ -126,7 +126,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((category) => (
-              <Link key={category.id} href={`/categories/${category.slug}`}>
+              <Link key={category.id} href={`/c/${category.slug}`}>
                 <Card className="category-card h-full">
                   <CardContent className="p-6 text-center">
                     <div className="text-4xl mb-4">{category.icon}</div>
@@ -147,7 +147,7 @@ export default function HomePage() {
 
           <div className="text-center mt-8">
             <Button asChild variant="outline">
-              <Link href="/categories">View All Categories</Link>
+              <Link href="/c">View All Categories</Link>
             </Button>
           </div>
         </div>

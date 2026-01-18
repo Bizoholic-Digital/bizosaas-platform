@@ -134,7 +134,7 @@ export function AdvancedSearchBar({
     switch (suggestion.type) {
       case 'business':
         if (suggestion.metadata?.businessId) {
-          window.location.href = `/business/${suggestion.metadata.businessId}`;
+          window.location.href = `/biz/${suggestion.metadata.businessId}`;
           return;
         }
         break;

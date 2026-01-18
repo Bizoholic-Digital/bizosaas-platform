@@ -6,9 +6,10 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhos
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: Promise<{ slug: string }> }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { slug } = await params;
+    const { id } = await params;
+    const slug = id; // Use id as slug since it handles both
 
     try {
         const backendUrl = `${BACKEND_API_URL}/api/brain/business-directory/businesses/${slug}`;

@@ -29,7 +29,7 @@ export default async function ClaimBusinessPage({ params }: Props) {
                         <strong>{business.name}</strong> has already been verified and claimed by its owner.
                     </p>
                     <div className="flex justify-center space-x-4">
-                        <a href={`/business/${business.slug}`} className="text-primary hover:underline font-medium">
+                        <a href={`/biz/${business.slug}`} className="text-primary hover:underline font-medium">
                             Return to Business Profile
                         </a>
                         <span className="text-muted-foreground">•</span>

@@ -38,7 +38,7 @@ export function VerifyClaimForm({ claimId }: VerifyClaimFormProps) {
                 setSuccess(true);
                 // Redirect after a brief delay
                 setTimeout(() => {
-                    router.push(`/business/${result.listing_id || ''}`);
+                    router.push(`/biz/${result.listing_id || ''}`);
                 }, 3000);
             } else {
                 setError(result.error || 'Verification failed');

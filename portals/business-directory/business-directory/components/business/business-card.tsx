@@ -118,7 +118,7 @@ export function BusinessCard({ business, featured = false, className }: Business
 
       <CardFooter className="p-4 pt-0 flex flex-wrap gap-2">
         <Button asChild className="flex-1 min-w-[120px]">
-          <Link href={`/business/${business.slug || business.id}`}>
+          <Link href={`/biz/${business.slug || business.id}`}>
             View Details
           </Link>
         </Button>

@@ -246,6 +246,9 @@ BizOSaaS leverages the Model Context Protocol (MCP) to provide AI agents with st
 - [ ] **Directory Search** - Public search interface for finding local businesses
 - [ ] **Review Integration** - Sync and display Google reviews
 - [ ] **Photo Management** - Gallery management for claimed businesses
+- [ ] **URL Structure Management** - Admin control over routing prefixes (e.g., `/biz/`, `/p/`, `/t/`)
+  - Configurable prefixes for businesses, products, tags, and categories
+  - Ability to switch between subfolder (`/biz/acme`) and subdomain (`acme.bizoholic.net`) routing per tenant
 
 **Revenue Model:**
 - Free Tier: Basic listing with "Powered by Bizoholic" branding

@@ -29,7 +29,7 @@ export function Header() {
               Home
             </Link>
             <Link
-              href="/categories"
+              href="/c"
               className="text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors"
             >
               Categories
@@ -99,7 +99,7 @@ export function Header() {
               Home
             </Link>
             <Link
-              href="/categories"
+              href="/c"
               className="text-gray-700 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors py-2"
             >
               Categories

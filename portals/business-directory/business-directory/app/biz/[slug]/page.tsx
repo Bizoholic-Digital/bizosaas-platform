@@ -31,7 +31,7 @@ export async function generateMetadata(
         openGraph: {
             title: business.name,
             description: business.description,
-            url: `https://directory.bizoholic.net/business/${business.slug}`,
+            url: `https://directory.bizoholic.net/biz/${business.slug}`,
             siteName: 'BizDirectory',
             images: [
                 business.images[0] || '/og-image.jpg',
@@ -46,7 +46,7 @@ export async function generateMetadata(
             images: [business.images[0] || '/og-image.jpg'],
         },
         alternates: {
-            canonical: `https://directory.bizoholic.net/business/${business.slug}`,
+            canonical: `https://directory.bizoholic.net/biz/${business.slug}`,
         },
     };
 }
@@ -65,8 +65,8 @@ export default async function BusinessProfilePage({ params }: Props) {
         '@type': 'LocalBusiness',
         name: business.name,
         image: business.images,
-        '@id': `https://directory.bizoholic.net/business/${business.slug}`,
-        url: `https://directory.bizoholic.net/business/${business.slug}`,
+        '@id': `https://directory.bizoholic.net/biz/${business.slug}`,
+        url: `https://directory.bizoholic.net/biz/${business.slug}`,
         telephone: business.contact.phone,
         address: {
             '@type': 'PostalAddress',
@@ -116,7 +116,7 @@ export default async function BusinessProfilePage({ params }: Props) {
                     <div className="flex justify-center space-x-4">
                         <a href="/" className="text-sm text-gray-500 hover:text-primary">Home</a>
                         <a href="/search" className="text-sm text-gray-500 hover:text-primary">Search Directory</a>
-                        <a href="/categories" className="text-sm text-gray-500 hover:text-primary">Browse Categories</a>
+                        <a href="/c" className="text-sm text-gray-500 hover:text-primary">Browse Categories</a>
                     </div>
                 </div>
             </footer>

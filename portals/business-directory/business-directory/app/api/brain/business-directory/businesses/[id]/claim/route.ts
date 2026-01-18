@@ -4,9 +4,10 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhos
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { slug: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const businessId = params.slug; // Note: In this context, slug might actually be the ID depending on caller
+    const { id } = await params;
+    const businessId = id;
 
     try {
         const body = await request.json();

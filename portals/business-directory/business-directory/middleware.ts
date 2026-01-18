@@ -40,20 +40,12 @@ export function middleware(request: NextRequest) {
     }
 
     // Case 2: Path-based routing on directory subdomain (e.g., directory.bizoholic.net/acme-inc)
+    // REMOVED: conflicting with system paths. We are moving to explicit /biz/[slug] structure.
+    /* 
     if (subdomain === 'directory') {
-        const pathParts = url.pathname.split('/').filter(Boolean);
-
-        // If it's a direct path under directory (e.g. /acme-inc) and NOT a reserved path
-        if (pathParts.length > 0 &&
-            !['api', '_next', 'public', 'favicon.ico', 'business', 'search', 'categories'].includes(pathParts[0])) {
-
-            const slug = pathParts[0];
-            const remainingPath = '/' + pathParts.slice(1).join('/');
-
-            console.log(`[DIRECTORY-MIDDLEWARE] Path-based rewrite: ${slug} -> /business/${slug}${remainingPath === '/' ? '' : remainingPath}`);
-            return NextResponse.rewrite(new URL(`/business/${slug}${remainingPath === '/' ? '' : remainingPath}`, request.url));
-        }
-    }
+         // Logic removed to prevent manifest.json / dashboard loops
+    } 
+    */
 
     return NextResponse.next();
 }

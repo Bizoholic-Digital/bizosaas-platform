@@ -149,7 +149,7 @@ export default function MyBusinessesPage() {
                                 <CardFooter className="pt-0 border-t border-gray-100 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-900/50">
                                     <div className="flex w-full gap-2">
                                         <Button asChild variant="outline" className="flex-1">
-                                            <Link href={`/business/${business.slug || business.id}`}>
+                                            <Link href={`/biz/${business.slug || business.id}`}>
                                                 View
                                             </Link>
                                         </Button>
