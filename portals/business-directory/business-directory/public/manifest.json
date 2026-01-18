@@ -1,14 +1,18 @@
 {
-  "name": "Business Directory Portal",
-  "short_name": "Directory",
-  "description": "Business listings and directory management platform",
-  "start_url": "http://localhost:3010/",
+  "name": "Bizoholic Business Directory",
+  "short_name": "Bizoholic",
+  "description": "Find and connect with local businesses",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#10b981",
   "orientation": "portrait-primary",
-  "categories": ["business", "productivity", "utility"],
+  "categories": [
+    "business",
+    "lifestyle",
+    "shopping"
+  ],
   "lang": "en-US",
   "icons": [
     {
@@ -62,25 +66,40 @@
   ],
   "shortcuts": [
     {
-      "name": "Browse Directory",
-      "short_name": "Browse",
-      "description": "Browse business listings",
-      "url": "/directory",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "name": "Search Directory",
+      "short_name": "Search",
+      "description": "Search local businesses",
+      "url": "/search",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
-      "name": "Add Business",
-      "short_name": "Add",
+      "name": "List Your Business",
+      "short_name": "Add Business",
       "description": "Add a new business listing",
-      "url": "/add-business",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "url": "/list-business",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
-      "name": "My Listings",
-      "short_name": "Listings",
+      "name": "My Businesses",
+      "short_name": "My Biz",
       "description": "Manage your business listings",
-      "url": "/my-listings",
-      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+      "url": "/dashboard/my-businesses",
+      "icons": [
+        {
+          "src": "/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

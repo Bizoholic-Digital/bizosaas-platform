@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Header } from '@/components/layout/header'
+import { MobileNav } from '@/components/layout/mobile-nav'
 import { cn } from '@/lib/utils'
 
 // Using system fonts to avoid network calls during Docker build
@@ -50,7 +51,7 @@ export default function RootLayout({
         inter.className,
         "min-h-screen bg-background font-sans antialiased"
       )}>
-        <div className="relative flex min-h-screen flex-col">
+        <div className="relative flex min-h-screen flex-col pb-16 md:pb-0">
           <Header />
           <main className="flex-1">
             {children}
@@ -97,6 +98,7 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
+          <MobileNav />
         </div>
       </body>
     </html>
