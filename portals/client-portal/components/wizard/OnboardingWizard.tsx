@@ -48,6 +48,8 @@ const STEPS = [
     { id: 'strategy', title: 'Strategy', icon: Rocket }
 ];
 
+const DEFAULT_STEP = { id: 'unknown', title: 'Onboarding', icon: Building2 };
+
 export function OnboardingWizard() {
     const router = useRouter();
     const { user, isLoaded: isClerkLoaded } = useUser();
@@ -224,22 +226,22 @@ export function OnboardingWizard() {
     };
 
     useEffect(() => {
-        if (state.currentStep >= 2 && !isDiscovering) {
-            const hasDiscoveryData = (state.discovery.google && state.discovery.google.length > 0) ||
-                (state.discovery.microsoft && state.discovery.microsoft.length > 0);
+        if (!state || state.currentStep < 2 || isDiscovering || !isLoaded) return;
 
-            if (!hasDiscoveryData) {
-                const primaryEmail = user?.primaryEmailAddress?.emailAddress || state.socialLogin?.email || "";
-                const rawProvider = user?.externalAccounts[0]?.provider || 'none';
-                const normalizedProvider = rawProvider.includes('google') ? 'google' :
-                    rawProvider.includes('microsoft') ? 'microsoft' : 'none';
+        const hasDiscoveryData = (state.discovery?.google && state.discovery.google.length > 0) ||
+            (state.discovery?.microsoft && state.discovery.microsoft.length > 0);
 
-                if (normalizedProvider !== 'none' && primaryEmail) {
-                    triggerDiscovery(primaryEmail, normalizedProvider);
-                }
+        if (!hasDiscoveryData) {
+            const primaryEmail = user?.primaryEmailAddress?.emailAddress || state.socialLogin?.email || "";
+            const rawProvider = (user?.externalAccounts && user.externalAccounts.length > 0) ? user.externalAccounts[0].provider : 'none';
+            const normalizedProvider = String(rawProvider || '').includes('google') ? 'google' :
+                String(rawProvider || '').includes('microsoft') ? 'microsoft' : 'none';
+
+            if (normalizedProvider !== 'none' && primaryEmail) {
+                triggerDiscovery(primaryEmail, normalizedProvider);
             }
         }
-    }, [state.currentStep, user, state.discovery, isDiscovering, state.socialLogin?.email]);
+    }, [state?.currentStep, user?.id, isLoaded, !!state?.discovery, isDiscovering]);
 
     useEffect(() => {
         if (state.profile.website && state.digitalPresence.hasTracking && !state.analytics.auditedServices && !isAuditing) {
@@ -365,10 +367,10 @@ export function OnboardingWizard() {
                             <div className="flex justify-between items-center mb-4">
                                 <div className="flex flex-col">
                                     <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
-                                        {STEPS[state.currentStep].title}
+                                        {(STEPS[state.currentStep] || DEFAULT_STEP).title}
                                     </h1>
                                     <p className="text-sm text-muted-foreground font-medium">
-                                        Phase {state.currentStep + 1} of {STEPS.length}
+                                        Phase {(state.currentStep || 0) + 1} of {STEPS.length}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">

@@ -191,12 +191,12 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                         <span className="text-sm font-bold">Audit Complete: {auditedServices.essential.length + auditedServices.optional.length} services identified</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2 px-1">
-                                        {auditedServices.essential.map((s: any) => (
+                                        {(auditedServices?.essential || []).map((s: any) => (
                                             <span key={s.id} className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-sm">
                                                 <Sparkles className="h-3 w-3" /> {s.service}
                                             </span>
                                         ))}
-                                        {auditedServices.optional.map((s: any) => (
+                                        {(auditedServices?.optional || []).map((s: any) => (
                                             <span key={s.id} className="text-[10px] bg-muted/50 text-muted-foreground border border-border px-2.5 py-1 rounded-full font-medium">
                                                 {s.service}
                                             </span>

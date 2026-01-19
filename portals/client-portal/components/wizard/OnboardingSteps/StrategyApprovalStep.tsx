@@ -42,39 +42,39 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
     const strategyInputs = [
         {
             label: 'Business Profile',
-            value: `${data.profile.companyName} • ${data.profile.industry}`,
+            value: `${data.profile?.companyName || 'Not provided'} • ${data.profile?.industry || 'Not set'}`,
             icon: Database,
-            complete: !!data.profile.companyName
+            complete: !!data.profile?.companyName
         },
         {
             label: 'Digital Presence',
-            value: data.profile.website || 'Not provided',
+            value: data.profile?.website || 'Not provided',
             icon: TrendingUp,
-            complete: !!data.profile.website
+            complete: !!data.profile?.website
         },
         {
             label: 'Primary Goal',
-            value: data.goals.primaryGoal?.replace('_', ' ').toUpperCase() || 'Not set',
+            value: String(data.goals?.primaryGoal || '').replace('_', ' ').toUpperCase() || 'Not set',
             icon: Target,
-            complete: !!data.goals.primaryGoal
+            complete: !!data.goals?.primaryGoal
         },
         {
             label: 'Monthly Budget',
-            value: `${data.goals.currency} ${data.goals.monthlyBudget.toLocaleString()}`,
+            value: `${data.goals?.currency || 'USD'} ${(data.goals?.monthlyBudget || 0).toLocaleString()}`,
             icon: Zap,
-            complete: data.goals.monthlyBudget > 0
+            complete: (data.goals?.monthlyBudget || 0) > 0
         },
         {
             label: 'Target Audience',
-            value: `${data.goals.targetAudience.ageRange} • ${data.goals.targetAudience.locations.join(', ') || 'Global'}`,
+            value: `${data.goals?.targetAudience?.ageRange || 'Not set'} • ${(data.goals?.targetAudience?.locations || []).join(', ') || 'Global'}`,
             icon: Brain,
-            complete: !!data.goals.targetAudience.ageRange
+            complete: !!data.goals?.targetAudience?.ageRange
         },
         {
             label: 'Selected Tools',
-            value: `${data.tools.selectedMcps?.length || 0} integrations`,
+            value: `${data.tools?.selectedMcps?.length || 0} integrations`,
             icon: Sparkles,
-            complete: (data.tools.selectedMcps?.length || 0) > 0
+            complete: (data.tools?.selectedMcps?.length || 0) > 0
         }
     ];
 

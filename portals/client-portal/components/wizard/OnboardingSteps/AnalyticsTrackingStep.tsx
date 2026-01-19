@@ -42,8 +42,8 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
     const [isDiscovering, setIsDiscovering] = React.useState(false);
     const [discovered, setDiscovered] = React.useState(false);
 
-    const hasGoogleLink = user?.externalAccounts.some(acc => acc.provider.includes('google'));
-    const hasMicrosoftLink = user?.externalAccounts.some(acc => acc.provider.includes('microsoft'));
+    const hasGoogleLink = user?.externalAccounts?.some(acc => String(acc.provider || '').includes('google')) || false;
+    const hasMicrosoftLink = user?.externalAccounts?.some(acc => String(acc.provider || '').includes('microsoft')) || false;
     const isCloudConnected = hasGoogleLink || hasMicrosoftLink;
 
     const handleMagicConnect = async () => {
