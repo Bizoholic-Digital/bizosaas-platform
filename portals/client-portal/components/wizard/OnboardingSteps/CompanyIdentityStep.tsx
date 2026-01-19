@@ -113,41 +113,43 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             setLocationQuery('');
             setGmbConnected(false);
         } else {
-            // Ensure local state syncs with props if coming back to step
             setSearchQuery(data.companyName || '');
             setLocationQuery(data.location || '');
 
+            // Initial phone sync
             if (data.phone) {
-                const { country, number } = parsePhone(data.phone, data.location || '');
+                const { country, number } = parsePhone(String(data.phone), data.location || '');
                 setCountryISO(country);
                 setPhoneNumber(number);
-                // Immediately fix the polluted prop data
-                onUpdate({ phone: `${COUNTRY_CODES.find(c => c.country === country)?.code} ${number}`.trim() });
-            } else if (data.location) {
-                const { country } = parsePhone('', data.location);
-                setCountryISO(country);
             }
         }
     }, []);
 
-    // Effect to update parent phone state when parts change
+    // Unified Phone State Synchronization
     useEffect(() => {
         const code = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '+1';
         const newPhone = phoneNumber ? `${code} ${phoneNumber}` : '';
-        if (data.phone !== newPhone) {
+
+        // Push local changes to parent
+        if (typeof data.phone === 'string' && data.phone !== newPhone) {
+            onUpdate({ phone: newPhone });
+        } else if (!data.phone && newPhone) {
             onUpdate({ phone: newPhone });
         }
     }, [countryISO, phoneNumber]);
 
-    // Sync local state if parent data.phone changes significantly (e.g. from Google or outside reset)
+    // Pull parent changes to local state (e.g. from Google search)
     useEffect(() => {
-        if (data.phone) {
+        const phone = String(data.phone || '');
+        if (phone) {
             const currentCode = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '';
             const currentFull = phoneNumber ? `${currentCode} ${phoneNumber}`.trim() : '';
-            if (data.phone.trim() !== currentFull) {
-                const { country, number } = parsePhone(data.phone, data.location || '');
-                setCountryISO(country);
-                setPhoneNumber(number);
+
+            // Only sync if they differ significantly (ignoring spaces)
+            if (phone.replace(/\s/g, '') !== currentFull.replace(/\s/g, '')) {
+                const { country, number } = parsePhone(phone, data.location || '');
+                if (country && country !== countryISO) setCountryISO(country);
+                if (number !== phoneNumber) setPhoneNumber(number);
             }
         } else if (phoneNumber !== '') {
             setPhoneNumber('');

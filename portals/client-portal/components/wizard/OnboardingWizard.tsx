@@ -74,10 +74,14 @@ export function OnboardingWizard() {
 
     // Global Migration: Fix legacy subdomain directory URLs in state
     useEffect(() => {
-        if (state.profile.website && isLoaded) {
-            const isOldFormat = state.profile.website?.includes('.bizoholic.net') && !state.profile.website?.includes('directory.bizoholic.net');
-            if (isOldFormat && state.profile.companyName) {
-                const newUrl = generateDirectoryUrl(state.profile.companyName, state.profile.location);
+        if (!isLoaded || !state.profile) return;
+
+        const website = String(state.profile.website || '');
+        const companyName = String(state.profile.companyName || '');
+
+        if (website && website.includes('.bizoholic.net') && !website.includes('directory.bizoholic.net')) {
+            if (companyName) {
+                const newUrl = generateDirectoryUrl(companyName, state.profile.location);
                 updateProfile({
                     website: newUrl,
                     websiteType: 'directory'
