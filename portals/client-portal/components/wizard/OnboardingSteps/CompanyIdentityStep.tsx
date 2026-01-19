@@ -125,36 +125,37 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         }
     }, []);
 
-    // Unified Phone State Synchronization
+    // Unified Phone State Synchronization (Push local -> parent)
     useEffect(() => {
+        if (!data) return;
         const code = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '+1';
         const newPhone = phoneNumber ? `${code} ${phoneNumber}` : '';
 
-        // Push local changes to parent
-        if (typeof data.phone === 'string' && data.phone !== newPhone) {
-            onUpdate({ phone: newPhone });
-        } else if (!data.phone && newPhone) {
+        const normExisting = String(data.phone || '').replace(/\s/g, '');
+        const normNew = newPhone.replace(/\s/g, '');
+
+        if (normExisting !== normNew) {
             onUpdate({ phone: newPhone });
         }
     }, [countryISO, phoneNumber]);
 
-    // Pull parent changes to local state (e.g. from Google search)
+    // Pull parent changes to local state (Pull parent -> local)
     useEffect(() => {
-        const phone = String(data.phone || '');
-        if (phone) {
-            const currentCode = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '';
-            const currentFull = phoneNumber ? `${currentCode} ${phoneNumber}`.trim() : '';
-
-            // Only sync if they differ significantly (ignoring spaces)
-            if (phone.replace(/\s/g, '') !== currentFull.replace(/\s/g, '')) {
-                const { country, number } = parsePhone(phone, data.location || '');
-                if (country && country !== countryISO) setCountryISO(country);
-                if (number !== phoneNumber) setPhoneNumber(number);
-            }
-        } else if (phoneNumber !== '') {
-            setPhoneNumber('');
+        if (!data?.phone) {
+            if (phoneNumber !== '') setPhoneNumber('');
+            return;
         }
-    }, [data.phone]);
+
+        const phone = String(data.phone);
+        const currentCode = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '';
+        const currentFull = phoneNumber ? `${currentCode} ${phoneNumber}`.trim() : '';
+
+        if (phone.replace(/\s/g, '') !== currentFull.replace(/\s/g, '')) {
+            const { country, number } = parsePhone(phone, String(data.location || ''));
+            if (country && country !== countryISO) setCountryISO(country);
+            if (number !== phoneNumber) setPhoneNumber(number);
+        }
+    }, [data?.phone]);
 
     // --- AUTO-GENERATE / MIGRATE DIRECTORY URL ---
     useEffect(() => {

@@ -6,7 +6,7 @@
  */
 export function generateBusinessSlug(businessName: string, location: string): string {
     // Normalize business name
-    const normalizedName = businessName
+    const normalizedName = String(businessName || '')
         .toLowerCase()
         .replace(/[^\w\s-]/g, '') // Remove special characters
         .replace(/\s+/g, '-') // Replace spaces with hyphens
@@ -14,7 +14,8 @@ export function generateBusinessSlug(businessName: string, location: string): st
         .trim();
 
     // Extract city from location (simple heuristic)
-    const locationParts = location.split(',').map(p => p.trim());
+    const locationStr = String(location || '');
+    const locationParts = locationStr.split(',').map(p => p.trim());
     const city = locationParts[locationParts.length - 2] || locationParts[0] || '';
 
     const normalizedCity = city
