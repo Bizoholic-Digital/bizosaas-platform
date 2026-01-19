@@ -240,32 +240,43 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
             const details = await res.json();
 
-            // IMPORTANT: Clear all fields first to avoid stale data
-            onUpdate({
-                companyName: '',
-                location: '',
-                website: '',
-                phone: '',
-                gmbLink: ''
-            });
-
-            // Generate directory URL if business doesn't have a website OR has an old subdomain URL
+            // 1. Prepare updates for state
             const isOldDirectoryUrl = details.website?.includes('.bizoholic.net') && !details.website?.includes('directory.bizoholic.net');
             const directoryUrl = (!details.website || isOldDirectoryUrl)
                 ? generateDirectoryUrl(details.companyName || searchQuery, details.location)
                 : null;
 
-            // Then populate with new data
-            onUpdate({
+            const finalPhone = details.phone || '';
+            const updates: Partial<BusinessProfile> = {
                 companyName: details.companyName || searchQuery,
                 location: details.location,
-                website: (details.website && !isOldDirectoryUrl) ? details.website : (directoryUrl || ''), // Use new directory URL as fallback or if migrating
-                websiteType: (details.website && !isOldDirectoryUrl) ? 'owned' : 'directory', // Flag for backend
-                phone: details.phone || '', // Use GMB phone directly if available
+                website: (details.website && !isOldDirectoryUrl) ? details.website : (directoryUrl || ''),
+                websiteType: (details.website && !isOldDirectoryUrl) ? 'owned' : 'directory',
+                phone: finalPhone,
                 gmbLink: details.gmbLink
-            });
+            };
 
-            // Create directory listing in backend if it doesn't have a website
+            // 2. Call update once with all details
+            onUpdate(updates);
+
+            // 3. Sync local states
+            setSearchQuery(details.companyName || searchQuery);
+            setLocationQuery(details.location);
+            setGmbConnected(true);
+
+            if (finalPhone) {
+                const { country, number } = parsePhone(finalPhone, details.location);
+                setCountryISO(country);
+                setPhoneNumber(number);
+            } else {
+                setPhoneNumber('');
+                if (details.location) {
+                    const { country } = parsePhone('', details.location);
+                    setCountryISO(country);
+                }
+            }
+
+            // 4. Create directory listing in backend if it doesn't have a website
             if (!details.website && directoryUrl) {
                 try {
                     const slug = directoryUrl.split('/biz/')[1];
@@ -287,23 +298,6 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                     });
                 } catch (err) {
                     console.error("Failed to create directory listing:", err);
-                }
-            }
-
-            setSearchQuery(details.companyName);
-            setLocationQuery(details.location);
-            setGmbConnected(true);
-
-            // Try parsing phone
-            if (details.phone) {
-                const { country, number } = parsePhone(details.phone, details.location);
-                setCountryISO(country);
-                setPhoneNumber(number);
-            } else {
-                setPhoneNumber('');
-                if (details.location) {
-                    const { country } = parsePhone('', details.location);
-                    setCountryISO(country);
                 }
             }
 
@@ -501,7 +495,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         <Label>Phone (Optional)</Label>
                         <div className="flex gap-2">
                             <div className="w-[140px]">
-                                <Select value={countryISO} onValueChange={setCountryISO} disabled={gmbConnected && !!data.phone}>
+                                <Select value={countryISO} onValueChange={setCountryISO}>
                                     <SelectTrigger className="bg-white dark:bg-black/20 border-blue-200">
                                         <SelectValue placeholder="Code" />
                                     </SelectTrigger>
@@ -524,7 +518,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                     }}
                                     className="pl-9 bg-white dark:bg-black/20 border-blue-200"
                                     placeholder="Number without code"
-                                    disabled={gmbConnected && !!data.phone}
+                                    disabled={false}
                                     type="tel"
                                 />
                             </div>
