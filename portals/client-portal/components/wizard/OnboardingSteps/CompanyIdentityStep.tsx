@@ -67,7 +67,6 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
     const parsePhone = (phone: string, location: string) => {
         if (!phone) {
-            // Check location for default country
             if (location) {
                 const l = location.toLowerCase();
                 if (l.includes('india')) return { code: '+91', number: '', country: 'IN' };
@@ -79,25 +78,12 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             return { code: '+1', number: '', country: 'US' };
         }
 
-        // HEURISTIC: Fix redundant string (e.g. "+91-91... +91-91...")
-        // Take the first occurrence of a number pattern
-        const segments = phone.split(/[\s,]+/);
-        let firstPart = segments[0];
+        // Clean EVERYTHING except numbers and leading +
+        // Join parts first in case of spaces like "+91 123 456"
+        const cleaned = phone.startsWith('+')
+            ? '+' + phone.replace(/[^0-9]/g, '')
+            : phone.replace(/[^0-9]/g, '');
 
-        // If the segment itself is redundant (like "91487663489148766348")
-        if (firstPart.length > 15) {
-            const half = Math.floor(firstPart.length / 2);
-            const s1 = firstPart.substring(0, half);
-            const s2 = firstPart.substring(half);
-            if (s1 === s2) firstPart = s1;
-        }
-
-        // Remove formatting but keep leading +
-        const cleaned = firstPart.startsWith('+')
-            ? '+' + firstPart.replace(/[^0-9]/g, '')
-            : firstPart.replace(/[^0-9]/g, '');
-
-        // Sort by code length descending to match longest code first (+1 vs +1 242)
         const sortedCodes = COUNTRY_CODES.slice().sort((a, b) => b.code.length - a.code.length);
         const match = sortedCodes.find(c => cleaned.startsWith(c.code));
 
@@ -108,6 +94,11 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 number: finalNum,
                 country: match.country
             };
+        }
+
+        // Fallback for local numbers starting with 0
+        if (cleaned.startsWith('0') && cleaned.length > 5) {
+            return { code: '', number: cleaned, country: 'US' }; // Let user fix
         }
 
         return { code: '+1', number: cleaned.replace('+', ''), country: 'US' };
@@ -142,12 +133,26 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     // Effect to update parent phone state when parts change
     useEffect(() => {
         const code = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '+1';
-        // Only trigger update if it's different from current data.phone to avoid loops
         const newPhone = phoneNumber ? `${code} ${phoneNumber}` : '';
         if (data.phone !== newPhone) {
             onUpdate({ phone: newPhone });
         }
     }, [countryISO, phoneNumber]);
+
+    // Sync local state if parent data.phone changes significantly (e.g. from Google or outside reset)
+    useEffect(() => {
+        if (data.phone) {
+            const currentCode = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '';
+            const currentFull = phoneNumber ? `${currentCode} ${phoneNumber}`.trim() : '';
+            if (data.phone.trim() !== currentFull) {
+                const { country, number } = parsePhone(data.phone, data.location || '');
+                setCountryISO(country);
+                setPhoneNumber(number);
+            }
+        } else if (phoneNumber !== '') {
+            setPhoneNumber('');
+        }
+    }, [data.phone]);
 
     // --- AUTO-GENERATE / MIGRATE DIRECTORY URL ---
     useEffect(() => {
@@ -517,7 +522,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                         setPhoneNumber(val);
                                     }}
                                     className="pl-9 bg-white dark:bg-black/20 border-blue-200"
-                                    placeholder="Number without code"
+                                    placeholder="Enter number"
                                     disabled={false}
                                     type="tel"
                                 />
