@@ -269,7 +269,7 @@ export default function DirectoryPage() {
                                                         <MapPin className="w-3 h-3" /> {item.city || 'Remote'}, {item.country || 'Global'}
                                                     </span>
                                                     <span className="flex items-center gap-1">
-                                                        <Globe className="w-3 h-3 text-blue-500" /> {item.business_slug}.bizoholic.net
+                                                        <Globe className="w-3 h-3 text-blue-500" /> directory.bizoholic.net/biz/{item.business_slug}
                                                     </span>
                                                 </div>
                                             </div>
@@ -290,7 +290,7 @@ export default function DirectoryPage() {
                                                 <span className="text-[10px] font-black uppercase tracking-widest">AI Optimize</span>
                                             </Button>
                                             <a
-                                                href={`https://${item.business_slug}.bizoholic.net`}
+                                                href={`https://directory.bizoholic.net/biz/${item.business_slug}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"

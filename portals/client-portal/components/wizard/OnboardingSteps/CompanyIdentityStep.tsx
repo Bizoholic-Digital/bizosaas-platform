@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessProfile } from '../types/onboarding';
-import { Search, MapPin, Globe, Phone, Building2, CheckCircle2 } from 'lucide-react';
+import { Search, MapPin, Globe, Phone, Building2, CheckCircle2, Sparkles } from 'lucide-react';
 import { generateDirectoryUrl } from '@/lib/business-slug';
 
 interface Props {
@@ -149,6 +149,43 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         }
     }, [countryISO, phoneNumber]);
 
+    // --- AUTO-GENERATE / MIGRATE DIRECTORY URL ---
+    useEffect(() => {
+        const isOldFormat = data.website?.includes('.bizoholic.net') && !data.website?.includes('directory.bizoholic.net');
+        const isCurrentFormat = data.website?.includes('directory.bizoholic.net/biz/');
+
+        // Migration: Always fix old format if detected
+        if (isOldFormat) {
+            const newUrl = generateDirectoryUrl(data.companyName, data.location);
+            onUpdate({
+                website: newUrl,
+                websiteType: 'directory'
+            });
+            return; // Terminate this run
+        }
+
+        // Generation: If no website and name exists (and not connected to GMB yet)
+        if (data.companyName && !gmbConnected && !data.website) {
+            const newUrl = generateDirectoryUrl(data.companyName, data.location);
+            onUpdate({
+                website: newUrl,
+                websiteType: 'directory'
+            });
+        }
+
+        // Refresh: If current format exists but name/location changed (and not connected to GMB yet)
+        // We only do this if gmbConnected is false to avoid overriding verified data
+        if (data.companyName && !gmbConnected && isCurrentFormat) {
+            const newUrl = generateDirectoryUrl(data.companyName, data.location);
+            if (data.website !== newUrl) {
+                onUpdate({
+                    website: newUrl,
+                    websiteType: 'directory'
+                });
+            }
+        }
+    }, [data.companyName, data.location, gmbConnected]);
+
     // --- BUSINESS SEARCH LOGIC ---
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -212,8 +249,9 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 gmbLink: ''
             });
 
-            // Generate directory URL if business doesn't have a website
-            const directoryUrl = !details.website
+            // Generate directory URL if business doesn't have a website OR has an old subdomain URL
+            const isOldDirectoryUrl = details.website?.includes('.bizoholic.net') && !details.website?.includes('directory.bizoholic.net');
+            const directoryUrl = (!details.website || isOldDirectoryUrl)
                 ? generateDirectoryUrl(details.companyName || searchQuery, details.location)
                 : null;
 
@@ -221,16 +259,16 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             onUpdate({
                 companyName: details.companyName || searchQuery,
                 location: details.location,
-                website: details.website || directoryUrl || '', // Use directory URL as fallback
-                websiteType: details.website ? 'owned' : 'directory', // Flag for backend
-                phone: details.phone, // Use GMB phone directly if available
+                website: (details.website && !isOldDirectoryUrl) ? details.website : (directoryUrl || ''), // Use new directory URL as fallback or if migrating
+                websiteType: (details.website && !isOldDirectoryUrl) ? 'owned' : 'directory', // Flag for backend
+                phone: details.phone || '', // Use GMB phone directly if available
                 gmbLink: details.gmbLink
             });
 
             // Create directory listing in backend if it doesn't have a website
             if (!details.website && directoryUrl) {
                 try {
-                    const slug = directoryUrl.split('//')[1].split('.')[0];
+                    const slug = directoryUrl.split('/biz/')[1];
                     await fetch('/api/brain/business-directory/businesses', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -443,10 +481,18 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                             <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
                             <Input
                                 value={data.website}
-                                onChange={(e) => onUpdate({ website: e.target.value })}
+                                onChange={(e) => onUpdate({
+                                    website: e.target.value,
+                                    websiteType: e.target.value.includes('directory.bizoholic.net') ? 'directory' : 'owned'
+                                })}
                                 className="pl-9"
                                 placeholder="https://..."
                             />
+                            {data.website?.includes('directory.bizoholic.net') && (
+                                <p className="text-[10px] text-blue-600 font-medium mt-1 flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-300">
+                                    <Sparkles size={10} className="fill-blue-600/10" /> Your directory page: {data.website.replace('https://', '')}
+                                </p>
+                            )}
                         </div>
                     </div>
 

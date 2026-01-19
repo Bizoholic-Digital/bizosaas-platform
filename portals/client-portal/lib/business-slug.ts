@@ -46,5 +46,5 @@ export function generateDirectoryUrl(
     domain: string = 'bizoholic.net'
 ): string {
     const slug = generateBusinessSlug(businessName, location);
-    return `https://${slug}.${domain}`;
+    return `https://directory.${domain}/biz/${slug}`;
 }

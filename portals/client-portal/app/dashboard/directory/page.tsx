@@ -168,7 +168,7 @@ export default function DirectoryPage() {
                                             <Tag className="w-3.5 h-3.5" /> Coupons
                                         </Button>
                                     </div>
-                                    <Link href={`https://directory.bizoholic.net/business/${listing.business_slug}`} target="_blank">
+                                    <Link href={`https://directory.bizoholic.net/biz/${listing.business_slug}`} target="_blank">
                                         <Button size="sm" variant="outline" className="h-8 px-3 rounded-lg text-[9px] sm:text-[10px] font-black uppercase tracking-widest gap-1.5">
                                             View <ExternalLink className="w-3 h-3" />
                                         </Button>

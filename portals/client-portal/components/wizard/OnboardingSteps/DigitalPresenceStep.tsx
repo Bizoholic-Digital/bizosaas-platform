@@ -63,15 +63,18 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
 
     // Adaptive logic: If website was detected/provided in step 1, we show that
     const renderWebsiteStatus = () => {
+        const isDirectory = websiteUrl?.includes('directory.bizoholic.net') || (websiteUrl?.includes('bizoholic.net') && !websiteUrl?.includes('app.') && !websiteUrl?.includes('admin.') && !websiteUrl?.includes('api.'));
         if (websiteUrl) {
             return (
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 flex items-center gap-3 mb-6">
-                    <div className="bg-green-500/20 p-2 rounded-full">
-                        <Globe className="text-green-600 dark:text-green-400 h-5 w-5" />
+                <div className={`border rounded-lg p-4 flex items-center gap-3 mb-6 ${isDirectory ? 'bg-blue-500/10 border-blue-500/20' : 'bg-green-500/10 border-green-500/20'}`}>
+                    <div className={`${isDirectory ? 'bg-blue-500/20' : 'bg-green-500/20'} p-2 rounded-full`}>
+                        {isDirectory ? <Sparkles className="text-blue-600 dark:text-blue-400 h-5 w-5" /> : <Globe className="text-green-600 dark:text-green-400 h-5 w-5" />}
                     </div>
                     <div>
-                        <p className="font-semibold text-green-700 dark:text-green-400">Website Detected</p>
-                        <p className="text-sm text-green-600/80 dark:text-green-400/80">{websiteUrl}</p>
+                        <p className={`font-semibold ${isDirectory ? 'text-blue-700 dark:text-blue-400' : 'text-green-700 dark:text-green-400'}`}>
+                            {isDirectory ? 'Directory Profile Active' : 'Website Detected'}
+                        </p>
+                        <p className={`text-sm ${isDirectory ? 'text-blue-600/80 dark:text-blue-400/80' : 'text-green-600/80 dark:text-green-400/80'}`}>{websiteUrl}</p>
                     </div>
                 </div>
             );
@@ -82,8 +85,8 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                     <Globe className="text-yellow-600 dark:text-yellow-400 h-5 w-5" />
                 </div>
                 <div>
-                    <p className="font-semibold text-yellow-700 dark:text-yellow-400">No Website Detected</p>
-                    <p className="text-sm text-yellow-600/80 dark:text-yellow-400/80">We'll help you set up tracking manually later.</p>
+                    <p className="font-semibold text-yellow-700 dark:text-yellow-400">No Digital Presence</p>
+                    <p className="text-sm text-yellow-600/80 dark:text-yellow-400/80">We recommend setting up a directory listing in the first step.</p>
                 </div>
             </div>
         );

@@ -21,6 +21,7 @@ import { useOnboardingState } from './hooks/useOnboardingState';
 import { useUser } from '@clerk/nextjs';
 import { OnboardingState } from './types/onboarding';
 import { useEffect } from 'react';
+import { generateDirectoryUrl } from '@/lib/business-slug';
 
 // Step Components
 import { CompanyIdentityStep } from './OnboardingSteps/CompanyIdentityStep';
@@ -70,6 +71,20 @@ export function OnboardingWizard() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDiscovering, setIsDiscovering] = useState(false);
     const [isAuditing, setIsAuditing] = useState(false);
+
+    // Global Migration: Fix legacy subdomain directory URLs in state
+    useEffect(() => {
+        if (state.profile.website && isLoaded) {
+            const isOldFormat = state.profile.website?.includes('.bizoholic.net') && !state.profile.website?.includes('directory.bizoholic.net');
+            if (isOldFormat && state.profile.companyName) {
+                const newUrl = generateDirectoryUrl(state.profile.companyName, state.profile.location);
+                updateProfile({
+                    website: newUrl,
+                    websiteType: 'directory'
+                });
+            }
+        }
+    }, [isLoaded, state.profile.website, state.profile.companyName, state.profile.location]);
 
     // Sync Clerk user with onboarding state
     useEffect(() => {
