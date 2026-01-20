@@ -40,3 +40,106 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Servers (Internal Stdio)
+  # ========================================
+  fluentcrm-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
+    build:
+      context: ./mcp-servers/fluent-crm
+      dockerfile: Dockerfile
+    container_name: brain-mcp-fluentcrm
+    environment:
+      - FLUENTCRM_WP_URL=${FLUENTCRM_WP_URL:-}
+      - FLUENTCRM_WP_USER=${FLUENTCRM_WP_USER:-}
+      - FLUENTCRM_WP_APP_PASSWORD=${FLUENTCRM_WP_APP_PASSWORD:-}
+    networks:
+      - brain-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  brave-search-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
+    build:
+      context: ./mcp-servers/brave-search
+      dockerfile: Dockerfile
+    container_name: brain-mcp-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY:-}
+    networks:
+      - brain-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  filesystem-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
+    build:
+      context: ./mcp-servers/filesystem
+      dockerfile: Dockerfile
+    container_name: brain-mcp-filesystem
+    environment:
+      - FILESYSTEM_ROOT=/data
+    volumes:
+      - bizosaas-data:/data
+    networks:
+      - brain-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  google-drive-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    build:
+      context: ./mcp-servers/google-drive
+      dockerfile: Dockerfile
+    container_name: brain-mcp-google-drive
+    environment:
+      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON:-}
+    networks:
+      - brain-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  github-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
+    build:
+      context: ./mcp-servers/github
+      dockerfile: Dockerfile
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    networks:
+      - brain-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  slack-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
+    build:
+      context: ./mcp-servers/slack
+      dockerfile: Dockerfile
+    container_name: brain-mcp-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+    networks:
+      - brain-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+networks:
+  brain-network:
+    external: true
+    name: brain-network
+  dokploy-network:
+    external: true
+
+volumes:
+  bizosaas-data:
+    name: bizosaas-data
