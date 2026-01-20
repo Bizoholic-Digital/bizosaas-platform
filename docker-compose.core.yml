@@ -40,10 +40,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.brain-gateway.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
-      - "traefik.http.routers.brain-gateway.tls=true"
-      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
-      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+      - "traefik.http.routers.brain-gateway-router.rule=Host(`${BRAIN_GATEWAY_DOMAIN:-api.bizoholic.net}`)"
+      - "traefik.http.routers.brain-gateway-router.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway-router.tls=true"
+      - "traefik.http.routers.brain-gateway-router.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.brain-gateway-router.service=brain-gateway-service"
+      - "traefik.http.services.brain-gateway-service.loadbalancer.server.port=8000"
     restart: unless-stopped
 
   # ========================================
