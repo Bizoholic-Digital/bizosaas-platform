@@ -1,6 +1,9 @@
 services:
   brain-gateway:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
+    build:
+      context: ./bizosaas-brain-core/brain-gateway
+      dockerfile: Dockerfile
     container_name: bizosaas-brain-staging
     environment:
       # Cloud Database (Neon PostgreSQL)
@@ -71,6 +74,8 @@ services:
 
   brain-mcp-brave-search:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
+    build:
+      context: ./mcp-servers/brave-search
     container_name: brain-mcp-brave-search
     environment:
       - BRAVE_API_KEY=${BRAVE_API_KEY}
@@ -88,6 +93,8 @@ services:
 
   brain-mcp-filesystem:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
+    build:
+      context: ./mcp-servers/filesystem
     container_name: brain-mcp-filesystem
     volumes:
       - bizosaas-data:/data
@@ -105,6 +112,8 @@ services:
 
   brain-mcp-github:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
+    build:
+      context: ./mcp-servers/github
     container_name: brain-mcp-github
     environment:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
@@ -122,6 +131,8 @@ services:
 
   brain-mcp-google-drive:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    build:
+      context: ./mcp-servers/google-drive
     container_name: brain-mcp-google-drive
     environment:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
@@ -140,6 +151,8 @@ services:
 
   brain-mcp-slack:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
+    build:
+      context: ./mcp-servers/slack
     container_name: brain-mcp-slack
     environment:
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
@@ -157,6 +170,8 @@ services:
 
   brain-mcp-fluentcrm:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
+    build:
+      context: ./mcp-servers/fluent-crm
     container_name: brain-mcp-fluentcrm
     environment:
       - FLUENTCRM_API_URL=${FLUENTCRM_API_URL}
