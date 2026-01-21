@@ -24,7 +24,7 @@ services:
       - TEMPORAL_HOST=${TEMPORAL_HOST}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
       - USE_VAULT=true
-      - VAULT_ADDR=http://app-hack-multi-byte-application-um7u9p:8200
+      - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
