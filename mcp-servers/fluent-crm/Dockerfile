@@ -9,4 +9,5 @@ COPY . .
 
 # MCP Servers usually run via stdio, so we don't expose a port
 # But we can define the entrypoint
+EXPOSE 8000
 ENTRYPOINT ["python", "server.py"]

@@ -4,3 +4,7 @@ google-auth-httplib2
 google-auth-oauthlib
 httpx
 python-dotenv
+
+starlette
+uvicorn
+sse-starlette

@@ -11,4 +11,5 @@ COPY . .
 RUN mkdir -p /data
 ENV FILESYSTEM_ROOT=/data
 
+EXPOSE 8000
 ENTRYPOINT ["python", "server.py"]

@@ -1,9 +1,13 @@
+from starlette.applications import Starlette
+from starlette.routing import Route, Mount
+from mcp.server.sse import SseServerTransport
+import uvicorn
 import asyncio
 import os
 from typing import Any, Dict, List, Optional
 from mcp.server.models import InitializationOptions
 from mcp.server import Server, NotificationOptions
-from mcp.server.stdio import stdio_server
+
 import mcp.types as types
 from dotenv import load_dotenv
 
@@ -48,11 +52,14 @@ async def handle_call_tool(
     # Implementation placeholder for Google Ads API interaction
     return [types.TextContent(type="text", text=f"Tool {name} called but integration is in development.")]
 
-async def main():
-    async with stdio_server() as (read_stream, write_stream):
+
+sse = SseServerTransport("/messages")
+
+async def handle_sse(request):
+    async with sse.connect_sse(request.scope, request.receive, request._send) as streams:
         await server.run(
-            read_stream,
-            write_stream,
+            streams[0],
+            streams[1],
             InitializationOptions(
                 server_name="google-ads-mcp",
                 server_version="0.1.0",
@@ -63,5 +70,12 @@ async def main():
             ),
         )
 
+routes = [
+    Route("/sse", endpoint=handle_sse),
+    Mount("/messages", app=sse.handle_post_message),
+]
+
+app = Starlette(routes=routes)
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    uvicorn.run(app, host="0.0.0.0", port=8000)
