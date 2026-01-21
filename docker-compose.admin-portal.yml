@@ -1,79 +1,41 @@
-# Docker Compose for Production VPS
-version: '3.9'
 services:
-
-  # ========================================
-  # Admin Dashboard
-  # ========================================
-  admin-dashboard:
-    build:
-      context: .
-      dockerfile: portals/admin-dashboard/Dockerfile
-      args:
-        SERVICE_PATH: portals/admin-dashboard
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
-        NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
-        NEXTAUTH_URL: ${NEXTAUTH_URL}
-        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
-    restart: unless-stopped
-    # Ports managed by Traefik - no host binding needed
-    expose:
-      - "3000"
-
+  admin-portal:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-portal:staging
+    container_name: admin-portal
     environment:
-      # Clerk Authentication
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
+      # API Configuration
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
+      - API_URL=https://api.bizoholic.net
 
-      # Brain Gateway URLs
-      NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      # Clerk Authentication (from Vault)
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
+      - CLERK_SECRET_KEY=sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
 
-      # Internal Brain Gateway connection (for server actions)
-      BRAIN_GATEWAY_URL: ${BRAIN_GATEWAY_URL}
-
-      # Infrastructure UIs
-      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL}
-      NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL}
-
-      # Integrations
-      PLANE_API_TOKEN: ${PLANE_API_TOKEN}
-
-      # NextAuth (Optional, but kept for session stability)
-      NEXTAUTH_URL: ${NEXTAUTH_URL}
-      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-
-      # Environment
-      CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
-      NEXT_PUBLIC_CLERK_TRUSTED_ORIGINS: "https://admin.bizoholic.net,https://app.bizoholic.net"
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
+      # App Configuration
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=https://admin.bizoholic.net
     networks:
       - dokploy-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.4'
-          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+    restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-s", "--retry", "1", "-f", "http://localhost:3000/api/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      # HTTP Router (redirect to HTTPS)
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
 networks:
   dokploy-network:
     external: true
+    name: dokploy-network

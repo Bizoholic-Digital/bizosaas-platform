@@ -1,150 +1,185 @@
-# ═══════════════════════════════════════════════════════════════════════════
-# BizOSaaS Core Services Stack
-# ═══════════════════════════════════════════════════════════════════════════
-# Contains: Infrastructure (Embedded), API Gateway, MCP Servers
-# ═══════════════════════════════════════════════════════════════════════════
-
 services:
-  # ========================================
-  # API Gateway
-  # ========================================
   brain-gateway:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
-    build:
-      context: ./bizosaas-brain-core/brain-gateway
-      dockerfile: Dockerfile
     container_name: bizosaas-brain-staging
-    expose:
-      - "8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - VECTOR_DB_URL=${VECTOR_DB_URL}
-      - REDIS_URL=${REDIS_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - TEMPORAL_HOST=${TEMPORAL_HOST}
-      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
+      # Cloud Database (Neon PostgreSQL)
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+
+      # Cloud Cache (Redis Cloud)
+      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
+
+      # Temporal Cloud (with mTLS)
+      - TEMPORAL_HOST=ap-south-2.aws.api.temporal.io:7233
+      - TEMPORAL_NAMESPACE=bizosaas-platform-mtls.mdqxv
+      - TEMPORAL_CLIENT_CERT=/certs/client.pem
+      - TEMPORAL_CLIENT_KEY=/certs/client.key
+      - TEMPORAL_SERVER_ROOT_CA=/certs/ca.pem
+
+      # Vault Integration
       - USE_VAULT=true
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=${VAULT_TOKEN:-staging-root-token-bizosaas-2025}
+      - VAULT_TOKEN=staging-root-token-bizosaas-2025
+
+      # AI API Keys (loaded from Vault, fallback to env)
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-https://app.bizoholic.net,https://admin.bizoholic.net,https://bizoholic.net}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+
+      # Authentication
+      - JWT_SECRET=${JWT_SECRET}
+
+      # MCP Servers
+      - MCP_BRAVE_SEARCH_URL=http://brain-mcp-brave-search:8000
+      - MCP_FILESYSTEM_URL=http://brain-mcp-filesystem:8000
+      - MCP_GITHUB_URL=http://brain-mcp-github:8000
+      - MCP_GOOGLE_DRIVE_URL=http://brain-mcp-google-drive:8000
+      - MCP_SLACK_URL=http://brain-mcp-slack:8000
+      - MCP_FLUENTCRM_URL=http://brain-mcp-fluentcrm:8000
+    volumes:
+      - bizosaas-data:/app/data
+      - ./ca.pem:/certs/ca.pem:ro
+      - ./client.pem:/certs/client.pem:ro
+      - ./client.key:/certs/client.key:ro
     networks:
-      - brain-network
       - dokploy-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.4'
-          memory: 1G
+      - brain-network
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      - "traefik.http.routers.brain-api.rule=Host(`api.bizoholic.net`)"
-      - "traefik.http.routers.brain-api.entrypoints=websecure"
-      - "traefik.http.routers.brain-api.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.brain-api.service=brain-api"
-      - "traefik.http.services.brain-api.loadbalancer.server.port=8000"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   # ========================================
-  # MCP Servers (Internal Stdio)
+  # MCP Servers
   # ========================================
-  fluentcrm-mcp:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
-    build:
-      context: ./mcp-servers/fluent-crm
-      dockerfile: Dockerfile
-    container_name: brain-mcp-fluentcrm
-    environment:
-      - FLUENTCRM_WP_URL=${FLUENTCRM_WP_URL:-}
-      - FLUENTCRM_WP_USER=${FLUENTCRM_WP_USER:-}
-      - FLUENTCRM_WP_APP_PASSWORD=${FLUENTCRM_WP_APP_PASSWORD:-}
-    networks:
-      - brain-network
-    stdin_open: true
-    tty: true
-    restart: unless-stopped
 
-  brave-search-mcp:
+  brain-mcp-brave-search:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
-    build:
-      context: ./mcp-servers/brave-search
-      dockerfile: Dockerfile
     container_name: brain-mcp-brave-search
     environment:
-      - BRAVE_API_KEY=${BRAVE_API_KEY:-}
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
     networks:
       - brain-network
-    stdin_open: true
-    tty: true
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
-  filesystem-mcp:
+  brain-mcp-filesystem:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
-    build:
-      context: ./mcp-servers/filesystem
-      dockerfile: Dockerfile
     container_name: brain-mcp-filesystem
-    environment:
-      - FILESYSTEM_ROOT=/data
     volumes:
       - bizosaas-data:/data
     networks:
       - brain-network
-    stdin_open: true
-    tty: true
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
-  google-drive-mcp:
-    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
-    build:
-      context: ./mcp-servers/google-drive
-      dockerfile: Dockerfile
-    container_name: brain-mcp-google-drive
-    environment:
-      - GOOGLE_SERVICE_ACCOUNT_JSON=${GOOGLE_SERVICE_ACCOUNT_JSON:-}
-    networks:
-      - brain-network
-    stdin_open: true
-    tty: true
-    restart: unless-stopped
-
-  github-mcp:
+  brain-mcp-github:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
-    build:
-      context: ./mcp-servers/github
-      dockerfile: Dockerfile
     container_name: brain-mcp-github
     environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     networks:
       - brain-network
-    stdin_open: true
-    tty: true
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
-  slack-mcp:
+  brain-mcp-google-drive:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    container_name: brain-mcp-google-drive
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    networks:
+      - brain-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  brain-mcp-slack:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
-    build:
-      context: ./mcp-servers/slack
-      dockerfile: Dockerfile
     container_name: brain-mcp-slack
     environment:
-      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
     networks:
       - brain-network
-    stdin_open: true
-    tty: true
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
-networks:
-  brain-network:
-    external: true
-    name: brain-network
-  dokploy-network:
-    external: true
+  brain-mcp-fluentcrm:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
+    container_name: brain-mcp-fluentcrm
+    environment:
+      - FLUENTCRM_API_URL=${FLUENTCRM_API_URL}
+      - FLUENTCRM_API_KEY=${FLUENTCRM_API_KEY}
+    networks:
+      - brain-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
 volumes:
   bizosaas-data:
-    name: bizosaas-data
+    external: true
+
+networks:
+  dokploy-network:
+    external: true
+    name: dokploy-network
+  brain-network:
+    external: true
+    name: brain-network

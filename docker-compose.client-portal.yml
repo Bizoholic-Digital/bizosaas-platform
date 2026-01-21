@@ -1,75 +1,41 @@
-# ═══════════════════════════════════════════════════════════════════════════
-# BizOSaaS Frontend Stack
-# ═══════════════════════════════════════════════════════════════════════════
-# Contains: Client Portal, Admin Portal (future)
-# Deploy this AFTER core services stack
-# ═══════════════════════════════════════════════════════════════════════════
-
 services:
-  # ========================================
-  # Client Portal
-  # ========================================
   client-portal:
-    build:
-      context: .
-      dockerfile: ./portals/client-portal/Dockerfile.prod
-      args:
-        SERVICE_PATH: portals/client-portal
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
-        NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
-        NEXT_PUBLIC_GRAPHQL_URL: ${NEXT_PUBLIC_GRAPHQL_URL}
-        NEXTAUTH_URL: ${NEXTAUTH_URL}
-        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
-        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-        CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-    # Ports managed by Traefik - no host binding needed
-    expose:
-      - "3000"
-
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    container_name: client-portal
     environment:
-      # Clerk Authentication (Unified Identity)
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
-      NEXT_PUBLIC_CLERK_SIGN_IN_URL: /login
-      NEXT_PUBLIC_CLERK_SIGN_UP_URL: /signup
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
-      NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /onboarding
+      # API Configuration
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
+      - API_URL=https://api.bizoholic.net
 
-      # Internal Networking
-      BRAIN_GATEWAY_URL: ${BRAIN_GATEWAY_URL}
+      # Clerk Authentication (from Vault)
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZWFzeS1rb2RpYWstNzguY2xlcmsuYWNjb3VudHMuZGV2JA
+      - CLERK_SECRET_KEY=sk_test_hsYzctm4bTgGxWB5Z6f7GT2OgnJ1biw7t21Q8NJvjv
 
-      # Public API Endpoints
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
-      NEXT_PUBLIC_BRAIN_GATEWAY_URL: ${NEXT_PUBLIC_BRAIN_GATEWAY_URL}
-
-      # Infrastructure UIs
-      NEXT_PUBLIC_TEMPORAL_UI_URL: ${NEXT_PUBLIC_TEMPORAL_UI_URL}
-      NEXT_PUBLIC_VAULT_UI_URL: ${NEXT_PUBLIC_VAULT_UI_URL}
-
-      # Integrations
-      PLANE_API_TOKEN: ${PLANE_API_TOKEN}
-
-      # Environment
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-3000}
+      # App Configuration
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=https://app.bizoholic.net
     networks:
       - dokploy-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.4'
-          memory: 512M
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
-      # HTTP Router (redirect to HTTPS)
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
-# ═══════════════════════════════════════════════════════════════════════════
-# Networks
-# ═══════════════════════════════════════════════════════════════════════════
 networks:
   dokploy-network:
     external: true
+    name: dokploy-network

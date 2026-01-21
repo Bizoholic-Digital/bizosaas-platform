@@ -1,0 +1,47 @@
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=staging-root-token-bizosaas-2025
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    ports:
+      - "8200"
+    volumes:
+      - vault-data:/vault/file
+    command: server -dev -dev-root-token-id=staging-root-token-bizosaas-2025 -dev-listen-address=0.0.0.0:8200
+    networks:
+      - dokploy-network
+      - brain-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "vault", "status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+volumes:
+  vault-data:
+
+
+networks:
+  dokploy-network:
+    external: true
+    name: dokploy-network
+  brain-network:
+    external: true
+    name: brain-network
