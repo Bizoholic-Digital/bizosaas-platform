@@ -3,7 +3,7 @@ import json
 import time
 
 API_KEY = "mKgAkCySnrCaAupZYGLiHNNugPRzbsGQZHbcJFMoQSSfdhKUGUPksUuGrWQGWBug"
-BASE_URL = "http://194.238.16.237:3000/api/trpc"
+BASE_URL = "http://localhost:3000/api/trpc"
 
 def call_trpc(endpoint, data):
     headers = {
@@ -19,7 +19,8 @@ stacks = {
     "client-portal": "zz6VpI3h8BFXPUTZZb01G",
     "admin-portal": "NlDPTf6BZgSQilinf2YaU",
     "business-directory": "jRJrq-UIekuq6XBaDOhh6",
-    "lago-stack": "cbgmdr52hGC7XrA53Cw7z"
+    "lago-stack": "cbgmdr52hGC7XrA53Cw7z",
+    "vault": "1W8TCez-7vt661vt7-4Wn"
 }
 
 for name, stack_id in stacks.items():
