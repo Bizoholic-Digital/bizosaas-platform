@@ -40,6 +40,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.brain-api.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-api.entrypoints=websecure"
+      - "traefik.http.routers.brain-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.brain-api.service=brain-api"
+      - "traefik.http.services.brain-api.loadbalancer.server.port=8000"
     restart: unless-stopped
 
   # ========================================
