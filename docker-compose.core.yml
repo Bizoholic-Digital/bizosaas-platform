@@ -46,9 +46,8 @@ services:
     networks:
       - dokploy-network
       - brain-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+    expose:
+      - 8000
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]

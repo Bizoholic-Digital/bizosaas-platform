@@ -32,9 +32,8 @@ services:
       - LAGO_RSA_PUBLIC_KEY=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFrMHVOdi9FSldoNkt4b1hGclhKdApEaFl6VU5IL0d4TmtTeEVPTW9FVGtaMndBUUhGamlVNTJ0ZW4zTDBrVTZBRUdBYzl2ckI0MXNGWnZpdmNqSUlyCm5ydVpEbmQ2VE5wOHJ1U1NYdkdMK2NndGZZMDRwV0lQRVlWaU1od3lBTUxpaWtXcGJUNGlOV2RoZG1Kd3NzZE4KSEtEaTRRYWJhODZkZjdaVWJVbjBFSFpJVHlxSUtqREJRMVF4SmQ1dmloeTVMalJ3NnprcmtlMUNPQ3VhblYxVApvdUhVRDhxa2dtUkw4TGlrNmVtZzE1cDliaUt2Wjd1R3dEaHYvbW1HR2tWY1dkbm5aUCs0aFF6cmRZV3FVa0M4Cm5SWk1GRERkc0gxN3JMMURwTytYdExuTForT05sY2Q1MUhDSEJhSE43bkwwNHNWdmx0ZWg4SEJaZ2ZvZjd2Y2kKSlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
     networks:
       - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+    expose:
+      - 3000
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/health" ]
@@ -60,9 +59,8 @@ services:
       - APP_ENV=production
     networks:
       - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
+    expose:
+      - 80
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:80/" ]
@@ -107,6 +105,8 @@ services:
       - LAGO_RSA_PUBLIC_KEY=LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFrMHVOdi9FSldoNkt4b1hGclhKdApEaFl6VU5IL0d4TmtTeEVPTW9FVGtaMndBUUhGamlVNTJ0ZW4zTDBrVTZBRUdBYzl2ckI0MXNGWnZpdmNqSUlyCm5ydVpEbmQ2VE5wOHJ1U1NYdkdMK2NndGZZMDRwV0lQRVlWaU1od3lBTUxpaWtXcGJUNGlOV2RoZG1Kd3NzZE4KSEtEaTRRYWJhODZkZjdaVWJVbjBFSFpJVHlxSUtqREJRMVF4SmQ1dmloeTVMalJ3NnprcmtlMUNPQ3VhblYxVApvdUhVRDhxa2dtUkw4TGlrNmVtZzE1cDliaUt2Wjd1R3dEaHYvbW1HR2tWY1dkbm5aUCs0aFF6cmRZV3FVa0M4Cm5SWk1GRERkc0gxN3JMMURwTytYdExuTForT05sY2Q1MUhDSEJhSE43bkwwNHNWdmx0ZWg4SEJaZ2ZvZjd2Y2kKSlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
     networks:
       - dokploy-network
+    expose:
+      - 3000
     restart: unless-stopped
     deploy:
       resources:
