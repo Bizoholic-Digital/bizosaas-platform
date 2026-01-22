@@ -16,10 +16,10 @@ services:
     networks:
       - dokploy-network
     expose:
-      - 3000
+      - 3005
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:3005/" ]
       interval: 30s
       timeout: 10s
       retries: 3
