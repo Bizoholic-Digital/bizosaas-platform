@@ -61,6 +61,8 @@ jobs:
             NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
             NEXTAUTH_URL=https://admin.bizoholic.net
             NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_Y2xlcmsuYml6b2hvbGljLm5ldCQ
+            CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
             SERVICE_PATH=portals/admin-dashboard
 
   notify-dokploy:

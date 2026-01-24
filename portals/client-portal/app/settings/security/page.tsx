@@ -2,12 +2,13 @@
 
 import React from 'react';
 import SettingsLayout from '@/components/settings/SettingsLayout';
-import { useClerk } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock, Smartphone } from 'lucide-react';
+import { Shield, Lock, Smartphone, ExternalLink } from 'lucide-react';
 
 export default function SecuritySettingsPage() {
-    const { openUserProfile } = useClerk();
+    const openSecurityPortal = () => {
+        window.open('https://auth-sso.bizoholic.net/if/user/#/settings', '_blank');
+    };
 
     return (
         <SettingsLayout
@@ -24,8 +25,8 @@ export default function SecuritySettingsPage() {
                             <div>
                                 <h3 className="text-lg font-medium">Account Security</h3>
                                 <p className="text-muted-foreground mt-1">
-                                    Your account security is managed by our secure identity provider.
-                                    You can update your password, enable Two-Factor Authentication (2FA), and manage active sessions from your profile security center.
+                                    Your account security is managed by our secure identity provider (Authentik).
+                                    You can update your password, enable Two-Factor Authentication (2FA), and manage active sessions from the SSO portal.
                                 </p>
                             </div>
 
@@ -33,35 +34,35 @@ export default function SecuritySettingsPage() {
                                 <Button
                                     variant="outline"
                                     className="h-auto py-4 px-6 justify-start space-x-4 bg-white dark:bg-slate-950"
-                                    onClick={() => openUserProfile()}
+                                    onClick={openSecurityPortal}
                                 >
                                     <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                                         <Lock className="w-5 h-5 text-gray-500" />
                                     </div>
                                     <div className="text-left">
                                         <div className="font-medium">Change Password</div>
-                                        <div className="text-xs text-muted-foreground">Update your login credentials</div>
+                                        <div className="text-xs text-muted-foreground">Update in SSO Portal</div>
                                     </div>
                                 </Button>
 
                                 <Button
                                     variant="outline"
                                     className="h-auto py-4 px-6 justify-start space-x-4 bg-white dark:bg-slate-950"
-                                    onClick={() => openUserProfile()}
+                                    onClick={openSecurityPortal}
                                 >
                                     <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
                                         <Smartphone className="w-5 h-5 text-gray-500" />
                                     </div>
                                     <div className="text-left">
                                         <div className="font-medium">Two-Factor Auth</div>
-                                        <div className="text-xs text-muted-foreground">Manage 2FA methods</div>
+                                        <div className="text-xs text-muted-foreground">Manage 2FA in SSO Portal</div>
                                     </div>
                                 </Button>
                             </div>
 
                             <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-                                <Button onClick={() => openUserProfile()}>
-                                    Open Security Center
+                                <Button onClick={openSecurityPortal} className="gap-2">
+                                    Open Security Center <ExternalLink className="w-4 h-4" />
                                 </Button>
                             </div>
                         </div>

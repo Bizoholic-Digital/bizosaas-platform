@@ -28,7 +28,7 @@ import { WorkflowOptimizationPanel } from '@/components/workflows/WorkflowOptimi
 // Mock workflow data
 
 import { brainApi } from '@/lib/brain-api';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 import { useSetHeader } from '@/lib/contexts/HeaderContext';
 

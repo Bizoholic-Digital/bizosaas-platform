@@ -2,7 +2,6 @@
 
 import React from 'react';
 import SettingsLayout from '@/components/settings/SettingsLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,12 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RefreshCw } from 'lucide-react';
 
 import { brainApi } from '@/lib/brain-api';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { toast } from 'sonner';
 
 export default function ProfileSettingsPage() {
-    const { getToken } = useAuth();
-    const { user: clerkUser } = useUser();
+    const { getToken, user } = useAuth();
     const [profile, setProfile] = React.useState<any>({
         first_name: '',
         last_name: '',
@@ -32,6 +30,8 @@ export default function ProfileSettingsPage() {
         const fetchProfile = async () => {
             try {
                 const token = await getToken();
+                if (!token) return;
+
                 const data = await brainApi.users.me(token as string);
                 setProfile({
                     first_name: data.first_name || '',
@@ -49,12 +49,14 @@ export default function ProfileSettingsPage() {
             }
         };
         fetchProfile();
-    }, []);
+    }, [getToken]);
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
             const token = await getToken();
+            if (!token) throw new Error("No token");
+
             await brainApi.users.updateMe({
                 first_name: profile.first_name,
                 last_name: profile.last_name,
@@ -70,6 +72,16 @@ export default function ProfileSettingsPage() {
             setIsSaving(false);
         }
     };
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(part => part[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
     return (
         <SettingsLayout
             title="Profile Settings"
@@ -84,14 +96,15 @@ export default function ProfileSettingsPage() {
                     <>
                         <div className="flex items-center gap-6">
                             <Avatar className="w-24 h-24">
-                                <AvatarImage src={clerkUser?.imageUrl} />
+                                {/* Use empty src for now as we don't have image in session yet */}
+                                <AvatarImage src="" />
                                 <AvatarFallback className="text-2xl bg-blue-100 text-blue-600">
-                                    {profile.first_name?.[0]}{profile.last_name?.[0]}
+                                    {user?.name ? getInitials(user.name) : 'U'}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="space-y-2">
-                                <Button variant="outline" size="sm">Change Avatar</Button>
-                                <p className="text-xs text-muted-foreground">JPG, GIF or PNG. Max size of 2MB.</p>
+                                <Button variant="outline" size="sm" disabled>Change Avatar (Coming Soon)</Button>
+                                <p className="text-xs text-muted-foreground">Managed via SSO Provider</p>
                             </div>
                         </div>
 
@@ -112,7 +125,7 @@ export default function ProfileSettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Email Address</Label>
-                                <Input value={clerkUser?.primaryEmailAddress?.emailAddress || ''} disabled />
+                                <Input value={user?.email || ''} disabled />
                             </div>
                             <div className="space-y-2">
                                 <Label>Phone</Label>

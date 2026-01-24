@@ -10,7 +10,7 @@ import {
 import ComprehensiveNavigation from './comprehensive-navigation';
 import { useSystemStatus } from '../../lib/hooks/useSystemStatus';
 import { useAuth } from '../auth/AuthProvider';
-import { useUser } from '@clerk/nextjs';
+
 import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
@@ -46,8 +46,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const description = propDescription || contextDescription;
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuth();
-  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
+  const { user, logout, isLoading } = useAuth();
+  // const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -58,15 +58,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     metrics,
   } = useSystemStatus();
 
-  // Onboarding enforcement
+  // Onboarding enforcement - TODO: Re-enable with Authentik
+  /*
   useEffect(() => {
-    if (clerkLoaded && clerkUser) {
-      const onboarded = clerkUser.publicMetadata?.onboarded;
+    if (!isLoading && user) {
+      const onboarded = user.onboarded;
       if (!onboarded && pathname !== '/onboarding') {
         router.replace('/onboarding');
       }
     }
-  }, [clerkUser, clerkLoaded, pathname, router]);
+  }, [user, isLoading, pathname, router]);
+  */
 
   // Initialize theme on client side
   useEffect(() => {

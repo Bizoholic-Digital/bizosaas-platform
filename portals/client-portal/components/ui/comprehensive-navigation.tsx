@@ -16,7 +16,7 @@ import {
   ChevronDown, ChevronRight, Menu, X, RefreshCw, Bot,
   CheckSquare, ListChecks, FolderKanban, Sparkles, Layers
 } from 'lucide-react';
-import { useAuth as useClerkAuth } from '@clerk/nextjs';
+
 import { useAuth } from '@/components/auth/AuthProvider';
 import {
   DropdownMenu,
@@ -48,7 +48,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
   const searchParams = useSearchParams();
   const [expandedSections, setExpandedSections] = useState<string[]>(['dashboard']);
   const { metrics } = useSystemStatus();
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   // Auto-expand sections based on current path
@@ -78,7 +78,7 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
   };
 
   /* Dynamic Sidebar Logic */
-  const { getToken } = useClerkAuth();
+  // const { getToken } = useClerkAuth();
   const [installedMcps, setInstalledMcps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 

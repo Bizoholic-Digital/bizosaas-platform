@@ -3,58 +3,26 @@ services:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: bizosaas-brain-staging
     environment:
-      # Cloud Database (Neon PostgreSQL)
       - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - VECTOR_DB_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-
-      # Cloud Cache (Redis Cloud)
       - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
-
-      # Temporal Cloud (with mTLS)
-      - TEMPORAL_HOST=ap-south-2.aws.api.temporal.io:7233
-      - TEMPORAL_NAMESPACE=bizosaas-platform-mtls.mdqxv
-      - TEMPORAL_CLIENT_CERT=/certs/client.pem
-      - TEMPORAL_CLIENT_KEY=/certs/client.key
-      - TEMPORAL_SERVER_ROOT_CA=/certs/ca.pem
-
-      # Vault Integration
-      - USE_VAULT=true
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=staging-root-token-bizosaas-2025
-
-      # AI API Keys (loaded from Vault, fallback to env)
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-
-      # Authentication
-      - JWT_SECRET=${JWT_SECRET}
-
-      # MCP Servers
-      - MCP_BRAVE_SEARCH_URL=http://brain-mcp-brave-search:8000
-      - MCP_FILESYSTEM_URL=http://brain-mcp-filesystem:8000
-      - MCP_GITHUB_URL=http://brain-mcp-github:8000
-      - MCP_GOOGLE_DRIVE_URL=http://brain-mcp-google-drive:8000
-      - MCP_SLACK_URL=http://brain-mcp-slack:8000
-      - MCP_FLUENTCRM_URL=http://brain-mcp-fluentcrm:8000
-    volumes:
-      - bizosaas-data:/app/data
-      - ./ca.pem:/certs/ca.pem:ro
-      - ./client.pem:/certs/client.pem:ro
-      - ./client.key:/certs/client.key:ro
+      - TEMPORAL_ADDRESS=ap-south-2.aws.api.temporal.io:7233
+      - TEMPORAL_NAMESPACE=bizosaas.ap-south-2
+      - VAULT_URL=https://vault.bizoholic.net
+      - VAULT_TOKEN=hvs.REpC92zP7vH29X04y1vX4Wn
     networks:
-      - dokploy-network
       - brain-network
+      - dokploy-network
     expose:
       - 8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      test: [ "CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" ]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
     deploy:
       resources:
         limits:
@@ -64,10 +32,6 @@ services:
           cpus: '0.5'
           memory: 512M
 
-  # ========================================
-  # MCP Servers
-  # ========================================
-
   brain-mcp-brave-search:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
     container_name: brain-mcp-brave-search
@@ -75,15 +39,20 @@ services:
       - BRAVE_API_KEY=${BRAVE_API_KEY}
     networks:
       - brain-network
+      - dokploy-network
+    expose:
+      - 8000
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
 
   brain-mcp-filesystem:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
@@ -92,15 +61,20 @@ services:
       - bizosaas-data:/data
     networks:
       - brain-network
+      - dokploy-network
+    expose:
+      - 8000
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
 
   brain-mcp-github:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
@@ -109,15 +83,20 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     networks:
       - brain-network
+      - dokploy-network
+    expose:
+      - 8000
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
 
   brain-mcp-google-drive:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
@@ -127,15 +106,20 @@ services:
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     networks:
       - brain-network
+      - dokploy-network
+    expose:
+      - 8000
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
 
   brain-mcp-slack:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
@@ -144,42 +128,52 @@ services:
       - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
     networks:
       - brain-network
+      - dokploy-network
+    expose:
+      - 8000
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
 
   brain-mcp-fluentcrm:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
     container_name: brain-mcp-fluentcrm
     environment:
-      - FLUENTCRM_API_URL=${FLUENTCRM_API_URL}
+      - FLUENTCRM_URL=${FLUENTCRM_URL}
       - FLUENTCRM_API_KEY=${FLUENTCRM_API_KEY}
     networks:
       - brain-network
+      - dokploy-network
+    expose:
+      - 8000
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.1'
-          memory: 64M
+
+networks:
+  brain-network:
+    external: true
+    name: brain-network
+  dokploy-network:
+    external: true
+    name: dokploy-network
 
 volumes:
   bizosaas-data:
     external: true
-
-networks:
-  dokploy-network:
-    external: true
-    name: dokploy-network
-  brain-network:
-    external: true
-    name: brain-network

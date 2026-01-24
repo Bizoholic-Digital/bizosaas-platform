@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 
 // This API route acts as a proxy to the Plane API to avoid CORS issues and hide tokens
 export async function GET(req: NextRequest) {
@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
         const DEFAULT_PROJECT = '031b7a9e-ee6d-46f5-99da-8e9e911ae71d';
 
         // Check Clerk session
-        const { userId } = await auth();
+        const session = await auth();
+        const userId = session?.user?.id;
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const searchParams = req.nextUrl.searchParams;
@@ -62,7 +63,8 @@ export async function POST(req: NextRequest) {
         const DEFAULT_WORKSPACE = process.env.PLANE_WORKSPACE_SLUG || 'bizosaas';
         const DEFAULT_PROJECT = '031b7a9e-ee6d-46f5-99da-8e9e911ae71d';
 
-        const { userId } = await auth();
+        const session = await auth();
+        const userId = session?.user?.id;
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         if (!PLANE_API_TOKEN) return NextResponse.json({ error: 'Token missing' }, { status: 500 });
@@ -96,7 +98,8 @@ export async function PATCH(req: NextRequest) {
         const DEFAULT_WORKSPACE = process.env.PLANE_WORKSPACE_SLUG || 'bizosaas';
         const DEFAULT_PROJECT = '031b7a9e-ee6d-46f5-99da-8e9e911ae71d';
 
-        const { userId } = await auth();
+        const session = await auth();
+        const userId = session?.user?.id;
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         if (!PLANE_API_TOKEN) return NextResponse.json({ error: 'Token missing' }, { status: 500 });
@@ -133,7 +136,8 @@ export async function DELETE(req: NextRequest) {
         const DEFAULT_WORKSPACE = process.env.PLANE_WORKSPACE_SLUG || 'bizosaas';
         const DEFAULT_PROJECT = '031b7a9e-ee6d-46f5-99da-8e9e911ae71d';
 
-        const { userId } = await auth();
+        const session = await auth();
+        const userId = session?.user?.id;
         if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const searchParams = req.nextUrl.searchParams;

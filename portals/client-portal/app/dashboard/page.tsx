@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from '@/components/auth/AuthProvider';
 import { Plug, Sparkles, BarChart3, TrendingUp } from 'lucide-react';
 import { getUserDisplayInfoFromSession } from '@/utils/rbac';
 import { ProjectTasksWidget } from '@/components/dashboard/widgets/ProjectTasksWidget';
@@ -13,13 +13,13 @@ import { useSetHeader } from '@/lib/contexts/HeaderContext';
 
 export default function DashboardPage() {
   useSetHeader("Product Dashboard", "Manage your connected platforms and automation flows.");
-  const { user } = useUser();
+  const { user } = useAuth();
 
   const sessionUser = user ? {
-    role: user.publicMetadata?.role || 'user',
-    tenant_id: user.publicMetadata?.tenant_id,
-    name: user.fullName,
-    email: user.primaryEmailAddress?.emailAddress
+    role: user.role,
+    tenant_id: user.tenant,
+    name: user.name,
+    email: user.email
   } : null;
 
   const userInfo = getUserDisplayInfoFromSession(sessionUser);

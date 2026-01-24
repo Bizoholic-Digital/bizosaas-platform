@@ -1,8 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useRouter } from 'next/navigation'
+import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut, SessionProvider } from "next-auth/react";
 
 interface User {
   id: string;
@@ -18,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   checkAuth: () => Promise<boolean>
+  getToken: () => Promise<string | null>
   platform: string
 }
 
@@ -28,93 +29,46 @@ interface AuthProviderProps {
   platform: string
 }
 
-function ClerkAuthProvider({ children, platform }: AuthProviderProps) {
-  const userHook = useUser();
-  const clerkHook = useClerk();
-
-  const clerkUser = userHook?.user;
-  const isLoaded = userHook?.isLoaded ?? false;
-  const signOut = clerkHook?.signOut;
-  const openSignIn = clerkHook?.openSignIn;
-
+function NextAuthProvider({ children, platform }: AuthProviderProps) {
+  const { data: session, status } = useSession()
   const [user, setUser] = useState<User | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
-    if (isLoaded && clerkUser) {
-      const primaryEmail = clerkUser.primaryEmailAddress?.emailAddress || "";
-      const role = (clerkUser.publicMetadata?.role as string) || "user";
-      const tenant = (clerkUser.publicMetadata?.tenant_id as string) || "default";
-
+    if (session?.user) {
       setUser({
-        id: clerkUser.id,
-        email: primaryEmail,
-        name: clerkUser.fullName || primaryEmail.split('@')[0],
-        role: role,
-        tenant: tenant
-      });
-    } else if (isLoaded && !clerkUser) {
-      setUser(null);
-    }
-  }, [isLoaded, clerkUser]);
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    if (openSignIn) {
-      openSignIn();
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    if (signOut) {
-      signOut(() => router.push('/login'));
+        id: (session.user as any).id as string,
+        email: session.user.email as string,
+        name: session.user.name as string,
+        role: (session as any).user.role || "user",
+        tenant: (session as any).user.tenant_id || "default"
+      })
     } else {
-      router.push('/login');
+      setUser(null)
     }
-  };
+  }, [session])
 
-  const checkAuth = async (): Promise<boolean> => {
-    return !!clerkUser;
-  };
-
-  const value: AuthContextType = {
-    user,
-    loading: !isLoaded,
-    login,
-    logout,
-    checkAuth,
-    platform
+  const login = async (): Promise<boolean> => {
+    await nextAuthSignIn("authentik")
+    return true
   }
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
-
-function DefaultAuthProvider({ children, platform }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const router = useRouter()
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    console.warn("Login called but Clerk is not configured.");
-    return false;
-  };
-
   const logout = () => {
-    router.push('/login');
-  };
+    nextAuthSignOut({ callbackUrl: '/login' })
+  }
 
-  const checkAuth = async (): Promise<boolean> => false;
+  const checkAuth = async (): Promise<boolean> => !!session
+
+  const getToken = async () => {
+    return (session as any)?.access_token as string || null;
+  }
 
   const value: AuthContextType = {
     user,
-    loading: false,
+    loading: status === "loading",
     login,
     logout,
     checkAuth,
+    getToken,
     platform
   }
 
@@ -126,13 +80,11 @@ function DefaultAuthProvider({ children, platform }: AuthProviderProps) {
 }
 
 export default function AuthProvider(props: AuthProviderProps) {
-  const clerkKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
-  if (clerkKey) {
-    return <ClerkAuthProvider {...props} />;
-  }
-
-  return <DefaultAuthProvider {...props} />;
+  return (
+    <SessionProvider>
+      <NextAuthProvider {...props} />
+    </SessionProvider>
+  );
 }
 
 export const useAuth = () => {

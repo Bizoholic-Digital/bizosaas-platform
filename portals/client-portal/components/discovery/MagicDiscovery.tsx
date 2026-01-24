@@ -6,12 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Sparkles, RefreshCw, CheckCircle2, X } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
 import { toast } from 'sonner';
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { DiscoveryModal } from './DiscoveryModal';
 
 export function MagicDiscovery() {
-    const { getToken } = useAuth();
-    const { user } = useUser();
+    const { getToken, user } = useAuth();
     const [isVisible, setIsVisible] = useState(false);
     const [isDiscovering, setIsDiscovering] = useState(false);
     const [discoveredData, setDiscoveredData] = useState<any>(null);
@@ -19,7 +18,8 @@ export function MagicDiscovery() {
 
     useEffect(() => {
         // Check if we should show discovery
-        const hasGoogle = user?.externalAccounts.some(acc => acc.provider === 'google');
+        // TODO: Re-implement external account detection with Authentik
+        const hasGoogle = false;
         const discoveryDismissed = localStorage.getItem('magic_discovery_dismissed');
 
         if (hasGoogle && !discoveryDismissed) {
@@ -31,8 +31,8 @@ export function MagicDiscovery() {
         setIsDiscovering(true);
         try {
             const token = await getToken();
-            const googleAcc = user?.externalAccounts.find(acc => acc.provider === 'google');
-            if (!googleAcc) throw new Error("No Google account linked");
+            // const googleAcc = user?.externalAccounts.find(acc => acc.provider === 'google');
+            // if (!googleAcc) throw new Error("No Google account linked");
 
             // 1. First perform discovery (dry run)
             const res = await brainApi.connectors.autoLinkGoogle('MOCK_GOOGLE_TOKEN', { dry_run: true }, token || undefined);

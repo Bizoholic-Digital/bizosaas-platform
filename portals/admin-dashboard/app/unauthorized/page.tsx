@@ -2,15 +2,14 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlatformBranding } from "@/components/ui/platform-branding";
-import { useClerk } from "@clerk/nextjs";
+import { useAuth } from "../shared/components/AuthProvider";
 
 export default function UnauthorizedPage() {
-    const { signOut } = useClerk();
+    const { logout } = useAuth();
 
     const handleSignOut = async () => {
-        await signOut({ redirectUrl: '/login' });
+        logout();
     };
-
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">

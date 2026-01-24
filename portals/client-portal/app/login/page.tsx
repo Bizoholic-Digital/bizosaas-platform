@@ -1,8 +1,48 @@
 'use client'
 
 import React, { Suspense } from 'react'
-import { SignIn } from '@clerk/nextjs'
+import { signIn } from 'next-auth/react'
 import { ThemeToggle } from '@/components/theme-toggle'
+// Assuming these components exist - if not standard shadcn/ui, I'll fallback to HTML
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { LockIcon } from 'lucide-react'
+
+function LoginForm() {
+  const handleLogin = () => {
+    signIn('authentik', { callbackUrl: '/dashboard' })
+  }
+
+  return (
+    <Card className="w-[400px] shadow-2xl bg-white/80 dark:bg-black/80 backdrop-blur-sm border-0">
+      <CardHeader className="space-y-1 text-center">
+        <div className="flex justify-center mb-4">
+          <div className="p-3 bg-primary/10 rounded-full">
+            <LockIcon className="w-8 h-8 text-primary" />
+          </div>
+        </div>
+        <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
+        <CardDescription>
+          Sign in to your client portal account
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <Button
+          className="w-full text-lg h-12 transition-all hover:scale-[1.02]"
+          size="lg"
+          onClick={handleLogin}
+        >
+          Sign in with Authentik
+        </Button>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
+        <div>
+          Protected by Enterprise SSO
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
 
 export default function LoginPage() {
   return (
@@ -20,7 +60,7 @@ export default function LoginPage() {
 
       <div className="z-10" data-testid="login-form">
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
-          <SignIn redirectUrl="/dashboard" signUpUrl="/signup" />
+          <LoginForm />
         </Suspense>
       </div>
 
