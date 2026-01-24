@@ -7,19 +7,48 @@ services:
       - AUTHENTIK_POSTGRESQL__HOST=dokploy-postgres
       - AUTHENTIK_POSTGRESQL__NAME=authentik
       - AUTHENTIK_POSTGRESQL__USER=authentik
-      - AUTHENTIK_POSTGRESQL__PASSWORD=AuthentikDB2025!Secure
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_POSTGRESQL__PASSWORD}
       - AUTHENTIK_POSTGRESQL__PORT=5432
       - AUTHENTIK_REDIS__HOST=dokploy-redis
       - AUTHENTIK_REDIS__PORT=6379
-      - AUTHENTIK_SECRET_KEY=BizOSaaS2025!AuthentikSecretKey!SuperSecure!Random
-      - AUTHENTIK_BOOTSTRAP_PASSWORD=Bizoholic2025!Admin
-      - AUTHENTIK_BOOTSTRAP_TOKEN=bizoholic-token-2025
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_BOOTSTRAP_PASSWORD=${AUTHENTIK_BOOTSTRAP_PASSWORD}
+      - AUTHENTIK_BOOTSTRAP_TOKEN=${AUTHENTIK_BOOTSTRAP_TOKEN}
       - AUTHENTIK_LOG_LEVEL=info
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=false
     volumes:
       - authentik-media:/media
       - authentik-custom-templates:/templates
     networks:
       - dokploy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9000/-/health/live/ || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # Main domain (sso.bizoholic.net)
+      - traefik.http.routers.authentik-sso-web.rule=Host(`sso.bizoholic.net`)
+      - traefik.http.routers.authentik-sso-web.entrypoints=web
+      - traefik.http.services.authentik-sso-web.loadbalancer.server.port=9000
+      - traefik.http.routers.authentik-sso-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.authentik-sso-websecure.rule=Host(`sso.bizoholic.net`)
+      - traefik.http.routers.authentik-sso-websecure.entrypoints=websecure
+      - traefik.http.services.authentik-sso-websecure.loadbalancer.server.port=9000
+      - traefik.http.routers.authentik-sso-websecure.tls.certresolver=letsencrypt
+      # Secondary domain (auth-sso.bizoholic.net)
+      - traefik.http.routers.authentik-auth-web.rule=Host(`auth-sso.bizoholic.net`)
+      - traefik.http.routers.authentik-auth-web.entrypoints=web
+      - traefik.http.services.authentik-auth-web.loadbalancer.server.port=9000
+      - traefik.http.routers.authentik-auth-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.authentik-auth-websecure.rule=Host(`auth-sso.bizoholic.net`)
+      - traefik.http.routers.authentik-auth-websecure.entrypoints=websecure
+      - traefik.http.services.authentik-auth-websecure.loadbalancer.server.port=9000
+      - traefik.http.routers.authentik-auth-websecure.tls.certresolver=letsencrypt
+
   authentik-worker:
     image: ghcr.io/goauthentik/server:2025.12.1
     restart: unless-stopped
@@ -28,19 +57,26 @@ services:
       - AUTHENTIK_POSTGRESQL__HOST=dokploy-postgres
       - AUTHENTIK_POSTGRESQL__NAME=authentik
       - AUTHENTIK_POSTGRESQL__USER=authentik
-      - AUTHENTIK_POSTGRESQL__PASSWORD=AuthentikDB2025!Secure
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_POSTGRESQL__PASSWORD}
       - AUTHENTIK_POSTGRESQL__PORT=5432
       - AUTHENTIK_REDIS__HOST=dokploy-redis
       - AUTHENTIK_REDIS__PORT=6379
       - AUTHENTIK_REDIS__DB=0
-      - AUTHENTIK_SECRET_KEY=BizOSaaS2025!AuthentikSecretKey!SuperSecure!Random
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
       - AUTHENTIK_LOG_LEVEL=info
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=false
     volumes:
       - authentik-media:/media
       - authentik-certs:/certs
       - authentik-custom-templates:/templates
     networks:
       - dokploy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "ak healthcheck || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
 volumes:
   authentik-media:
