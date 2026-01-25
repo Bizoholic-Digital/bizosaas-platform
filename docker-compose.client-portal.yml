@@ -1,7 +1,16 @@
 services:
   client-portal:
-    image: compose-generate-open-source-transmitter-kks6gu-client-portal:latest
-    container_name: client-portal
+    build:
+      context: .
+      dockerfile: ./portals/client-portal/Dockerfile
+      args:
+        SERVICE_PATH: portals/client-portal
+        NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL: https://api.bizoholic.net/brain
+        NEXTAUTH_URL: https://app.bizoholic.net
+        AUTH_AUTHENTIK_ID: bizosaas-portal
+        AUTH_AUTHENTIK_ISSUER: https://auth-sso.bizoholic.net/application/o/bizosaas-platform/
+    image: bizosaas-client-portal:staging
     environment:
       # API Configuration
       - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
