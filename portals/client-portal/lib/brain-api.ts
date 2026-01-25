@@ -37,21 +37,16 @@ export interface ChatResponse {
 const apiFetch = async (endpoint: string, options: any = {}, token?: string) => {
     let authToken = token;
 
-    // Auto-retrieve token from Clerk if not provided (Client-side only)
+    // Token retrieval logic for OAuth/Session to be handled via AuthProvider
     if (!authToken && typeof window !== 'undefined') {
         try {
             // Check for impersonation token first
             const impersonationToken = localStorage.getItem('impersonation_token');
             if (impersonationToken) {
-                // Should check if expired, but backend will reject if so.
                 authToken = impersonationToken;
-                // console.log('[BrainAPI] Using impersonation token'); 
-            } else {
-                // @ts-ignore
-                authToken = await window.Clerk?.session?.getToken();
             }
         } catch (e) {
-            console.warn('[BrainAPI] Failed to auto-retrieve Clerk token', e);
+            console.warn('[BrainAPI] Failed to retrieve token', e);
         }
     }
 
