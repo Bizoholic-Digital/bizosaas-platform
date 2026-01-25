@@ -38,8 +38,8 @@ def update_compose(service):
     payload = {
         "json": {
             "composeId": service['id'],
-            "composeFile": content,
-            "sourceType": "raw"
+            "sourceType": "github",
+            "composePath": service['file']
         }
     }
     

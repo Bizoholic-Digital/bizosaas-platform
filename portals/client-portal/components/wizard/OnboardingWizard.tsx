@@ -282,15 +282,15 @@ export function OnboardingWizard() {
             });
 
             if (res.ok) {
-                router.push('/dashboard');
+                window.location.href = '/dashboard';
             } else {
                 console.error("Failed to complete onboarding");
                 // Fallback for demo/dev if API not ready
-                router.push('/dashboard');
+                window.location.href = '/dashboard';
             }
         } catch (e) {
             console.error(e);
-            router.push('/dashboard');
+            window.location.href = '/dashboard';
         } finally {
             setIsSubmitting(false);
         }

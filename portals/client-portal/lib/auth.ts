@@ -17,6 +17,11 @@ export const config = {
                 session.user.id = token.sub
                 session.user.role = token.role as string
                 session.user.tenant_id = token.tenant_id as string
+                session.user.onboarded = token.onboarded as boolean
+
+                // Optionally fetch latest data from backend if needed
+                // To keep it fast, we rely on the token but the token should be refreshed 
+                // or the backend should update the user profile in the SSO.
             }
             return session
         },
@@ -25,6 +30,7 @@ export const config = {
                 token.accessToken = account.access_token
                 token.role = user.role
                 token.tenant_id = user.tenant_id
+                token.onboarded = user.onboarded
             }
             return token
         }
