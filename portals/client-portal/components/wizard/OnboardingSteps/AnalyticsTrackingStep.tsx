@@ -19,7 +19,7 @@ import {
     Activity,
     TrendingUp
 } from 'lucide-react';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '../../auth/AuthProvider';
 import { toast } from 'sonner';
 import {
     Select,
@@ -38,13 +38,15 @@ interface Props {
 }
 
 export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoveringCloud }: Props) {
-    const { user } = useUser();
+    const { user } = useAuth();
     const [isDiscovering, setIsDiscovering] = React.useState(false);
     const [discovered, setDiscovered] = React.useState(false);
 
-    const hasGoogleLink = user?.externalAccounts?.some(acc => String(acc.provider || '').includes('google')) || false;
-    const hasMicrosoftLink = user?.externalAccounts?.some(acc => String(acc.provider || '').includes('microsoft')) || false;
-    const isCloudConnected = hasGoogleLink || hasMicrosoftLink;
+    // OAuth account linking currently handled via Authentik/NextAuth
+    // Social account data extraction to be re-implemented
+    const isCloudConnected = false;
+    const hasGoogleLink = false;
+    const hasMicrosoftLink = false;
 
     const handleMagicConnect = async () => {
         setIsDiscovering(true);
@@ -188,7 +190,7 @@ export function AnalyticsTrackingStep({ data, onUpdate, websiteUrl, isDiscoverin
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: user?.primaryEmailAddress?.emailAddress || "user@example.com",
+                    email: user?.email || "user@example.com",
                     provider: provider
                 })
             });

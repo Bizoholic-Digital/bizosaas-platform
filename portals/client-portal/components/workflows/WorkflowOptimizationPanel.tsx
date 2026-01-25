@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Zap, ExternalLink, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { brainApi } from '@/lib/brain-api';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '../auth/AuthProvider';
 import { toast } from 'sonner';
 
 interface Optimization {

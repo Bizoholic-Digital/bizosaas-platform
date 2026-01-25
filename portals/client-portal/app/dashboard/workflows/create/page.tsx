@@ -14,7 +14,7 @@ import {
     FileText, CheckCircle2, Loader2, ArrowRight
 } from 'lucide-react';
 import { brainApi } from '@/lib/brain-api';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '../../../../components/auth/AuthProvider';
 import { toast } from 'sonner';
 
 const TEMPLATES = [

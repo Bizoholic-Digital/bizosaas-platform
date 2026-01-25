@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { LogOut, ChevronDown, ChevronRight, X, Menu, LucideIcon } from 'lucide-react';
-import { useClerk } from "@clerk/nextjs";
+import { useAuth } from './auth/AuthProvider';
 import { useMobileSidebar } from './MobileSidebarContext';
 
 interface MenuItem {
@@ -28,7 +28,7 @@ export function DashboardSidebar({
     setActiveTab,
     userInfo
 }: DashboardSidebarProps) {
-    const { signOut } = useClerk();
+    const { logout } = useAuth();
     const { isSidebarOpen, toggleSidebar, closeSidebar, isMobile, isTablet, isDesktop } = useMobileSidebar();
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
 
@@ -189,8 +189,8 @@ export function DashboardSidebar({
                                 </div>
                             </div>
                             <button
-                                onClick={async () => {
-                                    await signOut({ redirectUrl: '/login' });
+                                onClick={() => {
+                                    logout();
                                 }}
                                 className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 title="Logout"
@@ -200,8 +200,8 @@ export function DashboardSidebar({
                         </div>
                     ) : (
                         <button
-                            onClick={async () => {
-                                await signOut({ redirectUrl: '/login' });
+                            onClick={() => {
+                                logout();
                             }}
                             className="w-full p-2 flex justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                             title="Logout"

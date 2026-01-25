@@ -19,18 +19,10 @@ class BrainApiClient {
             timeout: 30000,
         });
 
-        // Add request interceptor to attach bearer token
         this.client.interceptors.request.use(async (config) => {
-            // Only running on client-side
             if (typeof window !== 'undefined') {
                 try {
-                    // Use Clerk's global object to get the token if available
-                    // @ts-ignore - Clerk is available on window when using @clerk/nextjs
-                    const token = await window.Clerk?.session?.getToken();
-
-                    if (token) {
-                        config.headers.Authorization = `Bearer ${token}`;
-                    }
+                    // NextAuth tokens are usually handled via cookies
                 } catch (e) {
                     console.warn('[BrainSDK] Failed to attach auth token', e);
                 }

@@ -2,7 +2,7 @@
 
 import { useAuth } from './AuthProvider';
 import { useRouter } from 'next/navigation';
-import { useClerk } from "@clerk/nextjs";
+
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -15,8 +15,7 @@ export default function AuthGuard({
   requireAuth = true,
   allowedRoles = []
 }: AuthGuardProps) {
-  const { user, isLoading } = useAuth();
-  const { openSignIn } = useClerk();
+  const { user, isLoading, login } = useAuth();
   const router = useRouter();
 
   // Show loading state
@@ -39,7 +38,7 @@ export default function AuthGuard({
     // or we are in a transition state.
 
     // safe to trigger sign-in
-    openSignIn();
+    login();
     return null;
   }
 

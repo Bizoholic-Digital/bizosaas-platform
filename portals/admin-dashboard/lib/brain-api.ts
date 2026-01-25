@@ -37,16 +37,6 @@ export interface ChatResponse {
 const apiFetch = async (endpoint: string, options: any = {}, token?: string) => {
     let authToken = token;
 
-    // Auto-retrieve token from Clerk if not provided (Client-side only)
-    if (!authToken && typeof window !== 'undefined') {
-        try {
-            // @ts-ignore
-            authToken = await window.Clerk?.session?.getToken();
-        } catch (e) {
-            console.warn('[BrainAPI] Failed to auto-retrieve Clerk token', e);
-        }
-    }
-
     const headers = {
         'Content-Type': 'application/json',
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),

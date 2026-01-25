@@ -8,7 +8,7 @@ import { ChevronLeft, Play, Pause, RefreshCw, Layers, Shield, Database, Send, Ch
 import Link from 'next/link';
 
 import { brainApi } from '@/lib/brain-api';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '../../../../components/auth/AuthProvider';
 
 export default function WorkflowVisualizationPage() {
     const { id } = useParams();

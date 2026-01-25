@@ -11,17 +11,11 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
     async (config) => {
         // Get session on client side
-        if (typeof window !== 'undefined') {
-            try {
-                // @ts-ignore - Clerk global is available
-                const token = await window.Clerk?.session?.getToken();
-
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
-                }
-            } catch (error) {
-                console.error('Failed to get token:', error);
-            }
+        // Token retrieval logic for OAuth/Session to be implemented
+        // NextAuth tokens are usually handled via cookies
+        try {
+        } catch (error) {
+            console.error('Failed to get token:', error);
         }
 
         return config;

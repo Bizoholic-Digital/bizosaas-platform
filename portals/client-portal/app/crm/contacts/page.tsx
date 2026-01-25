@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../../components/ui/dashboard-layout';
 
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '../../../components/auth/AuthProvider';
 import { brainApi } from '../../../lib/brain-api';
 
 const ContactsPage = () => {

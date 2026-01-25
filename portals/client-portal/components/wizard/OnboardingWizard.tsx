@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useOnboardingState } from './hooks/useOnboardingState';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '../auth/AuthProvider';
 import { OnboardingState } from './types/onboarding';
 import { useEffect } from 'react';
 import { generateDirectoryUrl } from '@/lib/business-slug';
@@ -52,7 +52,7 @@ const DEFAULT_STEP = { id: 'unknown', title: 'Onboarding', icon: Building2 };
 
 export function OnboardingWizard() {
     const router = useRouter();
-    const { user, isLoaded: isClerkLoaded } = useUser();
+    const { user, isLoading: isAuthLoading } = useAuth();
     const {
         state,
         updateProfile,
@@ -94,7 +94,7 @@ export function OnboardingWizard() {
 
     // Sync Clerk user with onboarding state
     useEffect(() => {
-        if (!isClerkLoaded || !user || !isLoaded || !state) return;
+        if (isAuthLoading || !user || !isLoaded || !state) return;
 
         const emailAddress = user.primaryEmailAddress?.emailAddress || "";
         const rawProvider = (user.externalAccounts && user.externalAccounts[0]?.provider) || 'none';
@@ -107,7 +107,7 @@ export function OnboardingWizard() {
                 provider: normalizedProvider as any,
                 email: emailAddress,
                 name: user.fullName || undefined,
-                profileImageUrl: user.imageUrl
+                profileImageUrl: (user as any).image || ''
             });
         }
 
@@ -116,7 +116,7 @@ export function OnboardingWizard() {
         if (normalizedProvider !== 'none' && !hasDiscoveryData && !isDiscovering) {
             triggerDiscovery(emailAddress, normalizedProvider);
         }
-    }, [isClerkLoaded, user?.id, isLoaded, !!state.socialLogin, isDiscovering]);
+    }, [isAuthLoading, user?.id, isLoaded, !!state.socialLogin, isDiscovering]);
 
     const triggerDiscovery = async (email: string, provider: string) => {
         setIsDiscovering(true);
@@ -232,7 +232,7 @@ export function OnboardingWizard() {
             (state.discovery?.microsoft && state.discovery.microsoft.length > 0);
 
         if (!hasDiscoveryData) {
-            const primaryEmail = user?.primaryEmailAddress?.emailAddress || state.socialLogin?.email || "";
+            const primaryEmail = user?.email || state.socialLogin?.email || "";
             const rawProvider = (user?.externalAccounts && user.externalAccounts.length > 0) ? user.externalAccounts[0].provider : 'none';
             const normalizedProvider = String(rawProvider || '').includes('google') ? 'google' :
                 String(rawProvider || '').includes('microsoft') ? 'microsoft' : 'none';
@@ -264,7 +264,7 @@ export function OnboardingWizard() {
         }
     }, [state.profile.website, state.digitalPresence.hasTracking, isAuditing]);
 
-    if (!isLoaded || !isClerkLoaded) return null;
+    if (!isLoaded || isAuthLoading) return null;
 
     const handleNext = () => {
         // Basic validation could go here
