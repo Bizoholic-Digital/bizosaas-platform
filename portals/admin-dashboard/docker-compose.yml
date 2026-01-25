@@ -1,31 +1,31 @@
 version: '3.8'
 
 services:
-  bizosaas-admin-dashboard:
-    image: bizosaas-admin-dashboard:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: bizosaas-admin-dashboard
+  admin-dashboard:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/admin-dashboard:staging
     restart: unless-stopped
-    ports:
-      - "3010:3000"
     environment:
       - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
       - NEXT_PUBLIC_SSO_URL=https://sso.bizoholic.net
       - NEXTAUTH_URL=https://admin.bizoholic.net
       - NEXTAUTH_SECRET=BizOSaaS2025!AdminSecret
-      - AUTHENTIK_CLIENT_ID=n3Wq08pL7rK1x9oZbV2jY5mH4dF6gT8sC0uI1xP3
-      - AUTHENTIK_CLIENT_SECRET=y9vX4bN2lR7kP5oJ8hG0fQ1wA3zE6mD9tL4uS2cB5rK8jH1gV6fC3nO9iW2eT7xZ0mY4qL1kG5jH8fV2c
-      - AUTHENTIK_ISSUER=https://sso.bizoholic.net/application/o/bizosaas-admin-dashboard/
+      - AUTH_AUTHENTIK_ID=bizosaas-portal
+      - NEXT_PUBLIC_AUTH_AUTHENTIK_ID=bizosaas-portal
+      - AUTH_AUTHENTIK_SECRET=BizOSaaS2024!AuthentikSecret
+      - AUTH_AUTHENTIK_ISSUER=https://auth-sso.bizoholic.net/application/o/bizosaas-platform/
+      - AUTH_TRUST_HOST=true
+      - PORT=3000
     networks:
       - dokploy-network
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.admin-dashboard.rule=Host(`admin.bizoholic.net`)"
-      - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
-      - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
-      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "exit 0" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   dokploy-network:

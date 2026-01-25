@@ -8,10 +8,10 @@ services:
       - API_URL=https://api.bizoholic.net
 
       # Authentik SSO Configuration
-      - AUTH_AUTHENTIK_ID=4TdZmGYmVtDn1R4W0X8ATDqOL9kHHYqyGhbrB48Y
-      - NEXT_PUBLIC_AUTH_AUTHENTIK_ID=4TdZmGYmVtDn1R4W0X8ATDqOL9kHHYqyGhbrB48Y
-      - AUTH_AUTHENTIK_SECRET=KKLOtfeZQgohXkCEytgHaujI79J4GnFcz03S0HUXhvhsROdUMSJKmH7YFlxUTmiXAGhNtUUCGOTnl6oaaxW3wMValbAd42XWbBIhcJWUPzyv5Nv2Pfa2ZG7dvZX6MAU2
-      - AUTH_AUTHENTIK_ISSUER=https://auth-sso.bizoholic.net/application/o/bizosaas-platform/
+      - AUTH_AUTHENTIK_ID=bizosaas-portal
+      - NEXT_PUBLIC_AUTH_AUTHENTIK_ID=bizosaas-portal
+      - AUTH_AUTHENTIK_SECRET=BizOSaaS2024!AuthentikSecret
+      - AUTH_AUTHENTIK_ISSUER=https://sso.bizoholic.net/application/o/bizosaas-platform/
       - NEXTAUTH_URL=https://admin.bizoholic.net
       - AUTH_URL=https://admin.bizoholic.net
       - NEXTAUTH_SECRET=BizOSaaS2025!Secret!NextAuth

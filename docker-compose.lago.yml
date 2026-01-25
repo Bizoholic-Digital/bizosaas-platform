@@ -2,13 +2,12 @@ services:
   lago-api:
     image: getlago/api:v1.17.0
     container_name: lago-api
-    command: ./scripts/start.sh
+    command: >
+      /bin/sh -c "echo \"RsaPrivateKey = OpenSSL::PKey::RSA.new(File.read('/app/keys/private.pem')); RsaPublicKey = RsaPrivateKey.public_key\" > config/initializers/rsa_keys.rb && ./scripts/start.sh"
     environment:
       - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - POSTGRES_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - LAGO_DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/1
-      - LAGO_REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/1
+      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
+      - LAGO_REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
       - LAGO_API_URL=https://billing-api.bizoholic.net
       - SECRET_KEY_BASE=85acd00b662a82aa2132d7639de8e6de655dcfe2d568abd05fbd069de0092dd4
       - ENCRYPTION_PRIMARY_KEY=2f9700e1e19ffbf8f970fa260e356c2b606ac09f2ee71ecd2a630936209337fb
@@ -16,25 +15,25 @@ services:
       - ENCRYPTION_KEY_DERIVATION_SALT=135f8017cd510bbea948b0b06109c2d479f6b3f3fcb3e4d4181bf478715b85ba
       - RAILS_ENV=production
       - RAILS_LOG_TO_STDOUT=true
-      - LAGO_RSA_PRIVATE_KEY=-----BEGIN PRIVATE KEY----- MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCzqwglI51rtmui oaRFyUjJXe9vu5XYt25vkf7OdpumQAQoCsjkC++/Rn4+nPH4HoxH043hcndgdIY8 Zn1QY1P/aclsLcMPhR548PM9K5DOILuG/VfaG8hlC8uzv6v/dSVxdO21787v+7Zl 0UOotH0Df2w3HjbipLP8nsLL3oPJorCNcPs5KqL6iRPsHBSynRkNanloxr9hBoMH 22BbKvtvpvHr31GQZqDzlbNkymOJGQLK9jIBkUScm+rzuszrADkBCMb9JWpbRmfN DHd/ZIVtcny9JyaCqEgzc3dSdUbpQdBl484g+hQZ5TimzuorF+uhv0GFuxSUjIyl SnlYnY19AgMBAAECggEAUluoqKmaPClLTqns7OZ3PIMYQi4JYuW2tGMGm+rHr54x qY9EBjEojZQJQ7davaN3J2ek5n67lRXlAKP0dpiJhQ+ferzBaQha7xJ4VYZ2Yt6j R54zGrJYmmUdU8CdXcT7zHXOj3Mld2F5e1PBQYC2u5c56kwp2ZupO7gk0CIoZBEw YSvsqACE4RMCrCZBs2zePZFWsdwJ19Ag7ZCTiYSqGg5li9QYYWuLWX/4qprgokEq jcpt7iaAPDY2XKUAk4Fku/vKej4f68fVvIodLsjHOfQsm1bYIjh4QMA2OoV7BOS1 vgTzcuiEIANxbl8L9Q+TQHtwIDh8L2lp4zlQ+yh4iwKBgQDXREuGaCOsr9n6+HCl ke31n2HjU2lKIoXfugpmZMsv3fJCaB82f5wO/fowWxmazNn4M4mstxNYSUxMS49q JwMa5UtVYQGTquLIb/1zGatq7HnyD798NkhUhJiuBq29ZvcGsUlu/tv5W3eeqEVh GitEcDGfLRp0wYKg52ARLO1LewKBgQDVqk5vAnwYkreweNlno9Nr9iSryUC+L4JS t+R5DDNOtJFE6ZcW+aFf7L4JFdrNRIZGTE5/VFj++i9DSBcYGHEYAyJDNJ+nwM7Y PvL1RcE7pXgwjsHzg9CqpbG7478jiXYImd6JJUvi3RNGDNUTfCNSBkVNaAZhgdci WMR2hoHdZwKBgEOhk1Dg+wRQI130HAAIvwhCUNDI7fV6rzDBFG9jD2s0gd5XNCc9 JFyZcrcqh/rYjUqrdn+q7Qr5zFzUCHTDWPhkPazPU11/fMyYUrqMwAxRy2Y/iFuP +l2DYyyZsJAm/0k8/eM/cwD+ubBBEbsWK63OyehGlV9FRLMkvkvnH45tAoGAJ4bm E6tGAdXCnab9sSqhhit3BUCp9YUceukCH1Kee0T0SudbyChOLkzBqzSb0bWHkaG0 M+IKxMDL1YqUmySKZ4LM59noX0RP/7lFgRJyePJXlcQTJVWRWMBmbPfo+E4Jw/WT MZPwwftcAW2GTaB9eEMotvUzmP5IKlZ5oeOoSqkCgYAE17M0FIjJ9U+T+OxplP2D Z8IZRs5jSfAX2S+jnyVXrvZzhgEhZL/fx6ebiEHYeBU9MO6QzVeelohGwIDV2EOL Dhr2JZCGx+oMjidRsjH7fAlN+BmQLtt61sfyF7LhsOBWm39wGGnvOu1fMbLfD0AA bvyTOpeIpXayziQ4le6fUA== -----END PRIVATE KEY-----
-      - LAGO_RSA_PUBLIC_KEY=-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs6sIJSOda7ZroqGkRclI yV3vb7uV2Ldub5H+znabpkAEKArI5Avvv0Z+Ppzx+B6MR9ON4XJ3YHSGPGZ9UGNT /2nJbC3DD4UeePDzPSuQziC7hv1X2hvIZQvLs7+r/3UlcXTtte/O7/u2ZdFDqLR9 A39sNx424qSz/J7Cy96DyaKwjXD7OSqi+okT7BwUsp0ZDWp5aMa/YQaDB9tgWyr7 b6bx699RkGag85WzZMpjiRkCyvYyAZFEnJvq87rM6wA5AQjG/SVqW0ZnzQx3f2SF bXJ8vScmgqhIM3N3UnVG6UHQZePOIPoUGeU4ps7qKxfrob9BhbsUlIyMpUp5WJ2N fQIDAQAB -----END PUBLIC KEY-----
+    volumes:
+      - lago_keys_vol:/app/keys
     networks:
       - dokploy-network
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 512M
+          cpus: "1"
+          memory: 1024M
         reservations:
           cpus: "0.25"
-          memory: 256M
+          memory: 512M
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
-      # API Domain
+      # HTTP Router (Port 80)
       - traefik.http.routers.lago-api.rule=Host(`billing-api.bizoholic.net`)
       - traefik.http.routers.lago-api.entrypoints=web
-      - traefik.http.routers.lago-api.middlewares=redirect-to-https@file
+      # HTTPS Router (Port 443)
       - traefik.http.routers.lago-api-secure.rule=Host(`billing-api.bizoholic.net`)
       - traefik.http.routers.lago-api-secure.entrypoints=websecure
       - traefik.http.routers.lago-api-secure.tls.certresolver=letsencrypt
@@ -52,18 +51,18 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.25"
-          memory: 256M
+          cpus: "0.5"
+          memory: 512M
         reservations:
           cpus: "0.1"
           memory: 128M
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
-      # Frontend Domain
+      # HTTP Router (Port 80)
       - traefik.http.routers.lago-front.rule=Host(`billing.bizoholic.net`)
       - traefik.http.routers.lago-front.entrypoints=web
-      - traefik.http.routers.lago-front.middlewares=redirect-to-https@file
+      # HTTPS Router (Port 443)
       - traefik.http.routers.lago-front-secure.rule=Host(`billing.bizoholic.net`)
       - traefik.http.routers.lago-front-secure.entrypoints=websecure
       - traefik.http.routers.lago-front-secure.tls.certresolver=letsencrypt
@@ -72,13 +71,12 @@ services:
   lago-worker:
     image: getlago/api:v1.17.0
     container_name: lago-worker
-    command: ./scripts/start.worker.sh
+    command: >
+      /bin/sh -c "echo \"RsaPrivateKey = OpenSSL::PKey::RSA.new(File.read('/app/keys/private.pem')); RsaPublicKey = RsaPrivateKey.public_key\" > config/initializers/rsa_keys.rb && ./scripts/start.worker.sh"
     environment:
       - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - POSTGRES_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - LAGO_DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/1
-      - LAGO_REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/1
+      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
+      - LAGO_REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
       - LAGO_API_URL=https://billing-api.bizoholic.net
       - SECRET_KEY_BASE=85acd00b662a82aa2132d7639de8e6de655dcfe2d568abd05fbd069de0092dd4
       - ENCRYPTION_PRIMARY_KEY=2f9700e1e19ffbf8f970fa260e356c2b606ac09f2ee71ecd2a630936209337fb
@@ -86,18 +84,22 @@ services:
       - ENCRYPTION_KEY_DERIVATION_SALT=135f8017cd510bbea948b0b06109c2d479f6b3f3fcb3e4d4181bf478715b85ba
       - RAILS_ENV=production
       - RAILS_LOG_TO_STDOUT=true
-      - LAGO_RSA_PRIVATE_KEY=-----BEGIN PRIVATE KEY----- MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCzqwglI51rtmui oaRFyUjJXe9vu5XYt25vkf7OdpumQAQoCsjkC++/Rn4+nPH4HoxH043hcndgdIY8 Zn1QY1P/aclsLcMPhR548PM9K5DOILuG/VfaG8hlC8uzv6v/dSVxdO21787v+7Zl 0UOotH0Df2w3HjbipLP8nsLL3oPJorCNcPs5KqL6iRPsHBSynRkNanloxr9hBoMH 22BbKvtvpvHr31GQZqDzlbNkymOJGQLK9jIBkUScm+rzuszrADkBCMb9JWpbRmfN DHd/ZIVtcny9JyaCqEgzc3dSdUbpQdBl484g+hQZ5TimzuorF+uhv0GFuxSUjIyl SnlYnY19AgMBAAECggEAUluoqKmaPClLTqns7OZ3PIMYQi4JYuW2tGMGm+rHr54x qY9EBjEojZQJQ7davaN3J2ek5n67lRXlAKP0dpiJhQ+ferzBaQha7xJ4VYZ2Yt6j R54zGrJYmmUdU8CdXcT7zHXOj3Mld2F5e1PBQYC2u5c56kwp2ZupO7gk0CIoZBEw YSvsqACE4RMCrCZBs2zePZFWsdwJ19Ag7ZCTiYSqGg5li9QYYWuLWX/4qprgokEq jcpt7iaAPDY2XKUAk4Fku/vKej4f68fVvIodLsjHOfQsm1bYIjh4QMA2OoV7BOS1 vgTzcuiEIANxbl8L9Q+TQHtwIDh8L2lp4zlQ+yh4iwKBgQDXREuGaCOsr9n6+HCl ke31n2HjU2lKIoXfugpmZMsv3fJCaB82f5wO/fowWxmazNn4M4mstxNYSUxMS49q JwMa5UtVYQGTquLIb/1zGatq7HnyD798NkhUhJiuBq29ZvcGsUlu/tv5W3eeqEVh GitEcDGfLRp0wYKg52ARLO1LewKBgQDVqk5vAnwYkreweNlno9Nr9iSryUC+L4JS t+R5DDNOtJFE6ZcW+aFf7L4JFdrNRIZGTE5/VFj++i9DSBcYGHEYAyJDNJ+nwM7Y PvL1RcE7pXgwjsHzg9CqpbG7478jiXYImd6JJUvi3RNGDNUTfCNSBkVNaAZhgdci WMR2hoHdZwKBgEOhk1Dg+wRQI130HAAIvwhCUNDI7fV6rzDBFG9jD2s0gd5XNCc9 JFyZcrcqh/rYjUqrdn+q7Qr5zFzUCHTDWPhkPazPU11/fMyYUrqMwAxRy2Y/iFuP +l2DYyyZsJAm/0k8/eM/cwD+ubBBEbsWK63OyehGlV9FRLMkvkvnH45tAoGAJ4bm E6tGAdXCnab9sSqhhit3BUCp9YUceukCH1Kee0T0SudbyChOLkzBqzSb0bWHkaG0 M+IKxMDL1YqUmySKZ4LM59noX0RP/7lFgRJyePJXlcQTJVWRWMBmbPfo+E4Jw/WT MZPwwftcAW2GTaB9eEMotvUzmP5IKlZ5oeOoSqkCgYAE17M0FIjJ9U+T+OxplP2D Z8IZRs5jSfAX2S+jnyVXrvZzhgEhZL/fx6ebiEHYeBU9MO6QzVeelohGwIDV2EOL Dhr2JZCGx+oMjidRsjH7fAlN+BmQLtt61sfyF7LhsOBWm39wGGnvOu1fMbLfD0AA bvyTOpeIpXayziQ4le6fUA== -----END PRIVATE KEY-----
-      - LAGO_RSA_PUBLIC_KEY=-----BEGIN PUBLIC KEY----- MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs6sIJSOda7ZroqGkRclI yV3vb7uV2Ldub5H+znabpkAEKArI5Avvv0Z+Ppzx+B6MR9ON4XJ3YHSGPGZ9UGNT /2nJbC3DD4UeePDzPSuQziC7hv1X2hvIZQvLs7+r/3UlcXTtte/O7/u2ZdFDqLR9 A39sNx424qSz/J7Cy96DyaKwjXD7OSqi+okT7BwUsp0ZDWp5aMa/YQaDB9tgWyr7 b6bx699RkGag85WzZMpjiRkCyvYyAZFEnJvq87rM6wA5AQjG/SVqW0ZnzQx3f2SF bXJ8vScmgqhIM3N3UnVG6UHQZePOIPoUGeU4ps7qKxfrob9BhbsUlIyMpUp5WJ2N fQIDAQAB -----END PUBLIC KEY-----
+    volumes:
+      - lago_keys_vol:/app/keys
     networks:
       - dokploy-network
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 512M
+          cpus: "1"
+          memory: 1024M
         reservations:
           cpus: "0.25"
-          memory: 256M
+          memory: 512M
+
+volumes:
+  lago_keys_vol:
+    external: true
 
 networks:
   dokploy-network:
