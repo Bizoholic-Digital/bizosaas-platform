@@ -127,37 +127,63 @@ export function OnboardingWizard() {
         auditAttempted.current = true;
         setIsAuditing(true);
         try {
-            await fetch('/api/brain/onboarding/gtm/analyze', {
+            const res = await fetch('/api/brain/onboarding/scan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ website_url: url })
             });
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            updateAnalytics({
-                gtmId: 'GTM-PRH6T87',
-                gaId: 'G-XXXXXXXXXX',
-                auditedServices: {
-                    essential: [
-                        { id: 'gtm-1', name: 'GTM-PRH6T87', service: 'GTM', status: 'active' },
-                        { id: 'ga-1', name: 'G-XXXXXXXXXX', service: 'GA4', status: 'active' }
-                    ],
-                    optional: []
-                }
-            });
-            // Auto-detect platforms based on the website audit
-            updateDigitalPresence({
-                cmsType: 'wordpress',
-                crmType: 'fluentcrm',
-                ecommerceType: 'woocommerce',
-                isBizOSaaSActive: true,
-                hasTracking: true
-            });
+            const data = await res.json();
+
+            if (data.status === 'success' && data.scanned_tags) {
+                const tags = data.scanned_tags;
+                const essential: any[] = [];
+                const optional: any[] = [];
+
+                // GTMs
+                tags.gtm.forEach((id: string, i: number) => {
+                    essential.push({ id: `gtm-${i}`, name: id, service: 'GTM', status: 'active' });
+                });
+                // GA4s
+                tags.ga4.forEach((id: string, i: number) => {
+                    essential.push({ id: `ga4-${i}`, name: id, service: 'GA4', status: 'active' });
+                });
+                // UA
+                tags.ua.forEach((id: string, i: number) => {
+                    optional.push({ id: `ua-${i}`, name: id, service: 'UA', status: 'detected' });
+                });
+                // Meta
+                tags.meta.forEach((id: string, i: number) => {
+                    optional.push({ id: `meta-${i}`, name: id, service: 'Meta', status: 'detected' });
+                });
+                // Clarity
+                tags.clarity.forEach((id: string, i: number) => {
+                    optional.push({ id: `clarity-${i}`, name: id, service: 'Clarity', status: 'detected' });
+                });
+
+                updateAnalytics({
+                    gtmId: tags.gtm[0] || state.analytics.gtmId,
+                    gaId: tags.ga4[0] || state.analytics.gaId,
+                    fbId: tags.meta[0] || state.analytics.fbId,
+                    clarityId: tags.clarity[0] || state.analytics.clarityId,
+                    auditedServices: { essential, optional }
+                });
+
+                // Auto-detect platforms based on the website audit
+                const plugins = tags.plugins || [];
+                updateDigitalPresence({
+                    cmsType: plugins.some((p: any) => p.slug === 'wordpress') ? 'wordpress' : state.digitalPresence.cmsType,
+                    crmType: plugins.some((p: any) => p.slug === 'fluent-crm') ? 'fluentcrm' : state.digitalPresence.crmType,
+                    ecommerceType: plugins.some((p: any) => p.slug === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType,
+                    isBizOSaaSActive: plugins.some((p: any) => p.slug === 'bizosaas-connect'),
+                    hasTracking: true
+                });
+            }
         } catch (e) {
             console.error("Audit failed", e);
         } finally {
             setIsAuditing(false);
         }
-    }, [state.analytics.auditedServices, isAuditing, updateAnalytics]);
+    }, [state.analytics.auditedServices, state.analytics.gtmId, state.analytics.gaId, state.analytics.fbId, state.analytics.clarityId, state.digitalPresence.cmsType, state.digitalPresence.crmType, state.digitalPresence.ecommerceType, isAuditing, updateAnalytics, updateDigitalPresence]);
 
     // Auto-Discovery Trigger
     useEffect(() => {

@@ -454,6 +454,11 @@ async def scan_website_tags(payload: Dict[str, Any]):
             ua_matches = re.findall(r'UA-\d{4,10}-\d{1,2}', html)
             detected["ua"] = list(set(ua_matches))
             
+            # Clarity Detection
+            if "clarity.ms" in html or "clarity/tag" in html:
+                clarity_matches = re.findall(r'clarity/tag/([a-zA-Z0-9]+)', html)
+                detected["clarity"] = list(set(clarity_matches))
+            
             # Meta Pixel (fbq init)
             if "fbq('init'" in html or "fbevents.js" in html:
                  fb_matches = re.findall(r"fbq\(['\"]init['\"],\s*['\"](\d+)['\"]", html)
@@ -463,23 +468,44 @@ async def scan_website_tags(payload: Dict[str, Any]):
             if 'Check for Google Site Kit' in html or 'name="generator" content="Site Kit' in html:
                 detected["site_kit"] = True
 
-            # Plugin Detection via Asset Paths
+            # Plugin Detection via Multi-Marker Scan
             common_plugins = {
-                "woocommerce": "WooCommerce",
-                "elementor": "Elementor",
-                "wordpress-seo": "Yoast SEO",
-                "fluent-crm": "FluentCRM",
-                "hubspot": "HubSpot",
-                "contact-form-7": "Contact Form 7",
-                "wpforms": "WPForms",
-                "rank-math": "RankMath",
-                "bizosaas-connect": "BizoSaaS Bridge"
+                "woocommerce": {"name": "WooCommerce", "markers": ["/plugins/woocommerce/", "woocommerce-no-js", 'content="WooCommerce']},
+                "elementor": {"name": "Elementor", "markers": ["/plugins/elementor/", "elementor-default", 'content="Elementor']},
+                "wordpress-seo": {"name": "Yoast SEO", "markers": ["/plugins/wordpress-seo/", "Yoast SEO plugin", "yoast-schema-graph"]},
+                "fluent-crm": {"name": "FluentCRM", "markers": ["/plugins/fluent-crm/", "fluentcrm-"]},
+                "hubspot": {"name": "HubSpot", "markers": ["/plugins/hubspot/", "hubspot.js", "hs-script-loader"]},
+                "mailchimp": {"name": "Mailchimp", "markers": ["/plugins/mailchimp-for-wp/", "mc4wp-", "chimpstatic.com"]},
+                "calendly": {"name": "Calendly", "markers": ["calendly.com/assets/external/widget.js", "calendly-inline-widget"]},
+                "gohighlevel": {"name": "GoHighLevel", "markers": ["/plugins/leadconnector/", "msgsndr.com"]},
+                "zoho": {"name": "Zoho CRM", "markers": ["/plugins/zoho-crm-forms/", "zoho.com/crm/"]},
+                "contact-form-7": {"name": "Contact Form 7", "markers": ["/plugins/contact-form-7/", "wpcf7-"]},
+                "wpforms": {"name": "WPForms", "markers": ["/plugins/wpforms-lite/", "/plugins/wpforms/", "wpforms-"]},
+                "rank-math": {"name": "RankMath", "markers": ["/plugins/rank-math/", "rank-math-"]},
+                "bizosaas-connect": {"name": "BizoSaaS Bridge", "markers": ["/wp-json/bizosaas/v1/"]}
             }
 
             matched_plugins = []
-            for slug, name in common_plugins.items():
-                if f"/wp-content/plugins/{slug}" in html:
-                    matched_plugins.append({"slug": slug, "name": name, "status": "active"})
+            for slug, info in common_plugins.items():
+                is_detected = False
+                for marker in info["markers"]:
+                    if marker in html:
+                        is_detected = True
+                        break
+                
+                if not is_detected and slug == "bizosaas-connect":
+                    # Proactive check for BizoSaaS REST API
+                    try:
+                        status_url = f"{website_url.rstrip('/')}/wp-json/bizosaas/v1/status"
+                        async with httpx.AsyncClient(verify=False, timeout=2.0) as status_client:
+                            s_resp = await status_client.get(status_url)
+                            if s_resp.status_code == 200 and s_resp.json().get("status") == "active":
+                                is_detected = True
+                    except:
+                        pass
+
+                if is_detected:
+                    matched_plugins.append({"slug": slug, "name": info["name"], "status": "active"})
             
             detected["plugins"] = matched_plugins
 

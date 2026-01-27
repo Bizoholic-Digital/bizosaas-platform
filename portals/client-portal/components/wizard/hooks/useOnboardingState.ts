@@ -3,7 +3,7 @@ import { OnboardingState, INITIAL_STATE } from '../types/onboarding';
 import { generateDirectoryUrl } from '@/lib/business-slug';
 
 const STORAGE_KEY = 'bizosaas_onboarding_v2'; // Changed from v1 to force a clean break
-const STATE_VERSION = 'v1.2-authentik'; // Increment this to force reset stale data
+const STATE_VERSION = 'v1.3-multi-detection'; // Increment this to force reset stale data
 
 export function useOnboardingState() {
     const [state, setState] = useState<OnboardingState>(INITIAL_STATE);

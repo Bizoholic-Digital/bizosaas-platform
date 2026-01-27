@@ -170,6 +170,8 @@ export const INITIAL_STATE: OnboardingState = {
     },
     digitalPresence: {
         websiteDetected: false,
+        ecommerceType: 'none',
+        isBizOSaaSActive: false,
     },
     discovery: {
         google: [],

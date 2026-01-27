@@ -155,14 +155,22 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap gap-2 px-1">
-                                        {(auditedServices?.essential || []).map((s: any) => (
-                                            <span key={s.id} className="text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded-full font-black uppercase tracking-widest flex items-center gap-2 shadow-md shadow-blue-200 dark:shadow-none">
-                                                <Sparkles className="h-3 w-3" /> {s.service}
+                                        {/* Summarized Essential Tags */}
+                                        {Object.entries(
+                                            (auditedServices?.essential || []).reduce((acc: any, s: any) => {
+                                                acc[s.service] = (acc[s.service] || 0) + 1;
+                                                return acc;
+                                            }, {})
+                                        ).map(([service, count]: [string, any]) => (
+                                            <span key={service} className="text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded-full font-black uppercase tracking-widest flex items-center gap-2 shadow-md shadow-blue-200 dark:shadow-none">
+                                                <Sparkles className="h-3 w-3" /> {count > 1 ? `${count} ${service} Tags` : service}
                                             </span>
                                         ))}
+
+                                        {/* Detailed breakdown for transparency */}
                                         {(auditedServices?.optional || []).map((s: any) => (
                                             <span key={s.id} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-full font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
-                                                {s.service}
+                                                {s.service}: {s.name}
                                             </span>
                                         ))}
                                     </div>
