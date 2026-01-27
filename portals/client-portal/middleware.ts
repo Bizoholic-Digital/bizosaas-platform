@@ -1,34 +1,33 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { auth } from "@/lib/auth"
+import { NextResponse } from "next/server"
 
-export async function middleware(req: NextRequest) {
-    const token = await getToken({ req });
-    const isAuth = !!token;
-    const isAuthPage = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register');
+export default auth((req) => {
+    // req.auth is populated by the auth wrapper
+    const isLoggedIn = !!req.auth;
+    const { pathname } = req.nextUrl;
+
+    const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/onboarding');
+    const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/register');
 
     if (isAuthPage) {
-        if (isAuth) {
+        if (isLoggedIn) {
             return NextResponse.redirect(new URL('/dashboard', req.url));
         }
-        return null;
+        return NextResponse.next();
     }
 
-    if (!isAuth) {
-        let from = req.nextUrl.pathname;
-        if (req.nextUrl.search) {
-            from += req.nextUrl.search;
+    if (isProtected) {
+        if (!isLoggedIn) {
+            const from = pathname + req.nextUrl.search;
+            return NextResponse.redirect(new URL(`/login?from=${encodeURIComponent(from)}`, req.url));
         }
-
-        return NextResponse.redirect(
-            new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
-        );
+        return NextResponse.next();
     }
 
-    // Onboarding check can be added here if token has the flag,
-    // but better to handle it in the page/layout to avoid loops.
-}
+    return NextResponse.next();
+});
 
 export const config = {
+    // Match only the paths we care about to avoid overhead on static assets
     matcher: ['/dashboard/:path*', '/onboarding/:path*', '/login', '/register'],
 };
