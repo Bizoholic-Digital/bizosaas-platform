@@ -50,6 +50,7 @@ export function OnboardingWizard() {
         setSocialLogin,
         nextStep,
         prevStep,
+        resetOnboarding,
         isLoaded
     } = useOnboardingState();
 
@@ -170,7 +171,7 @@ export function OnboardingWizard() {
 
     const renderStepContent = () => {
         switch (state.currentStep) {
-            case 0: return <CompanyIdentityStep data={state.profile} onUpdate={updateProfile} discovery={state.discovery} isDiscovering={isDiscovering} />;
+            case 0: return <CompanyIdentityStep data={state.profile} onUpdate={updateProfile} onReset={resetOnboarding} discovery={state.discovery} isDiscovering={isDiscovering} />;
             case 1: return <DigitalPresenceStep data={state.digitalPresence} websiteUrl={state.profile.website} onUpdate={updateDigitalPresence} isAuditing={isAuditing} auditedServices={state.analytics.auditedServices} />;
             case 2: return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
             case 3: return <ThemePluginSelectionStep data={state.marketplace} onUpdate={updateMarketplace} />;

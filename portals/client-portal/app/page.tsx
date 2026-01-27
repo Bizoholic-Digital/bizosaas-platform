@@ -6,19 +6,21 @@ import { useSession } from "next-auth/react";
 
 export default function RootPage() {
     const router = useRouter();
-    const { status } = useSession();
+    const { data: session, status } = useSession();
     const isLoaded = status !== 'loading';
     const isSignedIn = status === 'authenticated';
 
     useEffect(() => {
-        if (!isLoaded) return; // Wait for session to load
+        if (!isLoaded) return;
 
         if (isSignedIn) {
-            router.replace('/dashboard');
+            const user = (status === 'authenticated' && session?.user) ? (session.user as any) : null;
+            const onboarded = user?.onboarded;
+            router.replace(onboarded ? '/dashboard' : '/onboarding');
         } else {
             router.replace('/login');
         }
-    }, [isSignedIn, isLoaded, router]);
+    }, [isSignedIn, isLoaded, router, session, status]);
 
     // Show loading state while redirecting
     return (

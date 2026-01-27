@@ -5,12 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessProfile } from '../types/onboarding';
-import { Search, MapPin, Globe, Phone, Building2, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { Search, MapPin, Globe, Phone, Building2, CheckCircle2, Sparkles, Loader2, ExternalLink } from 'lucide-react';
 import { generateDirectoryUrl } from '@/lib/business-slug';
 
 interface Props {
     data: BusinessProfile;
     onUpdate: (data: Partial<BusinessProfile>) => void;
+    onReset?: () => void;
     discovery?: any;
     isDiscovering?: boolean;
 }
@@ -45,7 +46,7 @@ const COUNTRY_CODES = [
     { code: '+52', country: 'MX', label: '🇲🇽 MX (+52)' },
 ];
 
-export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }: Props) {
+export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDiscovering }: Props) {
     const [searchQuery, setSearchQuery] = useState(data.companyName || '');
     const [predictions, setPredictions] = useState<Prediction[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -74,9 +75,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
     const parsePhone = (phone: string) => {
         if (!phone) return { code: '+1', number: '', country: 'US' };
-        // Remove all non-numeric chars except leading +
         const cleaned = phone.replace(/[^\d+]/g, '');
-        // Sort country codes by length descending to match longest first (e.g. +971 vs +9)
         const sortedCodes = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
         const match = sortedCodes.find(c => cleaned.startsWith(c.code));
 
@@ -86,18 +85,21 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         return { code: '+1', number: cleaned, country: 'US' };
     };
 
-    // Initialize state from data
+    // Initialize state from data (also handles resets)
     useEffect(() => {
         if (data.phone) {
             const parsed = parsePhone(data.phone);
             setCountryISO(parsed.country);
             setPhoneNumber(parsed.number);
+        } else {
+            setPhoneNumber('');
+            setCountryISO('US');
         }
-        if (data.companyName) setSearchQuery(data.companyName);
-        if (data.location) setLocationQuery(data.location);
-    }, [data.id]); // Re-sync if data set changes
+        setSearchQuery(data.companyName || '');
+        setLocationQuery(data.location || '');
+        setGmbConnected(!!data.gmbLink);
+    }, [data.companyName, data.location, data.phone]);
 
-    // Update parent about phone
     const syncPhone = (iso: string, num: string) => {
         const code = COUNTRY_CODES.find(c => c.country === iso)?.code || '+1';
         onUpdate({ phone: `${code} ${num.trim()}` });
@@ -119,11 +121,16 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         setSearchQuery(val);
         setShowPredictions(true);
 
-        const updates: Partial<BusinessProfile> = { companyName: val };
+        const directoryUrl = generateDirectoryUrl(val, data.location || '');
+        const updates: Partial<BusinessProfile> = {
+            companyName: val,
+            directoryUrl: directoryUrl
+        };
 
-        // If website is empty or auto-generated, keep it in sync with name
-        if (!data.website || data.website.includes('directory.bizoholic.net')) {
-            updates.website = generateDirectoryUrl(val, data.location || '');
+        const isCurrentlyDirectory = data.website?.includes('directory.bizoholic.net') || !data.website;
+        if (isCurrentlyDirectory) {
+            updates.website = directoryUrl;
+            updates.websiteType = 'directory';
         }
 
         onUpdate(updates);
@@ -133,23 +140,27 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         setLocationQuery(val);
         setShowAddressPredictions(true);
 
-        const updates: Partial<BusinessProfile> = { location: val };
+        const directoryUrl = generateDirectoryUrl(data.companyName || '', val);
+        const updates: Partial<BusinessProfile> = {
+            location: val,
+            directoryUrl: directoryUrl
+        };
 
-        // Update website slug if it's auto-generated since it includes city
-        if (!data.website || data.website.includes('directory.bizoholic.net')) {
-            updates.website = generateDirectoryUrl(data.companyName || '', val);
+        const isCurrentlyDirectory = data.website?.includes('directory.bizoholic.net') || !data.website;
+        if (isCurrentlyDirectory) {
+            updates.website = directoryUrl;
+            updates.websiteType = 'directory';
         }
 
         onUpdate(updates);
     };
 
-    // Debounced searches
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchQuery.length > 2 && !gmbConnected && showPredictions) {
                 searchPlaces(searchQuery, 'establishment', setPredictions);
             }
-        }, 300); // Faster response
+        }, 300);
         return () => clearTimeout(timer);
     }, [searchQuery, gmbConnected, showPredictions]);
 
@@ -184,13 +195,15 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             const res = await fetch(`/api/brain/onboarding/places/details?place_id=${placeId}`);
             const details = await res.json();
 
-            // Generate fallback website if Google doesn't have one
-            const directoryUrl = !details.website ? generateDirectoryUrl(details.companyName || searchQuery, details.location) : null;
+            const directoryUrl = generateDirectoryUrl(details.companyName || searchQuery, details.location);
+            const finalWebsite = details.website || directoryUrl;
 
             onUpdate({
                 companyName: details.companyName || searchQuery,
                 location: details.location,
-                website: details.website || directoryUrl || '',
+                website: finalWebsite,
+                websiteType: details.website ? 'owned' : 'directory',
+                directoryUrl: directoryUrl,
                 phone: details.phone || '',
                 gmbLink: details.gmbLink
             });
@@ -199,14 +212,12 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             setLocationQuery(details.location);
             setGmbConnected(true);
 
-            // Handle Country and Phone Code
             if (details.country) {
                 setCountryISO(details.country);
             }
 
             if (details.phone) {
                 const parsed = parsePhone(details.phone);
-                // If we got a specific country from the API, use it, otherwise use parsed one
                 if (!details.country) setCountryISO(parsed.country);
                 setPhoneNumber(parsed.number);
             }
@@ -225,19 +236,21 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             const details = await res.json();
 
             setLocationQuery(details.location);
+            const directoryUrl = generateDirectoryUrl(data.companyName || '', details.location);
 
             const updates: Partial<BusinessProfile> = {
-                location: details.location
+                location: details.location,
+                directoryUrl: directoryUrl
             };
 
-            // Update auto-generated website based on new location
-            if (!data.website || data.website.includes('directory.bizoholic.net')) {
-                updates.website = generateDirectoryUrl(data.companyName || '', details.location);
+            const isCurrentlyDirectory = data.website?.includes('directory.bizoholic.net') || !data.website;
+            if (isCurrentlyDirectory) {
+                updates.website = directoryUrl;
+                updates.websiteType = 'directory';
             }
 
             if (details.country) {
                 setCountryISO(details.country);
-                // Ensure the stored phone string uses the new code
                 const code = COUNTRY_CODES.find(c => c.country === details.country)?.code || '+1';
                 updates.phone = `${code} ${phoneNumber}`;
             }
@@ -252,31 +265,41 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="text-center mb-8">
+            <div className="text-center mb-8 relative">
                 <div className="inline-flex items-center justify-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
                     <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">Your Identity</h2>
-                <p className="text-muted-foreground">Setup your business profile and digital presence.</p>
+                <p className="text-muted-foreground font-medium">Setup your business profile and digital presence.</p>
+
+                {onReset && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onReset}
+                        className="absolute top-0 right-0 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                    >
+                        <Sparkles size={10} /> Reset Form
+                    </Button>
+                )}
             </div>
 
             <div className="space-y-4">
-                {/* Search / GMB Connection Card */}
-                <div className={`p-5 rounded-2xl border-2 transition-all duration-300 ${gmbConnected ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none'}`}>
+                <div className={`p-5 rounded-2xl border-2 transition-all duration-300 ${gmbConnected ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50 shadow-sm' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none'}`}>
                     {gmbConnected ? (
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl"><CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" /></div>
-                                <div>
-                                    <h3 className="font-black text-green-900 dark:text-green-400 uppercase text-xs tracking-widest">Profile Verified</h3>
-                                    <h4 className="font-bold text-gray-900 dark:text-white text-lg">{data.companyName}</h4>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{data.location}</p>
+                                <div className="text-left">
+                                    <h3 className="font-black text-green-900 dark:text-green-400 uppercase text-xs tracking-widest leading-none mb-1">Profile Verified</h3>
+                                    <h4 className="font-bold text-gray-900 dark:text-white text-lg leading-tight">{data.companyName}</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px] sm:max-w-md">{data.location}</p>
                                 </div>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => setGmbConnected(false)} className="rounded-xl border-green-200 hover:bg-green-100 dark:border-green-800 hover:text-green-700">Change</Button>
+                            <Button variant="outline" size="sm" onClick={() => setGmbConnected(false)} className="rounded-xl border-green-200 hover:bg-green-100 dark:border-green-800 hover:text-green-700 font-bold">Change</Button>
                         </div>
                     ) : (
-                        <div className="relative">
+                        <div className="relative text-left">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2 block flex items-center gap-2">
                                 <Search size={12} /> Search Google Maps
                             </Label>
@@ -295,7 +318,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                                         {predictions.map((pred) => (
                                             <div
                                                 key={pred.place_id}
-                                                className="p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b last:border-0 dark:border-slate-800 transition-colors group"
+                                                className="p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b last:border-0 dark:border-slate-800 transition-colors group text-left"
                                                 onMouseDown={(e) => {
                                                     e.preventDefault();
                                                     selectBusiness(pred.place_id);
@@ -313,7 +336,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-left">
                         <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Company Name</Label>
                         <Input
                             value={data.companyName}
@@ -322,7 +345,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                             className="rounded-xl h-11"
                         />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-left">
                         <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Industry</Label>
                         <Input
                             value={data.industry}
@@ -333,8 +356,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                     </div>
                 </div>
 
-                {/* Location Field with Autocomplete */}
-                <div className="space-y-2">
+                <div className="space-y-2 text-left">
                     <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Location</Label>
                     <div className="relative">
                         <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground/60 z-10" />
@@ -368,23 +390,31 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-left">
                         <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Business Website</Label>
                         <div className="relative">
                             <Globe className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground/60" />
                             <Input
                                 value={data.website}
-                                onChange={(e) => onUpdate({ website: e.target.value })}
+                                onChange={(e) => onUpdate({ website: e.target.value, websiteType: 'owned' })}
                                 className="pl-10 rounded-xl h-11"
                                 placeholder="https://..."
                             />
                         </div>
-                        {data.website?.includes('directory.bizoholic.net') && (
-                            <p className="text-[9px] text-blue-500 font-bold uppercase tracking-tighter px-1">Using generated directory domain</p>
+                        {data.websiteType === 'directory' ? (
+                            <div className="flex items-center gap-1.5 px-1 mt-1">
+                                <Sparkles className="w-3 h-3 text-blue-500" />
+                                <p className="text-[9px] text-blue-500 font-bold uppercase tracking-widest">Generating Business Directory Website Profile</p>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1.5 px-1 mt-1 text-gray-400">
+                                <CheckCircle2 className="w-3 h-3" />
+                                <p className="text-[9px] font-bold uppercase tracking-widest">Directory Profile URL: <span className="lowercase font-medium">{data.directoryUrl}</span></p>
+                            </div>
                         )}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-left">
                         <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Phone Number</Label>
                         <div className="flex gap-2">
                             <Select value={countryISO} onValueChange={handleCountryChange}>

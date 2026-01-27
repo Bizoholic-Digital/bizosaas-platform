@@ -11,7 +11,8 @@ export default auth((req) => {
 
     if (isAuthPage) {
         if (isLoggedIn) {
-            return NextResponse.redirect(new URL('/dashboard', req.url));
+            const onboarded = (req.auth?.user as any)?.onboarded;
+            return NextResponse.redirect(new URL(onboarded ? '/dashboard' : '/onboarding', req.url));
         }
         return NextResponse.next();
     }
@@ -21,6 +22,13 @@ export default auth((req) => {
             const from = pathname + req.nextUrl.search;
             return NextResponse.redirect(new URL(`/login?from=${encodeURIComponent(from)}`, req.url));
         }
+
+        // If logged in but not onboarded and trying to access dashboard, send to onboarding
+        const onboarded = (req.auth?.user as any)?.onboarded;
+        if (pathname.startsWith('/dashboard') && !onboarded) {
+            return NextResponse.redirect(new URL('/onboarding', req.url));
+        }
+
         return NextResponse.next();
     }
 
