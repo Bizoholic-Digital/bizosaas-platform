@@ -31,7 +31,7 @@ if ! ssh -o BatchMode=yes -o ConnectTimeout=5 $VPS_USER@$VPS_IP "echo Connection
 fi
 
 # Define the remote setup script
-cat << 'EOF' > setup_remote.sh
+cat << EOF > setup_remote.sh
 #!/bin/bash
 set -e
 
@@ -42,6 +42,9 @@ export REDIS_URL="${REDIS_URL}"
 export OPENAI_API_KEY="${OPENAI_API_KEY}"
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
 export GOOGLE_API_KEY="${GOOGLE_API_KEY}"
+EOF
+
+cat << 'EOF' >> setup_remote.sh
 
 GREEN='\033[0;32m'
 NC='\033[0m'
