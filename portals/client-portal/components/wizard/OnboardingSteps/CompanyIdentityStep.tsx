@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BusinessProfile } from '../types/onboarding';
-import { Search, MapPin, Globe, Phone, Building2, CheckCircle2, Sparkles } from 'lucide-react';
+import { Search, MapPin, Globe, Phone, Building2, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { generateDirectoryUrl } from '@/lib/business-slug';
 
 interface Props {
@@ -60,69 +60,116 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     const [countryISO, setCountryISO] = useState('US');
     const [phoneNumber, setPhoneNumber] = useState('');
 
+    const [searchError, setSearchError] = useState<string | null>(null);
+
+    // Close predictions when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setShowPredictions(false);
+            setShowAddressPredictions(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     const parsePhone = (phone: string) => {
         if (!phone) return { code: '+1', number: '', country: 'US' };
-        const cleaned = phone.replace(/[^0-9+]/g, '');
-        const match = COUNTRY_CODES.find(c => cleaned.startsWith(c.code));
-        if (match) return { code: match.code, number: cleaned.substring(match.code.length), country: match.country };
+        // Remove all non-numeric chars except leading +
+        const cleaned = phone.replace(/[^\d+]/g, '');
+        // Sort country codes by length descending to match longest first (e.g. +971 vs +9)
+        const sortedCodes = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
+        const match = sortedCodes.find(c => cleaned.startsWith(c.code));
+
+        if (match) {
+            return { code: match.code, number: cleaned.substring(match.code.length), country: match.country };
+        }
         return { code: '+1', number: cleaned, country: 'US' };
     };
 
-    // Initialize phone
+    // Initialize state from data
     useEffect(() => {
         if (data.phone) {
             const parsed = parsePhone(data.phone);
             setCountryISO(parsed.country);
             setPhoneNumber(parsed.number);
         }
-    }, []);
+        if (data.companyName) setSearchQuery(data.companyName);
+        if (data.location) setLocationQuery(data.location);
+    }, [data.id]); // Re-sync if data set changes
 
-    // Push local changes to parent only on user interaction or mount
+    // Update parent about phone
+    const syncPhone = (iso: string, num: string) => {
+        const code = COUNTRY_CODES.find(c => c.country === iso)?.code || '+1';
+        onUpdate({ phone: `${code} ${num.trim()}` });
+    };
+
     const handlePhoneChange = (val: string) => {
-        const num = val.replace(/[^0-9]/g, '');
+        const num = val.replace(/[^\d]/g, '');
         setPhoneNumber(num);
-        const code = COUNTRY_CODES.find(c => c.country === countryISO)?.code || '+1';
-        onUpdate({ phone: `${code} ${num}` });
+        syncPhone(countryISO, num);
     };
 
     const handleCountryChange = (iso: string) => {
         setCountryISO(iso);
-        const code = COUNTRY_CODES.find(c => c.country === iso)?.code || '+1';
-        onUpdate({ phone: `${code} ${phoneNumber}` });
+        syncPhone(iso, phoneNumber);
     };
 
-    // Business Search Logic
+    // Auto-update website and name as user types
+    const handleNameChange = (val: string) => {
+        setSearchQuery(val);
+        setShowPredictions(true);
+
+        const updates: Partial<BusinessProfile> = { companyName: val };
+
+        // If website is empty or auto-generated, keep it in sync with name
+        if (!data.website || data.website.includes('directory.bizoholic.net')) {
+            updates.website = generateDirectoryUrl(val, data.location || '');
+        }
+
+        onUpdate(updates);
+    };
+
+    const handleLocationInputChange = (val: string) => {
+        setLocationQuery(val);
+        setShowAddressPredictions(true);
+
+        const updates: Partial<BusinessProfile> = { location: val };
+
+        // Update website slug if it's auto-generated since it includes city
+        if (!data.website || data.website.includes('directory.bizoholic.net')) {
+            updates.website = generateDirectoryUrl(data.companyName || '', val);
+        }
+
+        onUpdate(updates);
+    };
+
+    // Debounced searches
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchQuery.length > 2 && !gmbConnected && showPredictions) {
                 searchPlaces(searchQuery, 'establishment', setPredictions);
             }
-        }, 500);
+        }, 300); // Faster response
         return () => clearTimeout(timer);
     }, [searchQuery, gmbConnected, showPredictions]);
 
-    // Location Search Logic
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (locationQuery.length > 2 && showAddressPredictions && !gmbConnected) {
+            if (locationQuery.length > 2 && !gmbConnected && showAddressPredictions) {
                 searchPlaces(locationQuery, 'geocode', setAddressPredictions);
             }
-        }, 500);
+        }, 300);
         return () => clearTimeout(timer);
-    }, [locationQuery, showAddressPredictions, gmbConnected]);
-
-
-    const [searchError, setSearchError] = useState<string | null>(null);
+    }, [locationQuery, gmbConnected, showAddressPredictions]);
 
     const searchPlaces = async (query: string, type: string, setter: any) => {
         const isAddr = type === 'geocode';
         isAddr ? setIsSearchingAddress(true) : setIsSearching(true);
-        setSearchError(null);
         try {
             const res = await fetch(`/api/brain/onboarding/places/autocomplete?input=${encodeURIComponent(query)}&types=${type}`);
-            const data = await res.json();
-            if (data.error) setter([]);
-            else setter(data.predictions || []);
+            const results = await res.json();
+            if (results.error) setter([]);
+            else setter(results.predictions || []);
         } catch (error) {
             setter([]);
         } finally {
@@ -136,6 +183,8 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         try {
             const res = await fetch(`/api/brain/onboarding/places/details?place_id=${placeId}`);
             const details = await res.json();
+
+            // Generate fallback website if Google doesn't have one
             const directoryUrl = !details.website ? generateDirectoryUrl(details.companyName || searchQuery, details.location) : null;
 
             onUpdate({
@@ -150,15 +199,15 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             setLocationQuery(details.location);
             setGmbConnected(true);
 
+            // Handle Country and Phone Code
             if (details.country) {
                 setCountryISO(details.country);
-            } else if (details.phone) {
-                const parsed = parsePhone(details.phone);
-                setCountryISO(parsed.country);
             }
 
             if (details.phone) {
                 const parsed = parsePhone(details.phone);
+                // If we got a specific country from the API, use it, otherwise use parsed one
+                if (!details.country) setCountryISO(parsed.country);
                 setPhoneNumber(parsed.number);
             }
         } catch (error) {
@@ -176,14 +225,24 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             const details = await res.json();
 
             setLocationQuery(details.location);
-            onUpdate({ location: details.location });
+
+            const updates: Partial<BusinessProfile> = {
+                location: details.location
+            };
+
+            // Update auto-generated website based on new location
+            if (!data.website || data.website.includes('directory.bizoholic.net')) {
+                updates.website = generateDirectoryUrl(data.companyName || '', details.location);
+            }
 
             if (details.country) {
                 setCountryISO(details.country);
-                // Also update the phone code in the data if we have a number
+                // Ensure the stored phone string uses the new code
                 const code = COUNTRY_CODES.find(c => c.country === details.country)?.code || '+1';
-                onUpdate({ phone: `${code} ${phoneNumber}` }); // Re-save with new code
+                updates.phone = `${code} ${phoneNumber}`;
             }
+
+            onUpdate(updates);
         } catch (error) {
             console.error("Location fetch failed", error);
         } finally {
@@ -192,43 +251,58 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-foreground">Company Identity</h2>
-                <p className="text-muted-foreground">Start by finding your business profile.</p>
+                <div className="inline-flex items-center justify-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-4">
+                    <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">Your Identity</h2>
+                <p className="text-muted-foreground">Setup your business profile and digital presence.</p>
             </div>
 
             <div className="space-y-4">
                 {/* Search / GMB Connection Card */}
-                <div className={`p-4 rounded-lg border transition-all ${gmbConnected ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
+                <div className={`p-5 rounded-2xl border-2 transition-all duration-300 ${gmbConnected ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/50' : 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none'}`}>
                     {gmbConnected ? (
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-green-100 p-2 rounded-full"><CheckCircle2 className="w-5 h-5 text-green-600" /></div>
+                            <div className="flex items-center gap-4">
+                                <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-xl"><CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" /></div>
                                 <div>
-                                    <h3 className="font-semibold text-green-900">Profile Found</h3>
-                                    <h4 className="font-bold text-green-800">{data.companyName}</h4>
-                                    <p className="text-xs text-green-700">{data.location}</p>
+                                    <h3 className="font-black text-green-900 dark:text-green-400 uppercase text-xs tracking-widest">Profile Verified</h3>
+                                    <h4 className="font-bold text-gray-900 dark:text-white text-lg">{data.companyName}</h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{data.location}</p>
                                 </div>
                             </div>
-                            <Button variant="ghost" size="sm" onClick={() => setGmbConnected(false)} className="text-green-700">Edit</Button>
+                            <Button variant="outline" size="sm" onClick={() => setGmbConnected(false)} className="rounded-xl border-green-200 hover:bg-green-100 dark:border-green-800 hover:text-green-700">Change</Button>
                         </div>
                     ) : (
-                        <div>
-                            <Label className="text-blue-700 font-semibold mb-2 block flex items-center gap-2"><Search size={16} /> Search business</Label>
+                        <div className="relative">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2 block flex items-center gap-2">
+                                <Search size={12} /> Search Google Maps
+                            </Label>
                             <div className="relative">
                                 <Input
-                                    placeholder="Business name..."
+                                    placeholder="Enter business name (e.g. Bizoholic Digital)..."
                                     value={searchQuery}
-                                    onChange={(e) => { setSearchQuery(e.target.value); setShowPredictions(true); onUpdate({ companyName: e.target.value }); }}
+                                    onChange={(e) => handleNameChange(e.target.value)}
+                                    className="h-12 pl-4 pr-10 rounded-xl border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 transition-all text-lg font-medium"
                                 />
-                                {isSearching && <div className="absolute right-3 top-2.5 animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full" />}
+                                {isSearching && <Loader2 className="absolute right-3 top-3.5 animate-spin w-5 h-5 text-blue-600" />}
+
                                 {showPredictions && predictions.length > 0 && (
-                                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto backdrop-blur-xl bg-opacity-95">
+                                        <div className="px-4 py-2 bg-gray-50 dark:bg-slate-800/50 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b dark:border-slate-800">Results from Google</div>
                                         {predictions.map((pred) => (
-                                            <div key={pred.place_id} className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-0" onClick={() => selectBusiness(pred.place_id)}>
-                                                <div className="font-medium">{pred.structured_formatting.main_text}</div>
-                                                <div className="text-xs text-muted-foreground">{pred.structured_formatting.secondary_text}</div>
+                                            <div
+                                                key={pred.place_id}
+                                                className="p-4 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border-b last:border-0 dark:border-slate-800 transition-colors group"
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    selectBusiness(pred.place_id);
+                                                }}
+                                            >
+                                                <div className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{pred.structured_formatting.main_text}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">{pred.structured_formatting.secondary_text}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -240,40 +314,52 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Company Name</Label>
-                        <Input value={data.companyName} onChange={(e) => onUpdate({ companyName: e.target.value })} disabled={gmbConnected} />
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Company Name</Label>
+                        <Input
+                            value={data.companyName}
+                            onChange={(e) => handleNameChange(e.target.value)}
+                            disabled={gmbConnected}
+                            className="rounded-xl h-11"
+                        />
                     </div>
                     <div className="space-y-2">
-                        <Label>Industry</Label>
-                        <Input value={data.industry} onChange={(e) => onUpdate({ industry: e.target.value })} placeholder="SaaS, Agency..." />
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Industry</Label>
+                        <Input
+                            value={data.industry}
+                            onChange={(e) => onUpdate({ industry: e.target.value })}
+                            placeholder="e.g. Agency, SaaS, Retail"
+                            className="rounded-xl h-11"
+                        />
                     </div>
                 </div>
 
                 {/* Location Field with Autocomplete */}
                 <div className="space-y-2">
-                    <Label>Location</Label>
+                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Location</Label>
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60 z-10" />
+                        <MapPin className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground/60 z-10" />
                         <Input
                             value={locationQuery}
-                            onChange={(e) => {
-                                setLocationQuery(e.target.value);
-                                setShowAddressPredictions(true);
-                                onUpdate({ location: e.target.value });
-                            }}
-                            className="pl-9"
+                            onChange={(e) => handleLocationInputChange(e.target.value)}
+                            className="pl-10 rounded-xl h-11"
                             disabled={gmbConnected}
                             placeholder="Enter city or address..."
                         />
-                        {isSearchingAddress && <div className="absolute right-3 top-2.5 animate-spin w-4 h-4 border-2 border-slate-600 border-t-transparent rounded-full" />}
+                        {isSearchingAddress && <Loader2 className="absolute right-3 top-3 animate-spin w-5 h-5 text-gray-400" />}
 
-                        {/* Address Autocomplete Dropdown */}
                         {showAddressPredictions && addressPredictions.length > 0 && !gmbConnected && (
-                            <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto backdrop-blur-xl bg-opacity-95">
                                 {addressPredictions.map((pred) => (
-                                    <div key={pred.place_id} className="p-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b last:border-0 dark:border-slate-700" onClick={() => selectLocation(pred.place_id)}>
-                                        <div className="font-medium">{pred.structured_formatting.main_text}</div>
-                                        <div className="text-xs text-muted-foreground">{pred.structured_formatting.secondary_text}</div>
+                                    <div
+                                        key={pred.place_id}
+                                        className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer border-b last:border-0 dark:border-slate-700 transition-colors"
+                                        onMouseDown={(e) => {
+                                            e.preventDefault();
+                                            selectLocation(pred.place_id);
+                                        }}
+                                    >
+                                        <div className="font-bold text-gray-900 dark:text-white">{pred.structured_formatting.main_text}</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">{pred.structured_formatting.secondary_text}</div>
                                     </div>
                                 ))}
                             </div>
@@ -283,25 +369,39 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Website</Label>
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Business Website</Label>
                         <div className="relative">
-                            <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
-                            <Input value={data.website} onChange={(e) => onUpdate({ website: e.target.value })} className="pl-9" placeholder="https://..." />
+                            <Globe className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground/60" />
+                            <Input
+                                value={data.website}
+                                onChange={(e) => onUpdate({ website: e.target.value })}
+                                className="pl-10 rounded-xl h-11"
+                                placeholder="https://..."
+                            />
                         </div>
+                        {data.website?.includes('directory.bizoholic.net') && (
+                            <p className="text-[9px] text-blue-500 font-bold uppercase tracking-tighter px-1">Using generated directory domain</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Phone</Label>
+                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Phone Number</Label>
                         <div className="flex gap-2">
                             <Select value={countryISO} onValueChange={handleCountryChange}>
-                                <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-                                <SelectContent className="max-h-[300px]">
+                                <SelectTrigger className="w-[120px] rounded-xl h-11"><SelectValue /></SelectTrigger>
+                                <SelectContent className="max-h-[300px] rounded-xl border-gray-100 dark:border-slate-800 shadow-2xl">
                                     {COUNTRY_CODES.map(c => <SelectItem key={c.country} value={c.country}>{c.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <div className="relative flex-1">
-                                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
-                                <Input value={phoneNumber} onChange={(e) => handlePhoneChange(e.target.value)} className="pl-9" type="tel" />
+                                <Phone className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground/60" />
+                                <Input
+                                    value={phoneNumber}
+                                    onChange={(e) => handlePhoneChange(e.target.value)}
+                                    className="pl-10 rounded-xl h-11"
+                                    type="tel"
+                                    placeholder="Enter phone..."
+                                />
                             </div>
                         </div>
                     </div>
