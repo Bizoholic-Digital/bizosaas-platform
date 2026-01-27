@@ -1,17 +1,34 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-/**
- * PASS-THROUGH MIDDLEWARE
- * Temporarily disabling all logic to stop potential redirect loops 
- * between /onboarding and /login.
- */
-export default function middleware(req: NextRequest) {
-    return NextResponse.next();
+export async function middleware(req: NextRequest) {
+    const token = await getToken({ req });
+    const isAuth = !!token;
+    const isAuthPage = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/register');
+
+    if (isAuthPage) {
+        if (isAuth) {
+            return NextResponse.redirect(new URL('/dashboard', req.url));
+        }
+        return null;
+    }
+
+    if (!isAuth) {
+        let from = req.nextUrl.pathname;
+        if (req.nextUrl.search) {
+            from += req.nextUrl.search;
+        }
+
+        return NextResponse.redirect(
+            new URL(`/login?from=${encodeURIComponent(from)}`, req.url)
+        );
+    }
+
+    // Onboarding check can be added here if token has the flag,
+    // but better to handle it in the page/layout to avoid loops.
 }
 
 export const config = {
-    matcher: [
-        '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    ],
+    matcher: ['/dashboard/:path*', '/onboarding/:path*', '/login', '/register'],
 };

@@ -61,8 +61,7 @@ export function OnboardingWizard() {
     const discoveryAttempted = useRef(false);
     const auditAttempted = useRef(false);
 
-    // User Syncing disabled temporarily to isolate render loop
-    /*
+    // User Syncing re-enabled
     useEffect(() => {
         if (isAuthLoading || !user || !isLoaded || !state) return;
         if (!state.socialLogin) {
@@ -74,7 +73,6 @@ export function OnboardingWizard() {
             });
         }
     }, [isAuthLoading, user?.id, isLoaded, !!state?.socialLogin, setSocialLogin]);
-    */
 
     const triggerDiscovery = useCallback(async (email: string, provider: string) => {
         if (isDiscovering || discoveryAttempted.current) return;

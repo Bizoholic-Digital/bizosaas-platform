@@ -5,39 +5,69 @@ import { signIn } from 'next-auth/react'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Github, Chrome } from 'lucide-react'
 
 function LoginForm() {
-  const handleLogin = () => {
+  const handleLogin = (provider: string = 'authentik') => {
     signIn('authentik', { callbackUrl: '/dashboard' })
   }
 
   return (
-    <Card className="w-[400px] shadow-2xl bg-white/80 dark:bg-black/80 backdrop-blur-sm border-0">
-      <CardHeader className="space-y-1 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-            <ShieldCheck className="w-8 h-8 text-red-600 dark:text-red-400" />
+    <Card className="w-[420px] shadow-2xl bg-white/70 dark:bg-black/70 backdrop-blur-md border-0 ring-1 ring-white/20">
+      <CardHeader className="space-y-1 text-center pb-8">
+        <div className="flex justify-center mb-6">
+          <div className="p-4 bg-gradient-to-tr from-red-600 to-orange-500 rounded-2xl shadow-lg ring-4 ring-red-500/20">
+            <ShieldCheck className="w-8 h-8 text-white" />
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight">Admin Portal</CardTitle>
-        <CardDescription>
-          Authorized personnel only. All actions are logged.
+        <CardTitle className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-500 dark:from-white dark:to-gray-400">
+          Admin Control Center
+        </CardTitle>
+        <CardDescription className="text-base font-medium">
+          Authorized personnel only. Sessions are audited.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent className="grid gap-6">
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            variant="outline"
+            className="flex items-center justify-center gap-2 h-12 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all active:scale-95"
+            onClick={() => handleLogin()}
+          >
+            <Chrome className="w-5 h-5 text-red-500" />
+            <span className="font-semibold">Google</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="flex items-center justify-center gap-2 h-12 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all active:scale-95"
+            onClick={() => handleLogin()}
+          >
+            <Github className="w-5 h-5" />
+            <span className="font-semibold">GitHub</span>
+          </Button>
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white/0 px-2 text-muted-foreground backdrop-blur-none bg-inherit">
+              Standard Authentication
+            </span>
+          </div>
+        </div>
+
         <Button
-          className="w-full text-lg h-12 transition-all hover:scale-[1.02] bg-red-600 hover:bg-red-700"
+          className="w-full text-lg font-bold h-14 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
           size="lg"
-          onClick={handleLogin}
+          onClick={() => handleLogin()}
         >
-          Sign in with Authentik
+          Sign in via Secure SSO
         </Button>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
-        <div>
-          Restricted Access System
-        </div>
+      <CardFooter className="flex flex-col space-y-2 pt-4 text-center text-sm text-muted-foreground italic">
+        <p>Locked by BizOSaaS Security Core</p>
       </CardFooter>
     </Card>
   )
@@ -45,35 +75,29 @@ function LoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
-      {/* Animated Gradient Background - Full Page */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-red-50 to-orange-50 dark:from-slate-950 dark:via-red-950 dark:to-orange-950 -z-10">
-        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-72 h-72 bg-yellow-300 dark:bg-yellow-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-red-300 dark:bg-red-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+    <div className="relative min-h-screen w-full overflow-hidden flex items-center justify-center p-4">
+      {/* Heavy Duty Background for Admin */}
+      <div className="fixed inset-0 bg-slate-100 dark:bg-slate-950 -z-20" />
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/5 via-transparent to-transparent opacity-50" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-slate-600/5 rounded-full blur-[150px]" />
       </div>
 
-      <div className="absolute top-6 right-6 z-50 flex items-center gap-4">
+      <div className="absolute top-8 right-8 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="z-10" data-testid="login-form">
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
+      <div className="z-10 w-full max-w-[420px]" data-testid="login-form">
+        <Suspense fallback={
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-4 border-red-600"></div>
+            <p className="text-sm font-bold tracking-widest uppercase animate-pulse">Establishing Secure Link...</p>
+          </div>
+        }>
           <LoginForm />
         </Suspense>
       </div>
-
-      <style jsx global>{`
-        @keyframes blob {
-          0% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob { animation: blob 7s infinite; }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-      `}</style>
     </div>
   )
 }
