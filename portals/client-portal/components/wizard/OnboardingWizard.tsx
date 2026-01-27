@@ -122,9 +122,16 @@ export function OnboardingWizard() {
         }
     }, [isDiscovering, updateDiscovery, updateAnalytics, updateProfile]);
 
-    const triggerTrackingAudit = useCallback(async (url: string) => {
-        if (state.analytics.auditedServices || isAuditing || auditAttempted.current) return;
-        auditAttempted.current = true;
+    const triggerTrackingAudit = useCallback(async (url: string, force = false) => {
+        if (!force && (state.analytics.auditedServices || isAuditing || auditAttempted.current)) return;
+
+        if (force) {
+            // Reset for force rerun
+            auditAttempted.current = true;
+        } else {
+            auditAttempted.current = true;
+        }
+
         setIsAuditing(true);
         try {
             const res = await fetch('/api/brain/onboarding/scan', {
@@ -296,7 +303,7 @@ export function OnboardingWizard() {
     const renderStepContent = () => {
         switch (state.currentStep) {
             case 0: return <CompanyIdentityStep data={state.profile} onUpdate={updateProfile} onReset={resetOnboarding} discovery={state.discovery} isDiscovering={isDiscovering} />;
-            case 1: return <DigitalPresenceStep data={state.digitalPresence} websiteUrl={state.profile.website} onUpdate={updateDigitalPresence} isAuditing={isAuditing} auditedServices={state.analytics.auditedServices} />;
+            case 1: return <DigitalPresenceStep data={state.digitalPresence} websiteUrl={state.profile.website} onUpdate={updateDigitalPresence} isAuditing={isAuditing} auditedServices={state.analytics.auditedServices} onRerunAudit={() => triggerTrackingAudit(state.profile.website || '', true)} />;
             case 2: return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} state={state} />;
             case 3: return <ThemePluginSelectionStep data={state.marketplace} onUpdate={updateMarketplace} />;
             case 4: return <PluginConnectionStep websiteUrl={state.profile.website} onVerified={() => nextStep()} onSkip={nextStep} />;

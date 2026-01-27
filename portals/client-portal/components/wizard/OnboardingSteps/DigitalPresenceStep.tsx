@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DigitalPresence } from '../types/onboarding';
-import { Globe, Layout, Database, Search, CheckCircle2, Sparkles, Loader2, ShieldCheck, Zap, ShoppingBag } from 'lucide-react';
+import { Globe, Layout, Database, Search, CheckCircle2, Sparkles, Loader2, ShieldCheck, Zap, ShoppingBag, RefreshCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +14,7 @@ interface Props {
     onUpdate: (data: Partial<DigitalPresence>) => void;
     isAuditing?: boolean;
     auditedServices?: any;
+    onRerunAudit?: () => void;
 }
 
 const SCAN_MESSAGES = [
@@ -26,7 +27,7 @@ const SCAN_MESSAGES = [
     "Finalizing digital footprint analysis..."
 ];
 
-export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, auditedServices }: Props) {
+export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, auditedServices, onRerunAudit }: Props) {
     const [scanProgress, setScanProgress] = React.useState(0);
     const [statusIndex, setStatusIndex] = React.useState(0);
 
@@ -116,7 +117,12 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                             <span className="text-[10px] font-black uppercase tracking-widest text-blue-600/50">Auto-Scan</span>
                             <Switch
                                 checked={data.hasTracking}
-                                onCheckedChange={(checked) => onUpdate({ hasTracking: checked })}
+                                onCheckedChange={(checked) => {
+                                    onUpdate({ hasTracking: checked });
+                                    if (checked && onRerunAudit) {
+                                        onRerunAudit();
+                                    }
+                                }}
                                 className="data-[state=checked]:bg-blue-600"
                             />
                         </div>
@@ -149,10 +155,19 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                         <div className="bg-green-600 p-2 rounded-xl text-white shadow-lg shadow-green-200 dark:shadow-none">
                                             <ShieldCheck className="h-5 w-5" />
                                         </div>
-                                        <div className="text-left">
+                                        <div className="text-left flex-1">
                                             <span className="text-sm font-black uppercase tracking-tight leading-none block mb-0.5">Discovery Successful</span>
                                             <p className="text-xs text-green-600/80 font-medium">We've identified {auditedServices.essential.length + auditedServices.optional.length} services in your stack.</p>
                                         </div>
+                                        {onRerunAudit && (
+                                            <button
+                                                onClick={onRerunAudit}
+                                                className="p-2 hover:bg-green-100 dark:hover:bg-green-800/40 rounded-lg transition-colors text-green-700"
+                                                title="Rescan Website"
+                                            >
+                                                <RefreshCcw className="h-4 w-4" />
+                                            </button>
+                                        )}
                                     </div>
                                     <div className="flex flex-wrap gap-2 px-1">
                                         {/* Summarized Essential Tags */}
