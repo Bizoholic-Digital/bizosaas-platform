@@ -33,6 +33,7 @@ export interface BusinessProfile {
     location: string;
     gmbLink?: string;
     website?: string;
+    directoryUrl?: string;
     websiteType?: 'owned' | 'directory';
     phone?: string;
     description?: string;
@@ -163,6 +164,7 @@ export const INITIAL_STATE: OnboardingState = {
         companyName: '',
         industry: '',
         location: '',
+        directoryUrl: ''
     },
     digitalPresence: {
         websiteDetected: false,

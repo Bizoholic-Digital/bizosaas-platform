@@ -21,6 +21,15 @@ import { ThemePluginSelectionStep } from './OnboardingSteps/ThemePluginSelection
 import { PluginConnectionStep } from './OnboardingSteps/PluginConnectionStep';
 import { StrategyApprovalStep } from './OnboardingSteps/StrategyApprovalStep';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog';
+import { AlertTriangle } from 'lucide-react';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
@@ -57,6 +66,8 @@ export function OnboardingWizard() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDiscovering, setIsDiscovering] = useState(false);
     const [isAuditing, setIsAuditing] = useState(false);
+    const [showToolConfirm, setShowToolConfirm] = useState(false);
+    const [autoSelectedMcps, setAutoSelectedMcps] = useState<string[]>([]);
 
     // Safety flags to prevent infinite loops if API returns empty results
     const discoveryAttempted = useRef(false);
@@ -135,7 +146,7 @@ export function OnboardingWizard() {
         }
     }, [state.analytics.auditedServices, isAuditing, updateAnalytics]);
 
-    // Handle Auto-Discovery Trigger
+    // Auto-Discovery Trigger
     useEffect(() => {
         if (!state || state.currentStep < 2 || isDiscovering || !isLoaded || discoveryAttempted.current) return;
         const hasDiscoveryData = (state.discovery?.google?.length || 0) > 0;
@@ -150,6 +161,65 @@ export function OnboardingWizard() {
             triggerTrackingAudit(state.profile.website);
         }
     }, [state.profile.website, state.digitalPresence.hasTracking, isAuditing, triggerTrackingAudit]);
+
+    // AUTO-SELECTION LOGIC: Map detected services to MCP slugs
+    useEffect(() => {
+        if (!isLoaded || !state) return;
+
+        const newSelectedMcps = new Set(state.tools.selectedMcps || []);
+        let changed = false;
+
+        // 1. Detect from CMS
+        if (state.digitalPresence.cmsType === 'wordpress' && !newSelectedMcps.has('wordpress')) {
+            newSelectedMcps.add('wordpress');
+            changed = true;
+        } else if (state.digitalPresence.cmsType === 'shopify' && !newSelectedMcps.has('shopify')) {
+            newSelectedMcps.add('shopify');
+            changed = true;
+        }
+
+        // 2. Detect from CRM
+        if (state.digitalPresence.crmType === 'fluentcrm' && !newSelectedMcps.has('fluentcrm')) {
+            newSelectedMcps.add('fluentcrm');
+            changed = true;
+        } else if (state.digitalPresence.crmType === 'hubspot' && !newSelectedMcps.has('hubspot')) {
+            newSelectedMcps.add('hubspot');
+            changed = true;
+        }
+
+        // 3. Detect from Tracking Audit (GTM, GA4)
+        if (state.analytics.auditedServices) {
+            const allServices = [...state.analytics.auditedServices.essential, ...state.analytics.auditedServices.optional];
+
+            if (allServices.some(s => s.service === 'GTM') && !newSelectedMcps.has('google-tag-manager')) {
+                newSelectedMcps.add('google-tag-manager');
+                changed = true;
+            }
+            if (allServices.some(s => s.service === 'GA4' || s.service === 'GA') && !newSelectedMcps.has('google-analytics-4')) {
+                newSelectedMcps.add('google-analytics-4');
+                changed = true;
+            }
+        }
+
+        // 4. Default Business Tools (e.g. Plane.so for Project Management)
+        if (!newSelectedMcps.has('plane')) {
+            newSelectedMcps.add('plane');
+            changed = true;
+        }
+
+        if (changed) {
+            updateTools({ selectedMcps: Array.from(newSelectedMcps) });
+            // Track what we auto-selected to detect manual changes later
+            if (autoSelectedMcps.length === 0) {
+                setAutoSelectedMcps(Array.from(newSelectedMcps));
+            }
+        }
+    }, [
+        state?.digitalPresence.cmsType,
+        state?.digitalPresence.crmType,
+        state?.analytics.auditedServices,
+        isLoaded
+    ]);
 
     if (!isLoaded || isAuthLoading) return null;
 
@@ -223,9 +293,57 @@ export function OnboardingWizard() {
                                     {isSubmitting ? 'Launching...' : 'Approve & Launch 🚀'}
                                 </Button>
                             ) : (
-                                <Button onClick={nextStep} disabled={state.currentStep === 4 && !state.agent.authorized} className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-md">Continue</Button>
+                                <Button
+                                    onClick={() => {
+                                        // Specific confirmation for Tool Selection step (Step 2)
+                                        if (state.currentStep === 2) {
+                                            const current = JSON.stringify([...(state.tools.selectedMcps || [])].sort());
+                                            const original = JSON.stringify([...autoSelectedMcps].sort());
+                                            if (current !== original) {
+                                                setShowToolConfirm(true);
+                                                return;
+                                            }
+                                        }
+                                        nextStep();
+                                    }}
+                                    disabled={state.currentStep === 4 && !state.agent.authorized}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 shadow-md"
+                                >
+                                    Continue
+                                </Button>
                             )}
                         </div>
+
+                        {/* Selection Confirmation Dialog */}
+                        <Dialog open={showToolConfirm} onOpenChange={setShowToolConfirm}>
+                            <DialogContent className="max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2 uppercase font-black text-xl tracking-tighter">
+                                        <AlertTriangle className="text-amber-500" /> Confirm Stack Selection
+                                    </DialogTitle>
+                                    <DialogDescription className="text-base font-medium">
+                                        You have modified the recommended tech stack for your business. Are you sure you want to proceed with these changes?
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="py-4 space-y-3">
+                                    <div className="p-4 bg-muted/50 rounded-2xl border border-dashed text-sm">
+                                        <p className="font-bold mb-2">Summary of changes:</p>
+                                        <ul className="space-y-1 text-xs">
+                                            {state.tools.selectedMcps?.filter(s => !autoSelectedMcps.includes(s)).map(s => (
+                                                <li key={s} className="text-green-600 font-bold">+ Added {s}</li>
+                                            ))}
+                                            {autoSelectedMcps.filter(s => !state.tools.selectedMcps?.includes(s)).map(s => (
+                                                <li key={s} className="text-red-500 font-bold">- Removed {s}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <DialogFooter className="gap-2 sm:gap-0">
+                                    <Button variant="ghost" onClick={() => setShowToolConfirm(false)} className="font-bold">Review Changes</Button>
+                                    <Button onClick={() => { setShowToolConfirm(false); nextStep(); }} className="bg-blue-600 hover:bg-blue-700 font-bold">Confirm & Continue</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </CardContent>
                 </Card>
             </div>

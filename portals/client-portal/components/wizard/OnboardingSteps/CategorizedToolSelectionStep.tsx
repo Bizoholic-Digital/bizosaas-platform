@@ -1,13 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { brainApi } from '@/lib/brain-api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Circle, Loader2, Sparkles, Search, LayoutGrid, PackageOpen, Box } from 'lucide-react';
+import {
+    CheckCircle,
+    Circle,
+    Loader2,
+    Sparkles,
+    Search,
+    LayoutGrid,
+    PackageOpen,
+    Box,
+    AlertTriangle,
+    Info
+} from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { ToolIntegration } from '../types/onboarding';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog';
 
 interface Props {
     data: ToolIntegration;
@@ -40,18 +59,46 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Auto-selection monitoring
+    const [initialSelectedMcps] = useState<string[]>(data.selectedMcps || []);
+    const [showConfirm, setShowConfirm] = useState(false);
+
     // Initial Data Fetch
     useEffect(() => {
         let mounted = true;
         const load = async () => {
             try {
                 const cats = await brainApi.mcp.listCategories();
+
+                // Ensure "Project Management" or similar category exists for Plane
+                let projectsCat = cats.find(c => c.slug === 'projects' || c.slug === 'tasks');
+                if (!projectsCat && cats.length > 0) {
+                    // This is a safety check/mocking if backend is missing it
+                    console.warn("Backend missing projects/tasks category");
+                }
+
                 if (mounted) {
                     setCategories(cats);
                     if (cats.length > 0) setSelectedCategory(cats[0].slug);
                 }
 
                 const allMcps = await brainApi.mcp.getRegistry();
+
+                // PLANE.SO INJECTION: Ensure Plane is in the list if not already there
+                const hasPlane = allMcps.some(m => m.slug === 'plane');
+                if (!hasPlane && projectsCat) {
+                    allMcps.push({
+                        id: 'plane-mcp',
+                        name: 'Plane.so',
+                        slug: 'plane',
+                        description: 'Open source project management api-first tool for task tracking and planning.',
+                        category_id: projectsCat.id,
+                        is_official: true,
+                        is_featured: true,
+                        capabilities: ['Task Tracking', 'Kanban', 'Sprint Planning']
+                    });
+                }
+
                 const grouped = allMcps.reduce((acc: any, mcp: Mcp) => {
                     const cat = cats.find((c: Category) => c.id === mcp.category_id);
                     if (cat) {
@@ -60,6 +107,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                     }
                     return acc;
                 }, {});
+
                 if (mounted) setMcps(grouped);
             } catch (err) {
                 console.error("Failed to load tools", err);
@@ -81,31 +129,51 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
         onUpdate({ selectedMcps: Array.from(current) });
     };
 
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="animate-spin text-blue-600" size={32} />
-            </div>
-        );
-    }
-
     const currentMcps = selectedCategory ? mcps[selectedCategory] || [] : [];
-    const filteredMcps = currentMcps.filter(m =>
-        m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredMcps = useMemo(() => {
+        return currentMcps.filter(m =>
+            m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            m.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [currentMcps, searchTerm]);
 
     const featuredMcps = filteredMcps.filter(m => m.is_featured);
     const standardMcps = filteredMcps.filter(m => !m.is_featured);
 
+    if (loading) {
+        return (
+            <div className="flex h-64 flex-col items-center justify-center gap-4">
+                <Loader2 className="animate-spin text-blue-600" size={32} />
+                <p className="text-sm text-muted-foreground animate-pulse">Loading specialist registry...</p>
+            </div>
+        );
+    }
+
+    const hasSelectionChanges = JSON.stringify(initialSelectedMcps.sort()) !== JSON.stringify((data.selectedMcps || []).sort());
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
             <div className="text-center mb-8">
-                <h2 className="text-3xl font-extrabold text-foreground tracking-tight">Power Up Your Business</h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2">
-                    Select the platforms you already use. We'll automatically integrate them into your BizOSaaS dashboard.
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
+                    <Sparkles size={12} /> Auto-Discovery Powered
+                </div>
+                <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">Power Up Your Business</h2>
+                <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2 font-medium">
+                    We've pre-selected tools based on your digital presence. Confirm or adjust your stack.
                 </p>
             </div>
+
+            {initialSelectedMcps.length > 0 && (
+                <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 flex items-center gap-4 mb-6">
+                    <div className="bg-blue-500/20 p-2 rounded-xl">
+                        <Info className="text-blue-600 h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-bold text-blue-900 dark:text-blue-400 leading-tight">Smart Recommendations Applied</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300/70">Based on your website audit, we've automatically enabled {initialSelectedMcps.length} specialist tools.</p>
+                    </div>
+                </div>
+            )}
 
             <div className="flex flex-col md:grid md:grid-cols-4 gap-8 min-h-[500px]">
                 {/* Categories */}
@@ -116,6 +184,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                             {categories.map(cat => {
                                 const Icon = (Icons as any)[cat.icon] || Box;
                                 const isSelected = selectedCategory === cat.slug;
+                                const countInCat = data.selectedMcps?.filter(s => mcps[cat.slug]?.some(m => m.slug === s)).length || 0;
 
                                 return (
                                     <button
@@ -124,15 +193,17 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                             setSelectedCategory(cat.slug);
                                             setSearchTerm('');
                                         }}
-                                        className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 md:w-full rounded-xl text-sm transition-all whitespace-nowrap ${isSelected
+                                        className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 md:w-full rounded-xl text-sm transition-all whitespace-nowrap relative ${isSelected
                                             ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none font-semibold'
                                             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                             }`}
                                     >
                                         <Icon size={18} />
                                         <span>{cat.name}</span>
-                                        {data.selectedMcps?.some(s => mcps[cat.slug]?.some(m => m.slug === s)) && (
-                                            <div className={`ml-auto h-2 w-2 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500 animate-pulse'}`} />
+                                        {countInCat > 0 && (
+                                            <Badge className={`ml-auto border-none h-5 min-w-[20px] px-1 justify-center rounded-full ${isSelected ? 'bg-white text-blue-600' : 'bg-green-500 text-white'}`}>
+                                                {countInCat}
+                                            </Badge>
                                         )}
                                     </button>
                                 );
@@ -154,8 +225,10 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="text-xs font-medium text-muted-foreground px-3 py-1 bg-background rounded-full border border-muted">
-                            {data.selectedMcps?.length || 0} tools selected
+                        <div className="flex items-center gap-2">
+                            <div className="text-xs font-bold text-muted-foreground px-3 py-1 bg-background rounded-full border border-muted uppercase tracking-tighter">
+                                {data.selectedMcps?.length || 0} Tools Enabled
+                            </div>
                         </div>
                     </div>
 
@@ -165,8 +238,8 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
                             {featuredMcps.length > 0 && !searchTerm && (
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2 px-1">
-                                        <Sparkles size={16} className="text-amber-500" />
-                                        <h3 className="text-sm font-bold text-foreground">Recommended for You</h3>
+                                        <Sparkles size={16} className="text-amber-500 fill-amber-500/20" />
+                                        <h3 className="text-sm font-black text-foreground uppercase tracking-tight">Recommended Connectors</h3>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {featuredMcps.map(mcp => (
@@ -178,9 +251,9 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
 
                             {/* Standard Tools */}
                             <div className="space-y-4">
-                                {featuredMcps.length > 0 && !searchTerm && (
+                                {(featuredMcps.length > 0 && !searchTerm) && (
                                     <div className="px-1">
-                                        <h3 className="text-sm font-bold text-muted-foreground">All Tools</h3>
+                                        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Available MCPs</h3>
                                     </div>
                                 )}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -213,29 +286,33 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
 function McpCard({ mcp, selected, onToggle }: { mcp: any, selected: boolean, onToggle: () => void }) {
     return (
         <Card
-            className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${selected ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 ring-2 ring-blue-500/20' : 'hover:border-blue-300'
+            className={`group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden ${selected
+                ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/10 ring-4 ring-blue-500/10'
+                : 'hover:border-blue-300 dark:border-slate-800'
                 }`}
             onClick={onToggle}
         >
-            <CardContent className="p-5 flex items-start gap-5">
+            {selected && <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full flex items-start justify-end p-2"><CheckCircle size={12} className="text-blue-600" /></div>}
+
+            <CardContent className="p-5 flex items-start gap-4">
                 <div className="mt-1">
                     {selected ? (
-                        <CheckCircle className="text-blue-600" size={24} />
+                        <div className="bg-blue-600 rounded-full p-1 text-white"><CheckCircle size={20} /></div>
                     ) : (
-                        <Circle className="text-muted-foreground/30 group-hover:text-muted-foreground/60" size={24} />
+                        <div className="text-muted-foreground/30 group-hover:text-blue-500/50 transition-colors"><Circle size={24} /></div>
                     )}
                 </div>
-                <div className="flex-1 space-y-2">
+                <div className="flex-1 space-y-2 text-left">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-foreground text-lg">{mcp.name}</h3>
+                        <h3 className="font-bold text-foreground text-base tracking-tight leading-tight">{mcp.name}</h3>
                         {mcp.is_official && (
-                            <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none text-[9px] px-2 py-0">Certified</Badge>
+                            <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 hover:bg-blue-100 border-none text-[8px] font-black px-1.5 py-0 uppercase tracking-tighter">Verified</Badge>
                         )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">{mcp.description}</p>
-                    <div className="flex flex-wrap gap-1.5 pt-2">
+                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed font-medium">{mcp.description}</p>
+                    <div className="flex flex-wrap gap-1 pt-1">
                         {mcp.capabilities.slice(0, 3).map((cap: string) => (
-                            <span key={cap} className="text-[9px] bg-muted/80 text-muted-foreground px-2 py-1 rounded-md font-medium uppercase tracking-wider">
+                            <span key={cap} className="text-[8px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded-md font-bold uppercase">
                                 {cap}
                             </span>
                         ))}
