@@ -188,9 +188,29 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-500/10 p-3 rounded-lg border border-green-500/20 shadow-sm animate-in zoom-in-95 duration-500">
                                         <ShieldCheck className="h-5 w-5" />
-                                        <span className="text-sm font-bold">Audit Complete: {auditedServices.essential.length + auditedServices.optional.length} services identified</span>
+                                        <span className="text-sm font-bold">Audit Complete: Tech Stack Identified</span>
                                     </div>
-                                    <div className="flex flex-wrap gap-2 px-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+                                        {data.cmsType && (
+                                            <div className="flex items-center gap-2 p-2 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                                                <Layout className="w-4 h-4 text-blue-500" />
+                                                <div className="text-left">
+                                                    <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Detected CMS</p>
+                                                    <p className="text-xs font-bold capitalize">{data.cmsType}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {data.crmType && data.crmType !== 'none' && (
+                                            <div className="flex items-center gap-2 p-2 rounded-xl bg-purple-500/5 border border-purple-500/10">
+                                                <Database className="w-4 h-4 text-purple-500" />
+                                                <div className="text-left">
+                                                    <p className="text-[8px] font-black text-purple-500 uppercase tracking-widest leading-none mb-1">Detected CRM</p>
+                                                    <p className="text-xs font-bold capitalize">{data.crmType}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2 px-1 pt-2">
                                         {(auditedServices?.essential || []).map((s: any) => (
                                             <span key={s.id} className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-sm">
                                                 <Sparkles className="h-3 w-3" /> {s.service}
