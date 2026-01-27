@@ -156,9 +156,15 @@ export function PluginConnectionStep({ websiteUrl, onVerified, onSkip }: Props) 
                     ) : (
                         <Tabs defaultValue="manual" className="w-full">
                             <TabsList className="grid w-full grid-cols-2 mb-4">
-                                <TabsTrigger value="manual">Plugin (Robust)</TabsTrigger>
+                                <TabsTrigger value="manual">Plugin (Robust) *</TabsTrigger>
                                 <TabsTrigger value="auto">Auto-Connect</TabsTrigger>
                             </TabsList>
+
+                            <Alert className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                                <AlertDescription className="text-xs text-blue-800 dark:text-blue-300">
+                                    <span className="font-semibold">* Recommended:</span> The Plugin method provides better security, reliability, and full feature access. Auto-Connect is faster but may have limited functionality.
+                                </AlertDescription>
+                            </Alert>
 
                             <TabsContent value="manual">
                                 <Card className="shadow-md">
