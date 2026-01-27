@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CampaignGoals } from '../types/onboarding';
-import { Target, Users, ShoppingBag, Radio } from 'lucide-react';
+import {
+    Target, Users, ShoppingBag, Radio, Sparkles,
+    ArrowRight, Lightbulb, Zap, TrendingUp, ShieldCheck, Mail, CreditCard,
+    Globe
+} from 'lucide-react';
+import * as Icons from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 interface Props {
     data: CampaignGoals;
@@ -12,98 +19,218 @@ interface Props {
 }
 
 const GOALS = [
-    { id: 'lead_gen', label: 'Lead Generation', desc: 'Get more signups & inquiries', icon: Users },
-    { id: 'brand_awareness', label: 'Brand Awareness', desc: 'Reach more people', icon: Radio },
-    { id: 'ecommerce_sales', label: 'Drive Sales', desc: 'Increase online orders', icon: ShoppingBag },
-    { id: 'app_installs', label: 'App Installs', desc: 'Get more users', icon: Target },
+    {
+        id: 'lead_gen',
+        label: 'Lead Generation',
+        desc: 'Find prospects & inquiries',
+        icon: Users,
+        specialist: 'Growth Specialist',
+        recommendations: ['Postmark (Email)', 'LinkedIn Ads', 'Typeform']
+    },
+    {
+        id: 'brand_awareness',
+        label: 'Brand Awareness',
+        desc: 'Build name recognition',
+        icon: Radio,
+        specialist: 'Brand Orchestrator',
+        recommendations: ['Google Display', 'Meta Ads', 'Canva Integration']
+    },
+    {
+        id: 'ecommerce_sales',
+        label: 'Drive Sales',
+        desc: 'Scale online transactions',
+        icon: ShoppingBag,
+        specialist: 'E-commerce Specialist',
+        recommendations: ['Klaviyo (Email)', 'Stripe Checkout', 'Google Merchant']
+    },
+    {
+        id: 'app_installs',
+        label: 'App Growth',
+        desc: 'Acquire active app users',
+        icon: Target,
+        specialist: 'Product Marketer',
+        recommendations: ['Apple Search Ads', 'Deep Linking', 'Firebase']
+    },
 ];
 
 export function CampaignGoalsStep({ data, onUpdate }: Props) {
+    const activeGoal = useMemo(() => GOALS.find(g => g.id === data.primaryGoal), [data.primaryGoal]);
+
+    const budgetIntensity = useMemo(() => {
+        if (data.monthlyBudget < 500) return { label: 'Initial Orbit', color: 'text-amber-500', desc: 'Starting focus on high-impact areas' };
+        if (data.monthlyBudget < 2500) return { label: 'Steady Growth', color: 'text-blue-500', desc: 'Expanding reach across multiple channels' };
+        if (data.monthlyBudget < 10000) return { label: 'Market Attack', color: 'text-purple-500', desc: 'Aggressive scaling for market dominance' };
+        return { label: 'Hyper-Scale', color: 'text-green-500', desc: 'Total market immersion with AI-driven optimization' };
+    }, [data.monthlyBudget]);
+
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-foreground">Campaign Goals</h2>
-                <p className="text-muted-foreground">What does success look like?</p>
+        <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-700 max-w-4xl mx-auto">
+            <div className="text-center space-y-2">
+                <Badge variant="outline" className="px-3 py-1 border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/10 font-black text-[10px] uppercase tracking-widest gap-2">
+                    <Sparkles size={10} /> Strategy Design
+                </Badge>
+                <h2 className="text-3xl font-black text-foreground tracking-tight">Campaign Intelligence</h2>
+                <p className="text-muted-foreground text-sm font-medium">Let's define the parameters for your AI Growth Specialist</p>
             </div>
 
-            <div className="space-y-4">
-                <Label>Primary Objective</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {GOALS.map((goal) => (
-                        <div
-                            key={goal.id}
-                            onClick={() => onUpdate({ primaryGoal: goal.id as any })}
-                            className={`
-                cursor-pointer p-4 rounded-xl border transition-all
-                ${data.primaryGoal === goal.id
-                                    ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                                    : 'border-gray-200 hover:border-blue-200'
-                                }
-              `}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${data.primaryGoal === goal.id ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-muted-foreground'}`}>
-                                    <goal.icon size={20} />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                {/* Left Side: Goals & Budget */}
+                <div className="lg:col-span-3 space-y-8">
+                    <div className="space-y-4">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Primary Objective</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {GOALS.map((goal) => {
+                                const isSelected = data.primaryGoal === goal.id;
+                                const Icon = goal.icon;
+                                return (
+                                    <div
+                                        key={goal.id}
+                                        onClick={() => onUpdate({ primaryGoal: goal.id as any })}
+                                        className={`
+                                            cursor-pointer p-4 rounded-3xl transition-all duration-300 relative overflow-hidden group border-2
+                                            ${isSelected
+                                                ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/10 shadow-lg shadow-blue-500/10'
+                                                : 'border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-950'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-4 relative z-10">
+                                            <div className={`p-3 rounded-2xl transition-all duration-500 ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                                <Icon size={20} />
+                                            </div>
+                                            <div className="text-left">
+                                                <h4 className="font-bold text-sm text-foreground">{goal.label}</h4>
+                                                <p className="text-[10px] text-muted-foreground font-medium">{goal.desc}</p>
+                                            </div>
+                                            {isSelected && <Zap className="w-4 h-4 ml-auto text-blue-600 animate-pulse" />}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className="space-y-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <div className="flex justify-between items-end">
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Monthly Ad Budget</Label>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-sm font-black uppercase tracking-tight ${budgetIntensity.color}`}>
+                                        {budgetIntensity.label}
+                                    </span>
                                 </div>
-                                <div>
-                                    <h4 className="font-semibold text-sm">{goal.label}</h4>
-                                    <p className="text-xs text-muted-foreground">{goal.desc}</p>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-2xl font-black text-foreground">
+                                    <span className="text-sm align-top mr-1 font-bold opacity-50">{data.currency}</span>
+                                    {data.monthlyBudget.toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                        <Slider
+                            value={[data.monthlyBudget]}
+                            min={500}
+                            max={50000}
+                            step={250}
+                            onValueChange={(val) => onUpdate({ monthlyBudget: val[0] })}
+                            className="py-2"
+                        />
+                        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                            <p className="text-[10px] font-bold text-muted-foreground leading-relaxed flex items-center gap-2">
+                                <TrendingUp size={14} className="text-blue-500" />
+                                {budgetIntensity.desc}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Target Audience</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="hidden text-left">Age Range</Label>
+                                <Select
+                                    value={data.targetAudience.ageRange}
+                                    onValueChange={(val) => onUpdate({ targetAudience: { ...data.targetAudience, ageRange: val } })}
+                                >
+                                    <SelectTrigger className="h-12 rounded-2xl bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-800 shadow-sm text-left">
+                                        <SelectValue placeholder="Age Range" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-slate-100">
+                                        <SelectItem value="18-24">Gen Z (18-24)</SelectItem>
+                                        <SelectItem value="25-34">Millennials (25-34)</SelectItem>
+                                        <SelectItem value="35-44">Mid-Career (35-44)</SelectItem>
+                                        <SelectItem value="45-54">Established (45-54)</SelectItem>
+                                        <SelectItem value="55+">Seniors (55+)</SelectItem>
+                                        <SelectItem value="all">Total Market (All)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="hidden text-left">Location</Label>
+                                <div className="relative">
+                                    <Input
+                                        placeholder="Region / Country"
+                                        className="h-12 rounded-2xl pl-10 bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-800 shadow-sm"
+                                        value={data.targetAudience.locations[0] || ''}
+                                        onChange={(e) => onUpdate({ targetAudience: { ...data.targetAudience, locations: [e.target.value] } })}
+                                    />
+                                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t">
-                <div className="flex justify-between">
-                    <Label>Monthly Ad Budget</Label>
-                    <span className="text-sm font-semibold text-blue-700">
-                        {data.currency} {data.monthlyBudget.toLocaleString()}
-                    </span>
-                </div>
-                <Slider
-                    value={[data.monthlyBudget]}
-                    min={100}
-                    max={50000}
-                    step={100}
-                    onValueChange={(val) => onUpdate({ monthlyBudget: val[0] })}
-                    className="py-4"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground/60">
-                    <span>$100</span>
-                    <span>$50,000+</span>
-                </div>
-            </div>
-
-            <div className="space-y-4 pt-4 border-t">
-                <Label>Target Audience</Label>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Age Range</Label>
-                        <Select
-                            value={data.targetAudience.ageRange}
-                            onValueChange={(val) => onUpdate({ targetAudience: { ...data.targetAudience, ageRange: val } })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Age" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="18-24">18-24</SelectItem>
-                                <SelectItem value="25-34">25-34</SelectItem>
-                                <SelectItem value="35-44">35-44</SelectItem>
-                                <SelectItem value="45-54">45-54</SelectItem>
-                                <SelectItem value="55+">55+</SelectItem>
-                                <SelectItem value="all">All Ages</SelectItem>
-                            </SelectContent>
-                        </Select>
                     </div>
-                    <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Location</Label>
-                        <Input
-                            placeholder="Region / Country"
-                            onChange={(e) => onUpdate({ targetAudience: { ...data.targetAudience, locations: [e.target.value] } })}
-                        />
+                </div>
+
+                {/* Right Side: Agent Insight & Recommendations */}
+                <div className="lg:col-span-2">
+                    <div className="sticky top-4 space-y-4">
+                        <div className="p-6 rounded-[2rem] bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-900 dark:to-blue-900/20 text-white shadow-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                                <Lightbulb size={120} />
+                            </div>
+
+                            <div className="relative z-10 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/50">
+                                        <Zap size={20} className="text-white" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[10px] font-black uppercase opacity-60 tracking-widest leading-none mb-1">Assigned Specialist</p>
+                                        <p className="text-lg font-black tracking-tight">{activeGoal?.specialist}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4 pt-4 border-t border-white/10">
+                                    <p className="text-xs font-bold uppercase tracking-widest opacity-60 text-left flex items-center gap-2">
+                                        <ArrowRight size={14} className="text-blue-400" />
+                                        Strategic Power-Ups
+                                    </p>
+                                    <div className="space-y-2">
+                                        {activeGoal?.recommendations.map((rec, i) => (
+                                            <div key={rec} className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                                                <div className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                                    {i === 0 ? <Mail size={12} className="text-blue-400" /> : i === 1 ? <TrendingUp size={12} className="text-blue-400" /> : <ShieldCheck size={12} className="text-blue-400" />}
+                                                </div>
+                                                <p className="text-xs font-bold text-left">{rec}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 p-4 rounded-2xl bg-blue-600/20 border border-blue-500/20">
+                                    <p className="text-[10px] font-medium leading-relaxed italic opacity-80 text-left">
+                                        "I've optimized your strategy to prioritize {activeGoal?.label.toLowerCase()}. We'll deploy targeted campaigns as soon as you launch."
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex gap-3">
+                            <Zap size={18} className="text-amber-500 shrink-0" />
+                            <p className="text-[10px] font-bold text-amber-900/60 dark:text-amber-500/60 leading-tight text-left">
+                                You can finalize connecting these Power-Ups in your dashboard after launch.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
