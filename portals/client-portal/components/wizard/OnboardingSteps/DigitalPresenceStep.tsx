@@ -178,7 +178,37 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                     )}
                 </div>
 
-                {/* 2. Platform Classifiers */}
+                {/* 2. Audit Results Visualization (Moved up for immediate feedback) */}
+                {auditedServices && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in zoom-in-95 duration-700">
+                        {data.cmsType && (
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none transition-transform hover:scale-[1.02]">
+                                <div className="p-2 bg-white/20 rounded-xl">
+                                    <Layout className="w-5 h-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Infrastructure</p>
+                                    <p className="text-sm font-black capitalize leading-none">{data.cmsType}</p>
+                                </div>
+                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
+                            </div>
+                        )}
+                        {data.crmType && data.crmType !== 'none' && (
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none transition-transform hover:scale-[1.02]">
+                                <div className="p-2 bg-white/20 rounded-xl">
+                                    <Database className="w-5 h-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Growth Stack</p>
+                                    <p className="text-sm font-black capitalize leading-none">{data.crmType}</p>
+                                </div>
+                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* 3. Platform Classifiers */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3 text-left">
                         <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
@@ -230,36 +260,6 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                         </p>
                     </div>
                 </div>
-
-                {/* Audit Results Visualization (already in DigitalPresenceStep from previous edit, making sure it stays or matches) */}
-                {auditedServices && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in zoom-in-95 duration-700">
-                        {data.cmsType && (
-                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none transition-transform hover:scale-[1.02]">
-                                <div className="p-2 bg-white/20 rounded-xl">
-                                    <Layout className="w-5 h-5" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Infrastructure</p>
-                                    <p className="text-sm font-black capitalize leading-none">{data.cmsType}</p>
-                                </div>
-                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
-                            </div>
-                        )}
-                        {data.crmType && data.crmType !== 'none' && (
-                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none transition-transform hover:scale-[1.02]">
-                                <div className="p-2 bg-white/20 rounded-xl">
-                                    <Database className="w-5 h-5" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Growth Stack</p>
-                                    <p className="text-sm font-black capitalize leading-none">{data.crmType}</p>
-                                </div>
-                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
         </div>
     );
