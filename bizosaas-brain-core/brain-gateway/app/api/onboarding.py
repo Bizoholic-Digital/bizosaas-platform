@@ -431,6 +431,7 @@ async def scan_website_tags(payload: Dict[str, Any]):
         "meta": [],
         "clarity": [],
         "site_kit": False,
+        "cms": "none",
         "plugins": []
     }
 
@@ -442,33 +443,36 @@ async def scan_website_tags(payload: Dict[str, Any]):
             resp = await client.get(website_url, timeout=10.0)
             html = resp.text
 
-            # GTM Patterns (GTM-XXXXX)
+            # 1. Platform Detection (Infrastructure)
+            if "/wp-content/" in html or "/wp-includes/" in html or 'name="generator" content="WordPress' in html:
+                detected["cms"] = "wordpress"
+            elif ".myshopify.com" in website_url or 'cdn.shopify.com' in html:
+                detected["cms"] = "shopify"
+            elif "wix.com" in html:
+                detected["cms"] = "wix"
+
+            # 2. Tracking & Analytics
             gtm_matches = re.findall(r'GTM-[A-Z0-9]{4,10}', html)
             detected["gtm"] = list(set(gtm_matches))
 
-            # GA4 Patterns (G-XXXXX)
             ga4_matches = re.findall(r'G-[A-Z0-9]{6,12}', html)
             detected["ga4"] = list(set(ga4_matches))
 
-            # UA Patterns (UA-XXXXX)
             ua_matches = re.findall(r'UA-\d{4,10}-\d{1,2}', html)
             detected["ua"] = list(set(ua_matches))
             
-            # Clarity Detection
             if "clarity.ms" in html or "clarity/tag" in html:
                 clarity_matches = re.findall(r'clarity/tag/([a-zA-Z0-9]+)', html)
                 detected["clarity"] = list(set(clarity_matches))
             
-            # Meta Pixel (fbq init)
             if "fbq('init'" in html or "fbevents.js" in html:
                  fb_matches = re.findall(r"fbq\(['\"]init['\"],\s*['\"](\d+)['\"]", html)
                  detected["meta"] = list(set(fb_matches))
             
-            # Google Site Kit Detection
             if 'Check for Google Site Kit' in html or 'name="generator" content="Site Kit' in html:
                 detected["site_kit"] = True
 
-            # Plugin Detection via Multi-Marker Scan
+            # 3. Plugin Detection via Multi-Marker Scan
             common_plugins = {
                 "woocommerce": {"name": "WooCommerce", "markers": ["/plugins/woocommerce/", "woocommerce-no-js", 'content="WooCommerce']},
                 "elementor": {"name": "Elementor", "markers": ["/plugins/elementor/", "elementor-default", 'content="Elementor']},
@@ -486,6 +490,7 @@ async def scan_website_tags(payload: Dict[str, Any]):
             }
 
             matched_plugins = []
+            is_bridge = False
             for slug, info in common_plugins.items():
                 is_detected = False
                 for marker in info["markers"]:
@@ -493,21 +498,26 @@ async def scan_website_tags(payload: Dict[str, Any]):
                         is_detected = True
                         break
                 
-                if not is_detected and slug == "bizosaas-connect":
-                    # Proactive check for BizoSaaS REST API
-                    try:
-                        status_url = f"{website_url.rstrip('/')}/wp-json/bizosaas/v1/status"
-                        async with httpx.AsyncClient(verify=False, timeout=2.0) as status_client:
-                            s_resp = await status_client.get(status_url)
-                            if s_resp.status_code == 200 and s_resp.json().get("status") == "active":
-                                is_detected = True
-                    except:
-                        pass
-
                 if is_detected:
                     matched_plugins.append({"slug": slug, "name": info["name"], "status": "active"})
-            
+                    if slug == "bizosaas-connect":
+                        is_bridge = True
+
+            # 4. Proactive Bridge Verification
+            if not is_bridge and detected["cms"] == "wordpress":
+                try:
+                    status_url = f"{website_url.rstrip('/')}/wp-json/bizosaas/v1/status"
+                    async with httpx.AsyncClient(verify=False, timeout=2.0) as bridge_client:
+                        b_resp = await bridge_client.get(status_url)
+                        if b_resp.status_code == 200 and b_resp.json().get("status") == "active":
+                            is_bridge = True
+                            if not any(p["slug"] == "bizosaas-connect" for p in matched_plugins):
+                                matched_plugins.append({"slug": "bizosaas-connect", "name": "BizoSaaS Bridge", "status": "active"})
+                except:
+                    pass
+
             detected["plugins"] = matched_plugins
+            detected["is_bridge_active"] = is_bridge
 
     except Exception as e:
         print(f"Quick scan failed for {website_url}: {e}")

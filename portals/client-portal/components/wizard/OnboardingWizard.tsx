@@ -171,10 +171,10 @@ export function OnboardingWizard() {
                 // Auto-detect platforms based on the website audit
                 const plugins = tags.plugins || [];
                 updateDigitalPresence({
-                    cmsType: plugins.some((p: any) => p.slug === 'wordpress') ? 'wordpress' : state.digitalPresence.cmsType,
+                    cmsType: tags.cms !== 'none' ? tags.cms : state.digitalPresence.cmsType,
                     crmType: plugins.some((p: any) => p.slug === 'fluent-crm') ? 'fluentcrm' : state.digitalPresence.crmType,
                     ecommerceType: plugins.some((p: any) => p.slug === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType,
-                    isBizOSaaSActive: plugins.some((p: any) => p.slug === 'bizosaas-connect'),
+                    isBizOSaaSActive: !!tags.is_bridge_active,
                     hasTracking: true
                 });
             }
