@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const fields = "name,formatted_address,formatted_phone_number,website,url,geometry";
+        const fields = "name,formatted_address,formatted_phone_number,website,url,geometry,address_components";
         const response = await fetch(
             `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${GOOGLE_MAPS_API_KEY}`
         );
@@ -23,13 +23,18 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
         const result = data.result || {};
 
+        // Extract country code from address_components
+        const countryComponent = result.address_components?.find((c: any) => c.types.includes('country'));
+        const countryCode = countryComponent?.short_name || 'US';
+
         return NextResponse.json({
             companyName: result.name,
             location: result.formatted_address,
             phone: result.formatted_phone_number,
             website: result.website,
             gmbLink: result.url,
-            placeId: placeId
+            placeId: placeId,
+            country: countryCode
         });
     } catch (error: any) {
         console.error("Place Details API Error:", error);

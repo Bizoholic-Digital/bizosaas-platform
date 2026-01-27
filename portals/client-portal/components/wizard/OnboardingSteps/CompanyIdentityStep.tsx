@@ -101,6 +101,17 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
         return () => clearTimeout(timer);
     }, [searchQuery, gmbConnected, showPredictions]);
 
+    // Location Search Logic
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (locationQuery.length > 2 && showAddressPredictions && !gmbConnected) {
+                searchPlaces(locationQuery, 'geocode', setAddressPredictions);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [locationQuery, showAddressPredictions, gmbConnected]);
+
+
     const [searchError, setSearchError] = useState<string | null>(null);
 
     const searchPlaces = async (query: string, type: string, setter: any) => {
@@ -138,15 +149,45 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             setSearchQuery(details.companyName || searchQuery);
             setLocationQuery(details.location);
             setGmbConnected(true);
-            if (details.phone) {
+
+            if (details.country) {
+                setCountryISO(details.country);
+            } else if (details.phone) {
                 const parsed = parsePhone(details.phone);
                 setCountryISO(parsed.country);
+            }
+
+            if (details.phone) {
+                const parsed = parsePhone(details.phone);
                 setPhoneNumber(parsed.number);
             }
         } catch (error) {
             setSearchError("Failed to fetch details.");
         } finally {
             setIsSearching(false);
+        }
+    };
+
+    const selectLocation = async (placeId: string) => {
+        setIsSearchingAddress(true);
+        setShowAddressPredictions(false);
+        try {
+            const res = await fetch(`/api/brain/onboarding/places/details?place_id=${placeId}`);
+            const details = await res.json();
+
+            setLocationQuery(details.location);
+            onUpdate({ location: details.location });
+
+            if (details.country) {
+                setCountryISO(details.country);
+                // Also update the phone code in the data if we have a number
+                const code = COUNTRY_CODES.find(c => c.country === details.country)?.code || '+1';
+                onUpdate({ phone: `${code} ${phoneNumber}` }); // Re-save with new code
+            }
+        } catch (error) {
+            console.error("Location fetch failed", error);
+        } finally {
+            setIsSearchingAddress(false);
         }
     };
 
@@ -158,6 +199,7 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
             </div>
 
             <div className="space-y-4">
+                {/* Search / GMB Connection Card */}
                 <div className={`p-4 rounded-lg border transition-all ${gmbConnected ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
                     {gmbConnected ? (
                         <div className="flex items-center justify-between">
@@ -207,11 +249,35 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                     </div>
                 </div>
 
+                {/* Location Field with Autocomplete */}
                 <div className="space-y-2">
                     <Label>Location</Label>
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
-                        <Input value={locationQuery} onChange={(e) => { setLocationQuery(e.target.value); onUpdate({ location: e.target.value }); }} className="pl-9" disabled={gmbConnected} />
+                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60 z-10" />
+                        <Input
+                            value={locationQuery}
+                            onChange={(e) => {
+                                setLocationQuery(e.target.value);
+                                setShowAddressPredictions(true);
+                                onUpdate({ location: e.target.value });
+                            }}
+                            className="pl-9"
+                            disabled={gmbConnected}
+                            placeholder="Enter city or address..."
+                        />
+                        {isSearchingAddress && <div className="absolute right-3 top-2.5 animate-spin w-4 h-4 border-2 border-slate-600 border-t-transparent rounded-full" />}
+
+                        {/* Address Autocomplete Dropdown */}
+                        {showAddressPredictions && addressPredictions.length > 0 && !gmbConnected && (
+                            <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                {addressPredictions.map((pred) => (
+                                    <div key={pred.place_id} className="p-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b last:border-0 dark:border-slate-700" onClick={() => selectLocation(pred.place_id)}>
+                                        <div className="font-medium">{pred.structured_formatting.main_text}</div>
+                                        <div className="text-xs text-muted-foreground">{pred.structured_formatting.secondary_text}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -229,7 +295,9 @@ export function CompanyIdentityStep({ data, onUpdate, discovery, isDiscovering }
                         <div className="flex gap-2">
                             <Select value={countryISO} onValueChange={handleCountryChange}>
                                 <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-                                <SelectContent>{COUNTRY_CODES.map(c => <SelectItem key={c.country} value={c.country}>{c.label}</SelectItem>)}</SelectContent>
+                                <SelectContent className="max-h-[300px]">
+                                    {COUNTRY_CODES.map(c => <SelectItem key={c.country} value={c.country}>{c.label}</SelectItem>)}
+                                </SelectContent>
                             </Select>
                             <div className="relative flex-1">
                                 <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/60" />
