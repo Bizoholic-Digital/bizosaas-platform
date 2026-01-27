@@ -86,7 +86,7 @@ fi
 
 # --- Step 4: Start Core Services ---
 echo -e "${CYAN}[4/6] Starting Core Services...${NC}"
-docker compose up -d brain-gateway auth-service temporal temporal-ui
+docker compose up -d brain-gateway ai-agents temporal temporal-ui
 echo -e "${GREEN}✓ Core service containers started.${NC}"
 
 if [ "$WAIT_FOR_HEALTH" = true ]; then
