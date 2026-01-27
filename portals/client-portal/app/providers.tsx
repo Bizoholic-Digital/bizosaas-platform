@@ -1,28 +1,16 @@
 'use client';
 
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from 'sonner';
+import React from 'react';
 
-import { GraphQLProvider } from '@/components/providers/GraphQLProvider';
-import { MobileSidebarProvider } from '@/components/MobileSidebarContext';
-import AuthProvider from '@/components/auth/AuthProvider';
-
+/**
+ * The ultimate isolation provider. 
+ * If the loop persists with this, then the issue is in layout.tsx 
+ * or a global library import.
+ */
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <AuthProvider>
-            <GraphQLProvider>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    <MobileSidebarProvider>
-                        {children}
-                        <Toaster />
-                    </MobileSidebarProvider>
-                </ThemeProvider>
-            </GraphQLProvider>
-        </AuthProvider>
+        <div id="providers-root">
+            {children}
+        </div>
     );
 }

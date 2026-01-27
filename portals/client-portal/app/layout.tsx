@@ -1,27 +1,47 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
-import { Providers } from './providers';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
-import { OfflineBanner } from '@/components/OfflineBanner';
-
-// Simple font mock to avoid build issues, ensures Tailwind finds 'font-sans'
-const inter = { className: 'font-sans' };
 
 export const metadata: Metadata = {
-  title: 'Bizo Portal Hub',
-  description: 'Elite Enterprise Platform Control Hub',
-  manifest: '/manifest.json',
+  title: 'Bizo Hub - System Recovery',
 };
 
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#2563eb',
-};
+const CACHE_KILLER = `
+(function() {
+  console.log('[Bizo Hub] Cache Killer Initializing...');
+  
+  // 1. Force Unregister Service Workers
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      for (var reg of regs) {
+        reg.unregister().then(function() { console.log('[Bizo Hub] SW Unregistered'); });
+      }
+    });
+  }
 
-export const dynamic = 'force-dynamic';
+  // 2. Clear all Caches
+  if ('caches' in window) {
+    caches.keys().then(function(names) {
+      for (var name of names) caches.delete(name);
+    });
+  }
+
+  // 3. Clear Storage
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // 4. Clear Cookies (Aggressive)
+  var cookies = document.cookie.split(";");
+  for (var i = 0; i < cookies.length; i++) {
+    var cookie = cookies[i];
+    var eqPos = cookie.indexOf("=");
+    var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+  }
+
+  console.log('[Bizo Hub] Recovery Sequence Complete.');
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -29,18 +49,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <Providers>
-          <OfflineBanner />
-          {/* Main Content Area */}
-          <div className="flex flex-1 flex-col overflow-hidden h-screen">
-            <main className="flex-1 overflow-y-auto p-0">
-              {children}
-            </main>
-          </div>
-          <PWAInstallPrompt />
-        </Providers>
+    <html lang="en">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: CACHE_KILLER }} />
+      </head>
+      <body className="antialiased" data-build-version="RECOVERY_001">
+        {children}
       </body>
     </html>
   );

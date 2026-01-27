@@ -80,12 +80,7 @@ const nextConfig = {
   // Webpack configuration removed to allow default Next.js module resolution
 };
 
-// PWA Configuration
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: false, // Enable PWA
-});
+// PWA Configuration disabled temporarily to resolve caching issues
+const withPWA = (config) => config;
 
-export default withPWA(nextConfig);
+export default nextConfig;

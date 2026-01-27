@@ -9,6 +9,7 @@ interface User {
   email: string;
   name: string;
   role: string;
+  image?: string;
   tenant?: string;
   onboarded?: boolean;
 }
@@ -48,42 +49,55 @@ function NextAuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (session?.user) {
-      setUser({
-        id: (session.user as any).id as string,
-        email: session.user.email as string,
-        name: session.user.name as string,
-        role: (session as any).user.role || "user",
-        tenant: (session as any).user.tenant_id || "default",
-        onboarded: (session as any).user.onboarded || false
-      });
-    } else {
-      setUser(null);
-    }
-  }, [session]);
+      const u = session.user as any;
+      const newUser: User = {
+        id: String(u.id || u.sub || ""),
+        email: String(u.email || ""),
+        name: String(u.name || ""),
+        image: typeof u.image === 'string' ? u.image : undefined,
+        role: String(u.role || "user"),
+        tenant: String(u.tenant_id || "default"),
+        onboarded: Boolean(u.onboarded)
+      };
 
-  const login = async (): Promise<boolean> => {
+      setUser((prev) => {
+        if (prev &&
+          prev.id === newUser.id &&
+          prev.email === newUser.email &&
+          prev.onboarded === newUser.onboarded &&
+          prev.role === newUser.role) {
+          return prev;
+        }
+        return newUser;
+      });
+    } else if (status !== "loading") {
+      setUser(prev => prev === null ? prev : null);
+    }
+  }, [session, status]);
+
+  const login = React.useCallback(async (): Promise<boolean> => {
     await nextAuthSignIn("authentik");
     return true;
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = React.useCallback(() => {
     nextAuthSignOut({ callbackUrl: "/" });
-  };
+  }, []);
 
-  const checkAuth = async (): Promise<boolean> => !!session;
+  const checkAuth = React.useCallback(async (): Promise<boolean> => !!session, [session]);
 
-  const getToken = async () => {
+  const getToken = React.useCallback(async () => {
     return (session as any)?.access_token as string || null;
-  }
+  }, [session]);
 
-  const value = {
+  const value = React.useMemo(() => ({
     user,
     isLoading: status === "loading",
     login,
     logout,
     checkAuth,
     getToken,
-  };
+  }), [user, status, login, logout, checkAuth, getToken]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
