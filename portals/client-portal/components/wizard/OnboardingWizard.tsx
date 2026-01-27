@@ -148,6 +148,8 @@ export function OnboardingWizard() {
             updateDigitalPresence({
                 cmsType: 'wordpress',
                 crmType: 'fluentcrm',
+                ecommerceType: 'woocommerce',
+                isBizOSaaSActive: true,
                 hasTracking: true
             });
         } catch (e) {
@@ -204,6 +206,12 @@ export function OnboardingWizard() {
             changed = true;
         } else if (state.digitalPresence.crmType === 'hubspot' && !newSelectedMcps.has('hubspot')) {
             newSelectedMcps.add('hubspot');
+            changed = true;
+        }
+
+        // 3. Detect from E-commerce
+        if (state.digitalPresence.ecommerceType === 'woocommerce' && !newSelectedMcps.has('woocommerce')) {
+            newSelectedMcps.add('woocommerce');
             changed = true;
         }
 

@@ -43,6 +43,8 @@ export interface DigitalPresence {
     websiteDetected: boolean;
     cmsType?: 'wordpress' | 'shopify' | 'wix' | 'squarespace' | 'custom' | 'other';
     crmType?: 'hubspot' | 'salesforce' | 'zoho' | 'pipedrive' | 'fluentcrm' | 'none';
+    ecommerceType?: 'woocommerce' | 'shopify' | 'none';
+    isBizOSaaSActive?: boolean;
     hasTracking?: boolean;
 }
 

@@ -154,6 +154,7 @@ export function CategorizedToolSelectionStep({ data, onUpdate, state }: Props) {
         if (state?.digitalPresence.cmsType === 'shopify') found.push({ name: 'Shopify', type: 'CMS', slug: 'shopify', icon: 'Globe' });
         if (state?.digitalPresence.crmType === 'fluentcrm') found.push({ name: 'FluentCRM', type: 'CRM', slug: 'fluentcrm', icon: 'Target' });
         if (state?.digitalPresence.crmType === 'hubspot') found.push({ name: 'HubSpot', type: 'CRM', slug: 'hubspot', icon: 'Target' });
+        if (state?.digitalPresence.ecommerceType === 'woocommerce') found.push({ name: 'WooCommerce', type: 'E-commerce', slug: 'woocommerce', icon: 'ShoppingBag' });
 
         const analytics = [...(state?.analytics.auditedServices?.essential || []), ...(state?.analytics.auditedServices?.optional || [])];
         if (analytics.some(s => s.service?.toUpperCase() === 'GTM')) found.push({ name: 'Google Tag Manager', type: 'Analytics', slug: 'google-tag-manager', icon: 'BarChart3' });
@@ -247,6 +248,8 @@ export function CategorizedToolSelectionStep({ data, onUpdate, state }: Props) {
                                 } else if (cat.slug === 'analytics' || cat.slug === 'data') {
                                     if (data.selectedMcps?.includes('google-tag-manager')) countInCat++;
                                     if (data.selectedMcps?.includes('google-analytics-4')) countInCat++;
+                                } else if (cat.slug === 'ecommerce' || cat.slug === 'store') {
+                                    if (data.selectedMcps?.includes('woocommerce')) countInCat++;
                                 }
 
                                 return (

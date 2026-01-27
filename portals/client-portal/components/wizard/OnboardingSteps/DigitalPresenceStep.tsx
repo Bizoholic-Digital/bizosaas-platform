@@ -3,7 +3,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DigitalPresence } from '../types/onboarding';
-import { Globe, Layout, Database, Search, CheckCircle2, Sparkles, Loader2, ShieldCheck, Zap } from 'lucide-react';
+import { Globe, Layout, Database, Search, CheckCircle2, Sparkles, Loader2, ShieldCheck, Zap, ShoppingBag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
 
@@ -203,6 +204,33 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                     <p className="text-sm font-black capitalize leading-none">{data.crmType}</p>
                                 </div>
                                 <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
+                            </div>
+                        )}
+                        {data.ecommerceType && data.ecommerceType !== 'none' && (
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-600 text-white shadow-lg shadow-orange-200 dark:shadow-none transition-transform hover:scale-[1.02]">
+                                <div className="p-2 bg-white/20 rounded-xl">
+                                    <ShoppingBag className="w-5 h-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Transaction Core</p>
+                                    <p className="text-sm font-black capitalize leading-none">{data.ecommerceType}</p>
+                                </div>
+                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
+                            </div>
+                        )}
+                        {data.isBizOSaaSActive && (
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-slate-900 text-white shadow-lg shadow-slate-200 dark:shadow-none transition-transform hover:scale-[1.02] sm:col-span-2">
+                                <div className="p-2 bg-blue-500 rounded-xl">
+                                    <Zap className="w-5 h-5 fill-white" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">System Link</p>
+                                    <p className="text-sm font-black capitalize leading-none">BizOSaaS Plugin Active</p>
+                                </div>
+                                <div className="ml-auto flex items-center gap-2">
+                                    <Badge className="bg-blue-500 text-[8px] font-black uppercase tracking-widest px-2">Connected</Badge>
+                                    <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                                </div>
                             </div>
                         )}
                     </div>
