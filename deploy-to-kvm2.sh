@@ -16,6 +16,12 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Load local secrets if present
+if [ -f .env.kvm2 ]; then
+    echo -e "${GREEN}🔐 Loading secrets from .env.kvm2...${NC}"
+    export $(grep -v '^#' .env.kvm2 | xargs)
+fi
+
 echo -e "${GREEN}🚀 Starting deployment to KVM2 ($VPS_IP)...${NC}"
 
 # Check if we can connect
@@ -28,6 +34,14 @@ fi
 cat << 'EOF' > setup_remote.sh
 #!/bin/bash
 set -e
+
+# Environment Variables for External Services (Neon & Redis Cloud)
+# Secrets are injected from local environment or .env.kvm2
+export DATABASE_URL="${DATABASE_URL}"
+export REDIS_URL="${REDIS_URL}"
+export OPENAI_API_KEY="${OPENAI_API_KEY}"
+export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
+export GOOGLE_API_KEY="${GOOGLE_API_KEY}"
 
 GREEN='\033[0;32m'
 NC='\033[0m'
@@ -66,6 +80,17 @@ if [ ! -f .env ]; then
     echo "Creating .env from example..."
     cp .env.example .env
 fi
+
+# Inject external settings into .env for persistence
+sed -i 's|^DATABASE_URL=.*|DATABASE_URL='"$DATABASE_URL"'|' .env
+sed -i 's|^REDIS_URL=.*|REDIS_URL='"$REDIS_URL"'|' .env
+sed -i 's|^OPENAI_API_KEY=.*|OPENAI_API_KEY='"$OPENAI_API_KEY"'|' .env
+sed -i 's|^ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY='"$ANTHROPIC_API_KEY"'|' .env
+sed -i 's|^GOOGLE_API_KEY=.*|GOOGLE_API_KEY='"$GOOGLE_API_KEY"'|' .env
+
+# Verify they are in .env
+echo "Verified environment variables in .env:"
+grep -E "DATABASE_URL|REDIS_URL|OPENAI_API_KEY" .env
 
 echo -e "${GREEN}🧹 Cleaning up old resources...${NC}"
 chmod +x scripts/cleanup-docker-resources.sh 2>/dev/null || true

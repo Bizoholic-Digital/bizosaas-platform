@@ -90,7 +90,7 @@ services:
     container_name: brain-temporal-ui
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:3003
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3003,https://app.bizoholic.net
     ports:
       - "8082:8080"
     networks:
@@ -113,8 +113,8 @@ services:
       dockerfile: Dockerfile
     container_name: brain-gateway
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
-      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - TEMPORAL_HOST=temporal:7233
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
@@ -132,11 +132,6 @@ services:
       - "traefik.http.routers.brain-gateway.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
 
   ai-agents:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
@@ -145,8 +140,8 @@ services:
       dockerfile: Dockerfile
     container_name: brain-ai-agents
     environment:
-      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas
-      - REDIS_URL=redis://redis:6379/1
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/1}
       - BRAIN_GATEWAY_URL=http://brain-gateway:8000
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
@@ -160,13 +155,6 @@ services:
         limits:
           cpus: '0.3'
           memory: 512M
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      vault:
-        condition: service_healthy
 
   # auth-service:
   #   image: ghcr.io/bizoholic-digital/bizosaas-platform/auth-service:staging

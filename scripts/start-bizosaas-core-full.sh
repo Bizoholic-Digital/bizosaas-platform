@@ -73,15 +73,36 @@ echo -e "${GREEN}✓ Network 'brain-network' ready.${NC}"
 # --- Step 3: Infrastructure (Postgres, Redis, Vault) ---
 echo -e "${CYAN}[3/6] Starting Infrastructure...${NC}"
 cd "$BRAIN_CORE_DIR"
-docker compose up -d postgres redis vault
-echo -e "${GREEN}✓ Infrastructure containers started.${NC}"
+
+# Conditionally start containers
+INFRA_SERVICES="vault"
+if [ -z "$DATABASE_URL" ]; then
+    echo -e "${YELLOW}No external DATABASE_URL found. Starting local Postgres...${NC}"
+    INFRA_SERVICES="$INFRA_SERVICES postgres"
+else
+    echo -e "${GREEN}Using external Database: ${DATABASE_URL:0:30}...${NC}"
+fi
+
+if [ -z "$REDIS_URL" ]; then
+    echo -e "${YELLOW}No external REDIS_URL found. Starting local Redis...${NC}"
+    INFRA_SERVICES="$INFRA_SERVICES redis"
+else
+    echo -e "${GREEN}Using external Redis: ${REDIS_URL:0:30}...${NC}"
+fi
+
+docker compose up -d $INFRA_SERVICES
+echo -e "${GREEN}✓ Infrastructure containers ($INFRA_SERVICES) started.${NC}"
 
 if [ "$WAIT_FOR_HEALTH" = true ]; then
-    wait_for_service "Postgres" "docker compose exec -T postgres pg_isready -U postgres"
-    wait_for_service "Redis" "docker compose exec -T redis redis-cli ping"
+    if [[ "$INFRA_SERVICES" == *"postgres"* ]]; then
+        wait_for_service "Postgres" "docker compose exec -T postgres pg_isready -U postgres"
+    fi
+    if [[ "$INFRA_SERVICES" == *"redis"* ]]; then
+        wait_for_service "Redis" "docker compose exec -T redis redis-cli ping"
+    fi
     # Vault might take a moment to initialize
     sleep 5
-    wait_for_service "Vault" "curl -s http://localhost:8200/v1/sys/health | grep -q 'initialized'"
+    wait_for_service "Vault" "curl -s http://localhost:8200/v1/sys/health | grep -q 'initialized' || curl -s http://localhost:8200/v1/sys/health | grep -q 'ok'"
 fi
 
 # --- Step 4: Start Core Services ---

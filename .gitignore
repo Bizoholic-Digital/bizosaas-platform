@@ -90,3 +90,4 @@ antigravity-tools.*
 AntigravityManager/
 antigravity-manager/
 portals/business-directory/bizbook-directory-listings-template/
+.env.kvm2
