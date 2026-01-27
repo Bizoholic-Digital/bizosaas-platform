@@ -143,6 +143,7 @@ export function OnboardingWizard() {
 
             if (data.status === 'success' && data.scanned_tags) {
                 const tags = data.scanned_tags;
+                const plugins = tags.plugins || [];
                 const essential: any[] = [];
                 const optional: any[] = [];
 
@@ -167,17 +168,27 @@ export function OnboardingWizard() {
                     optional.push({ id: `clarity-${i}`, name: id, service: 'Clarity', status: 'detected' });
                 });
 
+                // Auto-detect platforms based on the website audit
+                // If any WP plugin is detected, ensure cms is wordpress
+                const hasWpPlugins = plugins.length > 0;
+                const detectedCms = tags.cms !== 'none' ? tags.cms : (hasWpPlugins ? 'wordpress' : state.digitalPresence.cmsType);
+
                 // Add CMS/Platform to essentials for top-level visibility
-                if (tags.cms && tags.cms !== 'none') {
-                    essential.push({ id: `cms-${tags.cms}`, name: tags.cms, service: tags.cms.toUpperCase(), status: 'active' });
+                if (detectedCms && detectedCms !== 'none') {
+                    if (!essential.some(s => s.id === `cms-${detectedCms}`)) {
+                        essential.push({ id: `cms-${detectedCms}`, name: detectedCms, service: detectedCms.toUpperCase(), status: 'active' });
+                    }
                 }
 
-                // Add Key Plugins to essentials/optional
-                const plugins = tags.plugins || [];
+                // Add ALL detected plugins to essentials for maximum visibility
                 plugins.forEach((p: any) => {
                     const slug = p.slug?.toLowerCase();
-                    if (['woocommerce', 'fluent-crm', 'fluentcrm', 'elementor', 'bizosaas-connect', 'wordpress-seo', 'yoast-seo'].includes(slug)) {
-                        essential.push({ id: `p-${slug}`, name: p.name, service: p.name, status: 'active' });
+                    // Map Fluent Forms or FluentCRM to the foundation if found
+                    const isCore = ['woocommerce', 'fluent-crm', 'fluentcrm', 'fluentform', 'elementor', 'elementor-pro', 'astra-pro', 'bizosaas-connect', 'google-site-kit'].includes(slug);
+                    if (isCore) {
+                        if (!essential.some(s => s.id === `p-${slug}`)) {
+                            essential.push({ id: `p-${slug}`, name: p.name, service: p.name, status: 'active' });
+                        }
                     } else {
                         optional.push({ id: `p-${slug}`, name: p.name, service: p.name, status: 'detected' });
                     }
@@ -191,14 +202,9 @@ export function OnboardingWizard() {
                     auditedServices: { essential, optional }
                 });
 
-                // Auto-detect platforms based on the website audit
-                // If any WP plugin is detected, ensure cms is wordpress
-                const hasWpPlugins = plugins.length > 0;
-                const detectedCms = tags.cms !== 'none' ? tags.cms : (hasWpPlugins ? 'wordpress' : state.digitalPresence.cmsType);
-
                 updateDigitalPresence({
                     cmsType: detectedCms,
-                    crmType: plugins.some((p: any) => ['fluent-crm', 'fluentcrm'].includes(p.slug?.toLowerCase())) ? 'fluentcrm' : state.digitalPresence.crmType,
+                    crmType: plugins.some((p: any) => ['fluent-crm', 'fluentcrm', 'fluentform', 'fluentformpro'].includes(p.slug?.toLowerCase())) ? 'fluentcrm' : state.digitalPresence.crmType,
                     ecommerceType: plugins.some((p: any) => p.slug?.toLowerCase() === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType,
                     isBizOSaaSActive: !!tags.is_bridge_active || plugins.some((p: any) => p.slug?.toLowerCase() === 'bizosaas-connect'),
                     hasTracking: true

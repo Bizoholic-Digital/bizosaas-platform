@@ -8,10 +8,9 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
-COPY portals/admin-dashboard/package.json portals/admin-dashboard/package-lock.json* ./portals/admin-dashboard/
+COPY package.json package-lock.json* ./
 
-# Install dependencies in the portal directory
-WORKDIR /app/portals/admin-dashboard
+# Install dependencies
 RUN npm install --legacy-peer-deps
 
 # Stage 2: Builder
@@ -19,7 +18,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy node_modules from deps
-COPY --from=deps /app/portals/admin-dashboard/node_modules ./portals/admin-dashboard/node_modules
+COPY --from=deps /app/node_modules ./node_modules
 
 # Copy source code
 COPY . .
@@ -48,7 +47,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # NODE_ENV will be default (development) during build to install devDependencies like TypeScript
 
 # Build Next.js
-WORKDIR /app/portals/admin-dashboard
+WORKDIR /app
 RUN npm run build
 
 # Stage 3: Runner
@@ -70,11 +69,11 @@ RUN apk add --no-cache curl
 RUN mkdir .next && chown nextjs:nodejs .next
 
 # Copy built application
-# Next.js standalone output in monorepo includes the service path
-COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/standalone ./
+# Next.js standalone output
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 # We need to copy static and public to the subfolder where server.js will look for them
-COPY --from=builder --chown=nextjs:nodejs /app/portals/admin-dashboard/.next/static ./portals/admin-dashboard/.next/static
-COPY --from=builder /app/portals/admin-dashboard/public ./portals/admin-dashboard/public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 # Copy vault injector (Note: Copying from context root)
 COPY scripts/vault-injector.js ./scripts/vault-injector.js
@@ -92,7 +91,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start from the service directory to ensure paths match
-WORKDIR /app/portals/admin-dashboard
+WORKDIR /app
 # Make Vault optional - only inject if VAULT_TOKEN is set
-CMD ["sh", "-c", "if [ -n \"$VAULT_TOKEN\" ] && [ -n \"$VAULT_SECRET_PATH\" ]; then eval $(node ../../scripts/vault-injector.js 2>/dev/null || echo ''); fi && node server.js"]
+CMD ["sh", "-c", "if [ -n \"$VAULT_TOKEN\" ] && [ -n \"$VAULT_SECRET_PATH\" ]; then eval $(node ./scripts/vault-injector.js 2>/dev/null || echo ''); fi && node server.js"]
 

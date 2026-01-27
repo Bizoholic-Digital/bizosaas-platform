@@ -482,10 +482,21 @@ async def scan_website_tags(payload: Dict[str, Any]):
             common_plugins = {
                 "woocommerce": {"name": "WooCommerce", "markers": ["/plugins/woocommerce/", "woocommerce-no-js", 'content="WooCommerce']},
                 "elementor": {"name": "Elementor", "markers": ["/plugins/elementor/", "elementor-default", 'content="Elementor']},
+                "elementor-pro": {"name": "Elementor Pro", "markers": ["/plugins/elementor-pro/", "elementor-pro"]},
                 "wordpress-seo": {"name": "Yoast SEO", "markers": ["/plugins/wordpress-seo/", "Yoast SEO plugin", "yoast-schema-graph"]},
                 "fluent-crm": {"name": "FluentCRM", "markers": ["/plugins/fluent-crm/", "fluentcrm-", "fluentcrm_", "fluent-framework"]},
+                "fluentform": {"name": "Fluent Forms", "markers": ["/plugins/fluentform/", "fluent-form-", "fluentform-"]},
+                "fluentformpro": {"name": "Fluent Forms Pro", "markers": ["/plugins/fluentformpro/"]},
+                "astra-pro": {"name": "Astra Pro", "markers": ["/plugins/astra-pro/", "astra-addon"]},
+                "starter-templates": {"name": "Starter Templates", "markers": ["/plugins/astra-sites/"]},
+                "ultimate-elementor": {"name": "Ultimate Addons for Elementor", "markers": ["/plugins/ultimate-elementor/", "uae-"]},
+                "google-site-kit": {"name": "Site Kit by Google", "markers": ["/plugins/google-site-kit/", "sitekit-", "googlesitekit-"]},
                 "hubspot": {"name": "HubSpot", "markers": ["/plugins/hubspot/", "hubspot.js", "hs-script-loader"]},
                 "mailchimp": {"name": "Mailchimp", "markers": ["/plugins/mailchimp-for-wp/", "mc4wp-", "chimpstatic.com"]},
+                "google-for-woocommerce": {"name": "Google for WooCommerce", "markers": ["/plugins/google-listings-and-ads/"]},
+                "pinterest-for-woocommerce": {"name": "Pinterest for WooCommerce", "markers": ["/plugins/pinterest-for-woocommerce/"]},
+                "reddit-for-woocommerce": {"name": "Reddit for WooCommerce", "markers": ["/plugins/reddit-for-woocommerce/"]},
+                "woocommerce-paypal-payments": {"name": "WooCommerce PayPal Payments", "markers": ["/plugins/woocommerce-paypal-payments/"]},
                 "calendly": {"name": "Calendly", "markers": ["calendly.com/assets/external/widget.js", "calendly-inline-widget"]},
                 "gohighlevel": {"name": "GoHighLevel", "markers": ["/plugins/leadconnector/", "msgsndr.com"]},
                 "zoho": {"name": "Zoho CRM", "markers": ["/plugins/zoho-crm-forms/", "zoho.com/crm/"]},
@@ -511,7 +522,10 @@ async def scan_website_tags(payload: Dict[str, Any]):
 
             # 4. Proactive Bridge Verification & Cross-Referencing
             # If any specific WP plugins were found, we are definitely on WordPress
-            if any(p["slug"] in ["woocommerce", "fluent-crm", "elementor", "wpforms"] for p in matched_plugins):
+            if any(p["slug"] in [
+                "woocommerce", "fluent-crm", "elementor", "wpforms", "astra-pro", 
+                "fluentform", "google-site-kit", "elementor-pro", "wordpress-seo"
+            ] for p in matched_plugins):
                 detected["cms"] = "wordpress"
 
             if not is_bridge and detected["cms"] == "wordpress":

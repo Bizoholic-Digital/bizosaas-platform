@@ -4,7 +4,7 @@ services:
   admin-dashboard:
     build:
       context: .
-      dockerfile: ./portals/admin-dashboard/Dockerfile
+      dockerfile: Dockerfile
       args:
         SERVICE_PATH: portals/admin-dashboard
         NEXT_PUBLIC_API_BASE_URL: https://api.bizoholic.net
