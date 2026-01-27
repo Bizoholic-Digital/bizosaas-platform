@@ -116,6 +116,8 @@ function CallbackContent() {
     );
 }
 
+export const dynamic = 'force-dynamic';
+
 export default function IntegrationsCallbackPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">

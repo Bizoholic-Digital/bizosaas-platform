@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function ImpersonatePage() {
     const router = useRouter();
     const searchParams = useSearchParams();
