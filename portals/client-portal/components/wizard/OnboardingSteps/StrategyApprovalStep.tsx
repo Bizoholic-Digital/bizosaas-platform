@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { OnboardingState } from '../types/onboarding';
-import { CheckCircle2, ArrowRight, Brain, Target, TrendingUp, Zap, Sparkles, Database } from 'lucide-react';
+import {
+    CheckCircle2, ArrowRight, Brain, Target, TrendingUp, Zap,
+    Sparkles, Database, ShieldCheck, Rocket,
+    Activity, Cpu, Lock
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 interface Props {
     data: OnboardingState;
@@ -14,214 +20,182 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
     const [strategyGenerated, setStrategyGenerated] = useState(false);
 
     useEffect(() => {
-        // Simulate AI strategy generation
         const timer = setTimeout(() => {
             setIsGenerating(false);
             setStrategyGenerated(true);
-        }, 2000);
+        }, 3000);
         return () => clearTimeout(timer);
     }, []);
 
-    // Calculate data completeness score
-    const getDataScore = () => {
+    const dataScore = useMemo(() => {
         let score = 0;
-        if (data.profile.companyName) score += 15;
-        if (data.profile.website) score += 15;
-        if (data.digitalPresence.hasTracking) score += 10;
-        if (data.tools.selectedMcps?.length > 0) score += 10;
-        if (data.analytics.gtmId) score += 15;
-        if (data.socialMedia.platforms.length > 0) score += 15;
-        if (data.goals.primaryGoal) score += 10;
-        if (data.goals.monthlyBudget > 0) score += 10;
+        if (data.profile.companyName) score += 20;
+        if (data.profile.website) score += 20;
+        if (data.digitalPresence.cmsType) score += 15;
+        if (data.tools.selectedMcps && data.tools.selectedMcps.length > 0) score += 15;
+        if (data.analytics.gaId || data.analytics.gtmId) score += 15;
+        if (data.goals.primaryGoal) score += 15;
         return score;
-    };
+    }, [data.profile, data.digitalPresence, data.tools, data.analytics, data.goals]);
 
-    const dataScore = getDataScore();
-
-    // AI Strategy inputs summary
     const strategyInputs = [
-        {
-            label: 'Business Profile',
-            value: `${data.profile?.companyName || 'Not provided'} • ${data.profile?.industry || 'Not set'}`,
-            icon: Database,
-            complete: !!data.profile?.companyName
-        },
-        {
-            label: 'Digital Presence',
-            value: data.profile?.website || 'Not provided',
-            icon: TrendingUp,
-            complete: !!data.profile?.website
-        },
-        {
-            label: 'Primary Goal',
-            value: String(data.goals?.primaryGoal || '').replace('_', ' ').toUpperCase() || 'Not set',
-            icon: Target,
-            complete: !!data.goals?.primaryGoal
-        },
-        {
-            label: 'Monthly Budget',
-            value: `${data.goals?.currency || 'USD'} ${(data.goals?.monthlyBudget || 0).toLocaleString()}`,
-            icon: Zap,
-            complete: (data.goals?.monthlyBudget || 0) > 0
-        },
-        {
-            label: 'Target Audience',
-            value: `${data.goals?.targetAudience?.ageRange || 'Not set'} • ${(data.goals?.targetAudience?.locations || []).join(', ') || 'Global'}`,
-            icon: Brain,
-            complete: !!data.goals?.targetAudience?.ageRange
-        },
-        {
-            label: 'Selected Tools',
-            value: `${data.tools?.selectedMcps?.length || 0} integrations`,
-            icon: Sparkles,
-            complete: (data.tools?.selectedMcps?.length || 0) > 0
-        }
+        { label: 'Infrastructure', value: data.digitalPresence.cmsType?.toUpperCase() || 'Custom', icon: Cpu },
+        { label: 'Growth Objective', value: data.goals.primaryGoal?.replace('_', ' ').toUpperCase(), icon: Target },
+        { label: 'Target Market', value: data.goals.targetAudience.locations[0] || 'Global', icon: Activity },
+        { label: 'Ad Intensity', value: (data.goals?.monthlyBudget || 0) < 2500 ? 'Growth' : 'Market Attack', icon: TrendingUp },
     ];
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="text-center mb-8">
-                {isGenerating ? (
-                    <>
-                        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                            <Brain size={32} className="animate-spin" />
-                        </div>
-                        <h2 className="text-2xl font-bold text-foreground">Strategy AI Analyzing...</h2>
-                        <p className="text-muted-foreground">Processing your business data to create a custom strategy</p>
-                    </>
-                ) : (
-                    <>
-                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                            <CheckCircle2 size={32} />
-                        </div>
-                        <h2 className="text-2xl font-bold text-foreground">AI Strategy Ready</h2>
-                        <p className="text-muted-foreground">Your personalized growth strategy has been generated</p>
-                    </>
-                )}
-            </div>
-
-            {/* Data Completeness Score */}
-            <Card className="border-blue-200 bg-blue-50/50">
-                <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-semibold text-blue-900">Data Completeness</span>
-                        <span className="text-2xl font-bold text-blue-600">{dataScore}%</span>
-                    </div>
-                    <div className="w-full bg-blue-200 rounded-full h-2">
-                        <div
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-1000"
-                            style={{ width: `${dataScore}%` }}
-                        />
-                    </div>
-                    <p className="text-xs text-blue-700 mt-2">
-                        {dataScore >= 80 ? '✓ Excellent data quality for AI strategy generation' :
-                            dataScore >= 60 ? '⚠ Good data, but more inputs improve strategy accuracy' :
-                                '⚠ Limited data - strategy will be generic'}
-                    </p>
-                </CardContent>
-            </Card>
-
-            {/* Strategy Inputs Overview */}
-            <div className="space-y-3">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                    <Database size={16} />
-                    Data Provided to Strategy AI Agent
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {strategyInputs.map((input, idx) => (
-                        <Card key={idx} className={`transition-all ${input.complete ? 'border-green-200 bg-green-50/30' : 'border-gray-200 bg-gray-50/30'}`}>
-                            <CardContent className="p-4 flex items-start gap-3">
-                                <div className={`p-2 rounded-lg ${input.complete ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                                    <input.icon size={18} />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-xs text-muted-foreground uppercase tracking-wider">{input.label}</div>
-                                    <div className="font-semibold text-sm text-foreground truncate">{input.value}</div>
-                                </div>
-                                {input.complete && <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" />}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            </div>
-
-            {/* AI-Generated Strategy Preview */}
-            {strategyGenerated && (
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 relative overflow-hidden animate-in slide-in-from-bottom-4">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 transform translate-x-12 -translate-y-12"></div>
-
-                    <div className="flex items-center gap-2 mb-4">
-                        <Brain className="text-blue-600" size={24} />
-                        <h3 className="font-bold text-blue-900 text-lg">AI-Generated Strategy</h3>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-blue-100">
-                            <h4 className="text-sm font-bold text-blue-800 mb-2">Strategic Approach</h4>
-                            <p className="text-blue-900 leading-relaxed">
-                                Based on your <b>{data.goals.primaryGoal?.replace('_', ' ')}</b> goal with a
-                                <b> {data.goals.currency}{data.goals.monthlyBudget.toLocaleString()}</b> monthly budget,
-                                our AI recommends a {data.goals.monthlyBudget < 1000 ? 'lean, high-ROI' : 'multi-channel growth'} strategy
-                                targeting <b>{data.goals.targetAudience.ageRange}</b> audience in <b>{data.goals.targetAudience.locations.join(', ') || 'Global markets'}</b>.
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white/60 backdrop-blur-sm p-3 rounded-lg border border-blue-100">
-                                <span className="text-xs text-blue-600 font-bold uppercase tracking-wider block mb-1">Channels</span>
-                                <span className="font-semibold text-blue-900">
-                                    {data.socialMedia.platforms.length > 0
-                                        ? data.socialMedia.platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(', ')
-                                        : 'SEO + Content Marketing'}
-                                </span>
-                            </div>
-                            <div className="bg-white/60 backdrop-blur-sm p-3 rounded-lg border border-blue-100">
-                                <span className="text-xs text-blue-600 font-bold uppercase tracking-wider block mb-1">Budget Split</span>
-                                <span className="font-semibold text-blue-900">
-                                    {data.goals.monthlyBudget < 1000 ? '80% Organic / 20% Paid' : '60% Acquisition / 40% Retention'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="bg-blue-600/10 backdrop-blur-sm p-4 rounded-lg border border-blue-300">
-                            <span className="text-xs text-blue-700 font-bold uppercase tracking-wider block mb-2">AI Agents Assigned</span>
-                            <div className="flex flex-wrap gap-2">
-                                <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">Research Agent</span>
-                                <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">Content Agent</span>
-                                <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">Analytics Agent</span>
-                                {data.socialMedia.platforms.length > 0 && (
-                                    <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">Social Agent</span>
-                                )}
-                                {data.analytics.gtmId && (
-                                    <span className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-medium">Tracking Agent</span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex gap-4 pt-6">
-                <Button
-                    onClick={onConfirm}
-                    disabled={!strategyGenerated}
-                    className="flex-1 h-12 text-base font-semibold"
-                >
-                    {strategyGenerated ? (
+        <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-1000 max-w-4xl mx-auto">
+            {/* Header Section */}
+            <div className="text-center space-y-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest border border-white/10 shadow-2xl">
+                    {isGenerating ? (
                         <>
-                            Launch Platform <ArrowRight className="ml-2" size={20} />
+                            <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                            AI Strategy Synthesis In Progress
                         </>
                     ) : (
-                        'Generating Strategy...'
+                        <>
+                            <ShieldCheck size={12} className="text-green-500" />
+                            Strategic Pre-Flight Approved
+                        </>
                     )}
-                </Button>
+                </div>
+                <h2 className="text-4xl font-black text-foreground tracking-tight leading-none">Final Strategy Approval</h2>
+                <p className="text-muted-foreground text-sm font-medium">Your platform is provisioned and ready for deployment.</p>
             </div>
 
-            <div className="text-center text-sm text-muted-foreground">
-                <p>✓ All AI agents are configured and ready to execute</p>
-                <p className="text-xs mt-1">Strategy will be refined continuously based on performance data</p>
+            <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
+                {/* Left: Pre-Flight Checklist */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="p-6 rounded-[2.5rem] bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-6">
+                        <div className="space-y-1 text-left">
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Strategy Confidence</p>
+                            <div className="flex items-center justify-between">
+                                <span className="text-3xl font-black text-foreground">{dataScore}%</span>
+                                <Badge variant="outline" className={`border-none ${dataScore > 80 ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'} font-black px-2 py-0 text-[10px]`}>
+                                    {dataScore > 80 ? 'HIGH' : 'STABLE'}
+                                </Badge>
+                            </div>
+                            <Progress value={dataScore} className="h-1.5 bg-slate-200 dark:bg-slate-800" />
+                        </div>
+
+                        <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                            {strategyInputs.map((input, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="p-2 rounded-xl bg-white dark:bg-slate-950 shadow-sm border border-slate-100 dark:border-slate-800">
+                                        <input.icon size={14} className="text-blue-500" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">{input.label}</p>
+                                        <p className="text-[11px] font-bold text-foreground truncate max-w-[120px]">{input.value}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="p-4 rounded-3xl bg-blue-600/5 border border-blue-600/10 flex items-start gap-3">
+                        <Lock size={16} className="text-blue-600 mt-1" />
+                        <p className="text-[10px] font-bold text-blue-900/60 dark:text-blue-400/60 leading-relaxed text-left italic">
+                            All credentials and API keys are secured via HashiCorp Vault.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Right: AI Output Simulation */}
+                <div className="lg:col-span-4 space-y-6">
+                    {isGenerating ? (
+                        <div className="h-full min-h-[400px] flex flex-col items-center justify-center p-12 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                            <div className="relative">
+                                <Brain size={64} className="text-blue-600 animate-pulse mb-6" />
+                                <div className="absolute inset-0 border-4 border-blue-500/30 rounded-full animate-ping scale-150 opacity-20" />
+                            </div>
+                            <h3 className="text-lg font-black uppercase tracking-tight mb-2">Analyzing Marketplace Context...</h3>
+                            <div className="flex gap-1">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-6 animate-in fade-in zoom-in-95 duration-1000">
+                            {/* Strategy Card */}
+                            <Card className="rounded-[3rem] border-none bg-gradient-to-br from-blue-600 to-indigo-700 shadow-2xl shadow-blue-500/20 overflow-hidden relative">
+                                <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12">
+                                    <Sparkles size={160} className="text-white" />
+                                </div>
+                                <CardContent className="p-10 space-y-8 relative z-10 text-white">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md">
+                                            <Rocket size={24} className="text-white" />
+                                        </div>
+                                        <div className="text-left">
+                                            <h3 className="text-xl font-black tracking-tight leading-none mb-1">Deployment Roadmap</h3>
+                                            <p className="text-[10px] uppercase font-black tracking-widest opacity-60">BizOSaaS Brain v1.2</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="p-5 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10 space-y-3">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Phase 1: Foundation</p>
+                                            </div>
+                                            <p className="text-[12px] font-bold leading-relaxed text-left">
+                                                Establishing {data.digitalPresence.cmsType || 'base'} infrastructure and initializing {data.tools.selectedMcps?.length || 0} specialist agents.
+                                            </p>
+                                        </div>
+                                        <div className="p-5 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10 space-y-3 opacity-60">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Phase 2: Intelligence</p>
+                                            </div>
+                                            <p className="text-[12px] font-bold leading-relaxed text-left">
+                                                Connecting {data.analytics.gaId ? 'GA4 Data Stream' : 'Audience Insights'} for real-time campaign refinement.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-6 border-t border-white/10 flex items-center justify-between">
+                                        <div className="space-y-1 text-left">
+                                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Estimated Launch Time</p>
+                                            <p className="font-black text-lg">Instantaneous</p>
+                                        </div>
+                                        <Button
+                                            onClick={onConfirm}
+                                            className="bg-white text-blue-600 hover:bg-slate-100 rounded-full py-6 px-10 font-black uppercase text-xs tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95"
+                                        >
+                                            Ignition & Launch <ArrowRight size={16} className="ml-2" />
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                {[
+                                    { label: 'Cloud Workers', icon: Activity, value: 'Operational' },
+                                    { label: 'RAG Specialists', icon: Brain, value: 'Standby' },
+                                    { label: 'CRM Sync', icon: Database, value: 'Enabled' }
+                                ].map((stat, i) => (
+                                    <div key={i} className="p-4 rounded-[2rem] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col items-center gap-2">
+                                        <stat.icon size={16} className="text-blue-500" />
+                                        <div className="text-center">
+                                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{stat.label}</p>
+                                            <p className="text-[10px] font-black text-foreground">{stat.value}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
+
+            <p className="text-[10px] font-bold text-muted-foreground/40 text-center uppercase tracking-widest">
+                By clicking launch, you authorize the BizOSaaS Brain to provision all selected tools and specialists.
+            </p>
         </div>
     );
 }
