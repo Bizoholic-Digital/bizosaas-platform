@@ -135,9 +135,18 @@ export function OnboardingWizard() {
             await new Promise(resolve => setTimeout(resolve, 2000));
             updateAnalytics({
                 auditedServices: {
-                    essential: [{ id: 'gtm-1', name: 'GTM-PRH6T87', service: 'GTM', status: 'active' }],
+                    essential: [
+                        { id: 'gtm-1', name: 'GTM-PRH6T87', service: 'GTM', status: 'active' },
+                        { id: 'ga-1', name: 'G-XXXXXXXXXX', service: 'GA4', status: 'active' }
+                    ],
                     optional: []
                 }
+            });
+            // Auto-detect platforms based on the website audit
+            updateDigitalPresence({
+                cmsType: 'wordpress',
+                crmType: 'fluentcrm',
+                hasTracking: true
             });
         } catch (e) {
             console.error("Audit failed", e);
@@ -243,7 +252,7 @@ export function OnboardingWizard() {
         switch (state.currentStep) {
             case 0: return <CompanyIdentityStep data={state.profile} onUpdate={updateProfile} onReset={resetOnboarding} discovery={state.discovery} isDiscovering={isDiscovering} />;
             case 1: return <DigitalPresenceStep data={state.digitalPresence} websiteUrl={state.profile.website} onUpdate={updateDigitalPresence} isAuditing={isAuditing} auditedServices={state.analytics.auditedServices} />;
-            case 2: return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} />;
+            case 2: return <CategorizedToolSelectionStep data={state.tools} onUpdate={updateTools} state={state} />;
             case 3: return <ThemePluginSelectionStep data={state.marketplace} onUpdate={updateMarketplace} />;
             case 4: return <PluginConnectionStep websiteUrl={state.profile.website} onVerified={() => nextStep()} onSkip={nextStep} />;
             case 5: return (

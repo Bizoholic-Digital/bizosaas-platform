@@ -277,9 +277,10 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
                         variant="ghost"
                         size="sm"
                         onClick={onReset}
-                        className="absolute top-0 right-0 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                        className="absolute top-0 right-0 h-8 px-3 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-100 dark:hover:border-red-900/30 transition-all rounded-full flex items-center gap-1.5 group"
                     >
-                        <Sparkles size={10} /> Reset Form
+                        <Sparkles size={10} className="group-hover:rotate-180 transition-transform duration-500" />
+                        Reset Form
                     </Button>
                 )}
             </div>

@@ -42,7 +42,7 @@ export interface BusinessProfile {
 export interface DigitalPresence {
     websiteDetected: boolean;
     cmsType?: 'wordpress' | 'shopify' | 'wix' | 'squarespace' | 'custom' | 'other';
-    crmType?: 'hubspot' | 'salesforce' | 'zoho' | 'pipedrive' | 'none';
+    crmType?: 'hubspot' | 'salesforce' | 'zoho' | 'pipedrive' | 'fluentcrm' | 'none';
     hasTracking?: boolean;
 }
 

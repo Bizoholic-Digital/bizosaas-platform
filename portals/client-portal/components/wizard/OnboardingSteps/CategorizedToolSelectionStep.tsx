@@ -15,7 +15,10 @@ import {
     PackageOpen,
     Box,
     AlertTriangle,
-    Info
+    Info,
+    Globe,
+    Target,
+    BarChart3
 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { ToolIntegration } from '../types/onboarding';
@@ -31,6 +34,7 @@ import {
 interface Props {
     data: ToolIntegration;
     onUpdate: (data: Partial<ToolIntegration>) => void;
+    state?: any; // Pass full state to access detection results
 }
 
 interface Category {
@@ -52,7 +56,7 @@ interface Mcp {
     capabilities: string[];
 }
 
-export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
+export function CategorizedToolSelectionStep({ data, onUpdate, state }: Props) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [mcps, setMcps] = useState<Record<string, Mcp[]>>({}); // category_slug -> mcps
     const [loading, setLoading] = useState(true);
@@ -129,7 +133,11 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
         onUpdate({ selectedMcps: Array.from(current) });
     };
 
-    const currentMcps = selectedCategory ? mcps[selectedCategory] || [] : [];
+    const CORE_SLUGS = ['wordpress', 'shopify', 'fluentcrm', 'hubspot', 'google-tag-manager', 'google-analytics-4'];
+
+    const currentMcps = (selectedCategory ? mcps[selectedCategory] || [] : [])
+        .filter(m => !CORE_SLUGS.includes(m.slug));
+
     const filteredMcps = useMemo(() => {
         return currentMcps.filter(m =>
             m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -139,6 +147,20 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
 
     const featuredMcps = filteredMcps.filter(m => m.is_featured);
     const standardMcps = filteredMcps.filter(m => !m.is_featured);
+
+    const detectedFoundations = useMemo(() => {
+        const found = [];
+        if (state?.digitalPresence.cmsType === 'wordpress') found.push({ name: 'WordPress', type: 'CMS', slug: 'wordpress', icon: 'Globe' });
+        if (state?.digitalPresence.cmsType === 'shopify') found.push({ name: 'Shopify', type: 'CMS', slug: 'shopify', icon: 'Globe' });
+        if (state?.digitalPresence.crmType === 'fluentcrm') found.push({ name: 'FluentCRM', type: 'CRM', slug: 'fluentcrm', icon: 'Target' });
+        if (state?.digitalPresence.crmType === 'hubspot') found.push({ name: 'HubSpot', type: 'CRM', slug: 'hubspot', icon: 'Target' });
+
+        const analytics = [...(state?.analytics.auditedServices?.essential || []), ...(state?.analytics.auditedServices?.optional || [])];
+        if (analytics.some(s => s.service === 'GTM')) found.push({ name: 'Google Tag Manager', type: 'Analytics', slug: 'google-tag-manager', icon: 'BarChart3' });
+        if (analytics.some(s => s.service === 'GA4' || s.service === 'GA')) found.push({ name: 'Google Analytics 4', type: 'Analytics', slug: 'google-analytics-4', icon: 'BarChart3' });
+
+        return found;
+    }, [state?.digitalPresence, state?.analytics]);
 
     if (loading) {
         return (
@@ -153,24 +175,51 @@ export function CategorizedToolSelectionStep({ data, onUpdate }: Props) {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-                    <Sparkles size={12} /> Auto-Discovery Powered
-                </div>
-                <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">Power Up Your Business</h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto mt-2 font-medium">
-                    We've pre-selected tools based on your digital presence. Confirm or adjust your stack.
-                </p>
-            </div>
+            {detectedFoundations.length > 0 ? (
+                <div className="bg-white dark:bg-slate-900 border-2 border-blue-500/20 rounded-3xl p-6 shadow-xl shadow-blue-500/5 mb-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-600 p-2 rounded-xl text-white">
+                                <Box className="w-5 h-5" />
+                            </div>
+                            <div className="text-left">
+                                <h3 className="text-sm font-black text-foreground uppercase tracking-tight leading-none mb-1">Detected Infrastructure</h3>
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">We've established these as your platform core</p>
+                            </div>
+                        </div>
+                        <Badge variant="outline" className="border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 font-black text-[10px] px-3 py-1 rounded-full flex items-center gap-1.5 uppercase transition-all">
+                            <CheckCircle size={10} /> Verified Foundations
+                        </Badge>
+                    </div>
 
-            {initialSelectedMcps.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {detectedFoundations.map(found => {
+                            const Icon = (Icons as any)[found.icon] || Globe;
+                            return (
+                                <div key={found.slug} className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 group transition-all hover:border-blue-500/30 hover:bg-white dark:hover:bg-slate-800">
+                                    <div className="p-3 rounded-xl bg-white dark:bg-slate-900 shadow-sm text-blue-600 transition-transform group-hover:scale-110">
+                                        <Icon size={20} />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">{found.type}</p>
+                                        <h4 className="font-bold text-gray-900 dark:text-white text-sm">{found.name}</h4>
+                                    </div>
+                                    <div className="ml-auto">
+                                        <CheckCircle className="text-green-500 w-4 h-4" />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : initialSelectedMcps.length > 0 && (
                 <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 flex items-center gap-4 mb-6">
                     <div className="bg-blue-500/20 p-2 rounded-xl">
                         <Info className="text-blue-600 h-5 w-5" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-sm font-bold text-blue-900 dark:text-blue-400 leading-tight">Smart Recommendations Applied</p>
-                        <p className="text-xs text-blue-700 dark:text-blue-300/70">Based on your website audit, we've automatically enabled {initialSelectedMcps.length} specialist tools.</p>
+                        <p className="text-sm font-bold text-blue-900 dark:text-blue-400 leading-tight text-left">Smart Recommendations Applied</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-300/70 text-left">We've pre-selected tools based on your digital presence.</p>
                     </div>
                 </div>
             )}
