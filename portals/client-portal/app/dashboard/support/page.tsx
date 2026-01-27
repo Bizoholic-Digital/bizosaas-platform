@@ -1,3 +1,5 @@
+'use client';
+
 import SupportContent from '@/components/SupportContent';
 import { useSetHeader } from '@/lib/contexts/HeaderContext';
 
