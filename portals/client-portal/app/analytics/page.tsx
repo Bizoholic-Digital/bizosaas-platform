@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/ui/dashboard-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart3, TrendingUp, Users, MousePointerClick } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function AnalyticsPage() {
   return (
     <DashboardLayout title="Analytics" description="Performance metrics and insights">

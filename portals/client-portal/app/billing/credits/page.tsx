@@ -16,6 +16,8 @@ import { useSetHeader } from '@/lib/contexts/HeaderContext';
 import { ArrowDownLeft, ArrowUpRight, ShoppingCart, RefreshCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 // Mock Data matching the template's structure
 const MOCK_TRANSACTIONS = [
     { id: 'TX-101', type: 'earned', amount: 50, description: 'Added new business listing', date: '2023-11-15 14:30', status: 'completed' },
