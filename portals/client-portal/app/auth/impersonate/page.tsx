@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default function ImpersonatePage() {
+function ImpersonateContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState('Initializing impersonation session...');
@@ -65,5 +65,13 @@ export default function ImpersonatePage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ImpersonatePage() {
+    return (
+        <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
+            <ImpersonateContent />
+        </Suspense>
     );
 }
