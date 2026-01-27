@@ -167,6 +167,22 @@ export function OnboardingWizard() {
                     optional.push({ id: `clarity-${i}`, name: id, service: 'Clarity', status: 'detected' });
                 });
 
+                // Add CMS/Platform to essentials for top-level visibility
+                if (tags.cms && tags.cms !== 'none') {
+                    essential.push({ id: `cms-${tags.cms}`, name: tags.cms, service: tags.cms.toUpperCase(), status: 'active' });
+                }
+
+                // Add Key Plugins to essentials/optional
+                const plugins = tags.plugins || [];
+                plugins.forEach((p: any) => {
+                    const slug = p.slug?.toLowerCase();
+                    if (['woocommerce', 'fluent-crm', 'fluentcrm', 'elementor', 'bizosaas-connect', 'wordpress-seo', 'yoast-seo'].includes(slug)) {
+                        essential.push({ id: `p-${slug}`, name: p.name, service: p.name, status: 'active' });
+                    } else {
+                        optional.push({ id: `p-${slug}`, name: p.name, service: p.name, status: 'detected' });
+                    }
+                });
+
                 updateAnalytics({
                     gtmId: tags.gtm[0] || state.analytics.gtmId,
                     gaId: tags.ga4[0] || state.analytics.gaId,
@@ -176,12 +192,15 @@ export function OnboardingWizard() {
                 });
 
                 // Auto-detect platforms based on the website audit
-                const plugins = tags.plugins || [];
+                // If any WP plugin is detected, ensure cms is wordpress
+                const hasWpPlugins = plugins.length > 0;
+                const detectedCms = tags.cms !== 'none' ? tags.cms : (hasWpPlugins ? 'wordpress' : state.digitalPresence.cmsType);
+
                 updateDigitalPresence({
-                    cmsType: tags.cms !== 'none' ? tags.cms : state.digitalPresence.cmsType,
-                    crmType: plugins.some((p: any) => p.slug === 'fluent-crm') ? 'fluentcrm' : state.digitalPresence.crmType,
-                    ecommerceType: plugins.some((p: any) => p.slug === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType,
-                    isBizOSaaSActive: !!tags.is_bridge_active,
+                    cmsType: detectedCms,
+                    crmType: plugins.some((p: any) => ['fluent-crm', 'fluentcrm'].includes(p.slug?.toLowerCase())) ? 'fluentcrm' : state.digitalPresence.crmType,
+                    ecommerceType: plugins.some((p: any) => p.slug?.toLowerCase() === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType,
+                    isBizOSaaSActive: !!tags.is_bridge_active || plugins.some((p: any) => p.slug?.toLowerCase() === 'bizosaas-connect'),
                     hasTracking: true
                 });
             }

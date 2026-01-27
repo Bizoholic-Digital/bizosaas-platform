@@ -444,11 +444,17 @@ async def scan_website_tags(payload: Dict[str, Any]):
             html = resp.text
 
             # 1. Platform Detection (Infrastructure)
-            if "/wp-content/" in html or "/wp-includes/" in html or 'name="generator" content="WordPress' in html:
+            wp_markers = [
+                "/wp-content/", "/wp-includes/", 'name="generator" content="WordPress', 
+                "wp-block-", "rel='https://api.w.org/'", "/wp-json/", 
+                'wp-emoji-release.min.js', 'id="wp-custom-css"',
+                "wp-embed", "wp-sitemap"
+            ]
+            if any(m in html for m in wp_markers):
                 detected["cms"] = "wordpress"
-            elif ".myshopify.com" in website_url or 'cdn.shopify.com' in html:
+            elif ".myshopify.com" in website_url or 'cdn.shopify.com' in html or 'shopify-payment-button' in html:
                 detected["cms"] = "shopify"
-            elif "wix.com" in html:
+            elif "wix.com" in html or 'wix-site-properties' in html:
                 detected["cms"] = "wix"
 
             # 2. Tracking & Analytics
@@ -477,7 +483,7 @@ async def scan_website_tags(payload: Dict[str, Any]):
                 "woocommerce": {"name": "WooCommerce", "markers": ["/plugins/woocommerce/", "woocommerce-no-js", 'content="WooCommerce']},
                 "elementor": {"name": "Elementor", "markers": ["/plugins/elementor/", "elementor-default", 'content="Elementor']},
                 "wordpress-seo": {"name": "Yoast SEO", "markers": ["/plugins/wordpress-seo/", "Yoast SEO plugin", "yoast-schema-graph"]},
-                "fluent-crm": {"name": "FluentCRM", "markers": ["/plugins/fluent-crm/", "fluentcrm-"]},
+                "fluent-crm": {"name": "FluentCRM", "markers": ["/plugins/fluent-crm/", "fluentcrm-", "fluentcrm_", "fluent-framework"]},
                 "hubspot": {"name": "HubSpot", "markers": ["/plugins/hubspot/", "hubspot.js", "hs-script-loader"]},
                 "mailchimp": {"name": "Mailchimp", "markers": ["/plugins/mailchimp-for-wp/", "mc4wp-", "chimpstatic.com"]},
                 "calendly": {"name": "Calendly", "markers": ["calendly.com/assets/external/widget.js", "calendly-inline-widget"]},
@@ -503,7 +509,11 @@ async def scan_website_tags(payload: Dict[str, Any]):
                     if slug == "bizosaas-connect":
                         is_bridge = True
 
-            # 4. Proactive Bridge Verification
+            # 4. Proactive Bridge Verification & Cross-Referencing
+            # If any specific WP plugins were found, we are definitely on WordPress
+            if any(p["slug"] in ["woocommerce", "fluent-crm", "elementor", "wpforms"] for p in matched_plugins):
+                detected["cms"] = "wordpress"
+
             if not is_bridge and detected["cms"] == "wordpress":
                 try:
                     status_url = f"{website_url.rstrip('/')}/wp-json/bizosaas/v1/status"
