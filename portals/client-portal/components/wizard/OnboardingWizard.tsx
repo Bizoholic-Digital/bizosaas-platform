@@ -134,6 +134,8 @@ export function OnboardingWizard() {
             });
             await new Promise(resolve => setTimeout(resolve, 2000));
             updateAnalytics({
+                gtmId: 'GTM-PRH6T87',
+                gaId: 'G-XXXXXXXXXX',
                 auditedServices: {
                     essential: [
                         { id: 'gtm-1', name: 'GTM-PRH6T87', service: 'GTM', status: 'active' },
@@ -166,10 +168,19 @@ export function OnboardingWizard() {
 
     // Handle Auto-Audit Trigger
     useEffect(() => {
-        if (state.profile.website && state.digitalPresence.hasTracking && !state.analytics.auditedServices && !isAuditing && !auditAttempted.current) {
+        // Trigger if we are on step 1 (Presence) and have a website URL
+        const isPresenceStep = state.currentStep === 1;
+        const hasWebsite = !!state.profile.website;
+        const notAudited = !state.analytics.auditedServices;
+
+        if (isPresenceStep && hasWebsite && notAudited && !isAuditing && !auditAttempted.current) {
+            // Auto-enable tracking switch to show the scanning UI
+            if (!state.digitalPresence.hasTracking) {
+                updateDigitalPresence({ hasTracking: true });
+            }
             triggerTrackingAudit(state.profile.website);
         }
-    }, [state.profile.website, state.digitalPresence.hasTracking, isAuditing, triggerTrackingAudit]);
+    }, [state.currentStep, state.profile.website, state.digitalPresence.hasTracking, isAuditing, triggerTrackingAudit, updateDigitalPresence]);
 
     // AUTO-SELECTION LOGIC: Map detected services to MCP slugs
     useEffect(() => {

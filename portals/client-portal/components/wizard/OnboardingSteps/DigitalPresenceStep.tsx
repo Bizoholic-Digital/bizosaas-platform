@@ -101,137 +101,165 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
 
             {renderWebsiteStatus()}
 
-            <div className="space-y-6">
-                <div className="space-y-3">
-                    <Label className="flex items-center gap-2">
-                        <Layout className="h-4 w-4" /> Content Management System (CMS)
-                    </Label>
-                    <Select
-                        value={data.cmsType || 'none'}
-                        onValueChange={(val: any) => onUpdate({ cmsType: val })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select your website platform" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="wordpress">WordPress</SelectItem>
-                            <SelectItem value="shopify">Shopify</SelectItem>
-                            <SelectItem value="wix">Wix</SelectItem>
-                            <SelectItem value="squarespace">Squarespace</SelectItem>
-                            <SelectItem value="custom">Custom Code</SelectItem>
-                            <SelectItem value="other">Other / None</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                        We'll customize integration instructions based on your platform.
-                    </p>
-                </div>
-
-                <div className="space-y-3">
-                    <Label className="flex items-center gap-2">
-                        <Database className="h-4 w-4" /> Customer Relationship Management (CRM)
-                    </Label>
-                    <Select
-                        value={data.crmType || 'none'}
-                        onValueChange={(val: any) => onUpdate({ crmType: val })}
-                    >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select your CRM" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="none">No CRM used</SelectItem>
-                            <SelectItem value="fluentcrm">FluentCRM</SelectItem>
-                            <SelectItem value="hubspot">HubSpot</SelectItem>
-                            <SelectItem value="salesforce">Salesforce</SelectItem>
-                            <SelectItem value="zoho">Zoho CRM</SelectItem>
-                            <SelectItem value="pipedrive">Pipedrive</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="border rounded-lg p-5 bg-card/50 space-y-4">
+            <div className="space-y-8">
+                {/* 1. Tracking Scripts & Auto-Discovery (Moved to Top) */}
+                <div className="border-2 border-blue-500/20 rounded-2xl p-6 bg-blue-50/30 dark:bg-blue-900/10 space-y-4 shadow-xl shadow-blue-500/5 transition-all duration-500 hover:border-blue-500/40">
                     <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label className="text-base flex items-center gap-2">
-                                <Search className="h-4 w-4 text-blue-500" /> Tracking Scripts
+                        <div className="space-y-1 text-left">
+                            <Label className="text-lg font-black flex items-center gap-2 text-blue-700 dark:text-blue-400 uppercase tracking-tighter">
+                                <Search className="h-5 w-5" /> Site Discovery
                             </Label>
-                            <p className="text-sm text-muted-foreground">Detect GA4, Pixel, or GTM automatically.</p>
+                            <p className="text-sm text-blue-600/70 dark:text-blue-400/60 font-medium">Detect CMS, CRM, and Analytics automatically.</p>
                         </div>
-                        <Switch
-                            checked={data.hasTracking}
-                            onCheckedChange={(checked) => onUpdate({ hasTracking: checked })}
-                        />
+                        <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-600/50">Auto-Scan</span>
+                            <Switch
+                                checked={data.hasTracking}
+                                onCheckedChange={(checked) => onUpdate({ hasTracking: checked })}
+                                className="data-[state=checked]:bg-blue-600"
+                            />
+                        </div>
                     </div>
 
                     {data.hasTracking && (
-                        <div className="pt-4 border-t border-dashed">
+                        <div className="pt-4 border-t border-blue-500/10 border-dashed">
                             {isAuditing ? (
-                                <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-border">
+                                <div className="space-y-4 bg-white/50 dark:bg-slate-900/50 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30 shadow-sm transition-all duration-500">
                                     <div className="flex justify-between items-end mb-1">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-2 text-primary">
-                                                <Zap className="h-4 w-4 animate-pulse fill-primary/20" />
-                                                <span className="text-sm font-bold">Deep Scan in Progress</span>
+                                        <div className="space-y-1 text-left">
+                                            <div className="flex items-center gap-2 text-blue-600">
+                                                <Zap className="h-4 w-4 animate-pulse fill-blue-600/20" />
+                                                <span className="text-sm font-black uppercase tracking-tighter">Analyzing Ecosystem</span>
                                             </div>
-                                            <p className="text-xs text-muted-foreground animate-in fade-in slide-in-from-left-2 duration-300" key={statusIndex}>
+                                            <p className="text-xs text-muted-foreground font-medium animate-in fade-in slide-in-from-left-2 duration-300 h-4" key={statusIndex}>
                                                 {SCAN_MESSAGES[statusIndex]}
                                             </p>
                                         </div>
-                                        <span className="text-xs font-mono font-bold text-primary">{Math.round(scanProgress)}%</span>
+                                        <span className="text-xs font-black font-mono text-blue-600 bg-blue-50 dark:bg-blue-900/40 px-2 py-0.5 rounded-full">{Math.round(scanProgress)}%</span>
                                     </div>
-                                    <Progress value={scanProgress} className="h-2 bg-primary/10" />
-                                    <p className="text-[10px] text-center text-muted-foreground/60">
-                                        Checking {websiteUrl || 'your website'} security & tags
+                                    <Progress value={scanProgress} className="h-2.5 bg-blue-100 dark:bg-blue-900/20" />
+                                    <p className="text-[10px] text-center text-blue-600/40 font-bold uppercase tracking-widest">
+                                        Detecting infrastructure for {websiteUrl || 'your website'}
                                     </p>
                                 </div>
                             ) : auditedServices ? (
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-500/10 p-3 rounded-lg border border-green-500/20 shadow-sm animate-in zoom-in-95 duration-500">
-                                        <ShieldCheck className="h-5 w-5" />
-                                        <span className="text-sm font-bold">Audit Complete: Tech Stack Identified</span>
+                                <div className="space-y-4 animate-in slide-in-from-top-2 duration-500">
+                                    <div className="flex items-center gap-3 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-200 dark:border-green-800/30 shadow-sm">
+                                        <div className="bg-green-600 p-2 rounded-xl text-white shadow-lg shadow-green-200 dark:shadow-none">
+                                            <ShieldCheck className="h-5 w-5" />
+                                        </div>
+                                        <div className="text-left">
+                                            <span className="text-sm font-black uppercase tracking-tight leading-none block mb-0.5">Discovery Successful</span>
+                                            <p className="text-xs text-green-600/80 font-medium">We've identified {auditedServices.essential.length + auditedServices.optional.length} services in your stack.</p>
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
-                                        {data.cmsType && (
-                                            <div className="flex items-center gap-2 p-2 rounded-xl bg-blue-500/5 border border-blue-500/10">
-                                                <Layout className="w-4 h-4 text-blue-500" />
-                                                <div className="text-left">
-                                                    <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest leading-none mb-1">Detected CMS</p>
-                                                    <p className="text-xs font-bold capitalize">{data.cmsType}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {data.crmType && data.crmType !== 'none' && (
-                                            <div className="flex items-center gap-2 p-2 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                                                <Database className="w-4 h-4 text-purple-500" />
-                                                <div className="text-left">
-                                                    <p className="text-[8px] font-black text-purple-500 uppercase tracking-widest leading-none mb-1">Detected CRM</p>
-                                                    <p className="text-xs font-bold capitalize">{data.crmType}</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 px-1 pt-2">
+                                    <div className="flex flex-wrap gap-2 px-1">
                                         {(auditedServices?.essential || []).map((s: any) => (
-                                            <span key={s.id} className="text-[10px] bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-sm">
+                                            <span key={s.id} className="text-[10px] bg-blue-600 text-white px-3 py-1.5 rounded-full font-black uppercase tracking-widest flex items-center gap-2 shadow-md shadow-blue-200 dark:shadow-none">
                                                 <Sparkles className="h-3 w-3" /> {s.service}
                                             </span>
                                         ))}
                                         {(auditedServices?.optional || []).map((s: any) => (
-                                            <span key={s.id} className="text-[10px] bg-muted/50 text-muted-foreground border border-border px-2.5 py-1 rounded-full font-medium">
+                                            <span key={s.id} className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-3 py-1.5 rounded-full font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
                                                 {s.service}
                                             </span>
                                         ))}
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-4 text-muted-foreground/40 space-y-2 italic">
-                                    <Search className="h-8 w-8 opacity-20" />
-                                    <p className="text-xs">Preparing digital asset audit for {websiteUrl || 'website'}...</p>
+                                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground/30 space-y-3 bg-white/30 dark:bg-slate-900/30 rounded-2xl border-2 border-dashed border-blue-500/10">
+                                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-full animate-bounce">
+                                        <Search className="h-6 w-6 text-blue-500/50" />
+                                    </div>
+                                    <p className="text-xs font-bold uppercase tracking-widest">Ready to scan {websiteUrl || 'website'}...</p>
                                 </div>
                             )}
                         </div>
                     )}
                 </div>
+
+                {/* 2. Platform Classifiers */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3 text-left">
+                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                            <Layout className="h-3 w-3" /> CMS Platform
+                        </Label>
+                        <Select
+                            value={data.cmsType || 'none'}
+                            onValueChange={(val: any) => onUpdate({ cmsType: val })}
+                        >
+                            <SelectTrigger className="h-12 rounded-xl border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm focus:ring-2 focus:ring-blue-500">
+                                <SelectValue placeholder="Select platform" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl border-gray-100 dark:border-slate-800 shadow-2xl">
+                                <SelectItem value="wordpress">WordPress</SelectItem>
+                                <SelectItem value="shopify">Shopify</SelectItem>
+                                <SelectItem value="wix">Wix</SelectItem>
+                                <SelectItem value="squarespace">Squarespace</SelectItem>
+                                <SelectItem value="custom">Custom Code</SelectItem>
+                                <SelectItem value="other">Other / None</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider ml-1">
+                            Integrations will adapt to your choice.
+                        </p>
+                    </div>
+
+                    <div className="space-y-3 text-left">
+                        <Label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                            <Database className="h-3 w-3" /> CRM System
+                        </Label>
+                        <Select
+                            value={data.crmType || 'none'}
+                            onValueChange={(val: any) => onUpdate({ crmType: val })}
+                        >
+                            <SelectTrigger className="h-12 rounded-xl border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm focus:ring-2 focus:ring-blue-500">
+                                <SelectValue placeholder="Select CRM" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl border-gray-100 dark:border-slate-800 shadow-2xl">
+                                <SelectItem value="none">No CRM used</SelectItem>
+                                <SelectItem value="fluentcrm">FluentCRM</SelectItem>
+                                <SelectItem value="hubspot">HubSpot</SelectItem>
+                                <SelectItem value="salesforce">Salesforce</SelectItem>
+                                <SelectItem value="zoho">Zoho CRM</SelectItem>
+                                <SelectItem value="pipedrive">Pipedrive</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider ml-1">
+                            We'll configure syncing accordingly.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Audit Results Visualization (already in DigitalPresenceStep from previous edit, making sure it stays or matches) */}
+                {auditedServices && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in zoom-in-95 duration-700">
+                        {data.cmsType && (
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none transition-transform hover:scale-[1.02]">
+                                <div className="p-2 bg-white/20 rounded-xl">
+                                    <Layout className="w-5 h-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Infrastructure</p>
+                                    <p className="text-sm font-black capitalize leading-none">{data.cmsType}</p>
+                                </div>
+                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
+                            </div>
+                        )}
+                        {data.crmType && data.crmType !== 'none' && (
+                            <div className="flex items-center gap-3 p-4 rounded-2xl bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none transition-transform hover:scale-[1.02]">
+                                <div className="p-2 bg-white/20 rounded-xl">
+                                    <Database className="w-5 h-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[8px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">Growth Stack</p>
+                                    <p className="text-sm font-black capitalize leading-none">{data.crmType}</p>
+                                </div>
+                                <CheckCircle2 className="w-4 h-4 ml-auto opacity-50" />
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
