@@ -156,8 +156,8 @@ export function CategorizedToolSelectionStep({ data, onUpdate, state }: Props) {
         if (state?.digitalPresence.crmType === 'hubspot') found.push({ name: 'HubSpot', type: 'CRM', slug: 'hubspot', icon: 'Target' });
 
         const analytics = [...(state?.analytics.auditedServices?.essential || []), ...(state?.analytics.auditedServices?.optional || [])];
-        if (analytics.some(s => s.service === 'GTM')) found.push({ name: 'Google Tag Manager', type: 'Analytics', slug: 'google-tag-manager', icon: 'BarChart3' });
-        if (analytics.some(s => s.service === 'GA4' || s.service === 'GA')) found.push({ name: 'Google Analytics 4', type: 'Analytics', slug: 'google-analytics-4', icon: 'BarChart3' });
+        if (analytics.some(s => s.service?.toUpperCase() === 'GTM')) found.push({ name: 'Google Tag Manager', type: 'Analytics', slug: 'google-tag-manager', icon: 'BarChart3' });
+        if (analytics.some(s => ['GA4', 'GA', 'GOOGLE ANALYTICS'].includes(s.service?.toUpperCase()))) found.push({ name: 'Google Analytics 4', type: 'Analytics', slug: 'google-analytics-4', icon: 'BarChart3' });
 
         return found;
     }, [state?.digitalPresence, state?.analytics]);
@@ -233,7 +233,21 @@ export function CategorizedToolSelectionStep({ data, onUpdate, state }: Props) {
                             {categories.map(cat => {
                                 const Icon = (Icons as any)[cat.icon] || Box;
                                 const isSelected = selectedCategory === cat.slug;
-                                const countInCat = data.selectedMcps?.filter(s => mcps[cat.slug]?.some(m => m.slug === s)).length || 0;
+
+                                // Count standard tools in this category
+                                let countInCat = data.selectedMcps?.filter(s => mcps[cat.slug]?.some(m => m.slug === s)).length || 0;
+
+                                // Manually add foundations to their respective category counts
+                                if (cat.slug === 'cms' || cat.slug === 'websites') {
+                                    if (data.selectedMcps?.includes('wordpress')) countInCat++;
+                                    if (data.selectedMcps?.includes('shopify')) countInCat++;
+                                } else if (cat.slug === 'crm' || cat.slug === 'customers') {
+                                    if (data.selectedMcps?.includes('fluentcrm')) countInCat++;
+                                    if (data.selectedMcps?.includes('hubspot')) countInCat++;
+                                } else if (cat.slug === 'analytics' || cat.slug === 'data') {
+                                    if (data.selectedMcps?.includes('google-tag-manager')) countInCat++;
+                                    if (data.selectedMcps?.includes('google-analytics-4')) countInCat++;
+                                }
 
                                 return (
                                     <button

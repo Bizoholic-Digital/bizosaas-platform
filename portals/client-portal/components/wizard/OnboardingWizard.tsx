@@ -209,13 +209,13 @@ export function OnboardingWizard() {
 
         // 3. Detect from Tracking Audit (GTM, GA4)
         if (state.analytics.auditedServices) {
-            const allServices = [...state.analytics.auditedServices.essential, ...state.analytics.auditedServices.optional];
+            const allServices = [...(state.analytics.auditedServices.essential || []), ...(state.analytics.auditedServices.optional || [])];
 
-            if (allServices.some(s => s.service === 'GTM') && !newSelectedMcps.has('google-tag-manager')) {
+            if (allServices.some(s => s.service?.toUpperCase() === 'GTM') && !newSelectedMcps.has('google-tag-manager')) {
                 newSelectedMcps.add('google-tag-manager');
                 changed = true;
             }
-            if (allServices.some(s => s.service === 'GA4' || s.service === 'GA') && !newSelectedMcps.has('google-analytics-4')) {
+            if (allServices.some(s => ['GA4', 'GA', 'GOOGLE ANALYTICS'].includes(s.service?.toUpperCase())) && !newSelectedMcps.has('google-analytics-4')) {
                 newSelectedMcps.add('google-analytics-4');
                 changed = true;
             }
