@@ -8,11 +8,13 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from datetime import datetime
 from pydantic import BaseModel
+import logging
 
 from app.dependencies import get_db, require_role
 from app.models.workflow import Workflow, WorkflowProposal
 from domain.ports.identity_port import AuthenticatedUser
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin/workflows", tags=["admin-workflows"])
 
 
@@ -88,14 +90,29 @@ async def approve_workflow(
     db.commit()
     db.refresh(workflow)
     
-    # TODO: Trigger Temporal workflow deployment
-    # await temporal_client.start_workflow(workflow.workflow_blueprint)
+    # Deploy to Temporal
+    deployment_status = "queued"
+    temporal_workflow_id = None
+    
+    try:
+        from app.services.temporal_executor import deploy_approved_workflow
+        temporal_workflow_id = await deploy_approved_workflow(
+            str(workflow.id),
+            proposal.workflow_definition
+        )
+        deployment_status = "deployed"
+        logger.info(f"Workflow {workflow.id} deployed to Temporal: {temporal_workflow_id}")
+    except Exception as e:
+        logger.error(f"Failed to deploy workflow to Temporal: {e}")
+        deployment_status = "deployment_failed"
+        # Don't fail the approval, just log the error
     
     return {
         "status": "success",
         "message": f"Workflow '{proposal.name}' approved and deployed",
         "workflow_id": workflow.id,
-        "deployment_status": "queued"
+        "temporal_workflow_id": temporal_workflow_id,
+        "deployment_status": deployment_status
     }
 
 

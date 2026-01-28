@@ -168,9 +168,36 @@ class WorkflowDiscoveryAgent:
         """
         discoveries = []
         
-        # Example: Detect Shopify + Marketing tools without inventory sync
-        # In production, this would analyze actual MCP connections
+        # Build knowledge graph
+        from app.services.knowledge_graph import build_platform_knowledge_graph
+        kg = await build_platform_knowledge_graph(self.db)
         
+        # Find integration gaps using graph analysis
+        gaps = kg.find_integration_gaps()
+        
+        for gap in gaps:
+            if gap["tenant_overlap"] >= 3:  # Only suggest if 3+ tenants would benefit
+                discoveries.append({
+                    "name": gap["suggested_workflow"],
+                    "description": f"Automated data sync between {gap['source']} and {gap['target']} to eliminate manual data entry.",
+                    "type": "Integration",
+                    "category": "infrastructure",
+                    "discovery_method": "KAG - Integration Gap Analysis (Graph)",
+                    "estimated_cost": 0.02,
+                    "impact_analysis": f"Detected {gap['tenant_overlap']} tenants using both tools without automation. Eliminates manual sync overhead.",
+                    "workflow_definition": {
+                        "trigger": "data_change_event",
+                        "steps": [
+                            {"action": "fetch_data", "from": gap["source"]},
+                            {"action": "transform_data", "mapping": "auto_detected"},
+                            {"action": "sync_data", "to": gap["target"]},
+                            {"action": "log_sync", "to": "audit_trail"}
+                        ],
+                        "config": {"frequency": "real_time", "retry": 3}
+                    }
+                })
+        
+        # Also check for specific known patterns
         shopify_users = self.db.query(OnboardingSession).filter(
             OnboardingSession.tools['selectedMcps'].astext.contains('shopify')
         ).count()
@@ -180,25 +207,28 @@ class WorkflowDiscoveryAgent:
         ).count()
         
         if shopify_users + woo_users > 5:
-            discoveries.append({
-                "name": "Universal Inventory Reconciliation",
-                "description": "Real-time inventory sync across Shopify, WooCommerce, and Amazon to prevent overselling.",
-                "type": "Operations",
-                "category": "infrastructure",
-                "discovery_method": "KAG - Integration Gap Analysis",
-                "estimated_cost": 0.02,  # per sync
-                "impact_analysis": f"Detected {shopify_users + woo_users} multi-channel sellers. Prevents overselling incidents (avg cost: $50/incident).",
-                "workflow_definition": {
-                    "trigger": "inventory_change_event",
-                    "steps": [
-                        {"action": "fetch_inventory", "from": "source_platform"},
-                        {"action": "calculate_delta"},
-                        {"action": "update_inventory", "on": ["shopify", "woocommerce", "amazon"]},
-                        {"action": "log_sync", "to": "audit_trail"}
-                    ],
-                    "config": {"frequency": "real_time", "conflict_resolution": "source_of_truth_shopify"}
-                }
-            })
+            # Check if this workflow was already discovered by graph analysis
+            existing = any(d["name"] == "Universal Inventory Reconciliation" for d in discoveries)
+            if not existing:
+                discoveries.append({
+                    "name": "Universal Inventory Reconciliation",
+                    "description": "Real-time inventory sync across Shopify, WooCommerce, and Amazon to prevent overselling.",
+                    "type": "Operations",
+                    "category": "infrastructure",
+                    "discovery_method": "KAG - Integration Gap Analysis",
+                    "estimated_cost": 0.02,
+                    "impact_analysis": f"Detected {shopify_users + woo_users} multi-channel sellers. Prevents overselling incidents (avg cost: $50/incident).",
+                    "workflow_definition": {
+                        "trigger": "inventory_change_event",
+                        "steps": [
+                            {"action": "fetch_inventory", "from": "source_platform"},
+                            {"action": "calculate_delta"},
+                            {"action": "update_inventory", "on": ["shopify", "woocommerce", "amazon"]},
+                            {"action": "log_sync", "to": "audit_trail"}
+                        ],
+                        "config": {"frequency": "real_time", "conflict_resolution": "source_of_truth_shopify"}
+                    }
+                })
         
         return discoveries
     
