@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { PlatformBranding } from "@/components/ui/platform-branding";
-import { useAuth } from "../shared/components/AuthProvider";
+import { useAuth } from "@/shared/components/AuthProvider";
 
 export default function UnauthorizedPage() {
     const { logout } = useAuth();
