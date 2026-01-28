@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime
+from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -37,9 +37,14 @@ async def lifespan(app: FastAPI):
         seed_mcp_registry()
         logger.info("Running subscription plans seeding...")
         seed_subscription_plans()
+
+        # Start Alert Monitors
+        from app.services.alert_system import start_alert_monitors
+        await start_alert_monitors()
+            
     except Exception as e:
-        logger.error(f"Startup migration failed: {e}")
-        raise e
+        logger.error(f"Startup initialization failed: {e}")
+        # Continue startup even if initialization fails, but log error
 
     # Vault Integration for API Keys
     try:
@@ -47,6 +52,9 @@ async def lifespan(app: FastAPI):
         vault_addr = os.getenv('VAULT_ADDR')
         vault_token = os.getenv('VAULT_TOKEN')
         
+        if not vault_token:
+            logger.warning("VAULT_TOKEN not set, skipping Vault initialization")
+            
         if vault_addr and vault_token:
             client = hvac.Client(url=vault_addr, token=vault_token)
             if client.is_authenticated():
@@ -130,6 +138,11 @@ app.include_router(workflows.router)
 app.include_router(workflow_governance.router)  # Workflow approval/rejection/refinement
 app.include_router(workflow_metrics.router)  # Workflow monitoring and metrics
 app.include_router(admin_prime.router)  # Admin Prime Copilot
+app.include_router(feature_orchestrator.router)  # Centralized Feature Management
+app.include_router(alerts.router)  # Real-time WebSocket Alerts
+app.include_router(predictive_analytics.router)  # Predictive Insights
+app.include_router(isolation_testing.router)  # Multi-tenant Isolation Testing
+app.include_router(cost_optimization.router)  # Cost Optimization Engine
 app.include_router(discovery.router, prefix="/api/discovery", tags=["discovery"])
 app.include_router(metrics_api.router)
 app.include_router(websockets.router)
