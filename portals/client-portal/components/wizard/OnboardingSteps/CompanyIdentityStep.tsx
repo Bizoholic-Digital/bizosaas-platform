@@ -212,13 +212,22 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
             setLocationQuery(details.location);
             setGmbConnected(true);
 
+            if (details.industry) {
+                onUpdate({ industry: details.industry });
+            } else {
+                // If no industry found, we will let the AI Agent recommend it in the next step based on the name/place
+                // For now, we leave it blank or set a flag if needed
+                console.log("Industry not found in Maps data, will rely on AI agent downstream.");
+            }
+
             if (details.country) {
                 setCountryISO(details.country);
             }
 
             if (details.phone) {
                 const parsed = parsePhone(details.phone);
-                if (!details.country) setCountryISO(parsed.country);
+                // Respect the country code from the phone number if the location didn't provide a country
+                if (!details.country && parsed.country) setCountryISO(parsed.country);
                 setPhoneNumber(parsed.number);
             }
         } catch (error) {
@@ -272,17 +281,6 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">Your Identity</h2>
                 <p className="text-muted-foreground font-medium">Setup your business profile and digital presence.</p>
 
-                {onReset && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onReset}
-                        className="absolute top-0 right-0 h-8 px-3 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-100 dark:hover:border-red-900/30 transition-all rounded-full flex items-center gap-1.5 group"
-                    >
-                        <Sparkles size={10} className="group-hover:rotate-180 transition-transform duration-500" />
-                        Reset Form
-                    </Button>
-                )}
             </div>
 
             <div className="space-y-4">

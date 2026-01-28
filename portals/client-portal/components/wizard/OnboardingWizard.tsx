@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    Building2, Globe, BarChart3, Plug, Rocket, Target, Layout
+    Building2, Globe, BarChart3, Plug, Rocket, Target, Layout, Sparkles, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,7 +29,6 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/components/ui/dialog';
-import { AlertTriangle } from 'lucide-react';
 
 const STEPS = [
     { id: 'identity', title: 'Identity', icon: Building2 },
@@ -373,7 +372,20 @@ export function OnboardingWizard() {
                         </div>
                         <div className="flex-1 p-4 md:p-10 flex flex-col">{renderStepContent()}</div>
                         <div className="border-t bg-muted/30 p-4 md:p-6 flex flex-row justify-between items-center gap-3">
-                            <Button variant="outline" onClick={prevStep} disabled={state.currentStep === 0 || isSubmitting}>Back</Button>
+                            <div className="flex items-center gap-2">
+                                {state.currentStep === 0 ? (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={resetOnboarding}
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                    >
+                                        <Sparkles className="w-4 h-4 mr-2" />
+                                        Reset Form
+                                    </Button>
+                                ) : (
+                                    <Button variant="outline" onClick={prevStep} disabled={isSubmitting}>Back</Button>
+                                )}
+                            </div>
                             {isLastStep ? (
                                 <Button onClick={handleLaunch} disabled={isSubmitting} className="bg-green-600 hover:bg-green-700 text-white px-8 py-6 text-lg shadow-lg">
                                     {isSubmitting ? 'Launching...' : 'Approve & Launch 🚀'}
