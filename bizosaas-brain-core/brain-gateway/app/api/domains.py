@@ -6,7 +6,7 @@ import logging
 
 from app.dependencies import get_db, require_role, get_current_user
 from app.models.revenue import DomainInventory, DomainSearchHistory, PortalRevenue
-from app.ports.identity_port import AuthenticatedUser
+from domain.ports.identity_port import AuthenticatedUser
 from app.connectors.registry import ConnectorRegistry
 
 router = APIRouter(prefix="/api/domains", tags=["domains"])
