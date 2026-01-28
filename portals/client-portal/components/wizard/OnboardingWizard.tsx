@@ -346,32 +346,41 @@ export function OnboardingWizard() {
     const isLastStep = state.currentStep === STEPS.length - 1;
 
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 md:p-8 font-sans relative overflow-hidden">
+        <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center p-0 md:p-8 relative overflow-x-hidden">
+            {/* Context-Aware Theme Toggle (Global Position) */}
+            <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50">
+                <ThemeToggle />
+            </div>
+
             <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.05)_0%,transparent_50%)]" />
-            <div className="w-full max-w-5xl z-10">
-                <Card className="relative shadow-2xl bg-card/80 backdrop-blur-xl border-border/50 overflow-hidden min-h-[600px] flex flex-col rounded-2xl md:rounded-3xl">
+
+            <div className="w-full md:max-w-5xl z-10 flex flex-col items-center">
+                <Card className="w-full shadow-2xl bg-card/80 backdrop-blur-xl border-border/50 overflow-hidden min-h-[600px] md:min-h-[650px] flex flex-col rounded-none md:rounded-3xl border-0 md:border">
                     <CardContent className="p-0 flex-1 flex flex-col">
-                        <div className="w-full flex flex-col pt-6 px-6 md:px-10">
-                            <div className="flex justify-between items-center mb-4">
+                        <div className="w-full flex flex-col pt-8 md:pt-10 px-6 md:px-12">
+                            <div className="flex justify-between items-end mb-6">
                                 <div className="flex flex-col">
-                                    <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{(STEPS[state.currentStep] || DEFAULT_STEP).title}</h1>
-                                    <p className="text-sm text-muted-foreground font-medium">Phase {(state.currentStep || 0) + 1} of {STEPS.length}</p>
+                                    <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-foreground leading-none">
+                                        {(STEPS[state.currentStep] || DEFAULT_STEP).title}
+                                    </h1>
+                                    <p className="text-xs md:text-sm text-muted-foreground font-bold uppercase tracking-widest mt-2">
+                                        Phase {(state.currentStep || 0) + 1} <span className="mx-1 text-muted-foreground/30">/</span> {STEPS.length}
+                                    </p>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="hidden lg:flex -space-x-1">
+                                <div className="hidden md:flex items-center gap-2 mb-1">
+                                    <div className="flex -space-x-1">
                                         {STEPS.map((_, i) => (
-                                            <div key={i} className={`h-1.5 w-6 rounded-full transition-all duration-300 ${i <= state.currentStep ? 'bg-blue-600' : 'bg-muted'}`} />
+                                            <div key={i} className={`h-1.5 w-8 rounded-full transition-all duration-500 ${i <= state.currentStep ? 'bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]' : 'bg-muted'}`} />
                                         ))}
                                     </div>
-                                    <ThemeToggle />
                                 </div>
                             </div>
-                            <div className="h-1.5 bg-muted w-full rounded-full overflow-hidden mb-2">
-                                <div className="h-full bg-blue-600 transition-all duration-500 ease-out" style={{ width: `${((state.currentStep + 1) / STEPS.length) * 100}%` }} />
+                            <div className="h-1 bg-muted w-full rounded-full overflow-hidden mb-2">
+                                <div className="h-full bg-blue-600 transition-all duration-700 ease-in-out" style={{ width: `${((state.currentStep + 1) / STEPS.length) * 100}%` }} />
                             </div>
                         </div>
                         <div className="flex-1 p-4 md:p-10 flex flex-col">{renderStepContent()}</div>
-                        <div className="border-t bg-muted/30 p-4 md:p-6 flex flex-row justify-between items-center gap-3">
+                        <div className="border-t bg-muted/10 p-6 md:p-10 flex flex-col sm:flex-row justify-between items-center gap-6">
                             <div className="flex items-center gap-2">
                                 {state.currentStep === 0 ? (
                                     <Button

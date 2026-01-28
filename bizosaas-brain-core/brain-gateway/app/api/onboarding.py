@@ -854,3 +854,47 @@ async def place_details(place_id: str):
         "placeId": place_id
     }
 
+class IndustryRecommendRequest(BaseModel):
+    business_name: str
+    location: Optional[str] = None
+
+@router.post("/recommend-industry")
+async def recommend_industry(request: IndustryRecommendRequest):
+    """
+    AI Agent endpoint to recommend a business industry based on name and location.
+    Used when Google Places API doesn't provide a clear category.
+    """
+    business_name = request.business_name
+    name_lower = business_name.lower()
+    
+    # Heuristic AI-like logic
+    recommendation = "Professional Services" # Default
+    confidence = 0.5
+    
+    if any(k in name_lower for k in ["lens", "eye", "optician", "spectacle"]):
+        recommendation = "Retail & Eyewear"
+        confidence = 0.95
+    elif any(k in name_lower for k in ["tech", "soft", "solution", "it", "digital"]):
+        recommendation = "Software & IT"
+        confidence = 0.85
+    elif any(k in name_lower for k in ["gym", "fit", "crossfit", "yoga"]):
+        recommendation = "Health & Fitness"
+        confidence = 0.9
+    elif any(k in name_lower for k in ["hotel", "stay", "inn", "resort"]):
+        recommendation = "Travel & Hospitality"
+        confidence = 0.9
+    elif any(k in name_lower for k in ["law", "legal", "advocate", "attorney"]):
+        recommendation = "Legal Services"
+        confidence = 0.95
+    elif any(k in name_lower for k in ["clinic", "dent", "health", "care", "hospi"]):
+        recommendation = "Healthcare & Medical"
+        confidence = 0.85
+    elif any(k in name_lower for k in ["food", "rest", "cafe", "bake", "eats"]):
+        recommendation = "Restaurant & Hospitality"
+        confidence = 0.9
+        
+    return {
+        "industry": recommendation,
+        "confidence": confidence,
+        "reasoning": f"Inferred from business name keywords matching '{recommendation}' category."
+    }

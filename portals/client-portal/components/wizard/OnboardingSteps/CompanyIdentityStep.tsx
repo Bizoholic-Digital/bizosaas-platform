@@ -215,9 +215,24 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
             if (details.industry) {
                 onUpdate({ industry: details.industry });
             } else {
-                // If no industry found, we will let the AI Agent recommend it in the next step based on the name/place
-                // For now, we leave it blank or set a flag if needed
-                console.log("Industry not found in Maps data, will rely on AI agent downstream.");
+                // Trigger AI recommendation if Maps data lacks industry
+                try {
+                    const aiRes = await fetch('/api/brain/onboarding/recommend-industry', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            business_name: details.companyName || searchQuery,
+                            location: details.location
+                        })
+                    });
+                    const aiData = await aiRes.json();
+                    if (aiData.industry) {
+                        onUpdate({ industry: aiData.industry });
+                        console.log("Industry recommended via AI Agent:", aiData.industry);
+                    }
+                } catch (aiErr) {
+                    console.error("AI Industry recommendation failed", aiErr);
+                }
             }
 
             if (details.country) {
