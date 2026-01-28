@@ -276,6 +276,9 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                 <SelectItem value="wordpress">WordPress</SelectItem>
                                 <SelectItem value="shopify">Shopify</SelectItem>
                                 <SelectItem value="wix">Wix</SelectItem>
+                                <SelectItem value="webflow">Webflow</SelectItem>
+                                <SelectItem value="ghost">Ghost CMS</SelectItem>
+                                <SelectItem value="joomla">Joomla</SelectItem>
                                 <SelectItem value="squarespace">Squarespace</SelectItem>
                                 <SelectItem value="custom">Custom Code</SelectItem>
                                 <SelectItem value="other">Other / None</SelectItem>
@@ -304,6 +307,8 @@ export function DigitalPresenceStep({ data, websiteUrl, onUpdate, isAuditing, au
                                 <SelectItem value="salesforce">Salesforce</SelectItem>
                                 <SelectItem value="zoho">Zoho CRM</SelectItem>
                                 <SelectItem value="pipedrive">Pipedrive</SelectItem>
+                                <SelectItem value="activecampaign">ActiveCampaign</SelectItem>
+                                <SelectItem value="gohighlevel">GoHighLevel</SelectItem>
                             </SelectContent>
                         </Select>
                         <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider ml-1">

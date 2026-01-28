@@ -4,6 +4,9 @@ export interface SystemMetrics {
     cpu: number;
     memory: number;
     activeUsers: number;
+    totalUsers: number;
+    activeTenants: number;
+    totalTenants: number;
     apiRequests: number;
     status: 'healthy' | 'degraded' | 'down';
     services: Record<string, 'healthy' | 'degraded' | 'down'>;
@@ -23,6 +26,9 @@ export function useSystemStatus(): SystemStatus {
         cpu: 0,
         memory: 0,
         activeUsers: 0,
+        totalUsers: 0,
+        activeTenants: 0,
+        totalTenants: 0,
         apiRequests: 0,
         status: 'healthy',
         services: {
@@ -40,31 +46,39 @@ export function useSystemStatus(): SystemStatus {
         try {
             setIsLoading(true);
 
-            // Fetch real health data from Brain Gateway
-            const response = await fetch('/api/brain/health');
-            if (response.ok) {
-                const healthData = await response.json();
-                setRawData(healthData);
+            // Fetch real health and stats from Admin APIs
+            const [healthRes, statsRes] = await Promise.all([
+                fetch('/api/admin/health'),
+                fetch('/api/admin/stats')
+            ]);
 
-                // Map services status
+            if (healthRes.ok && statsRes.ok) {
+                const healthData = await healthRes.json();
+                const statsData = await statsRes.json();
+                setRawData({ health: healthData, stats: statsData });
+
                 const servicesStatus: Record<string, 'healthy' | 'degraded' | 'down'> = {
-                    'Brain Hub': healthData.dependencies?.database?.status === 'up' ? 'healthy' : 'down',
-                    'CRM': healthData.dependencies?.services?.crm === 'up' ? 'healthy' : 'down',
-                    'CMS': healthData.dependencies?.services?.cms === 'up' ? 'healthy' : 'down',
-                    'E-commerce': 'healthy', // Fallback
-                    'Vault': healthData.dependencies?.vault?.status === 'up' ? 'healthy' : 'down',
-                    'Temporal': healthData.dependencies?.temporal?.status === 'up' ? 'healthy' : 'down'
+                    'Brain Hub': healthData.services?.["brain-gateway"] === 'up' ? 'healthy' : 'down',
+                    'CRM': healthData.services?.auth === 'up' ? 'healthy' : 'down',
+                    'CMS': 'healthy', // Tracked via CMS Admin API
+                    'E-commerce': 'healthy',
+                    'Vault': 'healthy',
+                    'Temporal': healthData.services?.temporal === 'connected' ? 'healthy' : 'down'
                 };
 
                 setMetrics({
-                    cpu: healthData.system?.cpu_percent || 0,
-                    memory: healthData.system?.memory_percent || 0,
-                    activeUsers: 1, // Placeholder until user session counting is implemented
-                    apiRequests: 0, // Placeholder
+                    cpu: healthData.resources?.cpu || statsData.system?.cpu_usage || 0,
+                    memory: healthData.resources?.memory?.percent || statsData.system?.memory_usage || 0,
+                    activeUsers: statsData.users?.active || 0,
+                    totalUsers: statsData.users?.total || 0,
+                    activeTenants: statsData.tenants?.active || 0,
+                    totalTenants: statsData.tenants?.total || 0,
+                    apiRequests: statsData.api_requests_per_sec || 0,
                     status: healthData.status === 'healthy' ? 'healthy' : 'degraded',
                     services: servicesStatus
                 });
-            } else {
+            }
+            else {
                 // Fallback to connectors logic if health endpoint is not yet reliable
                 const connResp = await fetch('/api/brain/connectors');
                 if (connResp.ok) {

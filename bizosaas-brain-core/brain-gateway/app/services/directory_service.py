@@ -848,3 +848,59 @@ class DirectoryService:
         except Exception as e:
             logger.error(f"Website analysis failed: {e}")
             return {"error": str(e)}
+    async def get_google_reviews(self, listing_id: UUID) -> List[Dict[str, Any]]:
+        """Fetch real-time reviews from Google Places API for a listing"""
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == listing_id).first()
+        if not listing or not listing.google_place_id:
+            return []
+
+        api_key = os.getenv("GOOGLE_MAPS_API_KEY", "AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto")
+        
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    "https://maps.googleapis.com/maps/api/place/details/json",
+                    params={
+                        "place_id": listing.google_place_id,
+                        "fields": "reviews",
+                        "key": api_key
+                    }
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("result", {}).get("reviews", [])
+            except Exception as e:
+                logger.error(f"Google Places reviews error: {e}")
+        return []
+
+    async def add_listing_photo(self, listing_id: UUID, photo_url: str, user_id: UUID):
+        """Add a photo to the listing gallery"""
+        import uuid
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == listing_id).first()
+        if not listing:
+            raise ValueError("Listing not found")
+        if listing.claimed_by != user_id:
+            raise PermissionError("Not authorized")
+            
+        photos = list(listing.photos or [])
+        photos.append({
+            "url": photo_url,
+            "created_at": datetime.utcnow().isoformat(),
+            "id": str(uuid.uuid4())
+        })
+        listing.photos = photos
+        self.db.commit()
+        return photos
+
+    async def remove_listing_photo(self, listing_id: UUID, photo_id: str, user_id: UUID):
+        """Remove a photo from the listing gallery"""
+        listing = self.db.query(DirectoryListing).filter(DirectoryListing.id == listing_id).first()
+        if not listing:
+            raise ValueError("Listing not found")
+        if listing.claimed_by != user_id:
+            raise PermissionError("Not authorized")
+            
+        photos = [p for p in (listing.photos or []) if p.get('id') != photo_id]
+        listing.photos = photos
+        self.db.commit()
+        return photos

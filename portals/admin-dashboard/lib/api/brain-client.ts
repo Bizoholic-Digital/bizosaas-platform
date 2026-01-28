@@ -39,6 +39,18 @@ export const brainClient = {
             return { error: error.message };
         }
     },
+    patch: async <T>(endpoint: string, body: any): Promise<ApiResponse<T>> => {
+        try {
+            const data = await fetch(`/api/brain${endpoint}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }).then(r => r.json());
+            return { data };
+        } catch (error: any) {
+            return { error: error.message };
+        }
+    },
     delete: async <T>(endpoint: string): Promise<ApiResponse<T>> => {
         try {
             const data = await fetch(`/api/brain${endpoint}`, {

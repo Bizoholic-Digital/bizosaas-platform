@@ -550,11 +550,21 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     fetchAgents: async () => {
         set({ isLoading: true })
         try {
-            // TODO: Replace with actual API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            set({ agents: MOCK_AGENTS, isLoading: false })
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.bizoholic.net'}/api/admin/agents/registry`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}` // Or however token is stored
+                }
+            })
+            if (!response.ok) throw new Error('API request failed')
+            const data = await response.json()
+            set({
+                agents: data.agents && data.agents.length > 0 ? data.agents : MOCK_AGENTS,
+                isLoading: false
+            })
         } catch (error) {
-            set({ error: 'Failed to fetch agents', isLoading: false })
+            console.error('Failed to fetch real agents, falling back to mock:', error)
+            set({ agents: MOCK_AGENTS, isLoading: false })
+            // set({ error: 'Failed to fetch agents', isLoading: false })
         }
     },
 

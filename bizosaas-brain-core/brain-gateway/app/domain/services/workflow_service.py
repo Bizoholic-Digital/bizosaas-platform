@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
+from datetime import datetime
 from app.models.workflow import Workflow
 from app.ports.workflow_port import WorkflowPort
 import logging
@@ -58,6 +59,10 @@ class WorkflowService:
             
         if not self.workflow_port:
             logger.warning("WorkflowPort not configured, simulating trigger")
+            # Update last run even in simulation
+            workflow.last_run = datetime.utcnow()
+            workflow.runs_today += 1
+            self.db.commit()
             return {"status": "simulated", "workflow_id": workflow_id}
 
         # Actual Temporal trigger logic would go here
@@ -68,7 +73,34 @@ class WorkflowService:
                 task_queue=f"queue-{tenant_id}",
                 args=[params] if params else []
             )
+            workflow.last_run = datetime.utcnow()
+            workflow.last_run_id = run_id
+            workflow.runs_today += 1
+            self.db.commit()
             return {"status": "started", "run_id": run_id}
         except Exception as e:
             logger.error(f"Failed to start workflow {workflow_id}: {e}")
             return {"status": "error", "message": str(e)}
+
+    async def set_triggers(self, tenant_id: str, workflow_id: str, triggers: List[Dict[str, Any]]) -> bool:
+        """Configure autonomous triggers for a workflow"""
+        workflow = self.db.query(Workflow).filter(Workflow.id == workflow_id, Workflow.tenant_id == tenant_id).first()
+        if not workflow:
+            return False
+        
+        workflow.triggers = triggers
+        self.db.commit()
+        return True
+
+    async def find_workflows_by_trigger(self, trigger_type: str, match_key: str, match_value: str) -> List[Workflow]:
+        """Find all workflows across all tenants that match a specific trigger condition"""
+        # Note: This is a bit inefficient with JSON columns in some DBs, 
+        # but works for small/medium scale.
+        # Format: trigger = {"type": "webhook", "path": "/listen-1"}
+        all_workflows = self.db.query(Workflow).filter(Workflow.status == "running").all()
+        matched = []
+        for wf in all_workflows:
+            for trigger in (wf.triggers or []):
+                if trigger.get("type") == trigger_type and trigger.get(match_key) == match_value:
+                    matched.append(wf)
+        return matched

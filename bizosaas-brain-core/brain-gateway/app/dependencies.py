@@ -59,13 +59,17 @@ def get_identity_port() -> IdentityPort:
         logger.info("Auth disabled: Using MockIdentityAdapter")
         return MockIdentityAdapter()
 
-    # Clerk Configuration
-    clerk_issuer = os.getenv("CLERK_ISSUER", "https://easy-kodiak-78.clerk.accounts.dev")
+    # Authentik Configuration
+    authentik_issuer = os.getenv(
+        "AUTHENTIK_ISSUER", 
+        "https://auth-sso.bizoholic.net/application/o/bizosaas-platform/"
+    )
+    authentik_audience = os.getenv("AUTHENTIK_AUDIENCE")
     
-    logger.info(f"Creating ClerkAdapter with issuer {clerk_issuer}")
+    logger.info(f"Creating AuthentikAdapter with issuer {authentik_issuer}")
     
-    from adapters.identity.clerk_adapter import ClerkAdapter
-    return ClerkAdapter(issuer=clerk_issuer)
+    from adapters.identity.authentik_adapter import AuthentikAdapter
+    return AuthentikAdapter(issuer=authentik_issuer, audience=authentik_audience)
 
 @lru_cache()
 def get_secret_service():
@@ -146,7 +150,28 @@ async def get_current_user(
         logger.error(f"DEBUG AUTH FAILURE: Clerk Auth Status: {auth_status}")
         raise HTTPException(status_code=401, detail="Missing authentication credentials")
 
-    # 1. Validate Token (Introspection)
+    # 1. Check for Impersonation Token
+    impersonation_secret = os.getenv("IMPERSONATION_SECRET")
+    if token_str and impersonation_secret:
+        import jwt
+        try:
+            # Try to decode as an impersonation token first
+            payload = jwt.decode(token_str, impersonation_secret, algorithms=["HS256"])
+            if payload.get("type") == "impersonation":
+                logger.info(f"Impersonation session detected: {payload.get('impersonator_id')} -> {payload.get('sub')}")
+                return AuthenticatedUser(
+                    id=payload["sub"],
+                    email=payload["email"],
+                    name=payload["name"],
+                    roles=payload["roles"],
+                    tenant_id=payload.get("tenant_id"),
+                    impersonator_id=payload.get("impersonator_id")
+                )
+        except jwt.PyJWTError:
+            # Not an impersonation token or invalid, continue to standard validation
+            pass
+
+    # 2. Standard Token Validation (Clerk/Auth Service)
     try:
         is_valid = await identity.validate_token(token_str)
         if not is_valid:
@@ -156,7 +181,7 @@ async def get_current_user(
         logger.error(f"DEBUG AUTH FAILURE: Validation Exception: {str(e)}")
         raise HTTPException(status_code=401, detail="Token validation failed")
     
-    # 2. Get User Profile
+    # 3. Get User Profile
     user = await identity.get_user_from_token(token_str)
     if not user:
         logger.error(f"DEBUG AUTH FAILURE: Could not retrieve user profile for token: {token_str[:10]}...")

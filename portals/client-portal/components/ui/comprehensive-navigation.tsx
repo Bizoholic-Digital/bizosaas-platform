@@ -184,6 +184,13 @@ const ComprehensiveNavigation: React.FC<NavigationProps> = ({ onNavigate, isColl
           href: '/dashboard/directory',
           icon: <Building2 className="w-4 h-4" />,
           active: pathname.startsWith('/dashboard/directory'),
+        },
+        {
+          id: 'domains',
+          name: 'Domains & Hosting',
+          href: '/dashboard/domains',
+          icon: <Globe className="w-4 h-4 text-blue-500" />,
+          active: pathname.startsWith('/dashboard/domains'),
         }
       ]
     },

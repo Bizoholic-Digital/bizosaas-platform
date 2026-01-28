@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
-from app.dependencies import get_db, get_identity_port, get_current_user
+from app.dependencies import get_db, get_identity_port, get_current_user, require_role
 from app.models.mcp import McpRegistry, McpCategory, UserMcpInstallation
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from typing import List, Optional
@@ -79,10 +79,9 @@ def get_registry(category: Optional[str] = None, db: Session = Depends(get_db)):
 def create_mcp(
     request: McpCreateRequest,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
+    current_user: AuthenticatedUser = Depends(require_role("Super Admin"))
 ):
-    # TODO: Proper RBAC - if "admin" not in current_user.roles: ...
-    
+    """Admin only: Create a new MCP in the global registry."""
     # Check if slug exists
     if db.query(McpRegistry).filter(McpRegistry.slug == request.slug).first():
         raise HTTPException(status_code=400, detail="MCP with this slug already exists")
@@ -97,10 +96,9 @@ def create_mcp(
 def delete_mcp(
     mcp_id: UUID,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
+    current_user: AuthenticatedUser = Depends(require_role("Super Admin"))
 ):
-    # TODO: Proper RBAC
-    
+    """Admin only: Remove an MCP from the registry."""
     mcp = db.query(McpRegistry).filter(McpRegistry.id == mcp_id).first()
     if not mcp:
         raise HTTPException(status_code=404, detail="MCP not found")
@@ -109,18 +107,14 @@ def delete_mcp(
     db.commit()
     return None
 
-
 @router.patch("/{mcp_id}", response_model=McpResponse)
 def update_mcp(
     mcp_id: UUID,
     update_data: McpUpdateRequest,
     db: Session = Depends(get_db),
-    current_user: AuthenticatedUser = Depends(get_current_user)
+    current_user: AuthenticatedUser = Depends(require_role("Super Admin"))
 ):
-    # TODO: Add specific Admin role check here
-    # if "admin" not in current_user.roles:
-    #     raise HTTPException(status_code=403, detail="Admin access required")
-        
+    """Admin only: Update an existing MCP's details."""
     mcp = db.query(McpRegistry).filter(McpRegistry.id == mcp_id).first()
     if not mcp:
         raise HTTPException(status_code=404, detail="MCP not found")

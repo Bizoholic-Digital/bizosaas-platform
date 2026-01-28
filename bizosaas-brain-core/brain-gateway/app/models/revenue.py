@@ -52,3 +52,17 @@ class DomainInventory(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class DomainSearchHistory(Base):
+    __tablename__ = "domain_search_history"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    
+    query = Column(String(255), nullable=False)
+    tlds_searched = Column(JSON, nullable=True) # List of TLDs searched
+    results = Column(JSON, nullable=True) # Cache of availability results
+    
+    ip_address = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

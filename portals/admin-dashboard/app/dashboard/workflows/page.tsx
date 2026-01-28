@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { adminApi } from '@/lib/api/admin';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,6 +109,24 @@ const PLATFORM_WORKFLOWS = [
 
 export default function AdminWorkflowsPage() {
     const [workflows, setWorkflows] = useState(PLATFORM_WORKFLOWS);
+    const [proposals, setProposals] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const res = await adminApi.getAgentProposals();
+                if (res.data) {
+                    setProposals(res.data);
+                }
+            } catch (error) {
+                console.error('Failed to load proposals:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
     const handleToggleStatus = (id: string) => {
         setWorkflows(prev => prev.map(wf => {
@@ -118,6 +137,11 @@ export default function AdminWorkflowsPage() {
             }
             return wf;
         }));
+    };
+
+    const handleApproveProposal = (propId: string) => {
+        setProposals(prev => prev.filter(p => p.id !== propId));
+        toast.success("Proposal approved and added to active workflows");
     };
 
     return (
@@ -269,8 +293,8 @@ export default function AdminWorkflowsPage() {
                 </TabsContent>
 
                 <TabsContent value="hitl" className="space-y-4">
-                    {workflows.filter(wf => wf.hitlPending || wf.status === 'proposed').length > 0 ? (
-                        workflows.filter(wf => wf.hitlPending || wf.status === 'proposed').map(wf => (
+                    {proposals.length > 0 ? (
+                        proposals.map(wf => (
                             <Card key={wf.id} className="group hover:border-amber-300 transition-all overflow-hidden border-l-4 border-l-amber-500">
                                 <CardContent className="p-6">
                                     <div className="flex items-center justify-between">
@@ -280,16 +304,18 @@ export default function AdminWorkflowsPage() {
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-lg">{wf.name}</h3>
+                                                    <h3 className="font-bold text-lg">{wf.title}</h3>
                                                     <Badge className="bg-amber-100 text-amber-700 border-amber-200">Pending Review</Badge>
+                                                    <Badge variant="outline">{wf.type}</Badge>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground mt-1">{wf.description}</p>
+                                                <p className="text-[10px] font-black uppercase text-indigo-600 mt-2 tracking-widest">Impact: {wf.impact}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Button className="bg-green-600 hover:bg-green-700">Approve</Button>
+                                            <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveProposal(wf.id)}>Approve</Button>
                                             <Button variant="outline">Review Details</Button>
-                                            <Button variant="ghost" className="text-red-600">Reject</Button>
+                                            <Button variant="ghost" className="text-red-600" onClick={() => handleApproveProposal(wf.id)}>Reject</Button>
                                         </div>
                                     </div>
                                 </CardContent>

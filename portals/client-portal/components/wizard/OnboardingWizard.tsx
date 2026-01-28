@@ -176,7 +176,21 @@ export function OnboardingWizard() {
                 // Add CMS/Platform to essentials for top-level visibility
                 if (detectedCms && detectedCms !== 'none') {
                     if (!essential.some(s => s.id === `cms-${detectedCms}`)) {
-                        essential.push({ id: `cms-${detectedCms}`, name: detectedCms, service: detectedCms.toUpperCase(), status: 'active' });
+                        essential.push({ id: `cms-${detectedCms}`, name: detectedCms, service: 'CMS', status: 'active' });
+                    }
+                }
+
+                // Add CRM to essentials if detected
+                if (tags.crm && tags.crm !== 'none') {
+                    if (!essential.some(s => s.service === 'CRM')) {
+                        essential.push({ id: `crm-${tags.crm}`, name: tags.crm, service: 'CRM', status: 'active' });
+                    }
+                }
+
+                // Add Ecommerce to essentials if detected
+                if (tags.ecommerce && tags.ecommerce !== 'none') {
+                    if (!essential.some(s => s.service === 'ECOMMERCE' || s.service === 'WooCommerce')) {
+                        essential.push({ id: `eco-${tags.ecommerce}`, name: tags.ecommerce, service: 'ECOMMERCE', status: 'active' });
                     }
                 }
 
@@ -204,8 +218,8 @@ export function OnboardingWizard() {
 
                 updateDigitalPresence({
                     cmsType: detectedCms,
-                    crmType: plugins.some((p: any) => ['fluent-crm', 'fluentcrm', 'fluentform', 'fluentformpro'].includes(p.slug?.toLowerCase())) ? 'fluentcrm' : state.digitalPresence.crmType,
-                    ecommerceType: plugins.some((p: any) => p.slug?.toLowerCase() === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType,
+                    crmType: tags.crm !== 'none' ? tags.crm : (plugins.some((p: any) => ['fluent-crm', 'fluentcrm', 'fluentform', 'fluentformpro'].includes(p.slug?.toLowerCase())) ? 'fluentcrm' : state.digitalPresence.crmType),
+                    ecommerceType: tags.ecommerce !== 'none' ? tags.ecommerce : (plugins.some((p: any) => p.slug?.toLowerCase() === 'woocommerce') ? 'woocommerce' : state.digitalPresence.ecommerceType),
                     isBizOSaaSActive: !!tags.is_bridge_active || plugins.some((p: any) => p.slug?.toLowerCase() === 'bizosaas-connect'),
                     hasTracking: true
                 });

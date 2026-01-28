@@ -16,6 +16,7 @@ class ConnectorType(str, Enum):
     BILLING = "billing"
     TASK_MANAGEMENT = "task_management"
     PROJECT_MANAGEMENT = "project_management"
+    DOMAIN_REGISTRAR = "domain_registrar"
     OTHER = "other"
 
 

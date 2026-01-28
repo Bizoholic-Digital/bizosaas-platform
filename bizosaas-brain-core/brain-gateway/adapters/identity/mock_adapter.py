@@ -45,3 +45,15 @@ class MockIdentityAdapter(IdentityPort):
                 "status": "active"
             }
         ]
+
+    async def list_sessions(self, user_id: str) -> list:
+        return [{"id": "mock-session-id", "status": "active"}]
+
+    async def revoke_session(self, session_id: str) -> bool:
+        return True
+
+    async def change_password(self, user_id: str, new_password: str) -> bool:
+        return True
+
+    async def toggle_mfa(self, user_id: str, enabled: bool) -> bool:
+        return True

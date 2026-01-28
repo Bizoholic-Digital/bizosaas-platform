@@ -456,6 +456,12 @@ async def scan_website_tags(payload: Dict[str, Any]):
                 detected["cms"] = "shopify"
             elif "wix.com" in html or 'wix-site-properties' in html:
                 detected["cms"] = "wix"
+            elif "webflow.com" in html or 'data-wf-site' in html:
+                detected["cms"] = "webflow"
+            elif "ghost.org" in html or 'ghost-portal' in html:
+                detected["cms"] = "ghost"
+            elif "joomla" in html.lower():
+                detected["cms"] = "joomla"
 
             # 2. Tracking & Analytics
             gtm_matches = re.findall(r'GTM-[A-Z0-9]{4,10}', html)
@@ -503,6 +509,9 @@ async def scan_website_tags(payload: Dict[str, Any]):
                 "contact-form-7": {"name": "Contact Form 7", "markers": ["/plugins/contact-form-7/", "wpcf7-"]},
                 "wpforms": {"name": "WPForms", "markers": ["/plugins/wpforms-lite/", "/plugins/wpforms/", "wpforms-"]},
                 "rank-math": {"name": "RankMath", "markers": ["/plugins/rank-math/", "rank-math-"]},
+                "salesforce": {"name": "Salesforce", "markers": ["salesforce.com/embeddedservice/", "sf-chat-"]},
+                "pipedrive": {"name": "Pipedrive", "markers": ["pipedrive.com/js/", "pipedrive-chat-"]},
+                "activecampaign": {"name": "ActiveCampaign", "markers": ["trackcmp.net/", "ac_enable_tracking"]},
                 "bizosaas-connect": {"name": "BizoSaaS Bridge", "markers": ["/wp-json/bizosaas/v1/"]}
             }
 
@@ -543,6 +552,20 @@ async def scan_website_tags(payload: Dict[str, Any]):
             detected["plugins"] = matched_plugins
             detected["is_bridge_active"] = is_bridge
 
+            # Explicit mapping for core platform identifiers
+            detected["ecommerce"] = "none"
+            detected["crm"] = "none"
+            
+            for p in matched_plugins:
+                slug = p["slug"]
+                # eCommerce Detection
+                if slug == "woocommerce":
+                    detected["ecommerce"] = "woocommerce"
+                
+                # CRM Detection
+                if slug in ["fluent-crm", "hubspot", "salesforce", "zoho", "pipedrive", "activecampaign", "gohighlevel"]:
+                    detected["crm"] = slug.replace("-crm", "crm")
+
     except Exception as e:
         print(f"Quick scan failed for {website_url}: {e}")
         return {"status": "error", "message": str(e)}
@@ -552,6 +575,34 @@ async def scan_website_tags(payload: Dict[str, Any]):
         "website_url": website_url,
         "scanned_tags": detected
     }
+
+@router.get("/proposals")
+async def get_agent_proposals(current_user: AuthenticatedUser = Depends(get_current_user)):
+    """
+    Returns pending proposals from AI Agents for Admin approval.
+    """
+    return [
+        {
+            "id": "prop-001",
+            "agent_id": "seo_optimization",
+            "type": "SEO Optimization",
+            "title": "Enable DNSSEC & Auto-Optimize Meta Tags",
+            "description": "Based on the recent scan, your domain is missing DNSSEC. I can automatically enable it via Namecheap and optimize meta tags for the Business Directory.",
+            "impact": "High (Increases search visibility and trust score)",
+            "status": "pending",
+            "created_at": str(datetime.utcnow())
+        },
+        {
+            "id": "prop-002",
+            "agent_id": "marketing_strategist",
+            "type": "Ad Optimization",
+            "title": "Shift Ad Spends to LinkedIn",
+            "description": "I've detected your CTR on Meta is 0.5% lower than LinkedIn CPC. Recommend shifting 20% of the budget to LinkedIn Ads for the Q1 campaign.",
+            "impact": "Medium (Improves ROAS by estimated 12%)",
+            "status": "pending",
+            "created_at": str(datetime.utcnow())
+        }
+    ]
 
 @router.post("/complete")
 async def complete_onboarding(

@@ -67,6 +67,10 @@ class BrainApiClient {
     async delete<T>(url: string): Promise<ApiResponse<T>> {
         return this.request<T>('DELETE', url);
     }
+
+    async patch<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+        return this.request<T>('PATCH', url, data);
+    }
 }
 
 export const brainApi = new BrainApiClient();

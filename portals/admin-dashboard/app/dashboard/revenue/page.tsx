@@ -24,7 +24,8 @@ import {
     MoreVertical,
     ChevronRight,
     PieChart,
-    Target
+    Target,
+    CheckCircle2
 } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard/PageHeader';
 import { adminApi } from '@/lib/api/admin';
@@ -34,21 +35,24 @@ export default function RevenuePage() {
     const [stats, setStats] = useState<any>(null);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [domains, setDomains] = useState<any[]>([]);
+    const [dunning, setDunning] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'domains'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'domains' | 'dunning'>('overview');
 
     const loadData = async () => {
         setLoading(true);
         try {
-            const [statsRes, transRes, domainsRes] = await Promise.all([
+            const [statsRes, transRes, domainsRes, dunningRes] = await Promise.all([
                 adminApi.getRevenueStats(),
                 adminApi.getRevenueTransactions(),
-                adminApi.getGlobalDomains()
+                adminApi.getGlobalDomains(),
+                adminApi.getDunningQueue()
             ]);
 
             if (statsRes.data) setStats(statsRes.data);
             if (transRes.data) setTransactions(transRes.data);
             if (domainsRes.data) setDomains(domainsRes.data);
+            if (dunningRes.data) setDunning(dunningRes.data);
         } catch (error) {
             console.error("Failed to load revenue data:", error);
             toast.error("Failed to sync financial data");
@@ -131,14 +135,15 @@ export default function RevenuePage() {
                 {[
                     { id: 'overview', label: 'Revenue Sources', icon: PieChart },
                     { id: 'transactions', label: 'Recent Transactions', icon: DollarSign },
-                    { id: 'domains', label: 'Domain Inventory', icon: Globe }
+                    { id: 'domains', label: 'Domain Inventory', icon: Globe },
+                    { id: 'dunning', label: 'Dunning & Retries', icon: RefreshCw }
                 ].map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`flex items-center gap-2 pb-4 text-xs font-black uppercase tracking-widest transition-all relative ${activeTab === tab.id
-                                ? 'text-indigo-600'
-                                : 'text-slate-500 hover:text-slate-800'
+                            ? 'text-indigo-600'
+                            : 'text-slate-500 hover:text-slate-800'
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -304,6 +309,73 @@ export default function RevenuePage() {
                                     {domains.length === 0 && (
                                         <tr>
                                             <td colSpan={6} className="p-12 text-center text-slate-400 italic">No domain inventory found</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </CardContent>
+                )}
+
+                {activeTab === 'dunning' && (
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead>
+                                    <tr className="border-b border-slate-100 dark:border-slate-800">
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Tenant / Invoice</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Amount</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Retry State</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Last Failure Reason</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Next Attempt</th>
+                                        <th className="p-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dunning.map((d) => (
+                                        <tr key={d.id} className="border-b border-slate-50 dark:border-slate-900">
+                                            <td className="p-6">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-black italic">{d.tenant_name}</span>
+                                                    <span className="text-[10px] text-slate-400 font-bold">INV-{d.id.slice(0, 8).toUpperCase()}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <span className="text-sm font-black">${d.amount.toFixed(2)}</span>
+                                            </td>
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-2">
+                                                    <Badge className="bg-orange-500/10 text-orange-600 border-none font-bold italic">RETRY {d.retry_count}/3</Badge>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg">{d.last_failure}</span>
+                                            </td>
+                                            <td className="p-6">
+                                                <span className="text-xs font-bold">{new Date(d.next_retry).toLocaleString()}</span>
+                                            </td>
+                                            <td className="p-6 text-right">
+                                                <Button
+                                                    size="sm"
+                                                    className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-black text-[10px] uppercase tracking-widest"
+                                                    onClick={async () => {
+                                                        const res = await adminApi.retryPayment(d.id);
+                                                        if (!res.error) toast.success("Retry command dispatched");
+                                                        else toast.error("Retry failed: " + res.error);
+                                                    }}
+                                                >
+                                                    Manual Retry
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {dunning.length === 0 && (
+                                        <tr>
+                                            <td colSpan={6} className="p-20 text-center">
+                                                <CheckCircle2 className="w-12 h-12 text-emerald-500/20 mx-auto mb-4" />
+                                                <p className="text-slate-400 font-black uppercase tracking-widest text-xs">No active payment failures</p>
+                                                <p className="text-[10px] text-slate-300 font-bold mt-1 uppercase">All subscriptions are currently up to date.</p>
+                                            </td>
                                         </tr>
                                     )}
                                 </tbody>

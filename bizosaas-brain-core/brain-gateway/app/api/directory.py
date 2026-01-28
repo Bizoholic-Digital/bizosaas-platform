@@ -131,9 +131,31 @@ async def create_coupon(
 
 @router.get("/businesses/{id}/reviews")
 async def get_business_reviews(id: uuid.UUID, db: Session = Depends(get_db)):
-    # Simple placeholder returning empty list for now until we have a review model
-    # Wait, let's check if we have a Review model
-    return []
+    """Fetch live reviews for a business."""
+    service = DirectoryService(db)
+    return await service.get_google_reviews(id)
+
+@router.post("/businesses/{id}/photos")
+async def add_business_photo(
+    id: uuid.UUID,
+    photo_url: str = Query(...),
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    """Add a photo to business gallery."""
+    service = DirectoryService(db)
+    return await service.add_listing_photo(id, photo_url, user.id)
+
+@router.delete("/businesses/{id}/photos/{photo_id}")
+async def remove_business_photo(
+    id: uuid.UUID,
+    photo_id: str,
+    db: Session = Depends(get_db),
+    user: Any = Depends(get_current_user)
+):
+    """Remove a photo from business gallery."""
+    service = DirectoryService(db)
+    return await service.remove_listing_photo(id, photo_id, user.id)
 
 @router.get("/categories")
 async def get_categories(db: Session = Depends(get_db)):
@@ -272,3 +294,19 @@ async def optimize_business_seo(
         raise HTTPException(status_code=403, detail="Not authorized to optimize this listing")
         
     return await service.optimize_listing_seo(id)
+
+@router.get("/admin/config")
+async def get_directory_config(user: Any = Depends(get_current_user)):
+    """Get global directory configuration (Admin only placeholder)."""
+    # This would check roles in a real impl
+    return {
+        "url_structures": {
+            "listing_prefix": "/biz/",
+            "category_prefix": "/c/",
+            "location_prefix": "/p/"
+        },
+        "seo_defaults": {
+            "title_template": "{business_name} | Local Business Directory",
+            "description_template": "Find {business_name} and other local businesses in our directory."
+        }
+    }

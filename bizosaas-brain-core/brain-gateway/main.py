@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization
+from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization, directory_admin, admin_mcp, tenant_management, billing_admin, cms_admin, analytics_admin, agent_admin, temporal_admin, triggers, domains, support_admin, reporting_admin, security_admin
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -143,6 +143,20 @@ app.include_router(alerts.router)  # Real-time WebSocket Alerts
 app.include_router(predictive_analytics.router)  # Predictive Insights
 app.include_router(isolation_testing.router)  # Multi-tenant Isolation Testing
 app.include_router(cost_optimization.router)  # Cost Optimization Engine
+app.include_router(directory_admin.router)  # Directory Management & Fine-Tuning
+app.include_router(admin_mcp.router)      # MCP Ecosystem Administration
+app.include_router(tenant_management.router)  # Tenant Management Dashboard
+app.include_router(billing_admin.router)     # Billing Administration
+app.include_router(cms_admin.router)         # CMS & WordPress Administration
+app.include_router(analytics_admin.router)   # Analytics & Intelligence Admin
+app.include_router(agent_admin.router)       # AI Agent Management Admin
+app.include_router(temporal_admin.router)     # Temporal & Workflow Administration
+app.include_router(temporal_admin.router_sys) # System Configuration Admin
+app.include_router(support_admin.router)      # Support & Debugging Admin
+app.include_router(reporting_admin.router)    # Reporting & Exports Admin
+app.include_router(security_admin.router)     # Security & Compliance Admin
+app.include_router(triggers.router)           # Autonomous Triggers
+app.include_router(domains.router)            # Domain Automation
 app.include_router(discovery.router, prefix="/api/discovery", tags=["discovery"])
 app.include_router(metrics_api.router)
 app.include_router(websockets.router)

@@ -17,7 +17,9 @@ class Workflow(Base):
     category = Column(String, default="all")  # 'infrastructure', 'hitl', 'all'
     config = Column(JSON, default={}) # retries, timeout, etc.
     workflow_blueprint = Column(JSON)  # Complete workflow definition from agent proposal
+    triggers = Column(JSON, default=[]) # List of triggers: {type: 'webhook', 'schedule', 'event'}
     last_run = Column(DateTime, nullable=True)
+    last_run_id = Column(String) # Temporal run_id for latest execution
     success_rate = Column(Float, default=100.0)
     runs_today = Column(Integer, default=0)
     
@@ -39,7 +41,9 @@ class Workflow(Base):
             "category": self.category,
             "config": self.config,
             "workflow_blueprint": self.workflow_blueprint,
+            "triggers": self.triggers,
             "lastRun": self.last_run.isoformat() if self.last_run else None,
+            "lastRunId": self.last_run_id,
             "successRate": self.success_rate,
             "runsToday": self.runs_today,
             "approvedBy": self.approved_by,

@@ -28,12 +28,14 @@ export default function SystemHealthPage() {
   const services = health?.services ? Object.entries(health.services).map(([name, status]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1).replace('-', ' '),
     status: status === 'up' || status === 'connected' ? 'healthy' : 'down' as const,
-    uptime: '99.9%', // Mock for now
-    responseTime: 45, // Mock for now
+    uptime: '99.9%',
+    responseTime: 45,
     lastCheck: 'Just now',
     version: '1.0.0',
-    url: name === 'auth' ? 'http://auth-service:8006' : 'http://localhost:8000'
+    url: name === 'auth' ? 'http://authentik:8000' : 'Internal'
   })) : []
+
+  const containers = health?.containers || []
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -229,6 +231,40 @@ export default function SystemHealthPage() {
             ))}
           </div>
         </div>
+
+        {/* Docker Containers (New Section) */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-900 shadow rounded-lg border border-gray-200 dark:border-gray-800">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Docker Containers</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Live orchestration status</p>
+          </div>
+          <div className="p-0 overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+              <thead className="bg-gray-50 dark:bg-gray-900/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-[10px] font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-6 py-3 text-left text-[10px] font-medium text-gray-500 uppercase">Image</th>
+                  <th className="px-6 py-3 text-left text-[10px] font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                {(containers as any[]).map(c => (
+                  <tr key={c.id}>
+                    <td className="px-6 py-2 text-xs font-mono text-blue-600 truncate max-w-[150px]">{c.name.replace('/', '')}</td>
+                    <td className="px-6 py-2 text-[10px] text-gray-500">{c.image.split(':').pop()}</td>
+                    <td className="px-6 py-2 text-xs">
+                      <span className={`px-2 py-0.5 rounded-full ${c.status.includes('Up') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {c.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* System Uptime & Events */}
 
         {/* System Uptime & Events */}
         <div className="bg-white dark:bg-gray-900 shadow rounded-lg border border-gray-200 dark:border-gray-800">

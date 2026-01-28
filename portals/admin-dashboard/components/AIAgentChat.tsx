@@ -10,6 +10,7 @@ interface Message {
     agentName?: string;
     timestamp: Date;
     suggestions?: string[];
+    actions?: any[];
 }
 
 export const AIAgentChat: React.FC = () => {
@@ -59,7 +60,8 @@ export const AIAgentChat: React.FC = () => {
                 content: apiRes.message || "I've processed your administrative request.",
                 agentName: 'Assistant',
                 timestamp: new Date(),
-                suggestions: apiRes.suggestions
+                suggestions: apiRes.suggestions,
+                actions: apiRes.actions
             };
 
             setMessages(prev => [...prev, agentMessage]);
@@ -133,6 +135,34 @@ export const AIAgentChat: React.FC = () => {
                                             >
                                                 <ChevronRight className="w-3 h-3 text-indigo-400" />
                                                 {suggestion}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {msg.actions && msg.actions.length > 0 && (
+                                    <div className="flex flex-col gap-2 pt-2">
+                                        {msg.actions.map((action, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => {
+                                                    if (action.type === 'navigate') {
+                                                        window.location.href = action.url;
+                                                    } else {
+                                                        handleSend(`Execute: ${action.label}`);
+                                                    }
+                                                }}
+                                                className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-100 hover:bg-indigo-500/20 transition-all group"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white shadow-lg">
+                                                        <Sparkles className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-sm font-bold leading-none">{action.label}</p>
+                                                        <p className="text-[10px] text-indigo-300/60 font-medium">Auto-pilot recommendation</p>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight className="w-4 h-4 text-indigo-400 group-hover:translate-x-1 transition-transform" />
                                             </button>
                                         ))}
                                     </div>

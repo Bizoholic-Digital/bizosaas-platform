@@ -5,8 +5,9 @@ import {
   MessageSquare, Send, Minimize2, Maximize2, X, Bot, User,
   Zap, Lightbulb, TrendingUp, Target, ShoppingCart, FileText,
   BarChart3, Settings, Loader, CheckCircle, AlertCircle,
-  Copy, ThumbsUp, ThumbsDown, RefreshCw, Mic, MicOff
+  Copy, ThumbsUp, ThumbsDown, RefreshCw, Mic, MicOff, Globe
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface Message {
   id: string;
@@ -91,17 +92,30 @@ const AI_CAPABILITIES: AICapability[] = [
       'Manage inventory alerts',
       'Analyze shopping cart abandonment'
     ]
+  },
+  {
+    id: 'domain-management',
+    name: 'Domain & DNS Control',
+    description: 'Find, register, and manage your domain names and DNS records',
+    icon: Globe,
+    category: 'assistance',
+    examples: [
+      'Search for a new domain name',
+      'How do I map my domain to my directory listing?',
+      'Check my domain renewal status'
+    ]
   }
 ];
 
 const QUICK_ACTIONS = [
+  { label: 'Domain Search', query: 'Search for a new domain name for my brand' },
+  { label: 'Directory SEO', query: 'How can I optimize my local directory listing?' },
   { label: 'Campaign Performance', query: 'Show me my campaign performance overview' },
-  { label: 'Lead Analysis', query: 'Analyze my recent leads and their quality' },
-  { label: 'Revenue Report', query: 'Generate a revenue report for this month' },
-  { label: 'Optimization Tips', query: 'Give me 3 optimization recommendations' }
+  { label: 'Revenue Report', query: 'Generate a revenue report for this month' }
 ];
 
 export function AIAssistant() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -157,7 +171,51 @@ export function AIAssistant() {
     let actions: any[] = [];
     let confidence = 85;
 
-    if (lowerMessage.includes('campaign') || lowerMessage.includes('marketing')) {
+    if (lowerMessage.includes('domain') || lowerMessage.includes('search')) {
+      response = `I can help you find and manage your domain portfolio! I've performed a quick search and found some great options for you:
+
+🚀 **Domain Recommendations**
+• YourBrand.com - $12.99/yr (Classic)
+• YourBrand.ai - $59.99/yr (Trending for AI/Tech)
+• LocalYourBrand.net - $9.99/yr (Great for local SEO)
+
+I recommend mapping your domain to the **Business Directory** to immediately gain local SEO authority. Would you like to proceed with a purchase or check specific DNS records?`;
+
+      suggestions = [
+        'Search for more domains',
+        'Check my existing domains',
+        'How to map DNS records',
+        'Domain pricing list'
+      ];
+
+      actions = [
+        { label: 'Go to Portfolio', action: 'view_domains', data: {} },
+        { label: 'Map to Directory', action: 'map_domain', data: { target: 'directory' } }
+      ];
+      confidence = 94;
+    } else if (lowerMessage.includes('directory') || lowerMessage.includes('listing')) {
+      response = `Your Business Directory listing is current active and optimized! Here's a quick status report:
+
+📊 **Directory Performance**
+• Status: 100% Optimized
+• Visibility: Local Rank #3 for your primary keyword
+• Citations: 42 active high-quality backlinks
+• Reviews: 4.8 star average across synced platforms
+
+I recommend adding 3-5 more high-quality photos and updating your service list to improve your "Claim to conversion" ratio.`;
+
+      suggestions = [
+        'Optimize my listing further',
+        'Manage directory reviews',
+        'View directory analytics',
+        'Add service photos'
+      ];
+
+      actions = [
+        { label: 'Manage Listing', action: 'view_directory', data: {} }
+      ];
+      confidence = 91;
+    } else if (lowerMessage.includes('campaign') || lowerMessage.includes('marketing')) {
       response = `I can help you with campaign optimization! Based on your recent campaigns, I see opportunities to improve performance by 15-25%. Here are my key recommendations:
 
 • **Audience Refinement**: Your target audience could be narrowed for better engagement
@@ -166,14 +224,14 @@ export function AIAssistant() {
 • **Timing Optimization**: Adjust ad scheduling based on peak engagement hours
 
 Would you like me to implement any of these optimizations or analyze a specific campaign?`;
-      
+
       suggestions = [
         'Analyze my Google Ads campaign',
         'Optimize my Facebook ads',
         'Create a new campaign',
         'Show me campaign ROI'
       ];
-      
+
       actions = [
         { label: 'Optimize Campaign', action: 'optimize_campaign', data: { type: 'google_ads' } },
         { label: 'View Analytics', action: 'view_analytics', data: { type: 'campaigns' } }
@@ -188,7 +246,7 @@ Would you like me to implement any of these optimizations or analyze a specific 
 • **Follow-up Opportunity**: 23 leads haven't been contacted in 48+ hours
 
 I recommend setting up automated nurturing sequences for new leads and prioritizing the high-score leads for immediate follow-up.`;
-      
+
       suggestions = [
         'Score my recent leads',
         'Set up lead automation',
@@ -214,7 +272,7 @@ I recommend setting up automated nurturing sequences for new leads and prioritiz
 • Email marketing shows the best ROI - consider increasing investment
 • Mobile conversion rate is 40% lower than desktop - optimize mobile experience
 • Cart abandonment rate is 68% - implement recovery sequences`;
-      
+
       suggestions = [
         'Deep dive into revenue trends',
         'Analyze conversion funnels',
@@ -241,7 +299,7 @@ I recommend setting up automated nurturing sequences for new leads and prioritiz
 • Build automated competitive intelligence
 
 Which optimization would you like to tackle first?`;
-      
+
       actions = [
         { label: 'Start Quick Wins', action: 'implement_optimizations', data: { type: 'immediate' } },
         { label: 'Plan Projects', action: 'create_roadmap', data: { type: 'optimization' } }
@@ -257,7 +315,7 @@ Which optimization would you like to tackle first?`;
 • **Automation**: Set up workflows to save time and increase efficiency
 
 What specific area would you like to explore? I'm here to help you grow your business!`;
-      
+
       suggestions = [
         'Show me what you can do',
         'Help with campaign optimization',
@@ -325,6 +383,14 @@ What specific area would you like to explore? I'm here to help you grow your bus
       case 'create_roadmap':
         sendMessage(`Create a ${data?.type || 'general'} roadmap with timelines and priorities`);
         break;
+      case 'view_domains':
+        router.push('/dashboard/domains');
+        setIsOpen(false);
+        break;
+      case 'view_directory':
+        router.push('/dashboard/directory');
+        setIsOpen(false);
+        break;
       default:
         console.log('Unknown action:', action);
     }
@@ -339,7 +405,7 @@ What specific area would you like to explore? I'm here to help you grow your bus
 
       recognition.onstart = () => setIsListening(true);
       recognition.onend = () => setIsListening(false);
-      
+
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
         setCurrentMessage(transcript);
@@ -368,9 +434,8 @@ What specific area would you like to explore? I'm here to help you grow your bus
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 transition-all ${
-      isMinimized ? 'w-80 h-14' : 'w-96 h-[32rem]'
-    }`}>
+    <div className={`fixed bottom-6 right-6 z-50 transition-all ${isMinimized ? 'w-80 h-14' : 'w-96 h-[32rem]'
+      }`}>
       <div className="bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
@@ -385,7 +450,7 @@ What specific area would you like to explore? I'm here to help you grow your bus
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowCapabilities(!showCapabilities)}
@@ -439,15 +504,14 @@ What specific area would you like to explore? I'm here to help you grow your bus
                   key={message.id}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`max-w-[80%] ${
-                    message.type === 'user'
-                      ? 'bg-blue-600 text-white rounded-lg rounded-br-sm'
-                      : message.type === 'system'
+                  <div className={`max-w-[80%] ${message.type === 'user'
+                    ? 'bg-blue-600 text-white rounded-lg rounded-br-sm'
+                    : message.type === 'system'
                       ? 'bg-red-100 text-red-800 rounded-lg'
                       : 'bg-gray-100 text-gray-900 rounded-lg rounded-bl-sm'
-                  } p-3`}>
+                    } p-3`}>
                     <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-                    
+
                     {message.metadata?.confidence && (
                       <div className="mt-2 text-xs opacity-75">
                         Confidence: {message.metadata.confidence}%
@@ -490,13 +554,13 @@ What specific area would you like to explore? I'm here to help you grow your bus
                   <div className="bg-gray-100 rounded-lg rounded-bl-sm p-3">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </div>
 
@@ -533,9 +597,8 @@ What specific area would you like to explore? I'm here to help you grow your bus
                     <button
                       onClick={startVoiceRecognition}
                       disabled={isListening}
-                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded ${
-                        isListening ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'
-                      }`}
+                      className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded ${isListening ? 'text-red-500' : 'text-gray-400 hover:text-gray-600'
+                        }`}
                     >
                       {isListening ? <MicOff size={16} /> : <Mic size={16} />}
                     </button>

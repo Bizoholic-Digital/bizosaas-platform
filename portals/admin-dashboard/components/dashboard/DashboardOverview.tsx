@@ -20,16 +20,16 @@ export default function DashboardOverview() {
     },
     {
       title: "Active Tenants",
-      value: "5",
-      description: "Across 4 brands",
+      value: metrics.totalTenants.toString(),
+      description: "Across multiple brands",
       icon: Globe,
       color: "text-blue-500",
       bg: "bg-blue-50 dark:bg-blue-900/20"
     },
     {
       title: "Total Users",
-      value: "142",
-      description: "+12 this week",
+      value: metrics.totalUsers.toString(),
+      description: "Global identity pool",
       icon: Users,
       color: "text-purple-500",
       bg: "bg-purple-50 dark:bg-purple-900/20"

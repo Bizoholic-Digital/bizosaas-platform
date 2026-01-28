@@ -49,18 +49,18 @@ const navigation: NavigationItem[] = [
     category: 'main'
   },
   {
-    name: 'System Overwatch',
-    href: '/dashboard/system-status',
-    icon: Activity,
-    description: 'Infrastructure and performance monitoring',
+    name: 'Platform Revenue',
+    href: '/revenue',
+    icon: DollarSign,
+    description: 'Financial performance and subscription oversight',
     category: 'main'
   },
   {
-    name: 'Infrastructure Commander',
-    href: '/dashboard/infrastructure',
-    icon: Network,
-    description: 'Cluster-level telemetry and resource orchestration',
-    category: 'monitoring'
+    name: 'System Overwatch',
+    href: '/system-health',
+    icon: Activity,
+    description: 'Infrastructure and performance monitoring',
+    category: 'main'
   },
 
   // Platform Management
@@ -78,41 +78,36 @@ const navigation: NavigationItem[] = [
     description: 'Platform-wide user administration',
     category: 'management'
   },
+
+  // Advanced Administration (New)
   {
-    name: 'Unified CMS',
-    href: '/cms',
-    icon: FileText,
-    description: 'Global content management system',
+    name: 'Global CMS Admin',
+    href: '/cms/admin',
+    icon: Globe,
+    description: 'Global WordPress sites & plugin mesh',
     category: 'management'
   },
-
-  // AI & Automation
   {
-    name: 'AI Agent Monitor',
-    href: '/ai-agents',
+    name: 'AI Agent Registry',
+    href: '/agents',
     icon: Bot,
     description: 'Real-time AI agent execution tracking',
-    category: 'monitoring'
+    category: 'management'
   },
   {
-    name: 'Workflow Orchestration',
-    href: '/dashboard/workflows',
+    name: 'Temporal Orchestration',
+    href: '/workflows/temporal',
+    icon: Network,
+    description: 'Temporal cluster and workflow control',
+    category: 'monitoring'
+  },
+
+  // Monitoring
+  {
+    name: 'Workflow Governance',
+    href: '/workflows',
     icon: Workflow,
     description: 'AI workflows and automation control',
-    category: 'monitoring'
-  },
-  {
-    name: 'Connectivity Hub',
-    href: '/dashboard/connectors',
-    icon: Globe,
-    description: 'Third-party integration monitoring',
-    category: 'monitoring'
-  },
-  {
-    name: 'Connector Intelligence',
-    href: '/dashboard/connectors/analytics',
-    icon: Activity,
-    description: 'Integration traffic and reliability analytics',
     category: 'monitoring'
   },
   {
@@ -137,13 +132,6 @@ const navigation: NavigationItem[] = [
     icon: Database,
     description: 'Direct database administration interface',
     category: 'system'
-  },
-  {
-    name: 'AI Assistant',
-    href: '/chat',
-    icon: Bot,
-    description: 'AI-powered platform assistance and automation',
-    category: 'main'
   },
   {
     name: 'System Settings',

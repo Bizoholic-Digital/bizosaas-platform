@@ -11,8 +11,8 @@ import {
   DollarSign, User, Target, Calendar, Package,
   Mail, MessageSquare, Share2, Activity, Zap,
   Lightbulb, Key, Shield, Terminal, Database, Grid, Code,
-  LayoutDashboard, Workflow, Building2, Globe, AlertCircle,
-  Bot, LogOut, Search, HardDrive, Gauge, ChevronUp
+  LayoutDashboard, Layout, Workflow, Building2, Globe, AlertCircle,
+  Bot, LogOut, Search, HardDrive, Gauge, ChevronUp, LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '@/shared/components/AuthProvider';
 
@@ -124,8 +124,11 @@ export default function AdminDashboard({ children }: AdminDashboardProps = {}) {
         { id: 'tenants', label: 'Tenant Management', icon: Building2, href: '/dashboard/tenants' },
         { id: 'users', label: 'User Management', icon: User, href: '/dashboard/users' },
         { id: 'directory', label: 'Business Directory', icon: Globe, href: '/dashboard/directory' },
+        { id: 'domains', label: 'Domain Control Center', icon: Globe, href: '/dashboard/domains' },
+        { id: 'cms-overwatch', label: 'CMS Overwatch', icon: Layout, href: '/dashboard/cms' },
         { id: 'crm', label: 'Global CRM Monitor', icon: Target, href: '/dashboard/crm' },
-        { id: 'revenue', label: 'Revenue Analytics', icon: DollarSign, href: '/dashboard/revenue' }
+        { id: 'revenue', label: 'Revenue Analytics', icon: DollarSign, href: '/dashboard/revenue' },
+        { id: 'support', label: 'Support & Tickets', icon: LifeBuoy, href: '/dashboard/support' }
       ]
     },
     {

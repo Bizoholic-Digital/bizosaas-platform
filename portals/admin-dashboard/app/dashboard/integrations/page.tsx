@@ -6,80 +6,154 @@ import { Globe, Shield, Zap, Info, MoreHorizontal, CheckCircle, XCircle, Loader2
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useSetHeader } from '@/lib/contexts/HeaderContext';
+import { adminApi } from '@/lib/api/admin';
 
 export default function IntegrationsPage() {
     useSetHeader("MCP Registry & Integrations", "Centrally manage and monitor the Model Context Protocol ecosystem.");
 
-    const [mcps, setMcps] = useState([
-        { id: 1, name: 'FluentCRM', slug: 'fluentcrm', status: 'active', type: 'Official', category: 'CRM', version: '1.2.0' },
-        { id: 2, name: 'Brave Search', slug: 'brave-search', status: 'active', type: 'Official', category: 'Search', version: '1.0.0' },
-        { id: 3, name: 'Google Drive', slug: 'google-drive', status: 'active', type: 'Official', category: 'Productivity', version: '1.1.0' },
-        { id: 4, name: 'Filesystem', slug: 'filesystem', status: 'active', type: 'Official', category: 'Utilities', version: '1.0.0' },
-        { id: 5, name: 'GitHub', slug: 'github', status: 'active', type: 'Official', category: 'DevTools', version: '1.0.0' },
-        { id: 6, name: 'Slack', slug: 'slack', status: 'maintenance', type: 'Official', category: 'Communication', version: '1.0.0' },
-        { id: 7, name: 'WooCommerce', slug: 'woocommerce', status: 'deprecated', type: 'Community', category: 'Ecommerce', version: '0.8.0' },
-    ]);
+    const [mcps, setMcps] = useState<any[]>([]);
+    const [stats, setStats] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const [registryRes, statsRes] = await Promise.all([
+                adminApi.getMCPRegistry(),
+                adminApi.getMCPStats()
+            ]);
+
+            if (registryRes.data) {
+                setMcps(registryRes.data);
+            }
+            if (statsRes.data) {
+                setStats(statsRes.data);
+            }
+        } catch (error) {
+            console.error("Failed to sync MCP ecosystem:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, []);
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-900/20">
+        <div className="p-6 space-y-6 bg-slate-50 dark:bg-slate-950 min-h-full">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="bg-white dark:bg-slate-900 border-none shadow-sm">
+                    <CardContent className="p-6">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Global Servers</p>
+                        <h3 className="text-2xl font-black mt-1">{stats?.registry_count || 0}</h3>
+                        <p className="text-[10px] text-blue-500 font-bold mt-1">Platform Certified</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-slate-900 border-none shadow-sm">
+                    <CardContent className="p-6">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Instances</p>
+                        <h3 className="text-2xl font-black mt-1 text-emerald-600">{stats?.active_nodes || 0}</h3>
+                        <p className="text-[10px] text-emerald-500/70 font-bold mt-1">Status: Operational</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-white dark:bg-slate-900 border-none shadow-sm">
+                    <CardContent className="p-6">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Avg. Latency</p>
+                        <h3 className="text-2xl font-black mt-1">{stats?.average_latency_ms?.toFixed(1) || 0} ms</h3>
+                        <p className="text-[10px] text-orange-500 font-bold mt-1">Regional: London-G1</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl shadow-blue-500/20">
+                    <CardContent className="p-6 relative overflow-hidden">
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">Ecosystem Health</p>
+                            <h3 className="text-2xl font-black mt-1">{stats?.uptime_percentage || '99.98'}%</h3>
+                            <p className="text-[10px] text-blue-200 font-bold mt-1">Cross-cluster stability</p>
+                        </div>
+                        <Globe className="absolute -right-4 -bottom-4 h-24 w-24 opacity-10 rotate-12" />
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-6 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                 <div className="flex gap-4 items-center">
-                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+                    <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                         <Shield className="w-6 h-6" />
                     </div>
                     <div>
-                        <h4 className="font-bold text-sm">Security Policy Active</h4>
-                        <p className="text-xs text-muted-foreground">All MCP servers are currently isolated in sandboxed containers with restricted volume access.</p>
+                        <h4 className="font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight">Security & Sandboxing Policy</h4>
+                        <p className="text-xs text-gray-500 font-medium max-w-lg">All MCP servers are executed in isolated, kernel-hardened containers with strict namespace separation and automated resource throttling.</p>
                     </div>
                 </div>
-                <Button size="sm" variant="outline">View Policy</Button>
+                <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="rounded-xl font-bold border-gray-100">Audit Logs</Button>
+                    <Button size="sm" className="rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700">Update Policy</Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mcps.map((mcp) => (
-                    <Card key={mcp.id} className="group hover:border-blue-500 transition-all">
-                        <CardHeader className="pb-2">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <CardTitle className="text-lg">{mcp.name}</CardTitle>
-                                        <Badge variant="secondary" className="text-[9px] uppercase font-bold">{mcp.category}</Badge>
+                {loading ? (
+                    <div className="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-3xl border border-gray-100">
+                        <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+                        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Syncing Registry Nodes...</p>
+                    </div>
+                ) : (
+                    mcps.map((mcp) => (
+                        <Card key={mcp.id} className="group border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-900/50 hover:shadow-xl hover:shadow-blue-500/5 transition-all rounded-3xl overflow-hidden bg-white dark:bg-slate-900">
+                            <CardHeader className="pb-2">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-3">
+                                            <CardTitle className="text-lg font-black uppercase tracking-tight text-gray-900 dark:text-gray-100">{mcp.name}</CardTitle>
+                                            <Badge className="bg-blue-500/10 text-blue-600 border-none text-[8px] font-black uppercase tracking-widest px-1.5 h-4">OFFICIAL</Badge>
+                                        </div>
+                                        <CardDescription className="text-[10px] font-bold text-gray-400">mcp://{mcp.slug}</CardDescription>
                                     </div>
-                                    <CardDescription className="text-xs font-mono">mcp://{mcp.slug}</CardDescription>
+                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${mcp.status === 'active' ? 'bg-emerald-50 text-emerald-600' :
+                                        mcp.status === 'maintenance' ? 'bg-amber-50 text-amber-600' :
+                                            'bg-red-50 text-red-600'
+                                        }`}>
+                                        {mcp.status === 'active' ? <CheckCircle className="w-5 h-5" /> :
+                                            mcp.status === 'maintenance' ? <Loader2 className="w-5 h-5 animate-spin" /> :
+                                                <XCircle className="w-5 h-5" />}
+                                    </div>
                                 </div>
-                                <div className={`p-1.5 rounded-full ${mcp.status === 'active' ? 'bg-emerald-100 text-emerald-600' :
-                                        mcp.status === 'maintenance' ? 'bg-amber-100 text-amber-600' :
-                                            'bg-red-100 text-red-600'
-                                    }`}>
-                                    {mcp.status === 'active' ? <CheckCircle className="w-4 h-4" /> :
-                                        mcp.status === 'maintenance' ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                                            <XCircle className="w-4 h-4" />}
+                            </CardHeader>
+                            <CardContent className="pt-2">
+                                <div className="flex items-center gap-1.5 mb-4">
+                                    {mcp.capabilities?.slice(0, 3).map((cap: string) => (
+                                        <Badge key={cap} variant="outline" className="text-[9px] font-bold border-gray-100 text-gray-500 lowercase">{cap}</Badge>
+                                    ))}
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center justify-between text-xs mb-4">
-                                <span className="text-muted-foreground font-medium">Type: <span className="text-slate-900 dark:text-slate-100">{mcp.type}</span></span>
-                                <span className="text-muted-foreground font-medium">v{mcp.version}</span>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button size="sm" variant="secondary" className="flex-1 text-xs">Configure</Button>
-                                <Button size="sm" variant="outline" className="flex-1 text-xs">Monitor</Button>
-                                <Button size="sm" variant="ghost" size="icon"><MoreHorizontal className="w-4 h-4" /></Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+                                <div className="flex items-center justify-between text-[10px] mb-6 font-black uppercase tracking-widest text-gray-400">
+                                    <span>Vendor: <span className="text-gray-900 dark:text-gray-100">{mcp.vendor}</span></span>
+                                    <span>{mcp.install_count || 0} INSTALATIONS</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button size="sm" variant="outline" className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 border-gray-100">Configure</Button>
+                                    <Button size="sm" className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest bg-gray-900 hover:bg-black shadow-lg shadow-gray-200">Monitor</Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
             </div>
 
-            <Card className="border-dashed border-2 bg-slate-50/50 dark:bg-slate-900/50">
-                <CardContent className="h-48 flex flex-col items-center justify-center p-6 text-center">
-                    <Zap className="w-10 h-10 text-slate-300 mb-4" />
-                    <h3 className="font-bold text-lg">Add Custom MCP Server</h3>
-                    <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-6">Deploy your own MCP server using Docker or SSE to extend the platform's intelligence.</p>
-                    <Button className="font-bold">Register New Server</Button>
+            <Card className="border-dashed border-2 bg-white dark:bg-slate-900 flex items-center border-gray-200 dark:border-gray-800 rounded-3xl hover:bg-slate-50 transition-colors">
+                <CardContent className="h-56 flex flex-col items-center justify-center p-6 text-center w-full">
+                    <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 border border-gray-100 shadow-inner">
+                        <Zap className="w-8 h-8 text-indigo-600" />
+                    </div>
+                    <h3 className="font-black text-xl uppercase tracking-tight text-gray-900 dark:text-gray-100">Initialize Custom Protocol</h3>
+                    <p className="text-xs text-gray-500 font-medium max-w-sm mx-auto mb-6">Deploy a private MCP server via SSE or Stdout to extend platform intelligence.</p>
+                    <Button className="font-black text-xs uppercase tracking-widest bg-blue-600 hover:bg-blue-700 rounded-xl px-8 h-12 shadow-lg shadow-blue-500/20">Register New Server</Button>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     );
 }

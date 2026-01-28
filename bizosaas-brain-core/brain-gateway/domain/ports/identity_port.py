@@ -12,6 +12,7 @@ class AuthenticatedUser:
     tenant_id: Optional[str] = None
     permissions: List[str] = field(default_factory=list)
     attributes: Dict[str, Any] = field(default_factory=dict) # Extra profile data
+    impersonator_id: Optional[str] = None # ID of the admin if this is an impersonation session
     
     @property
     def role(self) -> str:
@@ -56,4 +57,24 @@ class IdentityPort(ABC):
     @abstractmethod
     async def list_users(self, skip: int = 0, limit: int = 100) -> List[Dict[str, Any]]:
         """Retrieve a list of users from the identity provider."""
+        pass
+
+    @abstractmethod
+    async def list_sessions(self, user_id: str) -> List[Dict[str, Any]]:
+        """List active sessions for a specific user."""
+        pass
+
+    @abstractmethod
+    async def revoke_session(self, session_id: str) -> bool:
+        """Forcefully terminate a specific session."""
+        pass
+
+    @abstractmethod
+    async def change_password(self, user_id: str, new_password: str) -> bool:
+        """Update a user's password."""
+        pass
+
+    @abstractmethod
+    async def toggle_mfa(self, user_id: str, enabled: bool) -> bool:
+        """Enable or disable multi-factor authentication for a user."""
         pass

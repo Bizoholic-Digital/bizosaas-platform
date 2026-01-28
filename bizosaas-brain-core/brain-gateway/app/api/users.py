@@ -114,3 +114,40 @@ async def update_me(
     db.refresh(db_user)
     
     return {"status": "success", "message": "Profile updated"}
+
+@router.post("/me/change-password")
+async def change_password(
+    passwords: Dict[str, str] = Body(...),
+    user: AuthenticatedUser = Depends(get_current_user),
+    identity: Any = Depends(lambda: None) # We'll fetch it inside to avoid circular check
+):
+    """Update current user's password."""
+    new_password = passwords.get("new_password")
+    if not new_password:
+        raise HTTPException(status_code=400, detail="New password is required")
+    
+    from app.dependencies import get_identity_port
+    identity_port = get_identity_port()
+    
+    success = await identity_port.change_password(user.id, new_password)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update password")
+    
+    return {"status": "success", "message": "Password updated successfully"}
+
+@router.post("/me/mfa")
+async def toggle_mfa(
+    mfa_data: Dict[str, bool] = Body(...),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Enable or disable MFA."""
+    enabled = mfa_data.get("enabled", False)
+    
+    from app.dependencies import get_identity_port
+    identity_port = get_identity_port()
+    
+    success = await identity_port.toggle_mfa(user.id, enabled)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to update MFA settings")
+    
+    return {"status": "success", "message": f"MFA {'enabled' if enabled else 'disabled'}"}

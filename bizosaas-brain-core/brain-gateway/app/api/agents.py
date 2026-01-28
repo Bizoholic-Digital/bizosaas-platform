@@ -599,6 +599,24 @@ def generate_agent_response(agent: AgentConfig, message: str, context: Optional[
         else:
             return "I'm your Workflow Automator. I can create automated workflows across your connected platforms. What process would you like to automate?"
     
+    elif agent.id == "master_orchestrator":
+        if "status" in message_lower or "overview" in message_lower:
+            return "Platform Status: All systems operational. 42 active tenants, $12.4k MRR. Security posture is at 92%. We have 156 domains under management. Would you like a detailed breakdown of any specific module?"
+        elif "revenue" in message_lower:
+            return "Revenue is up 12% compared to last period. Growth is primarily driven by the new Business Directory premium listings and Domain markups (avg $4.00 profit per registration). I recommend exploring higher tier upsells for top 10% users."
+        elif "security" in message_lower:
+            return "Current security score is 92/100. No critical anomalies detected. I've whitelisted 5 new IP ranges this week and rotated the root API keys. Compliance check for GDPR is 100% complete."
+        else:
+            return "I am the Master Orchestrator. I coordinate all specialized agents and monitor the global BizOSaaS state. I can provide cross-module insights and strategic recommendations. What's on your mind?"
+    
+    elif agent.id == "seo_optimization":
+        if "domain" in message_lower or "dns" in message_lower:
+            return "I recommend optimizing your brand's digital perimeter. Ensure your primary domain has DNSSEC enabled and properly configured SPF/DKIM records. For local SEO, I suggest mapping your domain to our Business Directory listing to boost domain authority via high-quality local backlinks."
+        elif "directory" in message_lower:
+            return "Your Business Directory listing is a powerful SEO asset. I've optimized the AI-meta tags and structured data schemas. We are currently ranking for 15 local keywords through the directory page. Would you like a detailed breakdown?"
+        else:
+            return "I am your SEO Architect. I can handle technical audits, keyword research, and content optimization. How can I improve your search rankings today?"
+
     return f"I'm {agent.name}. {agent.description}. How can I assist you today?"
 
 def generate_suggestions(agent: AgentConfig, message: str) -> List[str]:
@@ -624,25 +642,30 @@ def generate_actions(agent: AgentConfig, message: str) -> List[Dict[str, Any]]:
     """Generate actionable items"""
     actions = []
     
-    if "campaign" in message.lower():
+    if agent.id == "master_orchestrator":
         actions.append({
-            "type": "create_campaign",
-            "label": "Create New Campaign",
-            "connector": "google-ads"
+            "type": "navigate",
+            "label": "Open Approval Center",
+            "url": "/dashboard/workflows"
         })
-    
-    if "post" in message.lower() or "content" in message.lower():
         actions.append({
-            "type": "create_post",
-            "label": "Create Blog Post",
-            "connector": "wordpress"
+            "type": "navigate",
+            "label": "Audit Domain Security",
+            "url": "/dashboard/domains"
         })
-    
-    if "lead" in message.lower():
+        
+    if "status" in message.lower() or "overview" in message.lower():
         actions.append({
-            "type": "view_leads",
-            "label": "View All Leads",
-            "connector": "fluentcrm"
+            "type": "navigate",
+            "label": "View Health Reports",
+            "url": "/dashboard/system-health"
         })
-    
+
+    if "onboarding" in message.lower() or "discovery" in message.lower():
+        actions.append({
+            "type": "navigate",
+            "label": "Review Discovery Results",
+            "url": "/dashboard/tenants"
+        })
+
     return actions
