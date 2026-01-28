@@ -4,7 +4,7 @@ Provides super admins with oversight into platform subscriptions, revenue, and i
 integrating with Lago and internal billing data.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Body
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional, Dict, Any

@@ -3,7 +3,7 @@ Directory Administration API
 Exposes fine-tuning and task management capabilities for the Business Directory.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from typing import List, Optional, Dict, Any
 from uuid import UUID
