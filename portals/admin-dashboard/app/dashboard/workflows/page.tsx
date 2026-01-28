@@ -35,7 +35,30 @@ const PLATFORM_WORKFLOWS = [
         lastRun: '2 hours ago',
         successRate: '100%',
         description: 'Aggregates usage from all tenants, calculates Lago invoices, and processes Stripe payments.',
-        hitlPending: false
+        hitlPending: false,
+        category: 'infrastructure'
+    },
+    {
+        id: 'agent-nurturing-005',
+        name: 'AI Smart Lead Nurturing',
+        status: 'proposed',
+        type: 'Agentic',
+        lastRun: 'Never',
+        successRate: 'N/A',
+        description: 'AI-personalized follow-up sequence across Email/WhatsApp identified by Growth Agent.',
+        hitlPending: true,
+        category: 'hitl'
+    },
+    {
+        id: 'inventory-sync-006',
+        name: 'Universal Inventory Recon',
+        status: 'required',
+        type: 'Operations',
+        lastRun: 'Never',
+        successRate: 'N/A',
+        description: 'Identified requirement: Coordinate inventory levels between Shopify, WooCommerce, and Amazon.',
+        hitlPending: false,
+        category: 'infrastructure'
     },
     {
         id: 'partner-sync-002',
@@ -45,7 +68,8 @@ const PLATFORM_WORKFLOWS = [
         lastRun: '5 hours ago',
         successRate: '98.5%',
         description: 'Evaluates partner capacity and automatically assigns new client accounts based on skill matching.',
-        hitlPending: true
+        hitlPending: true,
+        category: 'hitl'
     },
     {
         id: 'system-scale-003',
@@ -55,7 +79,19 @@ const PLATFORM_WORKFLOWS = [
         lastRun: '15 mins ago',
         successRate: '100%',
         description: 'Monitors CPU/Memory load across all brand clusters and scales Docker containers via Temporal.',
-        hitlPending: false
+        hitlPending: false,
+        category: 'infrastructure'
+    },
+    {
+        id: 'seo-monitor-007',
+        name: 'SEO Health Guardian',
+        status: 'running',
+        type: 'Agentic',
+        lastRun: '1 hour ago',
+        successRate: '99.5%',
+        description: 'Continuous technical SEO scan and automated fix suggestion generator.',
+        hitlPending: false,
+        category: 'all'
     },
     {
         id: 'security-audit-004',
@@ -65,7 +101,8 @@ const PLATFORM_WORKFLOWS = [
         lastRun: 'Yesterday',
         successRate: '99.9%',
         description: 'Scans all connected APIs and databases for credential leaks and unusual access patterns.',
-        hitlPending: false
+        hitlPending: false,
+        category: 'infrastructure'
     }
 ];
 
@@ -166,7 +203,7 @@ export default function AdminWorkflowsPage() {
                 </div>
 
                 <TabsContent value="all" className="space-y-4">
-                    {workflows.map(wf => (
+                    {workflows.filter(wf => wf.category === 'all' || wf.category === 'infrastructure' || wf.category === 'hitl').map(wf => (
                         <Card key={wf.id} className="group hover:border-slate-300 transition-all overflow-hidden border-l-4"
                             style={{ borderLeftColor: wf.status === 'running' ? '#10b981' : wf.status === 'paused' ? '#f59e0b' : '#64748b' }}>
                             <CardContent className="p-0">
@@ -182,8 +219,14 @@ export default function AdminWorkflowsPage() {
                                             <div className="flex items-center gap-2">
                                                 <h3 className="font-bold text-lg">{wf.name}</h3>
                                                 <Badge variant="outline" className="text-[10px] uppercase">{wf.type}</Badge>
+                                                {wf.status === 'proposed' && (
+                                                    <Badge className="bg-amber-100 text-amber-700 border-amber-200">Agent Identified</Badge>
+                                                )}
+                                                {wf.status === 'required' && (
+                                                    <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">Platform Goal</Badge>
+                                                )}
                                                 {wf.hitlPending && (
-                                                    <Badge className="bg-amber-100 text-amber-700 border-amber-200">Needs Approval</Badge>
+                                                    <Badge className="bg-red-100 text-red-700 border-red-200 animate-pulse">Needs Approval</Badge>
                                                 )}
                                             </div>
                                             <p className="text-sm text-muted-foreground mt-1 max-w-xl">{wf.description}</p>
@@ -225,13 +268,83 @@ export default function AdminWorkflowsPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="hitl" className="space-y-4 text-center py-12">
-                    <div className="max-w-md mx-auto">
-                        <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold">12 Approvals Pending</h3>
-                        <p className="text-muted-foreground mt-2">These workflows are blocked waiting for administrative confirmation. Most relate to Partner account promotions and high-limit billing overrides.</p>
-                        <Button className="mt-6 bg-amber-600 hover:bg-amber-700">Open Global Audit Queue</Button>
-                    </div>
+                <TabsContent value="hitl" className="space-y-4">
+                    {workflows.filter(wf => wf.hitlPending || wf.status === 'proposed').length > 0 ? (
+                        workflows.filter(wf => wf.hitlPending || wf.status === 'proposed').map(wf => (
+                            <Card key={wf.id} className="group hover:border-amber-300 transition-all overflow-hidden border-l-4 border-l-amber-500">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20">
+                                                <AlertCircle className="w-6 h-6 text-amber-600" />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-bold text-lg">{wf.name}</h3>
+                                                    <Badge className="bg-amber-100 text-amber-700 border-amber-200">Pending Review</Badge>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mt-1">{wf.description}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button className="bg-green-600 hover:bg-green-700">Approve</Button>
+                                            <Button variant="outline">Review Details</Button>
+                                            <Button variant="ghost" className="text-red-600">Reject</Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))
+                    ) : (
+                        <div className="text-center py-12">
+                            <div className="max-w-md mx-auto">
+                                <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                                <h3 className="text-xl font-bold">All Clear</h3>
+                                <p className="text-muted-foreground mt-2">No workflows are currently awaiting approval.</p>
+                            </div>
+                        </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="infrastructure" className="space-y-4">
+                    {workflows.filter(wf => wf.category === 'infrastructure').map(wf => (
+                        <Card key={wf.id} className="group hover:border-slate-300 transition-all overflow-hidden border-l-4"
+                            style={{ borderLeftColor: wf.status === 'running' ? '#10b981' : wf.status === 'paused' ? '#f59e0b' : '#64748b' }}>
+                            <CardContent className="p-0">
+                                <div className="flex items-center justify-between p-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800`}>
+                                            {wf.type === 'Financial' && <Server className="w-6 h-6 text-blue-600" />}
+                                            {wf.type === 'Infrastructure' && <Cpu className="w-6 h-6 text-emerald-600" />}
+                                            {wf.type === 'Security' && <ShieldCheck className="w-6 h-6 text-red-600" />}
+                                            {wf.type === 'Operations' && <RefreshCw className="w-6 h-6 text-purple-600" />}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-lg">{wf.name}</h3>
+                                                <Badge variant="outline" className="text-[10px] uppercase">{wf.type}</Badge>
+                                            </div>
+                                            <p className="text-sm text-muted-foreground mt-1 max-w-xl">{wf.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-8">
+                                        <div className="text-right">
+                                            <p className="text-xs text-muted-foreground uppercase">Success Rate</p>
+                                            <p className="font-bold">{wf.successRate}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button variant="ghost" size="icon" onClick={() => handleToggleStatus(wf.id)}>
+                                                {wf.status === 'running' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 text-green-600" />}
+                                            </Button>
+                                            <Button variant="ghost" size="icon">
+                                                <Settings className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
                 </TabsContent>
             </Tabs>
         </div>

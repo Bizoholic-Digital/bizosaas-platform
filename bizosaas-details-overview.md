@@ -398,8 +398,69 @@ bizosaas-platform/
 - **Google Places API** - Business data enrichment (existing)
 - **Lago Billing** - Payment processing (existing)
 
+
+## 9. Autonomous Agentic Operations & Administrative Control (Phase 4)
+
+In this phase, the platform transitions from an agent-assisted SaaS to an autonomous agentic ecosystem where AI agents take a proactive role in infrastructure design and optimization, governed by the "Admin Approval Loop."
+
+### A. The Agentic Lifecycle (Discovery to Deployment)
+1.  **Workflow Discovery**: Agents monitor tenant interactions and system logs to identify repetitive patterns or missing efficiencies.
+2.  **Design & Proposal**: Agents design a new "Agentic Workflow" (e.g., a specific sequence of MCP calls and LLM steps) and list it in the Admin Portal.
+3.  **Admin Review**: The Platform Owner reviews the proposed workflow (Logic, Estimated Cost, Impact).
+4.  **Integrated Deployment**: Once approved, the agent automatically deploys the workflow into the Client Portal or Directory system.
+
+### B. Continuous Optimization (RAG & KAG Analysis)
+-   **RAG (Retrieval-Augmented Generation)**: Agents query the platform's knowledge base and user data to ground their decisions.
+*   **KAG (Knowledge-Augmented Generation)**: Agents utilize graph-based knowledge maps to understand complex relationships between tools, and business goals.
+-   **Optimization Loop**:
+    -   **Monitor**: Analyze performance metrics (latency, conversion, cost).
+    -   **Propose**: Submit optimization requests to the Admin Portal (e.g., "Switching to Model X for these tasks would save 20%").
+    -   **Execute**: Apply approved changes across the ecosystem.
+
+### C. The Admin Copilot (Orchestration Hub)
+The Platform Owner is assisted by a dedicated "Admin Prime" agent to manage the complexity of thousands of tenants and agents.
+
+-   **Fine-Tuning Interface**: Manually override agent behaviors or system priorities.
+-   **Centralized Feature Mgmt**: Toggle features across Client Portal, Admin Dashboard, and Business Directory from a single pane.
+-   **Audit & Explainability**: Agents must justify every optimization proposal with data-backed reasoning.
+
 ---
 
-**Last Updated**: 2026-01-16
-**Version**: 2.0
-**Next Review**: 2026-02-01
+**Last Updated**: 2026-01-28
+**Version**: 3.0 (Agentic Evolution)
+**Next Review**: 2026-02-15
+
+## 10. Master Workflow Inventory & Governance
+
+This section maintains the definitive list of active and pending workflows. All workflows must be visible and manageable within the Admin Portal.
+
+### A. Core Workflow Inventory (Immediate Requirements)
+
+| Category | Workflow Name | Description | Status |
+| :--- | :--- | :--- | :--- |
+| **Marketing** | Marketing Email Sequence | Multi-channel follow-up for new leads. | ✅ Implemented |
+| **E-commerce** | Shopify Inventory Sync | Real-time product level synchronization. | ✅ Implemented |
+| **Marketing** | Smart Lead Nurturing | AI-personalized follow-up (Email/WhatsApp). | ⏳ Pending Approval |
+| **Operations** | Smart Inventory Recon | Cross-platform sync (Shopify/Woo/Amazon). | ⏳ Required |
+| **Monetization** | Abandon Cart Recovery | Personalized recovery via AI SMS/Email. | ⏳ Required |
+| **Content** | AI Blog Engine | Automated SEO drafting and scheduling. | ⏳ Required |
+| **SMM** | Social Cross-Poster | Auto-formatting for Meta/LinkedIn/Twitter. | ⏳ Required |
+| **SEO** | SEO Health Monitor | Technical scan and ranking shift analysis. | ⏳ Required |
+| **Data** | CRM Data Enrichment | AI-driven lead enrichment via web research. | ⏳ Required |
+| **Admin** | Tenant Health Guardian | Global monitoring of tenant performance. | ⏳ Required |
+| **Search** | Competitor Insight Engine | Real-time pricing and update tracking. | ⏳ Required |
+| **Ads** | Ad-Spend Optimizer | Dynamic budget re-allocation based on ROAS. | ⏳ Required |
+
+### B. Workflow Lifecycle Management (Admin Control)
+Users and AI agents can identify new workflow needs. These flow through the following states in the Admin Portal:
+
+1.  **Identified**: Workflow need is documented by an agent or user.
+2.  **Proposed**: AI Agent designs the logic, MCP requirements, and costs.
+3.  **Review**: Admin inspects the proposal in the "Workflow Approval Hub."
+4.  **Accepted/Active**: Workflow is deployed and begins execution.
+5.  **Refinement Requested**: Admin provides feedback; Agent redesigns the logic.
+6.  **Archived**: Rejected or deprecated workflows.
+
+### C. Continuous Workflow Expansion
+Any new workflow identified during platform operations is automatically appended to this inventory for Admin audit. The Admin Portal provides the toggle to "Enable" or "Fine-Tune" these tasks globally or per-tenant.
+

@@ -38,6 +38,7 @@ set -e
 # Environment Variables for External Services (Neon & Redis Cloud)
 # Secrets are injected from local environment or .env.kvm2
 export DATABASE_URL="${DATABASE_URL}"
+export VECTOR_DB_URL="${DATABASE_URL}"  # Neon supports pgvector
 export REDIS_URL="${REDIS_URL}"
 export OPENAI_API_KEY="${OPENAI_API_KEY}"
 export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY}"
