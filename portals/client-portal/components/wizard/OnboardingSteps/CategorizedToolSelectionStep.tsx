@@ -144,30 +144,33 @@ export function CategorizedToolSelectionStep({ data, onUpdate, state }: Props) {
 
         const autoSelected = new Set(data.selectedMcps || []);
 
-        // Logical Mapping: If we detected X, we definitely need Y
-        if (state.digitalPresence.ecommerceType === 'woocommerce') {
-            autoSelected.add('woocommerce');
-            // Auto-enable E-commerce Analyst Agent
-            autoSelected.add('google-merchant-center');
-        }
-
-        if (state.digitalPresence.crmType === 'fluentcrm') {
-            autoSelected.add('fluentcrm');
-            // Auto-enable Lead Specialist Agent
-            autoSelected.add('activecampaign'); // Fallback or similar if needed
-        }
-
         if (state.digitalPresence.cmsType === 'wordpress') {
             autoSelected.add('wordpress');
-            // Auto-enable Content Manager Agent
             autoSelected.add('google-search-console');
+        }
+
+        if (state.digitalPresence.cmsType === 'shopify') {
+            autoSelected.add('shopify');
+        }
+
+        // Analytics Auto-selection from audit results
+        const analytics = [
+            ...(state?.analytics.auditedServices?.essential || []),
+            ...(state?.analytics.auditedServices?.optional || [])
+        ].map(s => s.service?.toUpperCase());
+
+        if (analytics.includes('GA4') || analytics.includes('GOOGLE ANALYTICS')) {
+            autoSelected.add('google-analytics-4');
+        }
+        if (analytics.includes('GTM') || analytics.includes('GOOGLE TAG MANAGER')) {
+            autoSelected.add('google-tag-manager');
         }
 
         // Only update if we have new auto-selections
         if (autoSelected.size > (data.selectedMcps?.length || 0)) {
             onUpdate({ ...data, selectedMcps: Array.from(autoSelected) });
         }
-    }, [state?.digitalPresence?.ecommerceType, state?.digitalPresence?.crmType, state?.digitalPresence?.cmsType]);
+    }, [state?.digitalPresence?.ecommerceType, state?.digitalPresence?.crmType, state?.digitalPresence?.cmsType, state?.analytics?.auditedServices]);
 
     const filteredMcps = useMemo(() => {
         return currentMcps.filter(m =>

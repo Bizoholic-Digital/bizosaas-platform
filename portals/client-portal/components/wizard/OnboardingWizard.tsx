@@ -3,10 +3,11 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-    Building2, Globe, BarChart3, Plug, Rocket, Target, Layout, Sparkles, AlertTriangle
+    Building2, Globe, BarChart3, Plug, Rocket, Target, Layout, Sparkles, AlertTriangle, CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useOnboardingState } from './hooks/useOnboardingState';
 import { useAuth } from '../auth/AuthProvider';
 
@@ -453,6 +454,50 @@ export function OnboardingWizard() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Launching Overlay */}
+            {isSubmitting && (
+                <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950 text-white animate-in fade-in duration-500">
+                    <div className="relative mb-12">
+                        <div className="absolute inset-0 bg-blue-500/20 blur-[100px] animate-pulse rounded-full" />
+                        <div className="relative z-10 p-8 rounded-full border-2 border-blue-500/20 bg-slate-900 shadow-2xl shadow-blue-500/20">
+                            <Rocket size={64} className="text-blue-500 animate-bounce" />
+                        </div>
+                        {/* Orbiting particles simulation */}
+                        <div className="absolute inset-0 animate-spin duration-[10s]">
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_10px_#60a5fa]" />
+                        </div>
+                    </div>
+
+                    <div className="text-center space-y-6 max-w-sm px-6">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-black tracking-tighter uppercase italic">Ignition Sequence</h2>
+                            <p className="text-blue-400 font-black text-[10px] uppercase tracking-[0.3em]">BizOSaaS Brain v1.2</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Neural Calibration</span>
+                                <span className="text-[10px] font-black font-mono text-blue-400">DEPLOYING</span>
+                            </div>
+                            <Progress value={85} className="h-1 bg-slate-800" />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            {[
+                                "Synchronizing Agent Personalities...",
+                                "Provisioning Secure Infrastructure...",
+                                "Activating Growth Strategy..."
+                            ].map((text, i) => (
+                                <div key={i} className="flex items-center gap-2 text-[10px] font-bold text-slate-400 animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: `${i * 0.5}s` }}>
+                                    <CheckCircle size={10} className="text-green-500" />
+                                    {text}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

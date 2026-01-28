@@ -5,8 +5,9 @@ import { OnboardingState } from '../types/onboarding';
 import {
     CheckCircle2, ArrowRight, Brain, Target, TrendingUp, Zap,
     Sparkles, Database, ShieldCheck, Rocket,
-    Activity, Cpu, Lock
+    Activity, Cpu, Lock, FileText, ShoppingBag, ShoppingCart, Users, BarChart3, ClipboardList, Settings, Search
 } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -137,31 +138,55 @@ export function StrategyApprovalStep({ data, onConfirm }: Props) {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="p-5 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10 space-y-3">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Phase 1: Foundation</p>
-                                            </div>
-                                            <p className="text-[12px] font-bold leading-relaxed text-left">
-                                                Establishing {data.digitalPresence.cmsType || 'base'} infrastructure and initializing {data.tools.selectedMcps?.length || 0} specialist agents.
-                                            </p>
-                                        </div>
-                                        <div className="p-5 rounded-[2rem] bg-white/10 backdrop-blur-md border border-white/10 space-y-3 opacity-60">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Phase 2: Intelligence</p>
-                                            </div>
-                                            <p className="text-[12px] font-bold leading-relaxed text-left">
-                                                Connecting {data.analytics.gaId ? 'GA4 Data Stream' : 'Audience Insights'} for real-time campaign refinement.
-                                            </p>
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60 text-left">Activating Specialist Workforce</p>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {data.tools.selectedMcps?.slice(0, 4).map((mcp, i) => {
+                                                const mapping: Record<string, { label: string, icon: any }> = {
+                                                    'wordpress': { label: 'Content Creator', icon: Icons.FileText },
+                                                    'shopify': { label: 'Store Manager', icon: Icons.ShoppingBag },
+                                                    'woocommerce': { label: 'E-com Specialist', icon: Icons.ShoppingCart },
+                                                    'fluentcrm': { label: 'Lead Specialist', icon: Icons.Users },
+                                                    'google-analytics-4': { label: 'Data Analyst', icon: Icons.BarChart3 },
+                                                    'plane': { label: 'Work Strategist', icon: Icons.ClipboardList },
+                                                    'google-tag-manager': { label: 'Tech Architect', icon: Icons.Settings },
+                                                    'google-search-console': { label: 'SEO Optimizer', icon: Icons.Search },
+                                                };
+                                                const agent = mapping[mcp] || { label: mcp.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '), icon: Icons.Cpu };
+                                                const AgentIcon = agent.icon;
+                                                return (
+                                                    <div key={i} className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 flex flex-col items-center gap-2 group hover:bg-white/20 transition-all cursor-default">
+                                                        <div className="p-2 rounded-xl bg-white/20">
+                                                            <AgentIcon size={16} className="text-white" />
+                                                        </div>
+                                                        <p className="text-[9px] font-black uppercase tracking-tight text-center leading-tight">{agent.label}</p>
+                                                        <div className="flex gap-0.5 mt-1">
+                                                            <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+                                                            <div className="w-1 h-1 rounded-full bg-green-400/40" />
+                                                            <div className="w-1 h-1 rounded-full bg-green-400/20" />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {(!data.tools.selectedMcps || data.tools.selectedMcps.length === 0) && (
+                                                <div className="col-span-full py-4 text-center opacity-40 italic text-xs">No specific specialists selected. Using General Intelligence.</div>
+                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="pt-6 border-t border-white/10 flex items-center justify-between">
-                                        <div className="space-y-1 text-left">
-                                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Estimated Launch Time</p>
-                                            <p className="font-black text-lg">Instantaneous</p>
+                                    <div className="pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                        <div className="flex items-center gap-6">
+                                            <div className="space-y-1 text-left">
+                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Neural Capacity</p>
+                                                <p className="font-black text-lg">Optimized</p>
+                                            </div>
+                                            <div className="h-8 w-px bg-white/10 hidden md:block" />
+                                            <div className="space-y-1 text-left">
+                                                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Status</p>
+                                                <p className="font-black text-lg flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /> READY
+                                                </p>
+                                            </div>
                                         </div>
                                         <Button
                                             onClick={onConfirm}

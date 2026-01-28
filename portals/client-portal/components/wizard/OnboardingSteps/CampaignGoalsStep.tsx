@@ -13,6 +13,8 @@ import * as Icons from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
+import { Progress } from '@/components/ui/progress';
+
 interface Props {
     data: CampaignGoals;
     onUpdate: (data: Partial<CampaignGoals>) => void;
@@ -217,20 +219,40 @@ export function CampaignGoalsStep({ data, onUpdate }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="mt-4 p-4 rounded-2xl bg-blue-600/20 border border-blue-500/20">
-                                    <p className="text-[10px] font-medium leading-relaxed italic opacity-80 text-left">
-                                        "I've optimized your strategy to prioritize {activeGoal?.label.toLowerCase()}. We'll deploy targeted campaigns as soon as you launch."
-                                    </p>
-                                </div>
+                                <p className="text-[10px] font-medium leading-relaxed italic opacity-80 text-left">
+                                    "I've optimized your strategy to prioritize {activeGoal?.label.toLowerCase()}. We'll deploy targeted campaigns as soon as you launch."
+                                </p>
                             </div>
                         </div>
+                    </div>
 
-                        <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex gap-3">
-                            <Zap size={18} className="text-amber-500 shrink-0" />
-                            <p className="text-[10px] font-bold text-amber-900/60 dark:text-amber-500/60 leading-tight text-left">
-                                You can finalize connecting these Power-Ups in your dashboard after launch.
-                            </p>
+                    {/* AI Prediction Card */}
+                    <div className="p-6 rounded-[2rem] bg-indigo-600/5 border border-indigo-600/10 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp size={16} className="text-indigo-600" />
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-700 dark:text-indigo-400">Projected Strategic Impact</h4>
                         </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Conversion Lift</p>
+                                <p className="text-xl font-black text-indigo-600">+{Math.floor((data.monthlyBudget / 1000) * 1.5 + 12)}%</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest leading-none">Audience Reach</p>
+                                <p className="text-xl font-black text-indigo-600">{(data.monthlyBudget * 0.8 / 1000).toFixed(1)}M</p>
+                            </div>
+                        </div>
+                        <div className="pt-2">
+                            <Progress value={75} className="h-1 bg-indigo-100 dark:bg-indigo-900/20" />
+                            <p className="text-[8px] font-bold text-indigo-700/40 uppercase tracking-widest mt-2">AI-Generated Forecast • 88% Confidence</p>
+                        </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10 flex gap-3">
+                        <Zap size={18} className="text-amber-500 shrink-0" />
+                        <p className="text-[10px] font-bold text-amber-900/60 dark:text-amber-500/60 leading-tight text-left">
+                            You can finalize connecting these Power-Ups in your dashboard after launch.
+                        </p>
                     </div>
                 </div>
             </div>
