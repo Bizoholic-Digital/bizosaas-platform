@@ -36,6 +36,7 @@ export interface BusinessProfile {
     directoryUrl?: string;
     websiteType?: 'owned' | 'directory';
     phone?: string;
+    countryCode?: string;
     description?: string;
 }
 

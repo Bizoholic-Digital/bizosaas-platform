@@ -73,8 +73,9 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const parsePhone = (phone: string) => {
-        if (!phone) return { code: '+1', number: '', country: 'US' };
+    const parsePhone = (phone: string, hintCountry?: string) => {
+        if (!phone) return { code: '+1', number: '', country: hintCountry || 'US' };
+
         const cleaned = phone.replace(/[^\d+]/g, '');
         const sortedCodes = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
         const match = sortedCodes.find(c => cleaned.startsWith(c.code));
@@ -82,23 +83,33 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
         if (match) {
             return { code: match.code, number: cleaned.substring(match.code.length), country: match.country };
         }
+
+        // If no code match but we have a hint, use the hint's code
+        if (hintCountry) {
+            const hintMatch = COUNTRY_CODES.find(c => c.country === hintCountry);
+            if (hintMatch) {
+                return { code: hintMatch.code, number: cleaned, country: hintCountry };
+            }
+        }
+
         return { code: '+1', number: cleaned, country: 'US' };
     };
 
     // Initialize state from data (also handles resets)
     useEffect(() => {
         if (data.phone) {
-            const parsed = parsePhone(data.phone);
+            const parsed = parsePhone(data.phone, data.countryCode);
             setCountryISO(parsed.country);
             setPhoneNumber(parsed.number);
         } else {
             setPhoneNumber('');
-            setCountryISO('US');
+            // Use the stored country code if available, otherwise default logic
+            setCountryISO(data.countryCode || (prev => (searchQuery === '' && locationQuery === '') ? 'US' : prev));
         }
         setSearchQuery(data.companyName || '');
         setLocationQuery(data.location || '');
         setGmbConnected(!!data.gmbLink);
-    }, [data.companyName, data.location, data.phone]);
+    }, [data.companyName, data.location, data.phone, data.countryCode]);
 
     const syncPhone = (iso: string, num: string) => {
         const code = COUNTRY_CODES.find(c => c.country === iso)?.code || '+1';
@@ -205,6 +216,7 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
                 websiteType: details.website ? 'owned' : 'directory',
                 directoryUrl: directoryUrl,
                 phone: details.phone || '',
+                countryCode: details.country,
                 gmbLink: details.gmbLink
             });
 
@@ -235,15 +247,12 @@ export function CompanyIdentityStep({ data, onUpdate, onReset, discovery, isDisc
                 }
             }
 
-            if (details.country) {
-                setCountryISO(details.country);
-            }
-
             if (details.phone) {
-                const parsed = parsePhone(details.phone);
-                // Respect the country code from the phone number if the location didn't provide a country
-                if (!details.country && parsed.country) setCountryISO(parsed.country);
+                const parsed = parsePhone(details.phone, details.country);
+                if (parsed.country) setCountryISO(parsed.country);
                 setPhoneNumber(parsed.number);
+            } else if (details.country) {
+                setCountryISO(details.country);
             }
         } catch (error) {
             setSearchError("Failed to fetch details.");

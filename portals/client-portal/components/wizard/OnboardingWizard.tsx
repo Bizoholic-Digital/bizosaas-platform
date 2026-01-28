@@ -384,9 +384,8 @@ export function OnboardingWizard() {
                             <div className="flex items-center gap-2">
                                 {state.currentStep === 0 ? (
                                     <Button
-                                        variant="ghost"
                                         onClick={resetOnboarding}
-                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                        className="bg-red-600 hover:bg-red-700 text-white px-8 shadow-md"
                                     >
                                         <Sparkles className="w-4 h-4 mr-2" />
                                         Reset Form
