@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets
+from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -127,6 +127,7 @@ app.include_router(admin.router)
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])
 app.include_router(users.router)
 app.include_router(workflows.router)
+app.include_router(workflow_governance.router)  # Workflow approval/rejection/refinement
 app.include_router(discovery.router, prefix="/api/discovery", tags=["discovery"])
 app.include_router(metrics_api.router)
 app.include_router(websockets.router)

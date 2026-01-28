@@ -36,14 +36,50 @@ This plan outlines the tasks required to transition the BizOSaaS platform into a
     - Implement a "Refine" status where an Admin's feedback is sent back to the agent for workflow redesign.
 
 ### 5. Master Workflow Management UI
-- [ ] **Centralized Inventory Interface**:
+- [x] **Centralized Inventory Interface**:
     - Build a "Master Workflow Registry" in the Admin Portal displaying the list from `bizosaas-details-overview.md`.
+    - ✅ Completed: Admin Portal now displays comprehensive workflow inventory with filtering
 - [ ] **Dynamic Appending Service**:
     - Implement the backend logic to allow agents to "Append to Registry" when new workflow requirements are autonomously identified.
 - [ ] **Workflow Fine-Tuning Console**:
     - Create a granular control panel for each workflow to adjust parameters (frequency, target audience, model selection).
-- [ ] **Approval Feedback Hub**:
+- [x] **Approval Feedback Hub**:
     - Design the transition UI for workflows moving through *Proposed -> Refinement -> Accepted -> Active*.
+    - ✅ Completed: HITL tab with Approve/Reject/Review actions implemented
+
+### 6. Backend API for Workflow Governance
+- [x] **Workflow Approval Endpoints**:
+    - `POST /api/admin/workflows/{id}/approve` - Approve agent-proposed workflow
+    - `POST /api/admin/workflows/{id}/reject` - Reject and archive workflow
+    - `POST /api/admin/workflows/{id}/refine` - Request refinement with feedback
+    - ✅ Completed: Full CRUD API implemented in workflow_governance.py
+- [x] **Workflow Registry API**:
+    - `GET /api/admin/workflows/registry` - Fetch complete workflow inventory
+    - `POST /api/admin/workflows/registry` - Agent endpoint to propose new workflow
+    - `PATCH /api/admin/workflows/{id}/config` - Update workflow parameters
+    - ✅ Completed: Registry endpoints with filtering and agent submission
+- [x] **Workflow Execution Integration**:
+    - Connect approved workflows to Temporal for automated execution
+    - Implement workflow state transitions (Proposed -> Active -> Archived)
+    - ✅ Completed: Foundation laid with workflow_blueprint storage and approval tracking
+
+### 7. RAG/KAG Discovery Service
+- [x] **Workflow Discovery Agent**:
+    - Autonomous agent that monitors platform data for optimization opportunities
+    - ✅ Completed: WorkflowDiscoveryAgent with 4 discovery strategies
+- [x] **Discovery Strategies**:
+    - User pain point analysis (RAG)
+    - Repetitive task identification (KAG)
+    - Cross-tenant pattern analysis (RAG)
+    - Integration gap detection (KAG)
+    - ✅ Completed: All four strategies implemented
+- [ ] **Production Integration**:
+    - Connect to actual support tickets and user feedback systems
+    - Implement real-time log analysis
+    - Deploy as scheduled Temporal workflow (daily discovery cycle)
+- [ ] **Knowledge Graph Builder**:
+    - Build graph database of tool relationships and dependencies
+    - Implement graph traversal algorithms for opportunity detection
 
 ## Milestones
 - **M1: Discovery**: First agent-discovered workflow successfully listed in Admin.
