@@ -34,8 +34,12 @@ services:
       - PORT=3003
       - PLANE_API_TOKEN=plane_api_91ec482b729f4e7ea139a1ba400bc0fd
     labels:
-      - traefik.enable=true
-      - traefik.docker.network=dokploy-network
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.client-portal.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3003"
     networks:
       - dokploy-network
     expose:
