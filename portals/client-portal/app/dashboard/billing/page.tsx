@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { CreditCard, Download, Plus, RefreshCw, AlertCircle } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { OTPChallenge } from "@/components/security/otp-challenge"
 
 interface Transaction {
     id: string
@@ -23,6 +24,7 @@ export default function BillingPage() {
     const [balance, setBalance] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
     const [transactions, setTransactions] = useState<Transaction[]>([])
+    const [isOTPChallengeOpen, setIsOTPChallengeOpen] = useState(false)
 
     useEffect(() => {
         // Simulate fetching data
@@ -43,16 +45,25 @@ export default function BillingPage() {
     }, [])
 
     const handleTopUp = () => {
+        setIsOTPChallengeOpen(true)
+    }
+
+    const onOTPSuccess = () => {
         toast({
             title: "Redirecting to Payment",
             description: "Initiating secure checkout session...",
         })
-        // TODO: Implement Stripe Checkout redirection
-        // window.location.href = "/api/billing/checkout"
     }
 
     return (
         <div className="container mx-auto py-10 space-y-8">
+            <OTPChallenge
+                isOpen={isOTPChallengeOpen}
+                onClose={() => setIsOTPChallengeOpen(false)}
+                onSuccess={onOTPSuccess}
+                actionLabel="Wallet Top-up"
+                actionSeverity="warning"
+            />
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Billing & Wallet</h2>
