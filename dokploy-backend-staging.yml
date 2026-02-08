@@ -1,322 +1,297 @@
-# BizOSaaS Backend Services - STAGING (DATABASE CONNECTION CORRECTED)
-# All 10 backend services building directly from GitHub repository
-# Deploy via Dokploy at dk.bizoholic.com
-#
-# CRITICAL FIX: PostgreSQL and Redis are NOT in Docker containers
-# They are running directly on the VPS host at 194.238.16.237
-# - PostgreSQL: 194.238.16.237:5433 (not bizosaas-postgres-staging:5432)
-# - Redis: 194.238.16.237:6380 (not bizosaas-redis-staging:6379)
-#
-# Infrastructure Services (running on VPS host):
-#   - PostgreSQL at 194.238.16.237:5433
-#   - Redis at 194.238.16.237:6380
-#   - Temporal Server at bizosaas-temporal-server-staging:7233 (Docker container)
-
+version: "3.8"
 services:
-  # ==========================================
-  # 1. SALEOR E-COMMERCE API (Port 8000)
-  # ==========================================
-  saleor-api:
-    image: ghcr.io/saleor/saleor:3.20
-    container_name: bizosaas-saleor-staging
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
-      - REDIS_URL=redis://194.238.16.237:6380/1
-      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
-      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
-      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
-      - DEBUG=False
-      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # 2. BRAIN API - AI Gateway with HITL (Port 8001)
-  # ==========================================
-  # v2.1.0-hitl: Enhanced with Human-in-the-Loop control system
-  # - Progressive autonomy levels (supervised → autonomous)
-  # - Super admin workflow toggle endpoints
-  # - Confidence-based decision routing
-  # - Redis-backed decision approval queue
-  brain-api:
-    image: bizosaas/brain-gateway:v2.1.0-hitl
+  brain-gateway:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
     container_name: bizosaas-brain-staging
-    ports:
-      - "8001:8001"
     environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/0
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ENVIRONMENT=staging
-      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
+      - TEMPORAL_ADDRESS=ap-south-2.aws.api.temporal.io:7233
+      - TEMPORAL_NAMESPACE=bizosaas-platform-mtls.mdqxv
+      - TEMPORAL_MTLS_CERT=/app/certs/client.pem
+      - TEMPORAL_MTLS_KEY=/app/certs/client.key
+      - VAULT_URL=https://vault.bizoholic.net
+      - VAULT_TOKEN=hvs.REpC92zP7vH29X04y1vX4Wn
+      - SHOPIFY_APP_URL=https://api.bizoholic.net
+      - SHOPIFY_CLIENT_ID=${SHOPIFY_CLIENT_ID}
+      - SHOPIFY_CLIENT_SECRET=${SHOPIFY_CLIENT_SECRET}
+      - SHOPIFY_SHOP_URL=${SHOPIFY_SHOP_URL}
+      # - SHOPIFY_ACCESS_TOKEN=  # Removed: Using OAuth flow now
+    volumes:
+      - ./client.pem:/app/certs/client.pem:ro
+      - ./client.key:/app/certs/client.key:ro
     networks:
+      - brain-network
       - dokploy-network
+    expose:
+      - 8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway-secure.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway-secure.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+      - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: [ "CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" ]
       interval: 30s
       timeout: 10s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
-  # ==========================================
-  # 3. WAGTAIL CMS (Port 8002)
-  # ==========================================
-  wagtail-cms:
+  brain-mcp-brave-search:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
+    container_name: brain-mcp-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-filesystem:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
+    container_name: brain-mcp-filesystem
+    volumes:
+      - bizosaas-data:/data
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-github:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-google-drive:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    container_name: brain-mcp-google-drive
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-slack:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
+    container_name: brain-mcp-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-fluentcrm:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
+    container_name: brain-mcp-fluentcrm
+    environment:
+      - FLUENTCRM_URL=${FLUENTCRM_URL}
+      - FLUENTCRM_API_KEY=${FLUENTCRM_API_KEY}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-meesho:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/meesho-mcp:staging
+    container_name: brain-mcp-meesho
+    environment:
+      - MEESHO_API_KEY=${MEESHO_API_KEY}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-postiz:
+    container_name: brain-mcp-postiz
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./mcp-servers/postiz/server.py:/app/server.py
+    environment:
+      - POSTIZ_API_URL=http://postiz-app:5000
+    command: >
+      sh -c "pip install fastapi uvicorn httpx && python server.py"
+    networks:
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-seo-premium:
+    container_name: brain-mcp-seo-premium
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./bizosaas-brain-core/brain-gateway/premium_seo_mcp.py:/app/premium_seo_mcp.py
+    environment:
+      - SEMRUSH_API_KEY=${SEMRUSH_API_KEY:-}
+      - AHREFS_API_KEY=${AHREFS_API_KEY:-}
+    command: >
+      sh -c "pip install fastapi uvicorn httpx && python premium_seo_mcp.py"
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  wordpress:
     build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/cms
-      dockerfile: Dockerfile
-    container_name: bizosaas-wagtail-staging
-    ports:
-      - "8002:8000"
+      context: .
+      dockerfile: brands/bizoholic/cms/Dockerfile
+    restart: unless-stopped
     environment:
-      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/3
-      - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
-      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
-      - DEBUG=False
-      - PYTHONPATH=/app
+      - WP_ENV=production
+      - DB_NAME=${CMS_DB_NAME:-bizoholic_cms}
+      - DB_USER=${CMS_DB_USER:-root}
+      - DB_PASSWORD=${CMS_DB_PASSWORD:-password}
+      - DB_HOST=wp_db
+      - WP_HOME=https://cms.bizoholic.net
+      - WP_SITEURL=https://cms.bizoholic.net/wp
     networks:
       - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.bizoholic-cms.rule=Host(`cms.bizoholic.net`)"
+      - "traefik.http.routers.bizoholic-cms.entrypoints=websecure"
+      - "traefik.http.routers.bizoholic-cms.tls=true"
+      - "traefik.http.routers.bizoholic-cms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-cms.loadbalancer.server.port=80"
+    depends_on:
+      - wp_db
 
-  # ==========================================
-  # 4. DJANGO CRM (Port 8003)
-  # ==========================================
-  django-crm:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/django-crm
-      dockerfile: Dockerfile
-    container_name: bizosaas-django-crm-staging
-    ports:
-      - "8003:8000"
+  wp_db:
+    image: mysql:8.0
+    restart: unless-stopped
+    volumes:
+      - wp_data_v3:/var/lib/mysql
     environment:
-      - DJANGO_SETTINGS_MODULE=crm_project.settings.production
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/4
-      - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
-      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
-      - DEBUG=False
-      - PYTHONPATH=/app
+      MYSQL_ROOT_PASSWORD: ${CMS_DB_PASSWORD:-password}
+      MYSQL_DATABASE: ${CMS_DB_NAME:-bizoholic_cms}
     networks:
       - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # ==========================================
-  # 5. BUSINESS DIRECTORY BACKEND (Port 8004) - FIXED
-  # ==========================================
-  # FIX: Updated pydantic-settings to >=2.10.1 in GitHub repository
-  business-directory-backend:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/business-directory
-      dockerfile: Dockerfile
-    container_name: bizosaas-business-directory-staging
-    ports:
-      - "8004:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/5
-      - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
-      - ENVIRONMENT=staging
-      - LOG_LEVEL=INFO
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # 6. CORELDOVE BACKEND (Port 8005)
-  # ==========================================
-  coreldove-backend:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas/ecommerce/services/coreldove-backend
-      dockerfile: Dockerfile
-    container_name: bizosaas-coreldove-backend-staging
-    ports:
-      - "8005:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/6
-      - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
-      - SECRET_KEY=staging-secret-key-coreldove-bizosaas-2025
-      - ENVIRONMENT=staging
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # 7. AUTHENTICATION SERVICE (Port 8006)
-  # ==========================================
-  auth-service:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/auth
-      dockerfile: Dockerfile
-    container_name: bizosaas-auth-service-staging
-    ports:
-      - "8006:8006"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/10
-      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
-      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
-      - ENVIRONMENT=staging
-      - PORT=8006
-      - ALLOWED_ORIGINS=*
-      - LOG_LEVEL=INFO
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # 8. TEMPORAL INTEGRATION (Port 8007) - MOVED TO INFRASTRUCTURE
-  # ==========================================
-  # NOTE: Temporal Server and Temporal Integration are part of infrastructure project
-  # They should NOT be duplicated in backend services
-  # Temporal is already running in bizosaas_infrastructure_staging project
-  # temporal-integration:
-  #   build:
-  #     context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/temporal
-  #     dockerfile: Dockerfile
-  #   container_name: bizosaas-temporal-integration-staging
-  #   ports:
-  #     - "8007:8000"
-  #   environment:
-  #     - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-  #     - REDIS_URL=redis://194.238.16.237:6380/7
-  #     - TEMPORAL_HOST=bizosaas-temporal-server-staging
-  #     - TEMPORAL_PORT=7233
-  #     - ENVIRONMENT=staging
-  #   networks:
-  #     - dokploy-network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-
-  # ==========================================
-  # 9. AI AGENTS (Port 8008)
-  # ==========================================
-  ai-agents:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/ai-agents
-      dockerfile: Dockerfile
-    container_name: bizosaas-ai-agents-staging
-    ports:
-      - "8008:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/8
-      - BRAIN_API_URL=http://bizosaas-brain-staging:8001
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ENVIRONMENT=staging
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # 10. AMAZON SOURCING (Port 8009)
-  # ==========================================
-  amazon-sourcing:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/amazon-sourcing
-      dockerfile: Dockerfile
-    container_name: bizosaas-amazon-sourcing-staging
-    ports:
-      - "8009:8000"
-    environment:
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
-      - REDIS_URL=redis://194.238.16.237:6380/9
-      - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
-      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-}
-      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-}
-      - ENVIRONMENT=staging
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 networks:
+  brain-network:
+    external: true
+    name: brain-network
   dokploy-network:
     external: true
+    name: dokploy-network
 
-# ==================================================
-# DEPLOYMENT FIX SUMMARY:
-# ==================================================
-#
-# ISSUE IDENTIFIED: PostgreSQL and Redis connection strings incorrect
-# - Old config: Used Docker DNS names (bizosaas-postgres-staging:5432)
-# - Reality: Services run directly on VPS host (194.238.16.237:5433)
-# - Fix: Updated all DATABASE_URL and REDIS_URL to use VPS IP and external ports
-#
-# CONNECTION STRINGS UPDATED:
-# - PostgreSQL: 194.238.16.237:5433 (was bizosaas-postgres-staging:5432)
-# - Redis: 194.238.16.237:6380 (was bizosaas-redis-staging:6379)
-# - Temporal: Still uses Docker DNS (bizosaas-temporal-server-staging:7233)
-#
-# SERVICES UPDATED (All 10):
-# 1. Saleor API (Port 8000)
-# 2. Brain API (Port 8001)
-# 3. Wagtail CMS (Port 8002)
-# 4. Django CRM (Port 8003)
-# 5. Business Directory (Port 8004)
-# 6. CorelDove Backend (Port 8005)
-# 7. Auth Service (Port 8006)
-# 8. Temporal Integration (Port 8007)
-# 9. AI Agents (Port 8008)
-# 10. Amazon Sourcing (Port 8009)
-#
-# DEPLOYMENT INSTRUCTIONS:
-# 1. In Dokploy, update the backend project compose file
-# 2. Paste this entire configuration
-# 3. Click "Deploy" to rebuild with correct connection strings
-# 4. All services should now connect to VPS databases successfully
-#
-# VERIFICATION COMMANDS (run on VPS):
-# - Test PostgreSQL: psql -h 194.238.16.237 -p 5433 -U admin -d bizosaas_staging
-# - Test Redis: redis-cli -h 194.238.16.237 -p 6380 ping
-# - Check container logs: docker logs bizosaas-brain-staging
-#
-# ==================================================
+volumes:
+  bizosaas-data:
+    external: true
+  wp_data_v3:
+    external: true
