@@ -1,1 +1,0 @@
-# QuantTrade API Routes

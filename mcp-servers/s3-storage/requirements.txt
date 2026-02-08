@@ -1,8 +1,0 @@
-mcp
-boto3
-python-dotenv
-httpx
-
-starlette
-uvicorn
-sse-starlette

@@ -1,8 +1,0 @@
-mcp
-google-ads
-python-dotenv
-httpx
-
-starlette
-uvicorn
-sse-starlette

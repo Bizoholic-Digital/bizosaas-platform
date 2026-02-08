@@ -1,7 +1,0 @@
-mcp
-PyGithub
-python-dotenv
-httpx
-starlette
-uvicorn
-sse-starlette

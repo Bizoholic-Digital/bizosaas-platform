@@ -1,1 +1,0 @@
-# QuantTrade CrewAI Trading Agents
