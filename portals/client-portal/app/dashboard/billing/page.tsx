@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { CreditCard, Download, Plus, RefreshCw, AlertCircle } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
-import { OTPChallenge } from "@/components/security/otp-challenge"
+import { MFAChallenge } from "@/components/security/mfa-challenge"
 
 interface Transaction {
     id: string
@@ -24,7 +24,7 @@ export default function BillingPage() {
     const [balance, setBalance] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
     const [transactions, setTransactions] = useState<Transaction[]>([])
-    const [isOTPChallengeOpen, setIsOTPChallengeOpen] = useState(false)
+    const [isMFAChallengeOpen, setIsMFAChallengeOpen] = useState(false)
 
     useEffect(() => {
         // Simulate fetching data
@@ -45,22 +45,22 @@ export default function BillingPage() {
     }, [])
 
     const handleTopUp = () => {
-        setIsOTPChallengeOpen(true)
+        setIsMFAChallengeOpen(true)
     }
 
-    const onOTPSuccess = () => {
+    const onMFASuccess = () => {
         toast({
-            title: "Redirecting to Payment",
-            description: "Initiating secure checkout session...",
+            title: "Authorization Verified",
+            description: "Initiating secure wallet recharge...",
         })
     }
 
     return (
         <div className="container mx-auto py-10 space-y-8">
-            <OTPChallenge
-                isOpen={isOTPChallengeOpen}
-                onClose={() => setIsOTPChallengeOpen(false)}
-                onSuccess={onOTPSuccess}
+            <MFAChallenge
+                isOpen={isMFAChallengeOpen}
+                onClose={() => setIsMFAChallengeOpen(false)}
+                onSuccess={onMFASuccess}
                 actionLabel="Wallet Top-up"
                 actionSeverity="warning"
             />
