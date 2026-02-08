@@ -1,21 +1,22 @@
 services:
   wagtail-cms:
-    image: bizosaas/wagtail-cms:latest
+    build:
+      context: ./wagtail-build
     container_name: wagtail-cms-8006
     ports:
       - "8006:8000"
     environment:
-      - DATABASE_URL=postgresql://admin:securepassword@bizosaas-postgres:5432/bizosaas
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/wagtail_db?sslmode=require
       - REDIS_URL=redis://bizosaas-redis:6379/2
       - SECRET_KEY=wagtail-secret-key-production
       - DEBUG=false
-      - ALLOWED_HOSTS=localhost,127.0.0.1,wagtail-cms,cms.bizoholic.net,*.bizosaas.local
+      - ALLOWED_HOSTS=localhost,127.0.0.1,wagtail-cms,wagtail.bizoholic.net,*.bizosaas.local
     restart: unless-stopped
     networks:
       - dokploy-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wagtail.rule=Host(`cms.bizoholic.net`)"
+      - "traefik.http.routers.wagtail.rule=Host(`wagtail.bizoholic.net`)"
       - "traefik.http.routers.wagtail.entrypoints=websecure"
       - "traefik.http.routers.wagtail.tls=true"
       - "traefik.http.routers.wagtail.tls.certresolver=letsencrypt"
