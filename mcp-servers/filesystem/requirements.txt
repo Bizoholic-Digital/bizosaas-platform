@@ -1,0 +1,6 @@
+mcp
+python-dotenv
+
+starlette
+uvicorn
+sse-starlette

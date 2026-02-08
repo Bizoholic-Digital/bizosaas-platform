@@ -1,0 +1,61 @@
+services:
+  postiz-postgres:
+    image: postgres:14-alpine
+    container_name: postiz-postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postiz-db-data:/var/lib/postgresql/data
+    networks:
+      - dokploy-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postiz" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postiz-redis:
+    image: redis:7-alpine
+    container_name: postiz-redis
+    restart: always
+    networks:
+      - dokploy-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postiz-app:
+    image: ghcr.io/gitroomhq/postiz-app:latest
+    container_name: postiz-app
+    restart: always
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+      postiz-redis:
+        condition: service_healthy
+    volumes:
+      - postiz-uploads:/uploads
+    networks:
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.postiz.rule=Host(`postiz.bizoholic.net`)"
+      - "traefik.http.routers.postiz.entrypoints=websecure"
+      - "traefik.http.routers.postiz.tls=true"
+      - "traefik.http.routers.postiz.tls.certresolver=letsencrypt"
+      - "traefik.http.services.postiz.loadbalancer.server.port=5000"
+      - "traefik.docker.network=dokploy-network"
+
+volumes:
+  postiz-db-data:
+  postiz-uploads:
+
+
+networks:
+  dokploy-network:
+    external: true

@@ -1,186 +1,35 @@
-# BizOSaaS Infrastructure Project - STAGING Environment
-# 3 Core Infrastructure containers for staging deployment
-
+version: "3.8"
 services:
-  # ==========================================
-  # POSTGRESQL DATABASE
-  # Multi-tenant database with pgvector
-  # ==========================================
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: bizosaas-postgres-staging
-    ports:
-      - "5433:5432"
-    environment:
-      - POSTGRES_DB=bizosaas_staging
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
-    volumes:
-      - postgres_staging_data:/var/lib/postgresql/data
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas_staging"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # REDIS CACHE
-  # High-performance caching and sessions
-  # ==========================================
-  redis:
-    image: redis:7-alpine
-    container_name: bizosaas-redis-staging
-    ports:
-      - "6380:6379"
-    command: redis-server --appendonly yes --replica-read-only no
-    volumes:
-      - redis_staging_data:/data
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # HASHICORP VAULT
-  # Secrets management
-  # ==========================================
   vault:
-    image: hashicorp/vault:1.15
-    container_name: bizosaas-vault-staging
-    ports:
-      - "8201:8200"
-    environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=staging-root-token-bizosaas-2025
-      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
-      - VAULT_ADDR=http://0.0.0.0:8200
+    image: hashicorp/vault:latest
+    container_name: vault
     cap_add:
       - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN_ID:-hvs.REpC92zP7vH29X04y1vX4Wn}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://127.0.0.1:8200
+    command: server -dev -dev-root-token-id=${VAULT_DEV_ROOT_TOKEN_ID:-hvs.REpC92zP7vH29X04y1vX4Wn} -dev-listen-address=0.0.0.0:8200
+    ports:
+      - "8200:8200"
     volumes:
-      - vault_staging_data:/vault/data
+      - vault-data:/vault/file
     networks:
       - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.vault-staging.rule=Host(`vault.bizoholic.net`)
+      - traefik.http.routers.vault-staging.entrypoints=websecure
+      - traefik.http.routers.vault-staging.tls.certresolver=letsencrypt
+      - traefik.http.services.vault-staging.loadbalancer.server.port=8200
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "vault", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================
-  # TEMPORAL SERVER
-  # Workflow orchestration engine
-  # ==========================================
-  temporal-server:
-    image: temporalio/auto-setup:1.22.0
-    container_name: bizosaas-temporal-server-staging
-    ports:
-      - "7234:7233"
-    environment:
-      - DB=postgresql
-      - DB_PORT=5432
-      - POSTGRES_USER=admin
-      - POSTGRES_PWD=BizOSaaS2025!StagingDB
-      - POSTGRES_SEEDS=bizosaas-postgres-staging
-      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    depends_on:
-      - postgres
-
-  # ==========================================
-  # TEMPORAL UI
-  # Workflow management interface
-  # ==========================================
-  temporal-ui:
-    image: temporalio/ui:2.21.0
-    container_name: bizosaas-temporal-ui-staging
-    ports:
-      - "8083:8080"
-    environment:
-      - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:8083
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    depends_on:
-      - temporal-server
-
-  # ==========================================
-  # APACHE SUPERSET
-  # Analytics and Business Intelligence
-  # ==========================================
-  superset:
-    image: ghcr.io/bizoholic-digital/apache-superset:staging
-    container_name: bizosaas-superset-staging
-    ports:
-      - "8088:8088"
-    environment:
-      # Core Configuration
-      - SUPERSET_CONFIG_PATH=/app/pythonpath/superset_config.py
-      - SUPERSET_SECRET_KEY=staging-secret-key-superset-bizosaas-2025
-      - SUPERSET_ADMIN_PASSWORD=Bizoholic2024Admin
-      # Database Configuration
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
-      - POSTGRES_HOST=bizosaas-postgres-staging
-      - POSTGRES_PORT=5432
-      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
-      # Redis Configuration
-      - REDIS_HOST=bizosaas-redis-staging
-      - REDIS_PORT=6379
-      - REDIS_URL=redis://bizosaas-redis-staging:6379/2
-      # BizOSaaS Integration
-      - BIZOSAAS_BRAIN_API_URL=http://bizosaas-brain-staging:8001
-      - DEFAULT_TENANT_ID=bizosaas
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8088/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
-    volumes:
-      - superset_home:/app/superset_home
-
-volumes:
-  superset_home:
-    driver: local
-  postgres_staging_data:
-    driver: local
-  redis_staging_data:
-    driver: local
-  vault_staging_data:
-    driver: local
 
 networks:
   dokploy-network:
     external: true
+    name: dokploy-network
 
-# ==================================================
-# INFRASTRUCTURE PROJECT SUMMARY:
-# ==================================================
-# Container Count: 6 (complete infrastructure + analytics)
-# Purpose: Complete infrastructure for staging environment
-# External Access: PostgreSQL (5433), Redis (6380), Vault (8201), Temporal (7234), Temporal UI (8083), Superset (8088)
-# Dependencies: None (foundation layer)
-# Services:
-#   - PostgreSQL with pgvector
-#   - Redis cache
-#   - Vault secrets management
-#   - Temporal Server (workflow orchestration)
-#   - Temporal UI (workflow management interface)
-#   - Apache Superset (analytics and BI dashboards)
-# ==================================================
+volumes:
+  vault-data:
+    name: vault-data-staging

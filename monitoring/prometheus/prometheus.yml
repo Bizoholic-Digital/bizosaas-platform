@@ -1,3 +1,116 @@
+<<<<<<< HEAD
+# Prometheus Configuration for BizOSaaS Platform
+# Monitors all brands: BizOholic, CorelDove, ThrillRing, QuantTrade
+
+global:
+  scrape_interval: 15s      # Scrape targets every 15 seconds
+  evaluation_interval: 15s   # Evaluate rules every 15 seconds
+  external_labels:
+    platform: 'bizosaas'
+    environment: 'production'
+
+# Alertmanager configuration (optional)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "alerts/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # ==========================================
+  # BRAND: BizOholic (E-commerce - Saleor)
+  # ==========================================
+  - job_name: 'bizoholic-api'
+    static_configs:
+      - targets: ['saleor-platform-api-1:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: brand
+        replacement: 'bizoholic'
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'api'
+
+  - job_name: 'bizoholic-worker'
+    static_configs:
+      - targets: ['saleor-platform-worker-1:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: brand
+        replacement: 'bizoholic'
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'worker'
+
+  # ==========================================
+  # BRAND: CorelDove (Travel Platform)
+  # ==========================================
+  - job_name: 'coreldove-api'
+    static_configs:
+      - targets: ['coreldove-api:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: brand
+        replacement: 'coreldove'
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'api'
+
+  # ==========================================
+  # BRAND: ThrillRing (Events Platform)
+  # ==========================================
+  - job_name: 'thrillring-api'
+    static_configs:
+      - targets: ['thrillring-api:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: brand
+        replacement: 'thrillring'
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'api'
+
+  # ==========================================
+  # BRAND: QuantTrade (Trading Platform)
+  # ==========================================
+  - job_name: 'quanttrade-backend'
+    static_configs:
+      - targets: ['quanttrade-backend:8012']
+    metrics_path: '/metrics'
+    scrape_interval: 10s  # More frequent for trading
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: brand
+        replacement: 'quanttrade'
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'backend'
+
+  # ==========================================
+  # INFRASTRUCTURE: Databases
+  # ==========================================
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['bizosaas-postgres-unified:5432']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'postgres'
+=======
 # Prometheus Configuration for BizOSaaS Platform Monitoring
 global:
   scrape_interval: 15s
@@ -164,10 +277,67 @@ scrape_configs:
     metrics_path: /
     scheme: http
     timeout: 5s
+>>>>>>> 689624bdacbb85634f44c01400300bc3ce37e57e
 
   - job_name: 'redis'
     static_configs:
       - targets: ['bizosaas-redis-unified:6379']
+<<<<<<< HEAD
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'redis'
+
+  # ==========================================
+  # INFRASTRUCTURE: Orchestration
+  # ==========================================
+  - job_name: 'temporal'
+    static_configs:
+      - targets: ['bizosaas-temporal:7233']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'temporal'
+
+  # ==========================================
+  # INFRASTRUCTURE: Search
+  # ==========================================
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['bizosaas-elasticsearch-9200:9200']
+    metrics_path: '/_prometheus/metrics'
+    scrape_interval: 30s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'elasticsearch'
+
+  # ==========================================
+  # INFRASTRUCTURE: Brain Gateway (Central Agent Orchestrator)
+  # ==========================================
+  - job_name: 'brain-gateway'
+    static_configs:
+      - targets: ['bizosaas-brain-gateway:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: service
+        replacement: 'brain-gateway'
+
+  # ==========================================
+  # INFRASTRUCTURE: Prometheus Self-Monitoring
+  # ==========================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+=======
     scrape_interval: 30s
     timeout: 5s
 
@@ -204,3 +374,4 @@ scrape_configs:
 #       max_samples_per_send: 1000
 #       max_shards: 200
 #       capacity: 2500
+>>>>>>> 689624bdacbb85634f44c01400300bc3ce37e57e

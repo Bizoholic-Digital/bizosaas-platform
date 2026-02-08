@@ -1,315 +1,181 @@
-# 🔗 Dokploy GitHub Integration Guide
+# Dokploy GitHub Integration Guide
 
-## 🎯 OPTIMAL APPROACH: Skip Container Registry, Use Direct GitHub Integration
+## Current Status
+- **Dokploy Version**: Running on KVM2 (194.238.16.237)
+- **Dokploy URL**: https://dk.bizoholic.com
+- **Issue**: GitHub Provider not configured, causing all deployments to fail with "Github Provider not found"
 
-Since pushing to GitHub Container Registry requires special permissions, let's use **Dokploy's built-in GitHub integration** instead. This is actually a **better approach** because:
+## Problem Analysis
 
-✅ **Simpler Setup**: No container registry permissions needed
-✅ **Automated Builds**: Dokploy builds containers from source
-✅ **Live Updates**: Auto-deploy on GitHub commits
-✅ **Better Security**: No manual token management
-✅ **Cost Effective**: No container registry storage costs
+### Root Cause
+Dokploy requires a GitHub provider to be configured before it can clone repositories and deploy compose files. The API endpoints for creating GitHub providers are not exposed in the current Dokploy version, requiring manual UI configuration.
 
----
+### Current Deployment Failures
+All three compose deployments are failing:
+- **Infrastructure** (Compose ID: `UFbl0OAttxVLthzQ3fSn2`)
+- **Backend** (Compose ID: `dg2AbBEXS2BMRcUofPSdo`)
+- **Frontend** (Compose ID: `E9LNOMr4-d5PBk5eh0-Ef`)
 
-## 🔄 REVISED WORKFLOW
+Error: `❌ Github Provider not found`
 
-### **New Simplified Pipeline:**
+## Solution: Manual GitHub Provider Configuration
+
+### Step 1: Access Dokploy UI
+1. Navigate to: https://dk.bizoholic.com
+2. Login with your Dokploy credentials
+
+### Step 2: Configure GitHub Provider
+1. Go to **Settings** → **Git Providers**
+2. Click **Add GitHub Provider**
+3. Choose one of the following methods:
+
+#### Option A: Personal Access Token (Recommended for Testing)
 ```
-Local Containers → GitHub Source Code → Dokploy Builds & Deploys → Staging → Production
+Provider Name: bizosaas-github
+GitHub Token: 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
+GitHub Username: Bizoholic-Digital
 ```
 
-Instead of pushing pre-built containers, we'll:
-1. **Commit your Dockerfiles and source code to GitHub**
-2. **Configure Dokploy to build from GitHub repository**
-3. **Auto-deploy on commits to main/staging branches**
+**Note**: This token needs the following scopes:
+- `repo` (Full control of private repositories)
+- `read:packages`
+- `write:packages`
 
----
+#### Option B: GitHub App (Recommended for Production)
+1. Create a GitHub App at: https://github.com/organizations/Bizoholic-Digital/settings/apps
+2. Configure the app with:
+   - **Repository permissions**:
+     - Contents: Read & write
+     - Metadata: Read-only
+     - Pull requests: Read & write
+   - **Subscribe to events**: Push, Pull request
+3. Install the app to the `bizosaas-platform` repository
+4. In Dokploy, enter:
+   - App ID
+   - Installation ID
+   - Private Key (PEM format)
 
-## 📋 STEP-BY-STEP IMPLEMENTATION
+### Step 3: Verify GitHub Connection
+After adding the provider:
+1. Go to any compose deployment (Infrastructure, Backend, or Frontend)
+2. Check if the GitHub repository is now accessible
+3. Trigger a manual deployment
 
-### **Step 1: Prepare Source Code for GitHub (15 minutes)**
-
-First, let's organize your source code and Dockerfiles:
+### Step 4: Re-trigger Deployments
+Once GitHub provider is configured, re-run the deployment script:
 
 ```bash
-# Check what source code we have
-ls -la n8n/
-ls -la n8n/crewai/
-ls -la n8n/wordpress/
-ls -la n8n/frontend/
+cd /home/alagiri/projects/bizosaas-platform
+./scripts/deploy-to-dokploy-api.sh
 ```
 
-We need to ensure we have:
-- ✅ Dockerfiles for each service
-- ✅ Source code (not just built containers)
-- ✅ Build scripts and dependencies
+Or manually trigger each deployment in Dokploy UI:
+1. Infrastructure: Project `bizosaas-infrastructure-staging` → Compose `infrastructure-staging`
+2. Backend: Project `bizosaas-backend-staging` → Compose `backend-services-staging`
+3. Frontend: Project `bizosaas-frontend-staging` → Compose `frontend-apps-staging`
 
-### **Step 2: Update Dokploy Configurations for GitHub Build (10 minutes)**
+## Alternative: Use Dokploy CLI (If Available)
 
-Instead of using pre-built images, we'll use `build` context pointing to GitHub:
+If Dokploy CLI is installed on the VPS:
 
+```bash
+ssh root@194.238.16.237
+dokploy github create \
+  --name "bizosaas-github" \
+  --token "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" \
+  --username "Bizoholic-Digital"
+```
+
+**Note**: The `dokploy` CLI is not currently installed on the VPS.
+
+## GitHub Actions CI/CD Integration
+
+### Current Workflows
+The repository has the following GitHub Actions workflows:
+- `deploy-admin-dashboard.yml`
+- `deploy-ai-agents.yml`
+- `deploy-brain-gateway.yml`
+- `deploy-business-directory.yml`
+- `deploy-client-portal.yml`
+- `production-readiness-testing.yml`
+- `security-scan.yml`
+
+### Issue with Current Workflows
+The workflows reference an old Dokploy instance (`dk8.bizoholic.com`) and old compose IDs. They need to be updated.
+
+### Required GitHub Secrets
+Ensure these secrets are set in the GitHub repository:
+- `GHCR_TOKEN`: GitHub Container Registry token
+- `DOKPLOY_API_KEY`: `mKgAkCySnrCaAupZYGLiHNNugPRzbsGQZHbcJFMoQSSfdhKUGUPksUuGrWQGWBug`
+- `NEXTAUTH_SECRET`: NextAuth secret key
+- `CLERK_SECRET_KEY`: Clerk secret key
+
+### Update Workflow Files
+The workflows need to be updated to use the new Dokploy instance and compose IDs:
+
+**Old Configuration:**
 ```yaml
-# dokploy-infrastructure-github.yml
-services:
-  postgres:
-    image: pgvector/pgvector:pg16  # External image (OK)
-
-  redis:
-    image: redis:7-alpine  # External image (OK)
-
-  temporal-integration:
-    build:
-      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
-      dockerfile: ai/services/temporal-integration/Dockerfile
-    # Dokploy will build this from GitHub
+curl -X POST "https://dk8.bizoholic.com/api/compose.deploy" \
+  -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+  -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
 ```
 
-### **Step 3: Configure Dokploy Projects with GitHub Integration (20 minutes)**
-
-**In Dokploy Dashboard:**
-
-#### **Project 1: Infrastructure**
-1. **Create Project**: `bizosaas-infrastructure-staging`
-2. **Application Type**: Docker Compose
-3. **Source**: GitHub Repository
-4. **Repository**: `https://github.com/Bizoholic-Digital/bizosaas-platform.git`
-5. **Branch**: `main`
-6. **Compose File Path**: `/dokploy-infrastructure-github.yml`
-7. **Auto Deploy**: ✅ Enable on push to `main`
-
-#### **Project 2: Backend Services**
-1. **Create Project**: `bizosaas-backend-staging`
-2. **Application Type**: Docker Compose
-3. **Source**: GitHub Repository
-4. **Repository**: `https://github.com/Bizoholic-Digital/bizosaas-platform.git`
-5. **Branch**: `main`
-6. **Compose File Path**: `/dokploy-backend-github.yml`
-7. **Auto Deploy**: ✅ Enable on push to `main`
-
-#### **Project 3: Frontend Applications**
-1. **Create Project**: `bizosaas-frontend-staging`
-2. **Application Type**: Docker Compose
-3. **Source**: GitHub Repository
-4. **Repository**: `https://github.com/Bizoholic-Digital/bizosaas-platform.git`
-5. **Branch**: `main`
-6. **Compose File Path**: `/dokploy-frontend-github.yml`
-7. **Auto Deploy**: ✅ Enable on push to `main`
-
-### **Step 4: Set Up Webhooks for Auto-Deployment (5 minutes)**
-
-**GitHub Webhook Configuration:**
-1. **Go to**: GitHub → Repository → Settings → Webhooks
-2. **Add Webhook**:
-   - **Payload URL**: `http://194.238.16.237:3000/api/webhooks/github`
-   - **Content Type**: `application/json`
-   - **Events**: Push events, Pull requests
-   - **Branches**: `main`, `staging`
-
----
-
-## 📁 REQUIRED GITHUB REPOSITORY STRUCTURE
-
-```
-bizosaas-platform/
-├── .github/workflows/          # CI/CD pipelines
-├── dokploy-infrastructure-github.yml  # Infrastructure config
-├── dokploy-backend-github.yml         # Backend config
-├── dokploy-frontend-github.yml        # Frontend config
-├── ai/
-│   ├── services/
-│   │   ├── bizosaas-brain/
-│   │   │   ├── Dockerfile
-│   │   │   ├── requirements.txt
-│   │   │   └── app/
-│   │   ├── temporal-integration/
-│   │   │   ├── Dockerfile
-│   │   │   ├── package.json
-│   │   │   └── src/
-│   │   └── ai-agents/
-│       │   ├── Dockerfile
-│       │   └── ...
-├── frontend/
-│   ├── bizoholic/
-│   │   ├── Dockerfile
-│   │   ├── package.json
-│   │   └── src/
-│   ├── coreldove/
-│   │   ├── Dockerfile
-│   │   └── ...
-│   └── admin-dashboard/
-│       ├── Dockerfile
-│       └── ...
-├── backend/
-│   ├── django-crm/
-│   │   ├── Dockerfile
-│   │   ├── requirements.txt
-│   │   └── ...
-│   ├── directory-api/
-│   │   ├── Dockerfile
-│   │   └── ...
-│   └── wagtail-cms/
-│       ├── Dockerfile
-│       └── ...
-└── scripts/
-    ├── build-all.sh
-    └── deploy.sh
+**New Configuration:**
+```yaml
+curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+  -H "X-API-Key: ${{ secrets.DOKPLOY_API_KEY }}" \
+  -d '{"composeId": "E9LNOMr4-d5PBk5eh0-Ef"}'
 ```
 
----
+## Compose IDs Reference
 
-## 🛠️ DOCKERFILES NEEDED
+### Current Deployments (2026-01-29)
+- **Infrastructure**: `UFbl0OAttxVLthzQ3fSn2`
+- **Backend Services**: `dg2AbBEXS2BMRcUofPSdo`
+- **Frontend Applications**: `E9LNOMr4-d5PBk5eh0-Ef`
 
-Let me check what Dockerfiles you already have and create missing ones:
+### Project IDs
+- **Infrastructure**: `imS9ILN82vjqBzSpAs5A_` (Environment: `fh4wZ4r_Hce4cHsl6H-6W`)
+- **Backend**: `-aElopMBZMcyOjMU4X2TA` (Environment: `rmEK7-cphJvH3fIjQgQp0`)
+- **Frontend**: `PG7s5YVGUMsJKSZvmDore` (Environment: `4DGXVhGjcs8_REfP0Oomc`)
 
-### **Check Existing Dockerfiles:**
+## Troubleshooting
+
+### Check Deployment Logs
 ```bash
-find . -name "Dockerfile" -type f
-find . -name "docker-compose*.yml" -type f
+# Get deployment status
+curl -s -H "X-API-Key: mKgAkCySnrCaAupZYGLiHNNugPRzbsGQZHbcJFMoQSSfdhKUGUPksUuGrWQGWBug" \
+  "https://dk.bizoholic.com/api/compose.one?composeId=UFbl0OAttxVLthzQ3fSn2" | jq '.deployments[0]'
+
+# View logs on VPS
+ssh root@194.238.16.237
+cat /etc/dokploy/logs/compose-*/compose-*-2026-01-29*.log
 ```
 
-### **Create Missing Dockerfiles:**
-
-If missing, we'll need to create Dockerfiles for:
-1. **Brain API** (`ai/services/bizosaas-brain/Dockerfile`)
-2. **Django CRM** (`backend/django-crm/Dockerfile`)
-3. **Bizoholic Frontend** (`frontend/bizoholic/Dockerfile`)
-4. **CorelDove Frontend** (`frontend/coreldove/Dockerfile`)
-5. **Admin Dashboard** (`frontend/admin-dashboard/Dockerfile`)
-6. **Client Portal** (`frontend/client-portal/Dockerfile`)
-
----
-
-## 🚀 AUTOMATED DEPLOYMENT WORKFLOW
-
-### **Development Workflow:**
+### Verify GitHub Token
+Test if the GitHub token is valid:
 ```bash
-# Developer makes changes
-git checkout -b feature/new-feature
-# Make changes to source code
-git add .
-git commit -m "feat: add new feature"
-git push origin feature/new-feature
-
-# Create Pull Request
-# After review and merge to main:
+curl -H "Authorization: token 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" \
+  https://api.github.com/user
 ```
 
-### **Automatic Staging Deployment:**
+### Check Dokploy API Connectivity
 ```bash
-# On merge to main branch:
-1. GitHub webhook triggers Dokploy
-2. Dokploy pulls latest code
-3. Dokploy builds all containers from source
-4. Dokploy deploys to staging environment
-5. Health checks verify deployment
-6. Slack notification sent
+curl -s -H "X-API-Key: mKgAkCySnrCaAupZYGLiHNNugPRzbsGQZHbcJFMoQSSfdhKUGUPksUuGrWQGWBug" \
+  "https://dk.bizoholic.com/api/project.all" | jq '.[].name'
 ```
 
-### **Production Deployment:**
-```bash
-# Manual trigger or on release tag:
-1. Create GitHub release tag
-2. Trigger production deployment
-3. Blue-green deployment to production
-4. Monitor and verify
-```
+## Next Steps
 
----
+1. **Immediate**: Configure GitHub provider in Dokploy UI
+2. **Short-term**: Update GitHub Actions workflows with new compose IDs
+3. **Medium-term**: Set up GitHub App for better security
+4. **Long-term**: Implement automated deployment verification script
 
-## 📊 BENEFITS OF THIS APPROACH
+## Support
 
-### **Simplified Management**
-- ✅ No container registry permissions needed
-- ✅ No manual image pushing required
-- ✅ Dokploy handles all building automatically
-- ✅ Source code is the single source of truth
-
-### **Better Security**
-- ✅ No container registry tokens to manage
-- ✅ Dokploy builds in isolated environment
-- ✅ Source code review before deployment
-- ✅ Audit trail in GitHub
-
-### **Faster Development**
-- ✅ Commit → Auto-deploy in 5-10 minutes
-- ✅ No manual deployment steps
-- ✅ Parallel builds for faster deployment
-- ✅ Easy rollback via GitHub commits
-
-### **Cost Effective**
-- ✅ No GitHub Container Registry costs
-- ✅ No bandwidth costs for pulling large images
-- ✅ Dokploy builds on same server (faster)
-
----
-
-## 🎯 IMMEDIATE ACTION PLAN
-
-### **Next 1 Hour:**
-
-1. **Check Source Code** (10 min):
-   ```bash
-   find . -name "Dockerfile" -type f
-   find . -name "package.json" -type f
-   find . -name "requirements.txt" -type f
-   ```
-
-2. **Create GitHub-Compatible Configs** (20 min):
-   - Update Dokploy configs to use `build` instead of `image`
-   - Point build contexts to GitHub repository
-   - Test configurations locally
-
-3. **Commit to GitHub** (10 min):
-   - Commit all source code and Dockerfiles
-   - Push updated Dokploy configurations
-   - Verify repository structure
-
-4. **Configure Dokploy** (20 min):
-   - Create 3 projects with GitHub integration
-   - Set up auto-deploy webhooks
-   - Test first deployment
-
-### **Result After 1 Hour:**
-- ✅ Automated GitHub → Dokploy → Staging pipeline
-- ✅ All 20 containers deploying from source
-- ✅ Auto-deploy on every commit to main
-- ✅ Ready for production deployment
-
----
-
-## 🔄 COMPARISON: Container Registry vs GitHub Build
-
-| Aspect | Container Registry | GitHub Build |
-|--------|-------------------|--------------|
-| **Setup Complexity** | High (tokens, permissions) | Low (just connect repo) |
-| **Build Time** | Fast (pre-built) | Medium (builds on deploy) |
-| **Storage Costs** | High (registry storage) | Low (no registry needed) |
-| **Security** | Complex (token management) | Simple (GitHub integration) |
-| **Maintenance** | High (manage images) | Low (automatic) |
-| **Team Collaboration** | Complex (image versions) | Simple (code reviews) |
-| **Rollback** | Complex (image tags) | Simple (git commits) |
-
-**Winner: GitHub Build Approach** 🏆
-
----
-
-## ✅ DECISION
-
-**Let's proceed with the GitHub Build approach!**
-
-This is actually the **better long-term solution** because:
-1. ✅ Simpler to set up and maintain
-2. ✅ More secure (no registry tokens)
-3. ✅ Better for team collaboration
-4. ✅ Industry standard for CI/CD
-5. ✅ Cost effective
-6. ✅ Easier rollbacks and monitoring
-
-**Ready to implement?** Let's start by checking your source code and creating the GitHub-compatible Dokploy configurations!
-
----
-
-*Generated on October 11, 2025*
-*Dokploy GitHub Integration Strategy*
-*🤖 Generated with [Claude Code](https://claude.com/claude-code)*
+If issues persist:
+1. Check Dokploy logs: `docker logs dokploy.1.i9nojxbwynu0tfpfv6ni98u1z`
+2. Verify network connectivity between Dokploy and GitHub
+3. Ensure the GitHub token has not expired
+4. Contact Dokploy support or check documentation at https://docs.dokploy.com

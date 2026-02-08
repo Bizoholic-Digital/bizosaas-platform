@@ -1,3 +1,26 @@
+<<<<<<< HEAD
+route:
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 1h
+  receiver: 'web-notifer'
+
+receivers:
+- name: 'web-notifer'
+  webhook_configs:
+  - url: 'http://brain-gateway:8000/api/brain/metrics/alert' # Internal endpoint for in-app notifications
+    send_resolved: true
+
+# Example Email configuration (commented out)
+# - name: 'email-admin'
+#   email_configs:
+#   - to: 'admin@bizosaas.com'
+#     from: 'alerts@bizosaas.com'
+#     smarthost: 'smtp.gmail.com:587'
+#     auth_username: 'alerts@bizosaas.com'
+#     auth_password: 'app-password'
+=======
 # AlertManager configuration for BizOSaaS Platform
 global:
   smtp_smarthost: 'localhost:587'
@@ -244,3 +267,4 @@ inhibit_rules:
   target_match:
     category: 'containers'
   equal: ['instance']
+>>>>>>> 689624bdacbb85634f44c01400300bc3ce37e57e

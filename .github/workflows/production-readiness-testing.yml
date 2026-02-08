@@ -1,0 +1,394 @@
+name: Production Readiness Testing
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [staging, main]
+  # pull_request:
+  #   branches: [main]
+  # schedule:
+  #   - cron: '0 2 * * *'  # Daily at 2 AM
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+
+permissions:
+  contents: read
+  security-events: write
+  actions: write
+  checks: write
+
+jobs:
+  # Unit Tests
+  unit-tests-backend:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          cd bizosaas-brain-core/brain-gateway
+          pip install -r requirements.txt
+          # pytest and others already in requirements.txt
+      
+      - name: Run unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/bizosaas-brain-core/brain-gateway
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          VECTOR_DB_URL: postgresql://test:test@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+          DISABLE_AUTH: "true"
+        run: |
+          cd testing/backend
+          pytest test_brain_gateway.py -v --cov=app --cov-report=xml --cov-report=term
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        with:
+          files: ./testing/backend/coverage.xml
+          flags: backend-unit
+          name: backend-unit-coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  unit-tests-frontend:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        portal: [client-portal, admin-dashboard]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: portals/${{ matrix.portal }}/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd portals/${{ matrix.portal }}
+          npm ci --legacy-peer-deps
+      
+      - name: Run tests
+        run: |
+          cd portals/${{ matrix.portal }}
+          npm run test -- --coverage
+      
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          files: ./portals/${{ matrix.portal }}/coverage/coverage-final.json
+          flags: ${{ matrix.portal }}-unit
+          name: ${{ matrix.portal }}-coverage
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests-backend, unit-tests-frontend]
+    
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          cd bizosaas-brain-core/brain-gateway
+          pip install -r requirements.txt
+          # Already in requirements.txt
+      
+      - name: Run integration tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/bizosaas-brain-core/brain-gateway
+          DATABASE_URL: postgresql://test:test@localhost:5432/test_db
+          VECTOR_DB_URL: postgresql://test:test@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379/0
+          DISABLE_AUTH: "true"
+        run: |
+          cd testing/backend
+          pytest test_integration.py -v
+
+  # E2E Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Install Playwright
+        run: |
+          cd testing/playwright
+          npm ci
+          npx playwright install --with-deps
+      
+      - name: Start services
+        run: |
+          docker compose -f docker-compose.staging.yml up -d
+          echo "Waiting for services to be ready..."
+          max_retries=20
+          count=0
+          until curl -s http://localhost:3003 > /dev/null || [ $count -eq $max_retries ]; do
+            echo "Waiting for Client Portal (http://localhost:3003)..."
+            sleep 10
+            count=$((count + 1))
+          done
+          count=0
+          until curl -s http://localhost:3004 > /dev/null || [ $count -eq $max_retries ]; do
+            echo "Waiting for Admin Dashboard (http://localhost:3004)..."
+            sleep 10
+            count=$((count + 1))
+          done
+          count=0
+          until curl -s http://localhost:8000/health > /dev/null || [ $count -eq $max_retries ]; do
+            echo "Waiting for Brain Gateway (http://localhost:8000)..."
+            sleep 10
+            count=$((count + 1))
+          done
+          docker compose -f docker-compose.staging.yml ps
+          docker compose -f docker-compose.staging.yml logs --tail=20
+      
+      - name: Run E2E tests
+        env:
+          BASE_URL: http://localhost:3003
+          CLIENT_PORTAL_URL: http://localhost:3003
+          ADMIN_DASHBOARD_URL: http://localhost:3004
+          TEST_CLIENT_EMAIL: ${{ secrets.TEST_CLIENT_EMAIL }}
+          TEST_CLIENT_PASSWORD: ${{ secrets.TEST_CLIENT_PASSWORD }}
+          TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+        run: |
+          cd testing/playwright
+          npx playwright test
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: testing/playwright/reports/
+          retention-days: 30
+      
+      - name: Upload test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-videos
+          path: testing/playwright/test-results/
+          retention-days: 7
+
+  # Security Tests
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    permissions:
+      security-events: write
+      contents: read
+      actions: write
+      checks: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+      
+      - name: Start services
+        run: |
+          docker compose -f docker-compose.staging.yml up -d
+          sleep 120
+          docker compose -f docker-compose.staging.yml ps
+
+      - name: OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: 'http://localhost:3003'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+          allow_issue_writing: false
+          fail_action: false
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      
+      - name: Start services
+        run: |
+          docker compose -f docker-compose.staging.yml up -d
+          sleep 60
+      
+      - name: Run performance tests
+        env:
+          BASE_URL: http://localhost:3003
+          API_URL: http://localhost:8001
+        run: |
+          cd testing/scripts
+          ./run-performance-tests.sh
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: testing/reports/performance/
+
+  # Accessibility Tests
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Start services
+        run: |
+          docker compose -f docker-compose.staging.yml up -d
+          sleep 60
+      
+      - name: Run accessibility tests
+        env:
+          BASE_URL: http://localhost:3003
+        run: |
+          cd testing/scripts
+          ./run-accessibility-tests.sh
+      
+      - name: Upload accessibility results
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-results
+          path: testing/reports/accessibility/
+
+  # Test Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests-backend, unit-tests-frontend, integration-tests, e2e-tests, security-tests, performance-tests, accessibility-tests]
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Unit Tests | ${{ needs.unit-tests-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Unit Tests | ${{ needs.unit-tests-frontend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration Tests | ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| E2E Tests | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Tests | ${{ needs.security-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance Tests | ${{ needs.performance-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Accessibility Tests | ${{ needs.accessibility-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Check if all tests passed
+        if: |
+          needs.unit-tests-backend.result != 'success' ||
+          needs.unit-tests-frontend.result != 'success' ||
+          needs.integration-tests.result != 'success' ||
+          needs.e2e-tests.result != 'success' ||
+          needs.security-tests.result != 'success'
+        run: |
+          echo "❌ Some tests failed. Please review the results above."
+          exit 1

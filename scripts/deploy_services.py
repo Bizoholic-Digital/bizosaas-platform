@@ -39,11 +39,16 @@ def deploy_service(service):
         print(f"❌ File not found: {service['file']}")
         return
 
-    # Update Compose
+    # Update Compose to use GitHub Source
     update_url = f"{BASE_URL}/compose.update"
     payload = {
         "composeId": service['composeId'],
-        "composeFile": compose_content
+        "composeFile": compose_content, # Still sending file content as fallback/reference, but primary source is git
+        "sourceType": "github",
+        "repository": "bizosaas-platform",
+        "owner": "Bizoholic-Digital",
+        "branch": "staging",
+        "composePath": f"./{service['file']}" # Important: Path relative to repo root
     }
     
     try:

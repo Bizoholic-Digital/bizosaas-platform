@@ -1,0 +1,128 @@
+services:
+  # Bizoholic Frontend
+  bizoholic-frontend:
+    build:
+      context: ./bizoholic/frontend
+      dockerfile: Dockerfile.production
+    container_name: bizoholic-frontend-3001
+    ports:
+      - "3001:3000"
+    environment:
+      - PORT=3000
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_WAGTAIL_URL=https://api.bizoholic.net
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+    networks:
+      - bizosaas-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-frontend.rule=Host(`bizoholic.com`) || Host(`www.bizoholic.com`) || Host(`portal.bizoholic.net`)"
+      - "traefik.http.routers.bizoholic-frontend.entrypoints=websecure"
+      - "traefik.http.routers.bizoholic-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-frontend.loadbalancer.server.port=3000"
+
+  # CoreLDove Frontend
+  coreldove-frontend:
+    build: ./coreldove/frontend
+    container_name: coreldove-frontend-3002
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - NEXT_PUBLIC_API_URL=http://brain-gateway:8001
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+
+  # CoreLDove Backend
+  coreldove-backend:
+    build: ./coreldove/backend
+    container_name: coreldove-backend-8005
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - SALEOR_URL=http://saleor:8010
+    networks:
+      - bizosaas-network
+
+  # ThrillRing Frontend
+  thrillring-frontend:
+    build: ./thrillring/frontend
+    container_name: thrillring-gaming-3007
+    ports:
+      - "3007:3007"
+    environment:
+      - PORT=3007
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
+    networks:
+      - bizosaas-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.thrillring-frontend.rule=Host(`thrillring.com`) || Host(`www.thrillring.com`)"
+      - "traefik.http.routers.thrillring-frontend.entrypoints=websecure"
+      - "traefik.http.routers.thrillring-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.thrillring-frontend.loadbalancer.server.port=3007"
+
+  # QuantTrade Frontend
+  quanttrade-frontend:
+    build: ./quanttrade/frontend
+    container_name: quanttrade-frontend-3006
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - NEXT_PUBLIC_API_URL=http://quanttrade-backend:8006
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.2'
+
+  # QuantTrade Backend
+  quanttrade-backend:
+    build: ./quanttrade/backend
+    container_name: quanttrade-backend-8006
+    ports:
+      - "8006:8006"
+    environment:
+      - PORT=8006
+      - POSTGRES_HOST=postgres
+    networks:
+      - bizosaas-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.3'
+
+networks:
+  bizosaas-network:
+    external: true
+  dokploy-network:
+    external: true
+    name: dokploy-network

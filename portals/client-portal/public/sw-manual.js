@@ -1,0 +1,17 @@
+/**
+ * MANUAL SERVICE WORKER KILL SWITCH
+ */
+
+self.addEventListener('install', (e) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then((names) => {
+      for (let name of names) caches.delete(name);
+    }).then(() => {
+      return self.registration.unregister();
+    })
+  );
+});

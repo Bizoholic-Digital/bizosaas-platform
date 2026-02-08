@@ -798,6 +798,85 @@ class AIContentTemplate(ClusterableModel):
     
     def __str__(self):
         return f"{self.name} ({self.content_type})"
+
+# Gaming Wiki Components
+class PlayerWikiPage(TenantAwarePage):
+    """Wiki-style personal profile for human players"""
+    full_name = models.CharField(max_length=255, blank=True)
+    nickname = models.CharField(max_length=100)
+    biography = RichTextField(blank=True)
+    
+    # Personal Info (Wiki style)
+    personal_milestones = RichTextField(blank=True)
+    spouse_name = models.CharField(max_length=255, blank=True)
+    kids_names = models.JSONField(default=list, blank=True, help_text="List of names")
+    
+    # News & Media
+    news_mentions = StreamField([
+        ('link', blocks.StructBlock([
+            ('title', blocks.CharBlock()),
+            ('url', blocks.URLBlock()),
+            ('date', blocks.DateBlock()),
+        ])),
+    ], blank=True)
+    
+    avatar = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True, blank=True, on_delete=models.SET_NULL, related_name='+'
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel('full_name'),
+        FieldPanel('nickname'),
+        FieldPanel('biography'),
+        MultiFieldPanel([
+            FieldPanel('spouse_name'),
+            FieldPanel('kids_names'),
+            FieldPanel('personal_milestones'),
+        ], heading="Personal Wiki Data"),
+        FieldPanel('news_mentions'),
+        FieldPanel('avatar'),
+    ]
+
+    api_fields = [
+        APIField('full_name'), APIField('nickname'), APIField('biography'),
+        APIField('spouse_name'), APIField('kids_names'), APIField('news_mentions'),
+        APIField('tenant'),
+    ]
+
+class GameWikiPage(TenantAwarePage):
+    """Encyclopedia page for a specific game"""
+    game_title = models.CharField(max_length=255)
+    description = RichTextField()
+    engine = models.CharField(max_length=100, blank=True)
+    release_date = models.DateField(null=True, blank=True)
+    
+    wiki_data = StreamField([
+        ('section', blocks.StructBlock([
+            ('heading', blocks.CharBlock()),
+            ('content', blocks.RichTextBlock()),
+        ])),
+    ], blank=True)
+    
+    content_panels = Page.content_panels + [
+        FieldPanel('game_title'),
+        FieldPanel('description'),
+        FieldPanel('engine'),
+        FieldPanel('release_date'),
+        FieldPanel('wiki_data'),
+    ]
+
+class CompanyWikiPage(TenantAwarePage):
+    """Wiki for Game Production Companies and Developers"""
+    company_name = models.CharField(max_length=255)
+    headquarters = models.CharField(max_length=255, blank=True)
+    history = RichTextField(blank=True)
+    
+    content_panels = Page.content_panels + [
+        FieldPanel('company_name'),
+        FieldPanel('headquarters'),
+        FieldPanel('history'),
+    ]
     
     class Meta:
         verbose_name = 'AI Content Template'

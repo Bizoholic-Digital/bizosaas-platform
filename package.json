@@ -1,4 +1,39 @@
 {
+<<<<<<< HEAD
+  "name": "bizosaas-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BizOSaaS Platform - Multi-tenant SaaS with 7 frontends and Brain Gateway backend",
+  "workspaces": [
+    "packages/*",
+    "brands/*",
+    "portals/*",
+    "shared/services/*"
+  ],
+  "scripts": {
+    "build:packages": "npm run build -w packages/ui-components -w packages/auth -w packages/api-client -w packages/hooks -w packages/utils -w packages/animated-components",
+    "build:bizoholic": "npm run build -w brands/bizoholic/frontend",
+    "build:thrillring": "npm run build -w brands/thrillring/frontend",
+    "build:directory": "npm run build -w portals/business-directory/business-directory",
+    "build:admin": "npm run build -w portals/admin-dashboard",
+    "build:client": "npm run build -w portals/client-portal",
+    "dev:bizoholic": "npm run dev -w brands/bizoholic/frontend",
+    "test:backend": "export PYTHONPATH=$PYTHONPATH:$(pwd)/bizosaas-brain-core/brain-gateway && ./.venv/bin/python3 -m pytest testing/backend/test_brain_gateway.py",
+    "test:e2e": "cd testing && npx playwright test"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "playwright": "^1.57.0"
+  },
+  "dependencies": {
+    "@dokploy/cli": "^0.2.8"
+  }
+}
+=======
   "name": "bizosaas-ux-testing-framework",
   "version": "1.0.0",
   "description": "Comprehensive UX Testing Framework for BizOSaaS Platform Ecosystem",
@@ -25,3 +60,4 @@
   "author": "BizOSaaS UX Research Team",
   "license": "MIT"
 }
+>>>>>>> 689624bdacbb85634f44c01400300bc3ce37e57e

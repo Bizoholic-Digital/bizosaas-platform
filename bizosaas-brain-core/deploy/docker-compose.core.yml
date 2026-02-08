@@ -1,0 +1,204 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# BizOSaaS Core Services Stack
+# ═══════════════════════════════════════════════════════════════════════════
+# Contains: API Gateway, Auth Service, MCP Servers
+# Deploy this AFTER infrastructure stack
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ========================================
+  # API Gateway
+  # ========================================
+  brain-gateway:
+    build:
+      context: ../brain-gateway
+      dockerfile: Dockerfile
+    container_name: bizosaas-brain-staging
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
+      - VAULT_URL=${VAULT_URL}
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - SHOPIFY_CLIENT_ID=${SHOPIFY_CLIENT_ID}
+      - SHOPIFY_CLIENT_SECRET=${SHOPIFY_CLIENT_SECRET}
+      - SHOPIFY_APP_URL=${SHOPIFY_APP_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - AI_AGENTS_URL=http://ai-agents:8000
+    networks:
+      - brain-network
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (GitHub Integration)
+  # ========================================
+  github-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN:-}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (FluentCRM Integration)
+  # ========================================
+  fluentcrm-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
+    container_name: brain-mcp-fluentcrm
+    environment:
+      - FLUENTCRM_API_URL=${FLUENTCRM_API_URL:-}
+      - FLUENTCRM_API_KEY=${FLUENTCRM_API_KEY:-}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Slack Integration)
+  # ========================================
+  slack-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
+    container_name: brain-mcp-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN:-}
+      - SLACK_SIGNING_SECRET=${SLACK_SIGNING_SECRET:-}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Google Drive Integration)
+  # ========================================
+  google-drive-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    container_name: brain-mcp-google-drive
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REFRESH_TOKEN=${GOOGLE_REFRESH_TOKEN:-}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Filesystem Integration)
+  # ========================================
+  filesystem-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
+    container_name: brain-mcp-filesystem
+    environment:
+      - ALLOWED_PATHS=${ALLOWED_PATHS:-/app/data}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Brave Search Integration)
+  # ========================================
+  brave-search-mcp:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
+    container_name: brain-mcp-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY:-}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # MCP Server (Meesho Integration)
+  # ========================================
+  brain-mcp-meesho:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/meesho-mcp:staging
+    container_name: brain-mcp-meesho
+    environment:
+      - MEESHO_API_KEY=${MEESHO_API_KEY:-}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # AI Agents Service
+  # ========================================
+  ai-agents:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
+    container_name: bizosaas-ai-agents-staging
+    build:
+      context: ../ai-agents
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - VAULT_ADDR=${VAULT_URL}
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - BRAIN_API_URL=http://brain-gateway:8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════════════════════════
+networks:
+  dokploy-network:
+    external: true

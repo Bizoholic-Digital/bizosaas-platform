@@ -1,0 +1,141 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# BizOSaaS Infrastructure Stack
+# ═══════════════════════════════════════════════════════════════════════════
+# Contains: Databases, Cache, Secrets, Workflow Engine
+# Deploy this FIRST as other stacks depend on these services
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ========================================
+  # Database
+  # ========================================
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    container_name: brain-postgres
+    environment:
+      POSTGRES_DB: bizosaas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ========================================
+  # Cache (Migrated to Redis Cloud)
+  # ========================================
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: brain-redis
+  #   volumes:
+  #     - redis-data:/data
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - brain-network
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '0.2'
+  #         memory: 256M
+  #   healthcheck:
+  #     test: [ "CMD", "redis-cli", "ping" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   restart: unless-stopped
+
+  # ========================================
+  # Secrets Management
+  # ========================================
+  vault:
+    image: hashicorp/vault:latest
+    container_name: brain-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-root}
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    networks:
+      - brain-network
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+  # ========================================
+  # Workflow Engine
+  # ========================================
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: brain-temporal
+    environment:
+      - DB=postgres12_pgx
+      - DB_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_SEEDS=postgres
+    ports:
+      - "7233:7233"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: brain-temporal-ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3003
+    ports:
+      - "8082:8080"
+    networks:
+      - brain-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    depends_on:
+      - temporal
+    restart: unless-stopped
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Networks
+# ═══════════════════════════════════════════════════════════════════════════
+networks:
+  brain-network:
+    external: true
+    name: brain-network
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Volumes
+# ═══════════════════════════════════════════════════════════════════════════
+volumes:
+  postgres-data:
+  redis-data:
