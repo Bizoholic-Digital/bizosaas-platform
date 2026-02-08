@@ -1,0 +1,77 @@
+# QuantTrade Docker Compose - Standalone Services Only
+
+services:
+  # QuantTrade Backend (FastAPI)
+  quanttrade-backend:
+    image: quanttrade-backend:latest
+    container_name: quanttrade-backend
+    ports:
+      - "8012:8012"
+    environment:
+      # Vault Configuration
+      - VAULT_ADDR=http://bizosaas-vault-unified:8200
+      - VAULT_TOKEN=${VAULT_TOKEN:-root}
+      - VAULT_NAMESPACE=admin
+      
+      # Infrastructure endpoints (external services)
+      - DATABASE_HOST=bizosaas-postgres-unified
+      - DATABASE_PORT=5432
+      - REDIS_URL=redis://bizosaas-redis-unified:6379
+      - TEMPORAL_HOST=bizosaas-temporal:7233
+      - TEMPORAL_NAMESPACE=default
+      
+      # Application settings
+      - ENABLE_PAPER_TRADING=true
+      - LOG_LEVEL=INFO
+    networks:
+      - bizosaas-network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8012/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.quanttrade-api.rule=Host(`api.quanttrade.local`)"
+      - "traefik.http.routers.quanttrade-api.entrypoints=web"
+      - "traefik.http.services.quanttrade-api.loadbalancer.server.port=8012"
+
+  # QuantTrade Frontend (Next.js)
+  quanttrade-frontend:
+    image: quanttrade-frontend:latest
+    container_name: quanttrade-frontend
+    ports:
+      - "3010:3010"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8012
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8012/ws
+      - NODE_ENV=production
+    depends_on:
+      - quanttrade-backend
+    networks:
+      - bizosaas-network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.quanttrade-web.rule=Host(`quanttrade.local`)"
+      - "traefik.http.routers.quanttrade-web.entrypoints=web"
+      - "traefik.http.services.quanttrade-web.loadbalancer.server.port=3010"
+
+# Use existing BizOSaaS network
+networks:
+  bizosaas-network:
+    external: true
+
+# Note: This compose file only manages QuantTrade services.
+# It connects to existing BizOSaaS infrastructure services:
+# - Vault: bizosaas-vault-unified (port 8200)
+# - PostgreSQL: bizosaas-postgres-unified (port 5432)
+# - Redis: bizosaas-redis-unified (port 6379)
+# - Temporal: bizosaas-temporal (port 7233)
+# 
+# These services must be running before starting QuantTrade.
+# They are managed by the main BizOSaaS docker-compose.yml

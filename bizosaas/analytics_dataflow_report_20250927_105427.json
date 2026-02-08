@@ -1,0 +1,244 @@
+{
+  "report_metadata": {
+    "generated_at": "2025-09-27T10:54:27.414598",
+    "execution_time": 0.4892096519470215,
+    "total_tests": 5,
+    "success_rate": 40.0,
+    "overall_health": "\ud83d\udfe0 FAIR - Analytics platform partially operational, needs attention"
+  },
+  "test_summary": {
+    "passed": 2,
+    "partial": 2,
+    "failed": 1,
+    "total": 5
+  },
+  "detailed_results": [
+    {
+      "test": "Database Analytics Access",
+      "status": "FAIL",
+      "details": "Database access error: <urlopen error [Errno 111] Connection refused>",
+      "timestamp": "2025-09-27T10:54:26.964698",
+      "recommendations": [
+        "Verify PostgreSQL container is running",
+        "Check SQL Admin dashboard configuration",
+        "Test database connection manually"
+      ]
+    },
+    {
+      "test": "Apache Superset Data Connectivity",
+      "status": "PASS",
+      "details": "Superset operational (3 pass, 1 partial)",
+      "endpoint_tests": [
+        {
+          "endpoint": "main_page",
+          "status_code": 200,
+          "status": "PASS",
+          "note": "Accessible"
+        },
+        {
+          "endpoint": "login_page",
+          "status_code": 200,
+          "status": "PASS",
+          "note": "Accessible"
+        },
+        {
+          "endpoint": "api_csrf",
+          "status_code": 401,
+          "status": "PARTIAL",
+          "note": "Auth required"
+        },
+        {
+          "endpoint": "health_check",
+          "status_code": 200,
+          "status": "PASS",
+          "note": "Accessible"
+        }
+      ],
+      "timestamp": "2025-09-27T10:54:27.186587",
+      "recommendations": [
+        "Configure database connections in Superset",
+        "Create default analytics dashboards",
+        "Set up automated data refresh schedules",
+        "Configure user access and permissions"
+      ]
+    },
+    {
+      "test": "Real-time Analytics Endpoints",
+      "status": "PASS",
+      "details": "Available: 1, Existing: 7, Total: 7",
+      "availability_rate": 100.0,
+      "data_endpoints": 1,
+      "endpoint_results": [
+        {
+          "endpoint": "health",
+          "path": "/health",
+          "status_code": 200,
+          "response_time_ms": 59.26,
+          "content_type": "application/json",
+          "data_size": 145,
+          "has_data": true,
+          "status": "AVAILABLE",
+          "performance": "FAST"
+        },
+        {
+          "endpoint": "metrics",
+          "path": "/api/metrics",
+          "status_code": 404,
+          "response_time_ms": 0,
+          "content_type": "error",
+          "data_size": 0,
+          "has_data": false,
+          "status": "EXISTS",
+          "performance": "ERROR"
+        },
+        {
+          "endpoint": "analytics_overview",
+          "path": "/api/analytics/overview",
+          "status_code": 404,
+          "response_time_ms": 0,
+          "content_type": "error",
+          "data_size": 0,
+          "has_data": false,
+          "status": "EXISTS",
+          "performance": "ERROR"
+        },
+        {
+          "endpoint": "user_analytics",
+          "path": "/api/analytics/users",
+          "status_code": 404,
+          "response_time_ms": 0,
+          "content_type": "error",
+          "data_size": 0,
+          "has_data": false,
+          "status": "EXISTS",
+          "performance": "ERROR"
+        },
+        {
+          "endpoint": "performance_metrics",
+          "path": "/api/analytics/performance",
+          "status_code": 404,
+          "response_time_ms": 0,
+          "content_type": "error",
+          "data_size": 0,
+          "has_data": false,
+          "status": "EXISTS",
+          "performance": "ERROR"
+        },
+        {
+          "endpoint": "revenue_analytics",
+          "path": "/api/analytics/revenue",
+          "status_code": 404,
+          "response_time_ms": 0,
+          "content_type": "error",
+          "data_size": 0,
+          "has_data": false,
+          "status": "EXISTS",
+          "performance": "ERROR"
+        },
+        {
+          "endpoint": "system_status",
+          "path": "/api/system/status",
+          "status_code": 404,
+          "response_time_ms": 0,
+          "content_type": "error",
+          "data_size": 0,
+          "has_data": false,
+          "status": "EXISTS",
+          "performance": "ERROR"
+        }
+      ],
+      "timestamp": "2025-09-27T10:54:27.374080",
+      "recommendations": [
+        "Monitor endpoint performance continuously",
+        "Add analytics data validation",
+        "Implement analytics data retention policies",
+        "Add advanced analytics features"
+      ]
+    },
+    {
+      "test": "Business Directory Analytics",
+      "status": "PARTIAL",
+      "details": "Passing endpoints: 1, Data endpoints: 1, Total records: 1",
+      "directory_tests": [
+        {
+          "endpoint": "health",
+          "status_code": 200,
+          "has_data": true,
+          "data_count": 1,
+          "status": "PASS"
+        },
+        {
+          "endpoint": "api_businesses",
+          "status_code": 404,
+          "has_data": false,
+          "data_count": 0,
+          "status": "EXISTS"
+        },
+        {
+          "endpoint": "analytics",
+          "status_code": 404,
+          "has_data": false,
+          "data_count": 0,
+          "status": "EXISTS"
+        },
+        {
+          "endpoint": "metrics",
+          "status_code": 404,
+          "has_data": false,
+          "data_count": 0,
+          "status": "EXISTS"
+        }
+      ],
+      "timestamp": "2025-09-27T10:54:27.396287",
+      "recommendations": [
+        "Fix directory service connectivity",
+        "Implement analytics endpoints",
+        "Add business data validation",
+        "Create sample business data for testing"
+      ]
+    },
+    {
+      "test": "Data Quality and Integrity",
+      "status": "PARTIAL",
+      "details": "Quality score: 66.7% (2/3 tests passed)",
+      "quality_tests": [
+        {
+          "test": "Timestamp Consistency",
+          "status": "PASS",
+          "details": "Collected 5 timestamps",
+          "data": {
+            "central_hub": "2025-09-27T05:24:27.397065",
+            "central_hub_response_time": "2025-09-27T10:54:27.397664",
+            "superset_response_time": "2025-09-27T10:54:27.400508",
+            "business_directory": "2025-09-27T05:24:27.401470",
+            "business_directory_response_time": "2025-09-27T10:54:27.402213"
+          }
+        },
+        {
+          "test": "Data Format Consistency",
+          "status": "PASS",
+          "details": "JSON format consistency: 100.0% (2/2)"
+        },
+        {
+          "test": "Service Response Reliability",
+          "status": "PARTIAL",
+          "details": "Reliable services: 75.0% (3/4)"
+        }
+      ],
+      "quality_score": 0.6666666666666666,
+      "timestamp": "2025-09-27T10:54:27.414365",
+      "recommendations": [
+        "Implement data validation schemas",
+        "Add automated data quality monitoring",
+        "Create data integrity checks",
+        "Implement consistent error handling"
+      ]
+    }
+  ],
+  "services_tested": [
+    "central_hub",
+    "superset",
+    "business_directory",
+    "sqladmin"
+  ]
+}

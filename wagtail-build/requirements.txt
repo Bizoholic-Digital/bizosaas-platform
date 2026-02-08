@@ -1,0 +1,4 @@
+wagtail>=5.2
+gunicorn
+psycopg2-binary
+dj-database-url

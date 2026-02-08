@@ -1,0 +1,258 @@
+version: '3.8'
+
+# BizOSaaS Frontend Applications - PRODUCTION Environment
+# 6 Frontend application containers for production deployment
+# Optimized ports and production domains
+
+services:
+  # ==========================================
+  # BIZOHOLIC MARKETING FRONTEND
+  # Marketing website - PRODUCTION
+  # ==========================================
+  bizoholic-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: frontend/apps/bizoholic-frontend/Dockerfile
+    container_name: bizoholic-frontend-production
+    ports:
+      - "3100:3000"  # Different port from staging (3000)
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://bizoholic.com/api
+      - NEXT_PUBLIC_SITE_URL=https://bizoholic.com
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - NEXT_PUBLIC_ENABLE_ANALYTICS=true
+      - NEXT_PUBLIC_GTM_ID=${GTM_ID_PRODUCTION}
+      - NEXT_PUBLIC_HOTJAR_ID=${HOTJAR_ID_PRODUCTION}
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    labels:
+      # Traefik routing for production domain
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-production-main.rule=Host(`bizoholic.com`) || Host(`www.bizoholic.com`)"
+      - "traefik.http.routers.bizoholic-production-main.entrypoints=websecure"
+      - "traefik.http.routers.bizoholic-production-main.tls=true"
+      - "traefik.http.routers.bizoholic-production-main.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-production-main.loadbalancer.server.port=3000"
+      # Security headers
+      - "traefik.http.middlewares.secure-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.secure-headers.headers.sslredirect=true"
+      - "traefik.http.routers.bizoholic-production-main.middlewares=secure-headers"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # CLIENT PORTAL
+  # Client dashboard and portal - PRODUCTION
+  # ==========================================
+  client-portal:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: frontend/apps/client-portal/Dockerfile
+    container_name: client-portal-production
+    ports:
+      - "3101:3000"  # Different port from staging (3001)
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://bizoholic.com/api
+      - NEXT_PUBLIC_SITE_URL=https://bizoholic.com/login
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - NEXT_PUBLIC_ENABLE_ANALYTICS=true
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    labels:
+      # Traefik routing for /login/ path
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal-production.rule=(Host(`bizoholic.com`) || Host(`www.bizoholic.com`)) && PathPrefix(`/login`)"
+      - "traefik.http.routers.client-portal-production.entrypoints=websecure"
+      - "traefik.http.routers.client-portal-production.tls=true"
+      - "traefik.http.routers.client-portal-production.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.client-portal-production.priority=2"
+      - "traefik.http.middlewares.client-portal-stripprefix-prod.stripprefix.prefixes=/login"
+      - "traefik.http.middlewares.client-portal-auth.basicauth.users=${BASIC_AUTH_USERS}"
+      - "traefik.http.routers.client-portal-production.middlewares=client-portal-stripprefix-prod,secure-headers"
+      - "traefik.http.services.client-portal-production.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # CORELDOVE E-COMMERCE FRONTEND
+  # E-commerce storefront - PRODUCTION
+  # ==========================================
+  coreldove-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: frontend/apps/coreldove-frontend/Dockerfile
+    container_name: coreldove-frontend-production
+    ports:
+      - "3102:3002"  # Different port from staging (3002)
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://coreldove.com/api
+      - NEXT_PUBLIC_SALEOR_API_URL=https://coreldove.com/graphql/
+      - NEXT_PUBLIC_SITE_URL=https://coreldove.com
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY_PRODUCTION}
+      - NEXT_PUBLIC_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID_PRODUCTION}
+      - NEXT_PUBLIC_ENABLE_ANALYTICS=true
+      - NEXT_PUBLIC_GTM_ID=${GTM_ID_CORELDOVE_PRODUCTION}
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    labels:
+      # Traefik routing for CorelDove production domain
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-production.rule=Host(`coreldove.com`) || Host(`www.coreldove.com`)"
+      - "traefik.http.routers.coreldove-production.entrypoints=websecure"
+      - "traefik.http.routers.coreldove-production.tls=true"
+      - "traefik.http.routers.coreldove-production.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.coreldove-production.middlewares=secure-headers"
+      - "traefik.http.services.coreldove-production.loadbalancer.server.port=3002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # BUSINESS DIRECTORY FRONTEND
+  # Directory interface - PRODUCTION
+  # ==========================================
+  business-directory:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: frontend/apps/business-directory/Dockerfile
+    container_name: business-directory-production
+    ports:
+      - "3104:3004"  # Different port from staging (3004)
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://bizoholic.com/directory-api
+      - NEXT_PUBLIC_BRAIN_API_URL=https://bizoholic.com/api
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    labels:
+      # Traefik routing for directory subdomain
+      - "traefik.enable=true"
+      - "traefik.http.routers.directory-production.rule=Host(`directory.bizoholic.com`)"
+      - "traefik.http.routers.directory-production.entrypoints=websecure"
+      - "traefik.http.routers.directory-production.tls=true"
+      - "traefik.http.routers.directory-production.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.directory-production.middlewares=secure-headers"
+      - "traefik.http.services.directory-production.loadbalancer.server.port=3004"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # THRILLRING GAMING PLATFORM
+  # Gaming platform frontend - PRODUCTION
+  # ==========================================
+  thrillring-gaming:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: frontend/apps/thrillring-gaming/Dockerfile
+      args:
+        - NODE_ENV=production
+    container_name: thrillring-gaming-production
+    ports:
+      - "3105:3005"  # Different port from staging (3005)
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://thrillring.com/api
+      - NEXT_PUBLIC_SITE_URL=https://thrillring.com
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - NEXT_PUBLIC_ENABLE_ANALYTICS=true
+      - NEXT_PUBLIC_GTM_ID=${GTM_ID_THRILLRING_PRODUCTION}
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    labels:
+      # Traefik routing for ThrillRing production domain
+      - "traefik.enable=true"
+      - "traefik.http.routers.thrillring-production.rule=Host(`thrillring.com`) || Host(`www.thrillring.com`)"
+      - "traefik.http.routers.thrillring-production.entrypoints=websecure"
+      - "traefik.http.routers.thrillring-production.tls=true"
+      - "traefik.http.routers.thrillring-production.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.thrillring-production.middlewares=secure-headers"
+      - "traefik.http.services.thrillring-production.loadbalancer.server.port=3005"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # ADMIN DASHBOARD
+  # Administrative interface - PRODUCTION
+  # ==========================================
+  admin-dashboard:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: frontend/apps/bizosaas-admin/Dockerfile
+    container_name: admin-dashboard-production
+    ports:
+      - "3109:3009"  # Different port from staging (3009)
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://bizoholic.com/api
+      - NEXT_PUBLIC_SITE_URL=https://bizoholic.com/admin
+      - NEXT_PUBLIC_ENVIRONMENT=production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!ProductionDB#Secure@bizosaas-postgres-production:5432/bizosaas_production
+    networks:
+      - bizosaas-production-network
+    restart: unless-stopped
+    labels:
+      # Traefik routing for /admin/ path with authentication
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-dashboard-production.rule=(Host(`bizoholic.com`) || Host(`www.bizoholic.com`)) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin-dashboard-production.entrypoints=websecure"
+      - "traefik.http.routers.admin-dashboard-production.tls=true"
+      - "traefik.http.routers.admin-dashboard-production.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.admin-dashboard-production.priority=3"
+      - "traefik.http.middlewares.admin-dashboard-stripprefix-prod.stripprefix.prefixes=/admin"
+      - "traefik.http.middlewares.admin-auth.basicauth.users=${ADMIN_BASIC_AUTH_USERS}"
+      - "traefik.http.routers.admin-dashboard-production.middlewares=admin-dashboard-stripprefix-prod,admin-auth,secure-headers"
+      - "traefik.http.services.admin-dashboard-production.loadbalancer.server.port=3009"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3009/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  bizosaas-production-network:
+    external: true
+
+# ==================================================
+# PRODUCTION FRONTEND APPLICATIONS PROJECT SUMMARY:
+# ==================================================
+# Container Count: 6
+# Environment: Production
+# Security: Enhanced (SSL enforced, basic auth for admin, secure headers)
+# Ports: Offset by +100 from staging (3100-3109)
+# Production Domains:
+#   - bizoholic.com (Marketing + /login/ + /admin/)
+#   - coreldove.com (E-commerce)
+#   - thrillring.com (Gaming)
+#   - directory.bizoholic.com (Business Directory)
+# SSL: Automatic Let's Encrypt certificates for all domains
+# Analytics: Production tracking enabled (GTM, Hotjar)
+# Dependencies: Production backend services must be running
+# Performance: Optimized for production load and SEO
+# ==================================================

@@ -1,0 +1,53 @@
+{
+  "name": "@bizoholic-digital/animated-components",
+  "version": "1.0.0",
+  "description": "Animated UI components for BizOSaaS platform (Aceternity UI + Magic UI)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "bizosaas",
+    "animated-components",
+    "aceternity",
+    "magic-ui",
+    "react"
+  ],
+  "author": "BizOSaaS Team",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "@bizoholic-digital:registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bizoholic-digital/bizosaas-platform.git",
+    "directory": "packages/animated-components"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "framer-motion": "^10.0.0 || ^11.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "react": "^18.0.0",
+    "framer-motion": "^11.0.0"
+  }
+}

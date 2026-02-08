@@ -1,0 +1,1 @@
+# Authentication bridge between Wagtail and BizOSaaS

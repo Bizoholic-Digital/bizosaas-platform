@@ -1,0 +1,23 @@
+{
+    "tenant_id": "thrillring-tenant-002",
+    "client_name": "Thrillring Gaming",
+    "domain": "thrillring.com",
+    "onboarding_steps": [
+        {
+            "step": "connect_mcp",
+            "mcp_slug": "wordpress",
+            "config": {
+                "site_url": "https://thrillring.com",
+                "username": "thrilladmin",
+                "application_password": "PENDING_CREDENTIALS"
+            }
+        },
+        {
+            "step": "setup_analytics",
+            "provider": "google-analytics",
+            "config": {
+                "property_id": "PENDING"
+            }
+        }
+    ]
+}

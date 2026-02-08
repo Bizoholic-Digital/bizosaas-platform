@@ -1,0 +1,42 @@
+# CoreLDove Saleor E-commerce Service Dependencies
+
+# Core FastAPI and async support
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# GraphQL client for Saleor API
+gql[all]==3.4.1
+graphql-core==3.2.3
+
+# Database and ORM
+sqlalchemy[asyncio]==2.0.23
+asyncpg==0.29.0
+
+# Redis for caching and sessions
+redis[hiredis]==5.0.1
+hiredis==2.2.3
+
+# HTTP client for service communication
+httpx==0.25.2
+
+# Authentication and security
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+passlib[bcrypt]==1.7.4
+
+# Environment and configuration
+python-dotenv==1.0.0
+
+# Logging
+structlog==23.2.0
+
+# Image processing for product images
+Pillow==10.1.0
+
+# Task queue integration
+celery[redis]==5.3.4
+
+# Utilities
+python-slugify==8.0.1
+email-validator==2.1.0

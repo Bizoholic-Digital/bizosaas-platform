@@ -1,0 +1,489 @@
+# BizOSaaS Complete Platform - STAGING Environment
+# Pull from GHCR (GitHub Container Registry)
+# Deployment: Local WSL2 → GitHub + GHCR → Dokploy Staging → Dokploy Production
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # INFRASTRUCTURE LAYER (6 services)
+  # ==========================================
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: bizosaas-postgres-staging
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=bizosaas_staging
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas_staging"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-staging
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --replica-read-only no
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: bizosaas-vault-staging
+    ports:
+      - "8201:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=bizosaas-dev-root-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+      - VAULT_ADDR=http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_staging_data:/vault/data
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+
+  temporal-server:
+    image: temporalio/auto-setup:1.22.0
+    container_name: bizosaas-temporal-server-staging
+    ports:
+      - "7234:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PWD=BizOSaaS2025!StagingDB
+      - POSTGRES_SEEDS=bizosaas-postgres-staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  temporal-ui:
+    image: temporalio/ui:2.21.0
+    container_name: bizosaas-temporal-ui-staging
+    ports:
+      - "8083:8080"
+    environment:
+      - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8083
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - temporal-server
+
+  superset:
+    image: ghcr.io/bizoholic-digital/bizosaas-superset:staging
+    container_name: bizosaas-superset-staging
+    ports:
+      - "8088:8088"
+    environment:
+      - SUPERSET_CONFIG_PATH=/app/pythonpath/superset_config.py
+      - SUPERSET_SECRET_KEY=staging-secret-key-superset-bizosaas-2025
+      - SUPERSET_ADMIN_PASSWORD=Bizoholic2024Admin
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
+      - POSTGRES_HOST=bizosaas-postgres-staging
+      - POSTGRES_PORT=5432
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_HOST=bizosaas-redis-staging
+      - REDIS_PORT=6379
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/2
+      - BIZOSAAS_BRAIN_API_URL=http://bizosaas-brain-staging:8001
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    volumes:
+      - superset_home:/app/superset_home
+
+  # ==========================================
+  # BACKEND LAYER (10 services)
+  # ==========================================
+
+  brain-gateway:
+    image: ghcr.io/bizoholic-digital/bizosaas-brain-gateway:staging
+    container_name: bizosaas-brain-staging
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=bizosaas-dev-root-token
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - vault
+
+  ai-agents:
+    image: ghcr.io/bizoholic-digital/bizosaas-ai-agents:staging
+    container_name: bizosaas-ai-agents-staging
+    ports:
+      - "8008:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/8
+      - BRAIN_API_URL=http://bizosaas-brain-staging:8001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+
+  auth-service:
+    image: ghcr.io/bizoholic-digital/bizosaas-auth-service:staging
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8007:8007"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025
+      - ENVIRONMENT=staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  wagtail-cms:
+    image: ghcr.io/bizoholic-digital/bizosaas-wagtail-cms:staging
+    container_name: bizosaas-wagtail-staging
+    ports:
+      - "8002:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/3
+      - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=bizosaas-dev-root-token
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+      - vault
+
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
+      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+      - ALLOWED_HOSTS=*
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  django-crm:
+    image: ghcr.io/bizoholic-digital/bizosaas-django-crm:staging
+    container_name: bizosaas-django-crm-staging
+    ports:
+      - "8003:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=crm_project.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/4
+      - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  coreldove-backend:
+    image: ghcr.io/bizoholic-digital/bizosaas-coreldove-backend:staging
+    container_name: bizosaas-coreldove-backend-staging
+    ports:
+      - "8005:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/6
+      - SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - saleor-api
+
+  amazon-sourcing:
+    image: ghcr.io/bizoholic-digital/bizosaas-amazon-sourcing:staging
+    container_name: bizosaas-amazon-sourcing-staging
+    ports:
+      - "8009:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/9
+      - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY}
+      - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY}
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  business-directory-backend:
+    image: ghcr.io/bizoholic-digital/bizosaas-business-directory-backend:staging
+    container_name: bizosaas-business-directory-staging
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/5
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  quanttrade-backend:
+    image: ghcr.io/bizoholic-digital/bizosaas-quanttrade-backend:staging
+    container_name: bizosaas-quanttrade-backend-staging
+    ports:
+      - "8012:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/12
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  # ==========================================
+  # FRONTEND LAYER (7 services)
+  # ==========================================
+
+  bizoholic-frontend:
+    image: ghcr.io/bizoholic-digital/bizosaas-bizoholic-frontend:staging
+    container_name: bizosaas-bizoholic-frontend-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bizoholic-frontend.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/`)"
+      - "traefik.http.routers.bizoholic-frontend.entrypoints=websecure"
+      - "traefik.http.routers.bizoholic-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-frontend.loadbalancer.server.port=3000"
+
+  thrillring-gaming:
+    image: ghcr.io/bizoholic-digital/bizosaas-thrillring-gaming:staging
+    container_name: bizosaas-thrillring-gaming-staging
+    ports:
+      - "3005:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.thrillring-gaming.rule=Host(`stg.thrillring.com`)"
+      - "traefik.http.routers.thrillring-gaming.entrypoints=websecure"
+      - "traefik.http.routers.thrillring-gaming.tls.certresolver=letsencrypt"
+      - "traefik.http.services.thrillring-gaming.loadbalancer.server.port=3000"
+
+  coreldove-frontend:
+    image: ghcr.io/bizoholic-digital/bizosaas-coreldove-frontend:staging
+    container_name: bizosaas-coreldove-frontend-staging
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+      - coreldove-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.coreldove-frontend.rule=Host(`stg.coreldove.com`)"
+      - "traefik.http.routers.coreldove-frontend.entrypoints=websecure"
+      - "traefik.http.routers.coreldove-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.coreldove-frontend.loadbalancer.server.port=3000"
+
+  client-portal:
+    image: ghcr.io/bizoholic-digital/bizosaas-client-portal:staging
+    container_name: bizosaas-client-portal-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+      - BASE_PATH=/login
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/login`)"
+      - "traefik.http.routers.client-portal.entrypoints=websecure"
+      - "traefik.http.routers.client-portal.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.client-portal.priority=100"
+      - "traefik.http.services.client-portal.loadbalancer.server.port=3000"
+
+  admin-dashboard:
+    image: ghcr.io/bizoholic-digital/bizosaas-admin-dashboard:staging
+    container_name: bizosaas-admin-dashboard-staging
+    ports:
+      - "3009:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_SUPERSET_URL=http://bizosaas-superset-staging:8088
+      - NEXT_PUBLIC_TEMPORAL_UI_URL=http://bizosaas-temporal-ui-staging:8080
+      - NEXT_TELEMETRY_DISABLED=1
+      - BASE_PATH=/admin
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+      - superset
+      - temporal-ui
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-dashboard.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/admin`)"
+      - "traefik.http.routers.admin-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.admin-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.admin-dashboard.priority=100"
+      - "traefik.http.services.admin-dashboard.loadbalancer.server.port=3000"
+
+  business-directory-frontend:
+    image: ghcr.io/bizoholic-digital/bizosaas-business-directory-frontend:staging
+    container_name: bizosaas-business-directory-frontend-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+      - BASE_PATH=/directory
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+      - business-directory-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.business-directory.rule=Host(`stg.bizoholic.com`) && PathPrefix(`/directory`)"
+      - "traefik.http.routers.business-directory.entrypoints=websecure"
+      - "traefik.http.routers.business-directory.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.business-directory.priority=100"
+      - "traefik.http.services.business-directory.loadbalancer.server.port=3000"
+
+  quanttrade-frontend:
+    image: ghcr.io/bizoholic-digital/bizosaas-quanttrade-frontend:staging
+    container_name: bizosaas-quanttrade-frontend-staging
+    ports:
+      - "3012:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - brain-gateway
+      - quanttrade-backend
+
+volumes:
+  postgres_staging_data:
+  redis_staging_data:
+  vault_staging_data:
+  superset_home:
+
+networks:
+  dokploy-network:
+    external: true
+
+# ==================================================
+# COMPLETE BIZOSAAS PLATFORM - KVM4 STAGING
+# ==================================================
+# Total Services: 23
+# - Infrastructure: 6 (PostgreSQL, Redis, Vault, Temporal Server, Temporal UI, Superset)
+# - Backend: 10 (Brain Gateway, AI Agents, Auth, Wagtail, Saleor, Django CRM, CorelDove, Amazon, Directory, QuantTrade)
+# - Frontend: 7 (Bizoholic, ThrillRing, CorelDove, Client Portal, Admin, Directory, QuantTrade)
+#
+# EXCLUDED: CorelDove WordPress (running on KVM2 - 194.238.16.237)
+#
+# Routing Strategy (Unified Domain):
+# - stg.bizoholic.com → Bizoholic Frontend (main site)
+# - stg.bizoholic.com/login/ → Client Portal
+# - stg.bizoholic.com/admin/ → Admin Dashboard
+# - stg.bizoholic.com/directory/ → Business Directory
+# - stg.coreldove.com → CorelDove Storefront (Next.js)
+# - stg.thrillring.com → ThrillRing Gaming
+#
+# Deployment Strategy: Local WSL2 → GitHub + GHCR → Dokploy (dk4.bizoholic.com) → KVM4
+# All backend requests route through Brain Gateway (Port 8001)
+# ==================================================

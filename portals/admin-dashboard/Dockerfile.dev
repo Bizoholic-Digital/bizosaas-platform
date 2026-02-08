@@ -1,0 +1,24 @@
+# Development Dockerfile for BizOSaaS Admin
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm ci --legacy-peer-deps
+
+# Copy source code
+COPY . .
+
+# Set environment variables
+ENV NODE_ENV=development
+ENV PORT=3009
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Expose port
+EXPOSE 3009
+
+# Start in development mode (skips build step)
+CMD ["npm", "run", "dev"]

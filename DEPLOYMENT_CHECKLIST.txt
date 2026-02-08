@@ -1,0 +1,112 @@
+╔════════════════════════════════════════════════════════════════════╗
+║         BizOSaaS VPS Staging Deployment - Quick Checklist         ║
+╚════════════════════════════════════════════════════════════════════╝
+
+📋 PRE-DEPLOYMENT
+[ ] Config files ready:
+    ✓ dokploy-infrastructure-staging-with-superset-build.yml (5.7K)
+    ✓ dokploy-backend-staging-complete-build.yml (11K)
+    ✓ dokploy-frontend-staging-complete-build.yml (8.6K)
+[ ] Dokploy accessible: https://dk.bizoholic.com
+[ ] Can SSH to VPS: ssh root@194.238.16.237
+[ ] Health check script ready: ./check-complete-staging.sh
+
+════════════════════════════════════════════════════════════════════
+
+🎯 PHASE 1: INFRASTRUCTURE (8-12 minutes)
+[ ] Open https://dk.bizoholic.com
+[ ] Go to Projects → Infrastructure
+[ ] Settings → Compose File → Edit
+[ ] Paste: dokploy-infrastructure-staging-with-superset-build.yml
+[ ] Click: Deploy
+[ ] Wait: 8-12 minutes
+[ ] Verify: ./check-complete-staging.sh shows 6/6 infrastructure
+[ ] Test: http://194.238.16.237:8088 (login: admin / Bizoholic2024Admin)
+
+Result: ___/6 infrastructure containers ✓
+
+════════════════════════════════════════════════════════════════════
+
+🎯 PHASE 2: BACKEND (20-30 minutes)
+[ ] Go to Projects → Backend Services (or create new)
+[ ] Settings → Compose File → Edit
+[ ] Paste: dokploy-backend-staging-complete-build.yml
+[ ] Click: Deploy
+[ ] Wait: 20-30 minutes (9 services building from GitHub)
+[ ] Verify: ./check-complete-staging.sh shows 9/9 backend
+[ ] Test: curl http://194.238.16.237:8001/health (Brain API)
+[ ] Test: curl http://194.238.16.237:8004/health (Business Directory)
+[ ] Test: curl http://194.238.16.237:8008/health (AI Agents)
+
+Result: ___/9 backend containers ✓
+
+════════════════════════════════════════════════════════════════════
+
+🎯 PHASE 3: FRONTEND (30-45 minutes)
+[ ] Go to Projects → Create New Project
+[ ] Name: Frontend Applications Staging
+[ ] Settings → Compose File
+[ ] Paste: dokploy-frontend-staging-complete-build.yml
+[ ] Click: Deploy
+[ ] Wait: 30-45 minutes (6 Next.js apps building)
+[ ] Verify: ./check-complete-staging.sh shows 6/6 frontend
+[ ] Test: http://194.238.16.237:3000 (Bizoholic)
+[ ] Test: http://194.238.16.237:3001 (Client Portal)
+[ ] Test: http://194.238.16.237:3002 (CorelDove)
+[ ] Test: http://194.238.16.237:3009 (Admin Dashboard)
+
+Result: ___/6 frontend containers ✓
+
+════════════════════════════════════════════════════════════════════
+
+✅ FINAL VERIFICATION
+[ ] Run: ./check-complete-staging.sh
+[ ] Infrastructure: ___/6 ✓
+[ ] Backend: ___/9 ✓
+[ ] Frontend: ___/6 ✓
+[ ] TOTAL: ___/21 (Target: 21/21 = 100%)
+
+[ ] All containers healthy (no restarts)
+[ ] Superset login works
+[ ] Backend APIs respond
+[ ] Frontend apps load in browser
+
+════════════════════════════════════════════════════════════════════
+
+⏱️ DEPLOYMENT TIMING
+Started: ________________
+Phase 1 completed: ________________ (Duration: ____ min)
+Phase 2 completed: ________________ (Duration: ____ min)
+Phase 3 completed: ________________ (Duration: ____ min)
+Total time: ____ minutes (Target: 60-90 min)
+
+════════════════════════════════════════════════════════════════════
+
+🚨 TROUBLESHOOTING QUICK REF
+Build timeout → Increase timeout to 3600s in Dokploy settings
+Container crash → Check logs: docker logs <container-name> --tail 100
+Won't start → Check dependencies: docker ps | grep postgres
+ENOSPC error → Run: docker system prune -f on VPS
+
+════════════════════════════════════════════════════════════════════
+
+🎉 SUCCESS CRITERIA
+✓ 21/21 containers running
+✓ 0 containers restarting
+✓ Superset accessible at :8088
+✓ All backend APIs healthy
+✓ All frontend apps load
+✓ End-to-end flows working
+
+════════════════════════════════════════════════════════════════════
+
+📞 QUICK ACCESS
+Dokploy: https://dk.bizoholic.com
+VPS SSH: ssh root@194.238.16.237
+Health Check: ./check-complete-staging.sh
+Superset: http://194.238.16.237:8088 (admin/Bizoholic2024Admin)
+
+════════════════════════════════════════════════════════════════════
+
+READY TO START! 🚀
+First action: Open https://dk.bizoholic.com and begin Phase 1

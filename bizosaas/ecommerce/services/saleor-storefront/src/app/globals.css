@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--color-primary: #007766;
+		--color-secondary: #e56404;
+		--color-neutral-50: #f8fafc;
+		--color-neutral-100: #f1f5f9;
+		--color-neutral-200: #e2e8f0;
+		--color-neutral-300: #cbd5e1;
+		--color-neutral-800: #1e293b;
+		--color-neutral-900: #0f172a;
+		
+		--spacing-section: 5rem;
+		--spacing-content: 2rem;
+		--border-radius: 0.5rem;
+		--border-radius-lg: 1rem;
+		--shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+		--shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+	}
+}
+
+@layer components {
+	.hero-gradient {
+		background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+	}
+	
+	.card-hover {
+		transition: all 0.3s ease;
+	}
+	
+	.card-hover:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-hover);
+	}
+	
+	.text-balance {
+		text-wrap: balance;
+	}
+	
+	.section-padding {
+		padding-top: var(--spacing-section);
+		padding-bottom: var(--spacing-section);
+	}
+	
+	.container-custom {
+		max-width: 1200px;
+		margin-left: auto;
+		margin-right: auto;
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+	
+	@media (min-width: 640px) {
+		.container-custom {
+			padding-left: 2rem;
+			padding-right: 2rem;
+		}
+	}
+}
+
+body {
+	overflow-x: hidden;
+	font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}

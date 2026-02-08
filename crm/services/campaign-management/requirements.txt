@@ -1,0 +1,15 @@
+# Campaign Management Service Requirements
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+sqlalchemy==2.0.23
+alembic==1.12.1
+asyncpg==0.29.0
+redis[hiredis]==5.0.1
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+requests==2.31.0
+celery==5.3.4
+python-dotenv==1.0.0
+loguru==0.7.2
+aiofiles==23.2.1

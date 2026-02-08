@@ -1,0 +1,297 @@
+version: "3.8"
+services:
+  brain-gateway:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
+    container_name: bizosaas-brain-staging
+    environment:
+      - DATABASE_URL=postgresql://neondb_owner:npg_puEbTnkSO9F8@ep-gentle-flower-a15rdh2r-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+      - REDIS_URL=redis://default:Gt7QxXA4ybMzYzD9e6KIBULfnv1IU6f9@redis-10690.c264.ap-south-1-1.ec2.cloud.redislabs.com:10690/0
+      - TEMPORAL_ADDRESS=ap-south-2.aws.api.temporal.io:7233
+      - TEMPORAL_NAMESPACE=bizosaas-platform-mtls.mdqxv
+      - TEMPORAL_MTLS_CERT=/app/certs/client.pem
+      - TEMPORAL_MTLS_KEY=/app/certs/client.key
+      - VAULT_URL=https://vault.bizoholic.net
+      - VAULT_TOKEN=hvs.REpC92zP7vH29X04y1vX4Wn
+      - SHOPIFY_APP_URL=https://api.bizoholic.net
+      - SHOPIFY_CLIENT_ID=${SHOPIFY_CLIENT_ID}
+      - SHOPIFY_CLIENT_SECRET=${SHOPIFY_CLIENT_SECRET}
+      - SHOPIFY_SHOP_URL=${SHOPIFY_SHOP_URL}
+      # - SHOPIFY_ACCESS_TOKEN=  # Removed: Using OAuth flow now
+    volumes:
+      - ./client.pem:/app/certs/client.pem:ro
+      - ./client.key:/app/certs/client.key:ro
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.brain-gateway-secure.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway-secure.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+      - "traefik.docker.network=dokploy-network"
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  brain-mcp-brave-search:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brave-search-mcp:staging
+    container_name: brain-mcp-brave-search
+    environment:
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-filesystem:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/filesystem-mcp:staging
+    container_name: brain-mcp-filesystem
+    volumes:
+      - bizosaas-data:/data
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-github:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/github-mcp:staging
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-google-drive:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/google-drive-mcp:staging
+    container_name: brain-mcp-google-drive
+    environment:
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-slack:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/slack-mcp:staging
+    container_name: brain-mcp-slack
+    environment:
+      - SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-fluentcrm:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/fluentcrm-mcp:staging
+    container_name: brain-mcp-fluentcrm
+    environment:
+      - FLUENTCRM_URL=${FLUENTCRM_URL}
+      - FLUENTCRM_API_KEY=${FLUENTCRM_API_KEY}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-meesho:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/meesho-mcp:staging
+    container_name: brain-mcp-meesho
+    environment:
+      - MEESHO_API_KEY=${MEESHO_API_KEY}
+    networks:
+      - brain-network
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python3", "-c", "import socket; s = socket.socket(); s.connect(('127.0.0.1', 8000))" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-postiz:
+    container_name: brain-mcp-postiz
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./mcp-servers/postiz/server.py:/app/server.py
+    environment:
+      - POSTIZ_API_URL=http://postiz-app:5000
+    command: >
+      sh -c "pip install fastapi uvicorn httpx && python server.py"
+    networks:
+      - dokploy-network
+    expose:
+      - 8000
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  brain-mcp-seo-premium:
+    container_name: brain-mcp-seo-premium
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./bizosaas-brain-core/brain-gateway/premium_seo_mcp.py:/app/premium_seo_mcp.py
+    environment:
+      - SEMRUSH_API_KEY=${SEMRUSH_API_KEY:-}
+      - AHREFS_API_KEY=${AHREFS_API_KEY:-}
+    command: >
+      sh -c "pip install fastapi uvicorn httpx && python premium_seo_mcp.py"
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: brands/bizoholic/cms/Dockerfile
+    restart: unless-stopped
+    environment:
+      - WP_ENV=production
+      - DB_NAME=${CMS_DB_NAME:-bizoholic_cms}
+      - DB_USER=${CMS_DB_USER:-root}
+      - DB_PASSWORD=${CMS_DB_PASSWORD:-password}
+      - DB_HOST=wp_db
+      - WP_HOME=https://cms.bizoholic.net
+      - WP_SITEURL=https://cms.bizoholic.net/wp
+    networks:
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.bizoholic-cms.rule=Host(`cms.bizoholic.net`)"
+      - "traefik.http.routers.bizoholic-cms.entrypoints=websecure"
+      - "traefik.http.routers.bizoholic-cms.tls=true"
+      - "traefik.http.routers.bizoholic-cms.tls.certresolver=letsencrypt"
+      - "traefik.http.services.bizoholic-cms.loadbalancer.server.port=80"
+    depends_on:
+      - wp_db
+
+  wp_db:
+    image: mysql:8.0
+    restart: unless-stopped
+    volumes:
+      - wp_data_v3:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${CMS_DB_PASSWORD:-password}
+      MYSQL_DATABASE: ${CMS_DB_NAME:-bizoholic_cms}
+    networks:
+      - dokploy-network
+
+
+networks:
+  brain-network:
+    external: true
+    name: brain-network
+  dokploy-network:
+    external: true
+    name: dokploy-network
+
+volumes:
+  bizosaas-data:
+    external: true
+  wp_data_v3:
+    external: true

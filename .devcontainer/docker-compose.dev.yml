@@ -1,0 +1,224 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:18
+    volumes:
+      - ..:/workspace:cached
+    command: /bin/sh -c "while sleep 1000; do :; done"
+    network_mode: service:postgres
+    depends_on:
+      - postgres
+      - redis
+
+  # Infrastructure Services (Always needed for backend)
+  postgres:
+    image: ankane/pgvector:v0.5.1
+    restart: always
+    environment:
+      POSTGRES_DB: bizosaas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+
+  vault:
+    image: vault:1.13.3
+    restart: always
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: bizosaas-dev-token
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    profiles:
+      - full
+      - backend
+
+  # Core Backend Services
+  brain-gateway:
+    build:
+      context: ../shared/services/brain-gateway
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8001
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - VAULT_ADDR=http://vault:8200
+    ports:
+      - "8001:8001"
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - backend
+      - full
+
+  auth:
+    build:
+      context: ../shared/services/auth
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8007
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+    ports:
+      - "8007:8007"
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    profiles:
+      - backend
+      - full
+
+  # Frontend Services (Optional in dev container if running locally)
+  bizoholic-frontend:
+    build:
+      context: ../brands/bizoholic/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - frontend
+      - full
+      - bizoholic
+
+  # CoreLDove Services
+  coreldove-frontend:
+    build:
+      context: ../brands/coreldove/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - NEXT_PUBLIC_API_URL=http://brain-gateway:8001
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - coreldove
+      - full
+
+  coreldove-backend:
+    build:
+      context: ../brands/coreldove/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - SALEOR_URL=http://saleor:8010
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - coreldove
+      - full
+
+  # ThrillRing Services
+  thrillring-frontend:
+    build:
+      context: ../brands/thrillring/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - NEXT_PUBLIC_API_URL=http://brain-gateway:8001
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - thrillring
+      - full
+
+  # QuantTrade Services
+  quanttrade-frontend:
+    build:
+      context: ../brands/quanttrade/frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+      - NEXT_PUBLIC_API_URL=http://quanttrade-backend:8006
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - quanttrade
+      - full
+
+  quanttrade-backend:
+    build:
+      context: ../brands/quanttrade/backend
+      dockerfile: Dockerfile
+    ports:
+      - "8006:8006"
+    environment:
+      - PORT=8006
+      - POSTGRES_HOST=postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    profiles:
+      - quanttrade
+      - full
+
+volumes:
+  postgres-data:
+  redis-data:

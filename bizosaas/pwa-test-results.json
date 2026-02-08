@@ -1,0 +1,349 @@
+{
+  "manifest": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "valid": true,
+      "name": "Bizoholic Marketing",
+      "startUrl": "/",
+      "display": "standalone",
+      "iconCount": 8
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "valid": true,
+      "name": "CorelDove Store",
+      "startUrl": "/",
+      "display": "standalone",
+      "iconCount": 8
+    },
+    "client-portal": {
+      "exists": true,
+      "valid": true,
+      "name": "BizOSaaS Client Portal",
+      "startUrl": "http://localhost:3006/",
+      "display": "standalone",
+      "iconCount": 8
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "valid": true,
+      "name": "BizOSaaS Admin Dashboard",
+      "startUrl": "http://localhost:3009/",
+      "display": "standalone",
+      "iconCount": 8
+    },
+    "business-directory": {
+      "exists": true,
+      "valid": true,
+      "name": "Business Directory Portal",
+      "startUrl": "http://localhost:3010/",
+      "display": "standalone",
+      "iconCount": 8
+    }
+  },
+  "serviceWorker": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "hasInstallEvent": true,
+      "hasActivateEvent": true,
+      "hasFetchEvent": true,
+      "hasCaching": true,
+      "hasBackgroundSync": true,
+      "size": 7635
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "hasInstallEvent": true,
+      "hasActivateEvent": true,
+      "hasFetchEvent": true,
+      "hasCaching": true,
+      "hasBackgroundSync": true,
+      "size": 7635
+    },
+    "client-portal": {
+      "exists": true,
+      "hasInstallEvent": true,
+      "hasActivateEvent": true,
+      "hasFetchEvent": true,
+      "hasCaching": true,
+      "hasBackgroundSync": true,
+      "size": 7635
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "hasInstallEvent": true,
+      "hasActivateEvent": true,
+      "hasFetchEvent": true,
+      "hasCaching": true,
+      "hasBackgroundSync": true,
+      "size": 7635
+    },
+    "business-directory": {
+      "exists": true,
+      "hasInstallEvent": true,
+      "hasActivateEvent": true,
+      "hasFetchEvent": true,
+      "hasCaching": true,
+      "hasBackgroundSync": true,
+      "size": 7635
+    }
+  },
+  "offlinePage": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "hasTitle": true,
+      "hasOfflineMessage": true,
+      "hasRetryButton": true,
+      "size": 4365
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "hasTitle": true,
+      "hasOfflineMessage": true,
+      "hasRetryButton": true,
+      "size": 4365
+    },
+    "client-portal": {
+      "exists": true,
+      "hasTitle": true,
+      "hasOfflineMessage": true,
+      "hasRetryButton": true,
+      "size": 4365
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "hasTitle": true,
+      "hasOfflineMessage": true,
+      "hasRetryButton": true,
+      "size": 4365
+    },
+    "business-directory": {
+      "exists": true,
+      "hasTitle": true,
+      "hasOfflineMessage": true,
+      "hasRetryButton": true,
+      "size": 4365
+    }
+  },
+  "icons": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "iconCount": 8,
+      "pngCount": 0,
+      "hasRequiredSizes": false,
+      "files": [
+        "icon-128x128.svg",
+        "icon-144x144.svg",
+        "icon-152x152.svg",
+        "icon-192x192.svg",
+        "icon-384x384.svg",
+        "icon-512x512.svg",
+        "icon-72x72.svg",
+        "icon-96x96.svg"
+      ]
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "iconCount": 8,
+      "pngCount": 0,
+      "hasRequiredSizes": false,
+      "files": [
+        "icon-128x128.svg",
+        "icon-144x144.svg",
+        "icon-152x152.svg",
+        "icon-192x192.svg",
+        "icon-384x384.svg",
+        "icon-512x512.svg",
+        "icon-72x72.svg",
+        "icon-96x96.svg"
+      ]
+    },
+    "client-portal": {
+      "exists": true,
+      "iconCount": 8,
+      "pngCount": 0,
+      "hasRequiredSizes": false,
+      "files": [
+        "icon-128x128.svg",
+        "icon-144x144.svg",
+        "icon-152x152.svg",
+        "icon-192x192.svg",
+        "icon-384x384.svg",
+        "icon-512x512.svg",
+        "icon-72x72.svg",
+        "icon-96x96.svg"
+      ]
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "iconCount": 8,
+      "pngCount": 0,
+      "hasRequiredSizes": false,
+      "files": [
+        "icon-128x128.svg",
+        "icon-144x144.svg",
+        "icon-152x152.svg",
+        "icon-192x192.svg",
+        "icon-384x384.svg",
+        "icon-512x512.svg",
+        "icon-72x72.svg",
+        "icon-96x96.svg"
+      ]
+    },
+    "business-directory": {
+      "exists": true,
+      "iconCount": 8,
+      "pngCount": 0,
+      "hasRequiredSizes": false,
+      "files": [
+        "icon-128x128.svg",
+        "icon-144x144.svg",
+        "icon-152x152.svg",
+        "icon-192x192.svg",
+        "icon-384x384.svg",
+        "icon-512x512.svg",
+        "icon-72x72.svg",
+        "icon-96x96.svg"
+      ]
+    }
+  },
+  "nextConfig": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "hasPWAHeaders": true,
+      "hasServiceWorkerHeaders": true,
+      "hasSecurityHeaders": false
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "hasPWAHeaders": true,
+      "hasServiceWorkerHeaders": true,
+      "hasSecurityHeaders": false
+    },
+    "client-portal": {
+      "exists": true,
+      "hasPWAHeaders": false,
+      "hasServiceWorkerHeaders": false,
+      "hasSecurityHeaders": false
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "hasPWAHeaders": false,
+      "hasServiceWorkerHeaders": false,
+      "hasSecurityHeaders": false
+    },
+    "business-directory": {
+      "exists": true,
+      "hasPWAHeaders": false,
+      "hasServiceWorkerHeaders": false,
+      "hasSecurityHeaders": false
+    }
+  },
+  "pwaProvider": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "hasServiceWorkerRegistration": true,
+      "hasInstallPrompt": true,
+      "hasUpdateHandling": true
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "hasServiceWorkerRegistration": true,
+      "hasInstallPrompt": true,
+      "hasUpdateHandling": true
+    },
+    "client-portal": {
+      "exists": true,
+      "hasServiceWorkerRegistration": true,
+      "hasInstallPrompt": true,
+      "hasUpdateHandling": true
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "hasServiceWorkerRegistration": true,
+      "hasInstallPrompt": true,
+      "hasUpdateHandling": true
+    },
+    "business-directory": {
+      "exists": true,
+      "hasServiceWorkerRegistration": true,
+      "hasInstallPrompt": true,
+      "hasUpdateHandling": true
+    }
+  },
+  "indexedDB": {
+    "bizoholic-frontend": {
+      "exists": true,
+      "hasDatabase": true,
+      "hasStores": true,
+      "hasFormQueue": true,
+      "hasCache": true,
+      "hasCleanup": true
+    },
+    "coreldove-frontend": {
+      "exists": true,
+      "hasDatabase": true,
+      "hasStores": true,
+      "hasFormQueue": true,
+      "hasCache": true,
+      "hasCleanup": true
+    },
+    "client-portal": {
+      "exists": true,
+      "hasDatabase": true,
+      "hasStores": true,
+      "hasFormQueue": true,
+      "hasCache": true,
+      "hasCleanup": true
+    },
+    "bizosaas-admin": {
+      "exists": true,
+      "hasDatabase": true,
+      "hasStores": true,
+      "hasFormQueue": true,
+      "hasCache": true,
+      "hasCleanup": true
+    },
+    "business-directory": {
+      "exists": true,
+      "hasDatabase": true,
+      "hasStores": true,
+      "hasFormQueue": true,
+      "hasCache": true,
+      "hasCleanup": true
+    }
+  },
+  "mobileComponents": {
+    "bizoholic-frontend": {
+      "hasPullToRefresh": true,
+      "hasLoadingSkeleton": true,
+      "skeletonVariants": 4
+    },
+    "coreldove-frontend": {
+      "hasPullToRefresh": true,
+      "hasLoadingSkeleton": true,
+      "skeletonVariants": 4
+    },
+    "client-portal": {
+      "hasPullToRefresh": true,
+      "hasLoadingSkeleton": true,
+      "skeletonVariants": 4
+    },
+    "bizosaas-admin": {
+      "hasPullToRefresh": true,
+      "hasLoadingSkeleton": true,
+      "skeletonVariants": 4
+    },
+    "business-directory": {
+      "hasPullToRefresh": true,
+      "hasLoadingSkeleton": true,
+      "skeletonVariants": 4
+    }
+  },
+  "overall": {
+    "totalTests": 40,
+    "passedTests": 40,
+    "percentage": 100,
+    "timestamp": "2025-09-27T10:54:05.532Z"
+  }
+}

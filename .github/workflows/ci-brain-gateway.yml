@@ -1,0 +1,47 @@
+name: Brain Gateway CI
+  
+on:
+  workflow_dispatch:
+  # push:
+  #   paths:
+  #     - 'bizosaas-brain-core/brain-gateway/**'
+  # pull_request:
+  #   paths:
+  #     - 'bizosaas-brain-core/brain-gateway/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        working-directory: ./bizosaas-brain-core/brain-gateway
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install httpx
+          
+      - name: Run tests
+        working-directory: ./bizosaas-brain-core/brain-gateway
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          REDIS_URL: redis://localhost:6379
+          ENVIRONMENT: testing
+          SKIP_VAULT: "true"
+          PYTHONPATH: .
+        run: |
+          pytest tests/

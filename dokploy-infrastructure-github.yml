@@ -1,0 +1,188 @@
+version: '3.8'
+
+# BizOSaaS Infrastructure Project - GitHub Source Build
+# 6 Infrastructure containers built from GitHub repository
+
+services:
+  # ==========================================
+  # POSTGRESQL DATABASE
+  # Multi-tenant database with pgvector
+  # ==========================================
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: bizosaas-postgres-staging
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=bizosaas_staging
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=BizOSaaS2025!StagingDB
+      - POSTGRES_MULTIPLE_DATABASES=bizosaas_staging,saleor_staging,temporal_staging,vault_staging
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./database/init-scripts/01-create-databases.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sh:ro
+    networks:
+      - bizosaas-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bizosaas_staging"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # REDIS CACHE
+  # High-performance caching and sessions
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: bizosaas-redis-staging
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --replica-read-only no
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - bizosaas-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # HASHICORP VAULT
+  # Secrets management
+  # ==========================================
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: bizosaas-vault-staging
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=staging-root-token-bizosaas-2025
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+      - VAULT_ADDR=http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault_staging_data:/vault/data
+    networks:
+      - bizosaas-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # TEMPORAL SERVER
+  # Workflow orchestration engine
+  # ==========================================
+  temporal-server:
+    image: temporalio/auto-setup:1.22.0
+    container_name: bizosaas-temporal-server-staging
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgresql
+      - DB_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PWD=BizOSaaS2025!StagingDB
+      - POSTGRES_SEEDS=bizosaas-postgres-staging
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    volumes:
+      - temporal_staging_data:/etc/temporal/config/dynamicconfig
+    networks:
+      - bizosaas-staging-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "bizosaas-temporal-server-staging:7233", "workflow", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # TEMPORAL UI
+  # Workflow management interface
+  # ==========================================
+  temporal-ui:
+    image: temporalio/ui:2.21.0
+    container_name: bizosaas-temporal-ui-staging
+    ports:
+      - "8082:8080"
+    environment:
+      - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000,https://stg.bizoholic.com
+    networks:
+      - bizosaas-staging-network
+    restart: unless-stopped
+    depends_on:
+      temporal-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # TEMPORAL INTEGRATION SERVICE
+  # Custom workflow integration - BUILT FROM GITHUB
+  # ==========================================
+  temporal-integration:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main
+      dockerfile: backend/services/temporal/Dockerfile
+    container_name: bizosaas-temporal-integration-staging
+    ports:
+      - "8009:8009"
+    environment:
+      - NODE_ENV=staging
+      - TEMPORAL_ADDRESS=bizosaas-temporal-server-staging:7233
+      - POSTGRES_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/temporal_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+    networks:
+      - bizosaas-staging-network
+    restart: unless-stopped
+    depends_on:
+      temporal-server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_staging_data:
+    driver: local
+  redis_staging_data:
+    driver: local
+  vault_staging_data:
+    driver: local
+  temporal_staging_data:
+    driver: local
+
+networks:
+  bizosaas-staging-network:
+    driver: bridge
+    external: false
+
+# ==================================================
+# INFRASTRUCTURE PROJECT SUMMARY:
+# ==================================================
+# Container Count: 6
+# GitHub Build: temporal-integration (1 service)
+# External Images: postgres, redis, vault, temporal (5 services)
+# Dependencies: None (foundation layer)
+# ==================================================

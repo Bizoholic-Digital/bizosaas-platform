@@ -1,0 +1,159 @@
+name: Deploy Bizoholic Platform
+
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - 'bizoholic-platform/**'
+      - 'shared/frontend/**'
+      - '.github/workflows/deploy-bizoholic.yml'
+  workflow_dispatch:
+
+env:
+  DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+  DOKPLOY_TOKEN: ${{ secrets.DOKPLOY_TOKEN }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd frontend
+          npm run test:ci
+        env:
+          NEXT_PUBLIC_PLATFORM: bizoholic
+
+      - name: Build application
+        run: |
+          cd frontend
+          npm run build
+        env:
+          NEXT_PUBLIC_PLATFORM: bizoholic
+          NODE_ENV: production
+
+      - name: Run linting
+        run: |
+          cd frontend
+          npm run lint
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+            echo "PROJECT_ID=${{ secrets.DOKPLOY_BIZOHOLIC_PROD_ID }}" >> $GITHUB_ENV
+            echo "DOMAIN_SUFFIX=${{ secrets.PROD_DOMAIN }}" >> $GITHUB_ENV
+          else
+            echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+            echo "PROJECT_ID=${{ secrets.DOKPLOY_BIZOHOLIC_STAGING_ID }}" >> $GITHUB_ENV
+            echo "DOMAIN_SUFFIX=${{ secrets.STAGING_DOMAIN }}" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to Dokploy
+        run: |
+          curl -X POST \
+            "${{ env.DOKPLOY_URL }}/api/projects/${{ env.PROJECT_ID }}/deploy" \
+            -H "Authorization: Bearer ${{ env.DOKPLOY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "buildArgs": {
+                "ENVIRONMENT": "${{ env.ENVIRONMENT }}",
+                "NEXT_PUBLIC_PLATFORM": "bizoholic",
+                "DOMAIN_SUFFIX": "${{ env.DOMAIN_SUFFIX }}"
+              }
+            }'
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for Bizoholic platform deployment to complete..."
+          sleep 90
+          
+          STATUS=$(curl -s \
+            "${{ env.DOKPLOY_URL }}/api/projects/${{ env.PROJECT_ID }}/status" \
+            -H "Authorization: Bearer ${{ env.DOKPLOY_TOKEN }}" | \
+            jq -r '.status')
+          
+          if [[ "$STATUS" == "running" ]]; then
+            echo "✅ Bizoholic platform deployment successful"
+          else
+            echo "❌ Bizoholic platform deployment failed"
+            exit 1
+          fi
+
+      - name: Health check
+        run: |
+          # Test Bizoholic platform endpoints
+          echo "Testing Bizoholic platform health..."
+          
+          BASE_URL="https://bizoholic.${{ env.DOMAIN_SUFFIX }}"
+          
+          # Test main homepage
+          if curl -f "$BASE_URL" -o /dev/null -s; then
+            echo "✅ Homepage accessible"
+          else
+            echo "❌ Homepage not accessible"
+            exit 1
+          fi
+          
+          # Test API endpoints
+          if curl -f "$BASE_URL/api/health" -o /dev/null -s; then
+            echo "✅ API health check passed"
+          else
+            echo "⚠️  API health check failed (may be expected if not implemented)"
+          fi
+          
+          # Test Strapi CMS
+          if curl -f "https://cms.bizoholic.${{ env.DOMAIN_SUFFIX }}" -o /dev/null -s; then
+            echo "✅ Strapi CMS accessible"
+          else
+            echo "⚠️  Strapi CMS not accessible (may still be starting)"
+          fi
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests for Bizoholic platform..."
+          
+          BASE_URL="https://bizoholic.${{ env.DOMAIN_SUFFIX }}"
+          
+          # Test platform detection
+          RESPONSE=$(curl -s "$BASE_URL" | grep -c "AI Marketing Agency" || echo "0")
+          if [[ "$RESPONSE" -gt "0" ]]; then
+            echo "✅ Platform detection working - correct content loaded"
+          else
+            echo "❌ Platform detection failed - wrong content or error"
+            exit 1
+          fi
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "🚀 Bizoholic platform deployment completed successfully"
+            echo "🌐 Available at: https://bizoholic.${{ env.DOMAIN_SUFFIX }}"
+          else
+            echo "💥 Bizoholic platform deployment failed"
+          fi

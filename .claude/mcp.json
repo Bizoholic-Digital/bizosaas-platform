@@ -1,0 +1,60 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-postgres@latest",
+        "postgresql://postgres:SharedInfra2024!SuperSecure@postgres:5432/postgres"
+      ],
+      "env": {
+        "POSTGRES_HOST": "postgres",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_USER": "postgres",
+        "POSTGRES_PASSWORD": "SharedInfra2024!SuperSecure",
+        "POSTGRES_DB": "postgres"
+      }
+    },
+    "wordpress": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-wordpress@latest"
+      ],
+      "env": {
+        "WORDPRESS_URL": "https://www.bizoholic.com",
+        "WORDPRESS_USERNAME": "superadmin",
+        "WORDPRESS_PASSWORD": "BizoSaaS2024!Admin"
+      }
+    },
+    "dokploy": {
+      "command": "npx",
+      "args": [
+        "@ahdev/dokploy-mcp"
+      ],
+      "env": {
+        "DOKPLOY_URL": "https://dk4.bizoholic.com",
+        "DOKPLOY_API_KEY": "dk4ixNgzxiGcZWrjlvocbOJqTLjlZsJUEgmTJjjXYvLVSwiUBUPARxklyNFyVQRDHBa"
+      }
+    },
+    "n8n": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-n8n@latest"
+      ],
+      "env": {
+        "N8N_BASE_URL": "https://b8d.bizoholic.com",
+        "N8N_USERNAME": "bizoholic.com@gmail.com",
+        "N8N_PASSWORD": "EGEw887eU$l$pf",
+        "N8N_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmMGRmNmU1OC04MTI4LTQ0ZWEtOWMyMS0xYTU3ODNmN2Y5MDciLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1NTEwNDI2LCJleHAiOjE3NTgwNjAwMDB9.3L-Y1HzZzA11ebsYeikmg6W4o481clKuSnjhvSvces8"
+      }
+    },
+    "kubernetes": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-kubernetes@latest"
+      ],
+      "env": {
+        "KUBECONFIG": "/home/alagiri/.kube/config"
+      }
+    }
+  }
+}

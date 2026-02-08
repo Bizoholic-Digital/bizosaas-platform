@@ -1,0 +1,8 @@
+mcp
+slack_sdk
+python-dotenv
+httpx
+
+starlette
+uvicorn
+sse-starlette

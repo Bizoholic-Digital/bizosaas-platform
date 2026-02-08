@@ -1,0 +1,436 @@
+{
+  "timestamp": "2025-09-26T17:11:14.588035+00:00",
+  "summary": {
+    "total_tests": 22,
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "success_rate": 100.0,
+    "total_duration": 1.488142728805542
+  },
+  "results": [
+    {
+      "test_name": "Database Connectivity",
+      "status": "PASS",
+      "message": "Database accessible via integration service",
+      "duration": 0.26576685905456543,
+      "details": {
+        "database_status": "connected"
+      }
+    },
+    {
+      "test_name": "Redis Connectivity",
+      "status": "PASS",
+      "message": "Redis accessible via brain gateway",
+      "duration": 0.06777596473693848,
+      "details": {
+        "redis_status": "connected"
+      }
+    },
+    {
+      "test_name": "Network Connectivity",
+      "status": "PASS",
+      "message": "Connected to 3/3 services",
+      "duration": 0.1625218391418457,
+      "details": {
+        "connected": [
+          "Brain Gateway",
+          "Integration Service",
+          "Temporal UI"
+        ],
+        "failed": []
+      }
+    },
+    {
+      "test_name": "Temporal Server Health",
+      "status": "PASS",
+      "message": "Temporal server container is running",
+      "duration": 0.062087059020996094,
+      "details": {
+        "container_status": "running"
+      }
+    },
+    {
+      "test_name": "Temporal gRPC Connectivity",
+      "status": "PASS",
+      "message": "Temporal server accepting connections on port 7233",
+      "duration": 0.00022983551025390625,
+      "details": {
+        "port": 7233,
+        "status": "open"
+      }
+    },
+    {
+      "test_name": "Temporal Namespace",
+      "status": "PASS",
+      "message": "Namespace configuration validated (simulated)",
+      "duration": 2.384185791015625e-06,
+      "details": {
+        "namespace": "bizosaas",
+        "status": "configured"
+      }
+    },
+    {
+      "test_name": "Temporal UI Accessibility",
+      "status": "PASS",
+      "message": "Temporal UI is accessible and responding",
+      "duration": 0.06993412971496582,
+      "details": {
+        "url": "http://localhost:8082",
+        "status": "accessible"
+      }
+    },
+    {
+      "test_name": "UI-Server Connectivity",
+      "status": "PASS",
+      "message": "UI can connect to Temporal server (assumed)",
+      "duration": 2.384185791015625e-06,
+      "details": {
+        "connection": "established"
+      }
+    },
+    {
+      "test_name": "Integration Service Health",
+      "status": "PASS",
+      "message": "Integration service is healthy",
+      "duration": 0.05753588676452637,
+      "details": {
+        "status": "healthy",
+        "service": "temporal-integration",
+        "version": "1.0.0",
+        "temporal_connected": true,
+        "temporal_server": "bizosaas-temporal-server:7233",
+        "timestamp": "2025-09-26T17:11:13.779946+00:00",
+        "n8n_templates_loaded": 10
+      }
+    },
+    {
+      "test_name": "Workflow Templates",
+      "status": "PASS",
+      "message": "Found 14 workflow templates",
+      "duration": 0.07008624076843262,
+      "details": {
+        "template_count": 14,
+        "templates": [
+          {
+            "id": "ai_agent_orchestration",
+            "name": "Ai Agent Orchestration",
+            "description": "Advanced workflow automation template",
+            "category": "AI Agent Orchestration",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "multi_tenant_agent_workflow",
+            "name": "Multi Tenant Agent Workflow",
+            "description": "Advanced workflow automation template",
+            "category": "AI Agent Orchestration",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "ai_customer_onboarding",
+            "name": "Ai Customer Onboarding",
+            "description": "Multi-stage AI-powered customer onboarding with HubSpot integration",
+            "category": "Business Operations",
+            "estimated_duration": 2700,
+            "required_agents": [
+              "marketing_strategist",
+              "customer_success_specialist"
+            ]
+          },
+          {
+            "id": "ai_lead_qualification",
+            "name": "Ai Lead Qualification",
+            "description": "OpenAI-powered lead analysis with automated qualification scoring",
+            "category": "Business Operations",
+            "estimated_duration": 300,
+            "required_agents": [
+              "lead_qualification_specialist",
+              "sales_intelligence_specialist"
+            ]
+          },
+          {
+            "id": "linkedin_outreach_ai",
+            "name": "Linkedin Outreach Ai",
+            "description": "Automated LinkedIn outreach with AI content personalization",
+            "category": "Marketing Automation",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "email_marketing_automation",
+            "name": "Email Marketing Automation",
+            "description": "Multi-channel email sequences with behavioral triggers",
+            "category": "Marketing Automation",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "campaign_optimization",
+            "name": "Campaign Optimization",
+            "description": "Advanced workflow automation template",
+            "category": "Marketing Automation",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "ecommerce_product_research",
+            "name": "Ecommerce Product Research",
+            "description": "AI-driven product research with SEO optimization for dropshipping",
+            "category": "E-commerce",
+            "estimated_duration": 1800,
+            "required_agents": [
+              "product_sourcing_specialist",
+              "amazon_optimization_specialist"
+            ]
+          },
+          {
+            "id": "amazon_spapi_sourcing",
+            "name": "Amazon Spapi Sourcing",
+            "description": "Advanced workflow automation template",
+            "category": "E-commerce",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "product_classification_hook_midtier_hero",
+            "name": "Product Classification Hook Midtier Hero",
+            "description": "Advanced workflow automation template",
+            "category": "E-commerce",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "ai_content_generation",
+            "name": "Ai Content Generation",
+            "description": "Advanced workflow automation template",
+            "category": "Content & SEO",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "seo_automation",
+            "name": "Seo Automation",
+            "description": "Advanced workflow automation template",
+            "category": "Content & SEO",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "ai_customer_support",
+            "name": "Ai Customer Support",
+            "description": "Advanced workflow automation template",
+            "category": "Business Operations",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          },
+          {
+            "id": "subscription_management",
+            "name": "Subscription Management",
+            "description": "Advanced workflow automation template",
+            "category": "Business Operations",
+            "estimated_duration": 600,
+            "required_agents": [
+              "general_ai_agent"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "test_name": "Metrics Endpoint",
+      "status": "PASS",
+      "message": "Metrics endpoint is functional",
+      "duration": 0.07955169677734375,
+      "details": {
+        "total_workflows": 0,
+        "active_workflows": 0,
+        "completed_workflows": 0,
+        "failed_workflows": 0,
+        "success_rate": 95.5,
+        "average_duration_seconds": 180.0,
+        "agent_utilization": {
+          "product_sourcing_specialist": 78.0,
+          "marketing_strategist": 85.0,
+          "content_creator": 92.0,
+          "amazon_optimization_specialist": 67.0
+        },
+        "template_usage": {
+          "ai_customer_onboarding": 25,
+          "ai_lead_qualification": 30,
+          "ecommerce_product_research": 20,
+          "email_marketing_automation": 15,
+          "campaign_optimization": 10
+        }
+      }
+    },
+    {
+      "test_name": "Workflow Types Definition",
+      "status": "PASS",
+      "message": "Found 5/5 documented workflows",
+      "duration": 0.052251338958740234,
+      "details": {
+        "documented": [
+          "ai_customer_onboarding",
+          "ai_lead_qualification",
+          "ecommerce_product_research",
+          "campaign_optimization",
+          "ai_agent_orchestration"
+        ],
+        "found": [
+          "ai_agent_orchestration",
+          "ai_customer_onboarding",
+          "ai_lead_qualification",
+          "campaign_optimization",
+          "ecommerce_product_research"
+        ]
+      }
+    },
+    {
+      "test_name": "Template Adaptation",
+      "status": "PASS",
+      "message": "N8N template adaptation logic is implemented",
+      "duration": 2.86102294921875e-06,
+      "details": {
+        "adaptation_methods": [
+          "customer_onboarding",
+          "lead_qualification",
+          "ecommerce_research"
+        ]
+      }
+    },
+    {
+      "test_name": "Workflow Start",
+      "status": "PASS",
+      "message": "Successfully started workflow: WorkflowType.AI_CUSTOMER_ONBOARDING_9750dc65",
+      "duration": 0.061933040618896484,
+      "details": {
+        "workflow_id": "WorkflowType.AI_CUSTOMER_ONBOARDING_9750dc65",
+        "execution_id": "exec_4371ac894ba0",
+        "status": "running",
+        "template_type": "ai_customer_onboarding",
+        "tenant_id": "test_tenant",
+        "progress": 0.0,
+        "result": null,
+        "error": null,
+        "started_at": "2025-09-26T17:11:14.043216Z",
+        "completed_at": null,
+        "estimated_completion": null
+      }
+    },
+    {
+      "test_name": "Workflow Status",
+      "status": "PASS",
+      "message": "Status tracking working for workflow test_workflow_123",
+      "duration": 0.06793498992919922,
+      "details": {
+        "workflow_id": "test_workflow_123",
+        "execution_id": "exec_test_workflow_123",
+        "status": "running",
+        "template_type": "ai_agent_orchestration",
+        "tenant_id": "unknown",
+        "progress": null,
+        "result": null,
+        "error": null,
+        "started_at": "2025-09-26T17:06:14.113350Z",
+        "completed_at": null,
+        "estimated_completion": null
+      }
+    },
+    {
+      "test_name": "Workflow Cancellation",
+      "status": "PASS",
+      "message": "Cancellation endpoint is functional",
+      "duration": 0.05461239814758301,
+      "details": {
+        "endpoint_status": "responsive"
+      }
+    },
+    {
+      "test_name": "Invalid Workflow Handling",
+      "status": "PASS",
+      "message": "Service properly rejects invalid workflows",
+      "duration": 0.06250405311584473,
+      "details": {
+        "status_code": 422
+      }
+    },
+    {
+      "test_name": "Timeout Handling",
+      "status": "PASS",
+      "message": "Timeout handling logic is implemented (simulated)",
+      "duration": 2.6226043701171875e-06,
+      "details": {
+        "timeout_mechanism": "configured"
+      }
+    },
+    {
+      "test_name": "Workflow Startup Performance",
+      "status": "PASS",
+      "message": "Workflow started in 0.05 seconds",
+      "duration": 0.053139448165893555,
+      "details": {
+        "startup_time": 0.05283331871032715,
+        "threshold": 5.0
+      }
+    },
+    {
+      "test_name": "Concurrent Workflows",
+      "status": "PASS",
+      "message": "Successfully handled 3/3 concurrent workflows",
+      "duration": 0.06050252914428711,
+      "details": {
+        "successful": 3,
+        "total": 3
+      }
+    },
+    {
+      "test_name": "Brain Gateway Integration",
+      "status": "PASS",
+      "message": "Brain gateway is accessible from temporal service",
+      "duration": 0.0485224723815918,
+      "details": {
+        "brain_gateway_status": "accessible"
+      }
+    },
+    {
+      "test_name": "Multi-tenant Support",
+      "status": "PASS",
+      "message": "Multi-tenant support working for 3 tenants",
+      "duration": 0.19124269485473633,
+      "details": {
+        "tested_tenants": [
+          "tenant_1",
+          "tenant_2",
+          "tenant_3"
+        ],
+        "successful": [
+          "tenant_1",
+          "tenant_2",
+          "tenant_3"
+        ]
+      }
+    }
+  ]
+}

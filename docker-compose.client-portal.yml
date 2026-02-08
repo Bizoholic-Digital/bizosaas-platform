@@ -1,0 +1,59 @@
+services:
+  client-portal:
+    # build:
+    #   context: .
+    #   dockerfile: portals/client-portal/Dockerfile
+    #   args:
+    #     - SERVICE_PATH=portals/client-portal
+    #     - NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+    #     - NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net
+    #     - NEXTAUTH_URL=https://app.bizoholic.net
+    #     - NEXTAUTH_SECRET=${AUTH_SECRET:-}
+    #     - AUTH_AUTHENTIK_ID=${AUTH_AUTHENTIK_ID:-}
+    #     - AUTH_AUTHENTIK_SECRET=${AUTH_AUTHENTIK_SECRET:-}
+    #     - AUTH_AUTHENTIK_ISSUER=${AUTH_AUTHENTIK_ISSUER:-}
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/client-portal:staging
+    container_name: bizosaas-client-portal-staging
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
+      - NEXTAUTH_URL=https://app.bizoholic.net
+      - NEXTAUTH_SECRET=${AUTH_SECRET:-BizOSaaS2025!Secret!NextAuth}
+      - AUTHENTIK_ISSUER=${AUTH_AUTHENTIK_ISSUER:-https://auth-sso.bizoholic.net/application/o/bizosaas-platform/}
+      - AUTHENTIK_CLIENT_ID=${AUTH_AUTHENTIK_ID:-bizosaas-portal}
+      - AUTHENTIK_CLIENT_SECRET=${AUTH_AUTHENTIK_SECRET:-BizOSaaS2024!AuthentikSecret}
+      - AUTH_AUTHENTIK_ID=${AUTH_AUTHENTIK_ID:-bizosaas-portal}
+      - AUTH_AUTHENTIK_SECRET=${AUTH_AUTHENTIK_SECRET:-BizOSaaS2024!AuthentikSecret}
+      - AUTH_AUTHENTIK_ISSUER=${AUTH_AUTHENTIK_ISSUER:-https://auth-sso.bizoholic.net/application/o/bizosaas-platform/}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - BRAIN_GATEWAY_URL=${BRAIN_GATEWAY_URL:-http://bizosaas-brain-staging:8000}
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client-portal-stg.rule=Host(`app.bizoholic.net`)"
+      - "traefik.http.routers.client-portal-stg.entrypoints=websecure"
+      - "traefik.http.routers.client-portal-stg.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.client-portal-stg.priority=1000"
+      - "traefik.http.routers.client-portal-stg.service=client-portal-stg-svc"
+      - "traefik.http.services.client-portal-stg-svc.loadbalancer.server.port=3003"
+      - "traefik.docker.network=dokploy-network"
+
+networks:
+  dokploy-network:
+    external: true

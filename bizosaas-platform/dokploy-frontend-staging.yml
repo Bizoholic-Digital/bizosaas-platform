@@ -1,0 +1,156 @@
+# BizOSaaS Frontend Applications - STAGING
+# All 6 frontend services building directly from GitHub repository
+# Deploy via Dokploy at dk.bizoholic.com
+
+services:
+  # ==========================================
+  # 1. BIZOHOLIC FRONTEND (Port 3000)
+  # ==========================================
+  bizoholic-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/bizoholic-frontend
+      dockerfile: Dockerfile
+    container_name: bizosaas-bizoholic-frontend-staging
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 2. CLIENT PORTAL (Port 3001)
+  # ==========================================
+  client-portal:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/client-portal
+      dockerfile: Dockerfile
+    container_name: bizosaas-client-portal-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_CRM_API_URL=http://bizosaas-django-crm-staging:8000
+      - NEXT_PUBLIC_CMS_API_URL=http://bizosaas-wagtail-staging:8000
+      - NEXT_PUBLIC_ECOM_API_URL=http://bizosaas-saleor-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 3. CORELDOVE FRONTEND (Port 3002)
+  # ==========================================
+  coreldove-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/coreldove-frontend
+      dockerfile: Dockerfile
+    container_name: bizosaas-coreldove-frontend-staging
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_SALEOR_API_URL=http://bizosaas-saleor-staging:8000/graphql/
+      - NEXT_PUBLIC_CORELDOVE_BACKEND_URL=http://bizosaas-coreldove-backend-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 4. BUSINESS DIRECTORY FRONTEND (Port 3003)
+  # ==========================================
+  business-directory-frontend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/business-directory
+      dockerfile: Dockerfile
+    container_name: bizosaas-business-directory-frontend-staging
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_DIRECTORY_API_URL=http://bizosaas-business-directory-staging:8000
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 5. THRILLRING GAMING (Port 3005)
+  # ==========================================
+  thrillring-gaming:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/thrillring-gaming
+      dockerfile: Dockerfile
+    container_name: bizosaas-thrillring-gaming-staging
+    ports:
+      - "3005:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # 6. BIZOSAAS ADMIN DASHBOARD (Port 3009)
+  # ==========================================
+  admin-dashboard:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/frontend/apps/bizosaas-admin
+      dockerfile: Dockerfile
+    container_name: bizosaas-admin-dashboard-staging
+    ports:
+      - "3009:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=http://bizosaas-brain-staging:8001
+      - NEXT_PUBLIC_SUPERSET_URL=http://bizosaas-superset-staging:8088
+      - NEXT_PUBLIC_TEMPORAL_UI_URL=http://bizosaas-temporal-ui-staging:8080
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  dokploy-network:
+    external: true

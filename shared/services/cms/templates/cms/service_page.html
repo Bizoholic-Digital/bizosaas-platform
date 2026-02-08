@@ -1,0 +1,259 @@
+{% extends "cms/bizoholic_home_page.html" %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{ page.title }} - Bizoholic AI Marketing{% endblock %}
+
+{% block head %}
+    <meta name="description" content="{{ page.service_description|truncatewords:30 }}">
+    <meta name="keywords" content="AI marketing, {{ page.title|lower }}, digital marketing, automation, {{ page.category|lower }}">
+    <meta property="og:title" content="{{ page.title }} - Bizoholic AI Marketing">
+    <meta property="og:description" content="{{ page.service_description|truncatewords:30 }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ page.title }}">
+    <meta name="twitter:description" content="{{ page.service_description|truncatewords:30 }}">
+    
+    <!-- Service-specific structured data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "{{ page.title }}",
+        "description": "{{ page.service_description }}",
+        "provider": {
+            "@type": "Organization",
+            "name": "Bizoholic",
+            "url": "http://localhost:3000"
+        },
+        "serviceType": "{{ page.category }}",
+        "areaServed": "Global",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "{{ page.title }} Plans",
+            "itemListElement": {
+                "@type": "Offer",
+                "description": "{{ page.service_description }}"
+            }
+        }
+    }
+    </script>
+{% endblock %}
+
+{% block main %}
+    <!-- Service Hero Section -->
+    <section class="hero" style="padding-top: calc(var(--spacing-24) + 60px);">
+        <div class="container">
+            {% if page.badge %}
+                <div style="display: inline-flex; align-items: center; background: var(--color-primary); color: var(--color-white); padding: var(--spacing-2) var(--spacing-4); border-radius: var(--border-radius-xl); font-size: var(--font-size-sm); font-weight: 600; margin-bottom: var(--spacing-4);">
+                    {{ page.badge }}
+                </div>
+            {% endif %}
+            
+            <h1 style="font-size: var(--font-size-6xl); font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; margin-bottom: var(--spacing-6); color: var(--color-black);">
+                {% if page.icon %}{{ page.icon }} {% endif %}{{ page.title }}
+            </h1>
+            
+            <p style="font-size: var(--font-size-2xl); font-weight: 400; line-height: 1.4; color: var(--color-gray-600); max-width: 800px; margin: 0 auto var(--spacing-10);">
+                {{ page.service_description }}
+            </p>
+            
+            <div style="display: flex; gap: var(--spacing-4); justify-content: center; flex-wrap: wrap;">
+                <a href="/contact" class="btn btn-primary btn-xl">Get Started Today</a>
+                <a href="/#features" class="btn btn-secondary btn-xl">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Service Content Blocks -->
+    {% if page.content_blocks %}
+        {% for block in page.content_blocks %}
+            {% if block.block_type == 'heading' %}
+                <section class="section-sm">
+                    <div class="container" style="text-align: center;">
+                        <h2 style="font-size: var(--font-size-4xl); font-weight: 700; color: var(--color-black); letter-spacing: -0.02em;">
+                            {{ block.value }}
+                        </h2>
+                    </div>
+                </section>
+            {% elif block.block_type == 'paragraph' %}
+                <section class="section-sm">
+                    <div class="container">
+                        <div style="max-width: 800px; margin: 0 auto; font-size: var(--font-size-lg); line-height: 1.6; color: var(--color-gray-600); text-align: center;">
+                            {{ block.value|linebreaks }}
+                        </div>
+                    </div>
+                </section>
+            {% elif block.block_type == 'features' %}
+                <section class="section">
+                    <div class="container">
+                        <div class="features-grid">
+                            {% for feature in block.value %}
+                                <div class="feature-card">
+                                    <div class="feature-icon">🎯</div>
+                                    <h3>{{ feature.title }}</h3>
+                                    <p>{{ feature.description }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            {% elif block.block_type == 'pricing' %}
+                <section class="section" style="background-color: var(--color-gray-100);">
+                    <div class="container">
+                        <h2 style="text-align: center; font-size: var(--font-size-4xl); font-weight: 700; margin-bottom: var(--spacing-16); color: var(--color-black);">Choose Your Plan</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--spacing-8);">
+                            {% for plan in block.value %}
+                                <div style="background: var(--color-white); border-radius: var(--border-radius-2xl); padding: var(--spacing-8); text-align: center; {% if plan.is_popular %}border: 2px solid var(--color-primary); position: relative;{% else %}border: 1px solid var(--color-gray-200);{% endif %} transition: var(--transition-base);">
+                                    {% if plan.is_popular %}
+                                        <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--color-primary); color: var(--color-white); padding: var(--spacing-2) var(--spacing-6); border-radius: var(--border-radius-xl); font-size: var(--font-size-sm); font-weight: 600;">
+                                            Most Popular
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <h3 style="font-size: var(--font-size-2xl); font-weight: 600; margin-bottom: var(--spacing-4); color: var(--color-black);">
+                                        {{ plan.plan_name }}
+                                    </h3>
+                                    
+                                    <div style="margin-bottom: var(--spacing-6);">
+                                        <span style="font-size: var(--font-size-4xl); font-weight: 800; color: var(--color-primary);">{{ plan.price }}</span>
+                                        <span style="color: var(--color-gray-600); font-size: var(--font-size-base);">/ {{ plan.price_period }}</span>
+                                    </div>
+                                    
+                                    <ul style="list-style: none; margin-bottom: var(--spacing-8); text-align: left;">
+                                        {% for feature in plan.features %}
+                                            <li style="margin-bottom: var(--spacing-2); display: flex; align-items: center; color: var(--color-gray-600);">
+                                                <span style="color: var(--color-success); margin-right: var(--spacing-2);">✓</span>
+                                                {{ feature }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                    <a href="{{ plan.cta_url }}" class="btn {% if plan.is_popular %}btn-primary{% else %}btn-secondary{% endif %} btn-lg" style="width: 100%;">
+                                        {{ plan.cta_text }}
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            {% elif block.block_type == 'testimonials' %}
+                <section class="section">
+                    <div class="container">
+                        <h2 style="text-align: center; font-size: var(--font-size-4xl); font-weight: 700; margin-bottom: var(--spacing-16); color: var(--color-black);">What Our Clients Say</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: var(--spacing-8);">
+                            {% for testimonial in block.value %}
+                                <div style="background: var(--color-white); border-radius: var(--border-radius-2xl); padding: var(--spacing-8); border: 1px solid var(--color-gray-200); transition: var(--transition-base);">
+                                    <div style="margin-bottom: var(--spacing-4);">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= testimonial.rating %}
+                                                <span style="color: #FFD700; font-size: var(--font-size-lg);">★</span>
+                                            {% else %}
+                                                <span style="color: var(--color-gray-300); font-size: var(--font-size-lg);">★</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <p style="font-size: var(--font-size-base); line-height: 1.6; color: var(--color-gray-600); margin-bottom: var(--spacing-6); font-style: italic;">
+                                        "{{ testimonial.quote }}"
+                                    </p>
+                                    
+                                    <div style="display: flex; align-items: center;">
+                                        {% if testimonial.author_image %}
+                                            {% image testimonial.author_image width-50 height-50 style="border-radius: 50%; margin-right: var(--spacing-3);" %}
+                                        {% endif %}
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--color-black);">{{ testimonial.author_name }}</div>
+                                            {% if testimonial.author_title %}
+                                                <div style="font-size: var(--font-size-sm); color: var(--color-gray-600);">
+                                                    {{ testimonial.author_title }}{% if testimonial.author_company %} at {{ testimonial.author_company }}{% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+            {% elif block.block_type == 'cta' %}
+                <section class="section" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: var(--color-white);">
+                    <div class="container" style="text-align: center;">
+                        <h2 style="font-size: var(--font-size-4xl); font-weight: 700; margin-bottom: var(--spacing-6); color: var(--color-white);">
+                            {{ block.value.title }}
+                        </h2>
+                        {% if block.value.description %}
+                            <p style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-8); opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
+                                {{ block.value.description }}
+                            </p>
+                        {% endif %}
+                        <a href="{{ block.value.button_url }}" class="btn" style="background: var(--color-white); color: var(--color-primary); font-size: var(--font-size-lg); padding: var(--spacing-5) var(--spacing-10);">
+                            {{ block.value.button_text }}
+                        </a>
+                    </div>
+                </section>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Default Service Features (if no content blocks) -->
+    {% if not page.content_blocks %}
+        <section class="features">
+            <div class="container">
+                <h2 style="text-align: center; font-size: var(--font-size-4xl); font-weight: 700; margin-bottom: var(--spacing-16); color: var(--color-black);">
+                    Key Features of {{ page.title }}
+                </h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>AI-Powered Automation</h3>
+                        <p>Advanced AI algorithms optimize your {{ page.title|lower }} for maximum effectiveness and ROI.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Real-time Analytics</h3>
+                        <p>Track performance metrics and get actionable insights to improve your {{ page.category|lower }} strategy.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Fast Implementation</h3>
+                        <p>Get your {{ page.title|lower }} campaign up and running in just 15 minutes with our streamlined setup.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="section" style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); color: var(--color-white);">
+            <div class="container" style="text-align: center;">
+                <h2 style="font-size: var(--font-size-4xl); font-weight: 700; margin-bottom: var(--spacing-6); color: var(--color-white);">
+                    Ready to Get Started with {{ page.title }}?
+                </h2>
+                <p style="font-size: var(--font-size-xl); margin-bottom: var(--spacing-8); opacity: 0.9; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Join hundreds of businesses already using our {{ page.title|lower }} service to grow their revenue and reduce costs.
+                </p>
+                <div style="display: flex; gap: var(--spacing-4); justify-content: center; flex-wrap: wrap;">
+                    <a href="/contact" class="btn" style="background: var(--color-white); color: var(--color-primary); font-size: var(--font-size-lg); padding: var(--spacing-5) var(--spacing-10);">
+                        Start Free Trial
+                    </a>
+                    <a href="/" class="btn" style="background: transparent; color: var(--color-white); border: 1px solid var(--color-white); font-size: var(--font-size-lg); padding: var(--spacing-5) var(--spacing-10);">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Related Services -->
+    <section class="section-sm">
+        <div class="container">
+            <h3 style="text-align: center; font-size: var(--font-size-2xl); font-weight: 600; margin-bottom: var(--spacing-8); color: var(--color-black);">
+                Explore Our Other Services
+            </h3>
+            <div style="display: flex; gap: var(--spacing-4); justify-content: center; flex-wrap: wrap;">
+                <a href="/services" class="btn btn-secondary">All Services</a>
+                <a href="/pricing" class="btn btn-secondary">View Pricing</a>
+                <a href="/case-studies" class="btn btn-secondary">Case Studies</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}

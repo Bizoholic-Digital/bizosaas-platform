@@ -1,0 +1,150 @@
+# BizOSaaS Platform - Dokploy Configuration
+# Deploy to staging VPS with automated CI/CD
+
+version: "1.0"
+
+project:
+  name: "bizosaas-platform"
+  description: "BizOSaaS Autonomous AI Agents Platform"
+  environment: "staging"
+
+# Application Configuration
+app:
+  name: "bizosaas-app"
+  type: "docker-compose"
+  
+  # Source Configuration
+  source:
+    type: "git"
+    repository: "https://github.com/Bizoholic-Digital/bizosaas-platform.git"
+    branch: "main"
+    dockerfile: "docker-compose.staging.yml"
+    
+  # Build Configuration
+  build:
+    context: "."
+    dockerfile: "docker-compose.staging.yml"
+    args:
+      ENVIRONMENT: "staging"
+      
+  # Environment Variables
+  env:
+    POSTGRES_PASSWORD: "{{ secret.POSTGRES_PASSWORD }}"
+    OPENAI_API_KEY: "{{ secret.OPENAI_API_KEY }}"
+    DJANGO_SECRET_KEY: "{{ secret.DJANGO_SECRET_KEY }}"
+    WAGTAIL_SECRET_KEY: "{{ secret.WAGTAIL_SECRET_KEY }}"
+    ENVIRONMENT: "staging"
+    ALLOWED_HOSTS: "{{ domain }},localhost"
+    
+  # Health Checks
+  healthcheck:
+    enabled: true
+    path: "/health"
+    interval: 30
+    timeout: 10
+    retries: 3
+    
+  # Resource Limits
+  resources:
+    memory: "4Gi"
+    cpu: "2000m"
+    
+  # Deployment Strategy
+  deployment:
+    replicas: 1
+    strategy: "rolling"
+    max_unavailable: 0
+    max_surge: 1
+    
+# Database Configuration
+database:
+  - name: "bizosaas-postgres"
+    type: "postgresql"
+    version: "16"
+    storage: "10Gi"
+    env:
+      POSTGRES_DB: "bizosaas"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "{{ secret.POSTGRES_PASSWORD }}"
+      
+# Redis Configuration      
+redis:
+  - name: "bizosaas-redis"
+    type: "redis"
+    version: "7"
+    storage: "2Gi"
+    
+# Domain Configuration
+domains:
+  - name: "api.bizosaas.staging.com"
+    path: "/"
+    port: 8080
+    service: "api-gateway"
+    
+  - name: "app.bizosaas.staging.com"
+    path: "/"
+    port: 3000
+    service: "bizoholic-website"
+    
+  - name: "admin.bizosaas.staging.com"
+    path: "/admin"
+    port: 8010
+    service: "wagtail-cms"
+    
+# SSL Configuration
+ssl:
+  enabled: true
+  provider: "letsencrypt"
+  email: "admin@bizosaas.com"
+  
+# Backup Configuration
+backups:
+  database:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention: "7d"
+    
+  files:
+    enabled: true
+    paths:
+      - "/app/uploads"
+      - "/app/static"
+    schedule: "0 3 * * *"  # Daily at 3 AM
+    retention: "30d"
+    
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  alerts:
+    enabled: true
+    email: "alerts@bizosaas.com"
+    
+  metrics:
+    enabled: true
+    retention: "30d"
+    
+# Security Configuration
+security:
+  firewall:
+    enabled: true
+    allowed_ports:
+      - 80
+      - 443
+      - 22
+      
+  fail2ban:
+    enabled: true
+    
+# Secrets (to be configured in Dokploy UI)
+secrets:
+  - name: "POSTGRES_PASSWORD"
+    description: "PostgreSQL database password"
+    
+  - name: "OPENAI_API_KEY"
+    description: "OpenAI API key for AI services"
+    
+  - name: "DJANGO_SECRET_KEY"
+    description: "Django secret key"
+    
+  - name: "WAGTAIL_SECRET_KEY"
+    description: "Wagtail secret key"

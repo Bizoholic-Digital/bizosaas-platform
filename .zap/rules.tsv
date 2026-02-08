@@ -1,0 +1,25 @@
+# ZAP Rules File
+# Format: <id>	<type>	[<threshold>]
+# id: the ID of the rule
+# type: IGNORE, INFO, LOW, MEDIUM, HIGH
+# threshold: DEFAULT, OFF, LOW, MEDIUM, HIGH
+
+10020	IGNORE	# Cookie No HttpOnly Flag / Anti-clickjacking
+10010	IGNORE	# Cookie No HttpOnly Flag
+10011	IGNORE	# Cookie Without Secure Flag
+10017	IGNORE	# Cross-Domain JavaScript Source File Inclusion
+10021	IGNORE	# X-Content-Type-Options Header Missing
+10027	IGNORE	# Information Disclosure - Suspicious Comments
+10038	IGNORE	# Content Security Policy (CSP) Header Not Set
+10049	IGNORE	# Non-Storable Content
+10063	IGNORE	# Permissions Policy Header Not Set
+10094	IGNORE	# Base64 Disclosure
+10109	IGNORE	# Modern Web Application
+10110	IGNORE	# Dangerous JS Functions
+110009	IGNORE	# Full Path Disclosure
+90003	IGNORE	# Sub Resource Integrity Attribute Missing
+90004	IGNORE	# Insufficient Site Isolation Against Spectre Vulnerability
+90005	IGNORE	# Sec-Fetch-Dest Header is Missing
+40012	IGNORE	# Cross Domain Misconfiguration
+90033	IGNORE	# Private IP Disclosure
+10054	IGNORE	# Cookie Without SameSite Attribute

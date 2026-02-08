@@ -1,0 +1,42 @@
+[Unit]
+Description=BizOSaaS Platform Services
+Documentation=https://docs.bizosaas.com
+Requires=docker.service postgresql.service redis.service
+After=docker.service postgresql.service redis.service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=forking
+RemainAfterExit=yes
+User=alagiri
+Group=docker
+WorkingDirectory=/home/alagiri/projects/bizoholic/bizosaas
+
+# Environment variables
+Environment="DOCKER_HOST=unix:///var/run/docker.sock"
+Environment="COMPOSE_PROJECT_NAME=bizosaas-platform"
+
+# Start command
+ExecStart=/home/alagiri/projects/bizoholic/bizosaas/scripts/startup-system.sh start
+
+# Stop command
+ExecStop=/home/alagiri/projects/bizoholic/bizosaas/scripts/startup-system.sh stop
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=600
+TimeoutStopSec=120
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bizosaas-platform
+
+[Install]
+WantedBy=multi-user.target
