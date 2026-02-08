@@ -1,115 +1,20 @@
-# .gitignore for BizOSaaS Platform
-
-# Environment files
-.env
-.env.local
-.env.*.local
-*.env
-
-# Secrets and credentials
-*.pem
-*.key
-*.crt
-*.p12
-*:Zone.Identifier
-
-# Node modules
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# Next.js
-.next/
-out/
-build/
-dist/
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-<<<<<<< HEAD
-=======
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-# lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
->>>>>>> 689624bdacbb85634f44c01400300bc3ce37e57e
-*.egg-info/
-.pytest_cache/
-.coverage
-htmlcov/
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Docker
-docker-compose.override.yml
-
-# Logs
+*.json
 *.log
-logs/
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Gemini artifacts (keep planning docs but ignore temp files)
-.gemini/antigravity/brain/*/.*
-!.gemini/antigravity/brain/*/task.md
-!.gemini/antigravity/brain/*/implementation_plan.md
-
-# Media uploads
-media/
-uploads/
-
-# Build artifacts
+*.webp
+.venv/
+__pycache__/
 *.pyc
-*.pyo
-*.egg
-*.whl
+.system_generated/
+wagtail_status_raw.json
+wagtail_deploy_status.json
+wagtail_new_logs.json
+seo_update_response.json
+wagtail_details.json
+wagtail_deployments.json
+dokploy_projects_new.json
+project_dump.json
+project_details_kvm2.json
+project_details_kvm2_v2.json
+project_list.json
 credentials.md
-
-credentials*.md
-migrate_to_kvm8.py
-
-# Antigravity Tools
-antigravity-tools.*
-!antigravity-tools.py
-AntigravityManager/
-antigravity-manager/
-portals/business-directory/bizbook-directory-listings-template/
-.env.kvm2
-DOKPLOY_INTEGRATION_STATUS.md
-project_all_start.json
-project_info.json
-backend_status.json
-frontend_status.json
-infra_status.json
-debug_id.txt
+.env

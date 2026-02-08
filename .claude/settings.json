@@ -1,6 +1,0 @@
-{
-  "model": "claude-sonnet-4-20250514",
-  "mcp": {
-    "configFile": ".claude/mcp.json"
-  }
-}

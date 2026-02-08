@@ -1,1 +1,0 @@
-# Strategy Optimizer Agent Package
