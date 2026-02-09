@@ -1,0 +1,31 @@
+{
+    "tenant_id": "bizoholic-tenant-001",
+    "client_name": "Bizoholic",
+    "domain": "www.bizoholic.com",
+    "onboarding_steps": [
+        {
+            "step": "connect_mcp",
+            "mcp_slug": "wordpress",
+            "config": {
+                "site_url": "https://www.bizoholic.com",
+                "username": "bizoadmin",
+                "application_password": "43dZ Rt31 IoAc iCpH VDw9 CMVe"
+            }
+        },
+        {
+            "step": "connect_mcp",
+            "mcp_slug": "google-ads",
+            "config": {
+                "client_id": "268219864460-8tdih5j5qol0e8drv7av4vr2ee0v200s.apps.googleusercontent.com"
+            }
+        },
+        {
+            "step": "setup_billing",
+            "provider": "lago",
+            "config": {
+                "organization_name": "Bizoholic",
+                "email": "admin@bizoholic.net"
+            }
+        }
+    ]
+}

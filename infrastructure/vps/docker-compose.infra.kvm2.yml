@@ -1,0 +1,39 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# BizOSaaS Infrastructure Stack - KVM2 Optimized (Production)
+# ═══════════════════════════════════════════════════════════════════════════
+# Note: Postgres (Neon), Redis (Cloud), and Temporal (Cloud) are MANAGED.
+# This stack contains: HashiCorp Vault.
+# ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ========================================
+  # HashiCorp Vault (Secrets Management)
+  # ========================================
+  vault:
+    image: vault:1.15
+    container_name: bizosaas-vault
+    restart: unless-stopped
+    volumes:
+      - ./infrastructure/vault/config.hcl:/vault/config/config.hcl
+      - vault-data:/vault/file
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/config.hcl
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+    networks:
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`vault.bizoholic.net`)"
+      - "traefik.http.routers.vault.entrypoints=websecure"
+      - "traefik.http.routers.vault.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
+
+volumes:
+  vault-data:
+
+
+networks:
+  dokploy-network:
+    external: true

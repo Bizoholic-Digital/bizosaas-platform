@@ -1,0 +1,66 @@
+# BizOSaaS Backend Services - STAGING Environment (Minimal - Pre-built Only)
+# Using only pre-built images that work reliably
+
+services:
+  # ==========================================
+  # SALEOR E-COMMERCE PLATFORM
+  # Full-featured e-commerce API
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - SECRET_KEY=staging-saleor-secret-key-bizosaas-2025
+      - ALLOWED_HOSTS=stg.coreldove.com,bizosaas-saleor-staging,localhost
+      - ALLOWED_CLIENT_HOSTS=stg.coreldove.com,localhost
+      - DEBUG=False
+      - DEFAULT_FROM_EMAIL=noreply@stg.coreldove.com
+      - CELERY_BROKER_URL=redis://bizosaas-redis-staging:6379/0
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - saleor-db-init
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Database initialization for Saleor
+  saleor-db-init:
+    image: postgres:15-alpine
+    container_name: bizosaas-saleor-db-init
+    networks:
+      - dokploy-network
+    environment:
+      - PGPASSWORD=BizOSaaS2025!StagingDB
+    command: >
+      sh -c "
+      sleep 5 &&
+      psql -h bizosaas-postgres-staging -U admin -d postgres -c 'CREATE DATABASE saleor_staging;' || echo 'Database already exists' &&
+      psql -h bizosaas-postgres-staging -U admin -d saleor_staging -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+      "
+    restart: "no"
+
+networks:
+  dokploy-network:
+    external: true
+
+# ==================================================
+# BACKEND SERVICES PROJECT SUMMARY (MINIMAL):
+# ==================================================
+# Container Count: 1 (Saleor only - verified working)
+# Purpose: E-commerce backend for staging
+# Services:
+#   - Saleor API (8000) - E-commerce platform ✅ PRE-BUILT IMAGE
+# Note: This is a minimal config to get Saleor working
+#       Custom services (Django CRM, Wagtail, Brain API) need
+#       proper Dockerfile fixes before deployment
+# Dependencies: Infrastructure (PostgreSQL, Redis)
+# ==================================================

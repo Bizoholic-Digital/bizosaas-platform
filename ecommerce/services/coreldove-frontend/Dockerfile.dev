@@ -1,0 +1,30 @@
+# Development Dockerfile for CorelDove Frontend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies first for better caching
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copy source code
+COPY . .
+
+# Create nextjs user with proper permissions
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs && \
+    chown -R nextjs:nodejs /app
+
+USER nextjs
+
+# Expose development port
+EXPOSE 3002
+
+# Set development environment
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3002
+
+# Start development server with hot reload
+CMD ["npm", "run", "dev", "--", "--port", "3002"]

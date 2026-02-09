@@ -1,0 +1,72 @@
+http:
+  routers:
+    # Vault
+    vault:
+      rule: "Host(`vault.bizoholic.net`)"
+      service: vault
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    
+    # Temporal UI
+    temporal:
+      rule: "Host(`temporal.bizoholic.net`)"
+      service: temporal
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    
+    # Grafana
+    grafana:
+      rule: "Host(`grafana.bizoholic.net`)"
+      service: grafana
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    
+    # Loki
+    loki:
+      rule: "Host(`loki.bizoholic.net`)"
+      service: loki
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    
+    # Prometheus
+    prometheus:
+      rule: "Host(`prometheus.bizoholic.net`)"
+      service: prometheus
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    vault:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-vault-staging:8200"
+    
+    temporal:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-temporal-ui-staging:8080"
+    
+    grafana:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-grafana-staging:3000"
+    
+    loki:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-loki-staging:3100"
+    
+    prometheus:
+      loadBalancer:
+        servers:
+          - url: "http://bizosaas-prometheus-staging:9090"

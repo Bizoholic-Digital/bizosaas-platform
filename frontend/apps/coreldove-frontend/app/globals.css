@@ -1,0 +1,332 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 158.1 64.4% 51.6%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 158.1 64.4% 51.6%;
+    --radius: 0.75rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    /* CorelDove brand colors - Solid colors only */
+    --coreldove-primary: 0 84.2% 60.2%; /* Coral/Red from "Corel" */
+    --coreldove-secondary: 221.2 83.2% 53.3%; /* Blue from "Dove" */
+    --coreldove-accent: 45 93% 47%; /* Amber */
+    --coreldove-primary-rgb: 239, 68, 68; /* #EF4444 */
+    --coreldove-secondary-rgb: 59, 130, 246; /* #3B82F6 */
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142.4 71.8% 29.2%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* CorelDove-specific styles */
+  .tenant-coreldove {
+    --primary: var(--coreldove-primary);
+    --primary-foreground: 210 40% 98%;
+  }
+
+  .btn-primary {
+    background: hsl(var(--coreldove-primary));
+    border: none;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: hsl(0 84.2% 55%);
+    opacity: 0.9;
+  }
+
+  .btn-secondary {
+    background: hsl(var(--coreldove-secondary));
+    border: none;
+    color: white;
+  }
+
+  .btn-secondary:hover {
+    background: hsl(221.2 83.2% 48%);
+    opacity: 0.9;
+  }
+
+  .bg-grid-pattern {
+    background-color: rgba(239, 68, 68, 0.05);
+    background-image: 
+      repeating-linear-gradient(0deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.1) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(90deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.1) 1px, transparent 1px, transparent 20px);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* E-commerce specific styles */
+  .product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.15);
+    border-color: hsl(var(--coreldove-primary));
+  }
+
+  .price-tag {
+    color: var(--coreldove-primary);
+    font-weight: 700;
+  }
+
+  .category-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .category-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(239, 68, 68, 0.08);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .category-card:hover::before {
+    opacity: 1;
+  }
+
+  .shopping-cart-badge {
+    background: hsl(var(--coreldove-primary));
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+/* Animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes bounce-in {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.5s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.6s ease-out;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: #f0f0f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #e0e0e0;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* CorelDove utility classes */
+.bg-coreldove-primary {
+  background-color: hsl(var(--coreldove-primary));
+}
+
+.bg-coreldove-secondary {
+  background-color: hsl(var(--coreldove-secondary));
+}
+
+.text-coreldove-primary {
+  color: hsl(var(--coreldove-primary));
+}
+
+.text-coreldove-secondary {
+  color: hsl(var(--coreldove-secondary));
+}
+
+.border-coreldove-primary {
+  border-color: hsl(var(--coreldove-primary));
+}
+
+.border-coreldove-secondary {
+  border-color: hsl(var(--coreldove-secondary));
+}
+
+/* Image placeholder styles */
+.image-placeholder {
+  background-color: hsl(var(--muted));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: hsl(var(--muted-foreground));
+  min-height: 200px;
+}
+
+.image-placeholder-primary {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: hsl(var(--coreldove-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.image-placeholder-secondary {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: hsl(var(--coreldove-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+/* Enhanced hover effects with solid colors */
+.card-hover {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15);
+  border-color: hsl(var(--coreldove-primary));
+}
+
+/* Container and layout improvements */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Better text alignment */
+.text-center {
+  text-align: center;
+}
+
+/* Icon alignment helpers */
+.icon-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Better spacing for hero sections */
+.hero-spacing {
+  padding: 5rem 0;
+}
+
+/* Consistent card padding */
+.card-consistent {
+  padding: 1.5rem;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}

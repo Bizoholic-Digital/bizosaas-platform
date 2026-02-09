@@ -1,0 +1,189 @@
+# BizOSaaS Backend Services - STAGING
+# PHASE 3: CRM & Business Services (Phase 2 + Django CRM + Business Directory + Temporal)
+# Total: 7 services
+
+services:
+  # ==========================================
+  # PHASE 1 & 2 SERVICES (Copy from Phase 2)
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/saleor_staging
+      - REDIS_URL=redis://194.238.16.237:6380/1
+      - SECRET_KEY=staging-secret-key-saleor-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - ALLOWED_CLIENT_HOSTS=194.238.16.237,localhost,stg.coreldove.com
+      - DEBUG=False
+      - ENABLE_ACCOUNT_CONFIRMATION_BY_EMAIL=False
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  brain-api:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/ai/services/bizosaas-brain
+      dockerfile: Dockerfile
+    container_name: bizosaas-brain-staging
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  auth-service:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/auth
+      dockerfile: Dockerfile
+    container_name: bizosaas-auth-service-staging
+    ports:
+      - "8006:8006"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/10
+      - SECRET_KEY=staging-secret-key-auth-bizosaas-2025-v1
+      - JWT_SECRET=staging-jwt-secret-bizosaas-2025-secure
+      - ENVIRONMENT=staging
+      - PORT=8006
+      - ALLOWED_ORIGINS=*
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  wagtail-cms:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/cms
+      dockerfile: Dockerfile
+    container_name: bizosaas-wagtail-staging
+    ports:
+      - "8002:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/3
+      - SECRET_KEY=staging-secret-key-wagtail-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
+      - DEBUG=False
+      - PYTHONPATH=/app
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # NEW IN PHASE 3: CRM SERVICES
+  # ==========================================
+
+  # 5. DJANGO CRM (Port 8003)
+  django-crm:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/django-crm
+      dockerfile: Dockerfile
+    container_name: bizosaas-django-crm-staging
+    ports:
+      - "8003:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=crm_project.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/4
+      - SECRET_KEY=staging-secret-key-djangocrm-bizosaas-2025
+      - ALLOWED_HOSTS=194.238.16.237,localhost,stg.bizoholic.com
+      - DEBUG=False
+      - PYTHONPATH=/app
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 6. BUSINESS DIRECTORY BACKEND (Port 8004)
+  business-directory-backend:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/business-directory
+      dockerfile: Dockerfile
+    container_name: bizosaas-business-directory-staging
+    ports:
+      - "8004:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/5
+      - SECRET_KEY=staging-secret-key-bizdir-bizosaas-2025
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=INFO
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 7. TEMPORAL INTEGRATION (Port 8007)
+  temporal-integration:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/temporal
+      dockerfile: Dockerfile
+    container_name: bizosaas-temporal-integration-staging
+    ports:
+      - "8007:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@194.238.16.237:5433/bizosaas_staging
+      - REDIS_URL=redis://194.238.16.237:6380/7
+      - TEMPORAL_HOST=bizosaas-temporal-server-staging
+      - TEMPORAL_PORT=7233
+      - ENVIRONMENT=staging
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  dokploy-network:
+    external: true
+
+# DEPLOYMENT INSTRUCTIONS:
+# 1. Ensure Phase 2 is working
+# 2. Deploy this to Dokploy
+# 3. Monitor build logs for new services
+# 4. Test new health endpoints:
+#    - curl http://194.238.16.237:8003/admin/login/
+#    - curl http://194.238.16.237:8004/health
+#    - curl http://194.238.16.237:8007/health
+# 5. If successful, proceed to Phase 4

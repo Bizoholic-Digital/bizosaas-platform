@@ -1,0 +1,167 @@
+# BizOSaaS Backend Services - STAGING Environment (v2)
+# Using subdirectory build context that worked successfully before
+
+services:
+  # ==========================================
+  # DATABASE INITIALIZATION
+  # Creates required databases
+  # ==========================================
+  db-init:
+    image: postgres:15-alpine
+    container_name: bizosaas-db-init-staging
+    networks:
+      - dokploy-network
+    environment:
+      - PGPASSWORD=BizOSaaS2025!StagingDB
+    command: >
+      sh -c "
+      sleep 5 &&
+      psql -h bizosaas-postgres-staging -U admin -d postgres -c 'CREATE DATABASE saleor_staging;' || echo 'saleor_staging exists' &&
+      psql -h bizosaas-postgres-staging -U admin -d postgres -c 'CREATE DATABASE bizosaas_staging;' || echo 'bizosaas_staging exists' &&
+      psql -h bizosaas-postgres-staging -U admin -d saleor_staging -c 'CREATE EXTENSION IF NOT EXISTS vector;' &&
+      psql -h bizosaas-postgres-staging -U admin -d bizosaas_staging -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+      "
+    restart: "no"
+
+  # ==========================================
+  # BRAIN API - AI Central Hub
+  # Main API coordinator for all services
+  # ==========================================
+  brain-api:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/ai/services/bizosaas-brain
+      dockerfile: Dockerfile
+    container_name: bizosaas-brain-staging
+    ports:
+      - "8001:8001"
+    environment:
+      - NODE_ENV=staging
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/0
+      - VAULT_ADDR=http://bizosaas-vault-staging:8200
+      - VAULT_TOKEN=staging-root-token-bizosaas-2025
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-sk-or-v1-default}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-proj-default}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-sk-ant-default}
+      - PYTHONPATH=/app
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - db-init
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================
+  # WAGTAIL CMS
+  # Headless content management
+  # ==========================================
+  wagtail-cms:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/cms
+      dockerfile: Dockerfile
+    container_name: bizosaas-wagtail-staging
+    ports:
+      - "8002:4000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=wagtail_cms.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/1
+      - SECRET_KEY=${DJANGO_SECRET_KEY:-staging-wagtail-secret-key-bizosaas-2025}
+      - ALLOWED_HOSTS=stg.bizoholic.com,bizosaas-wagtail-staging,localhost
+      - PYTHONPATH=/app
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - db-init
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================
+  # DJANGO CRM
+  # Customer relationship management
+  # ==========================================
+  django-crm:
+    build:
+      context: https://github.com/Bizoholic-Digital/bizosaas-platform.git#main:bizosaas-platform/backend/services/crm/django-crm
+      dockerfile: Dockerfile
+    container_name: bizosaas-django-crm-staging
+    ports:
+      - "8003:8003"
+    environment:
+      - DJANGO_SETTINGS_MODULE=crm_project.settings.production
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/bizosaas_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/2
+      - SECRET_KEY=${DJANGO_CRM_SECRET_KEY:-staging-django-crm-secret-key-bizosaas-2025}
+      - ALLOWED_HOSTS=stg.bizoholic.com,bizosaas-django-crm-staging,localhost
+      - PYTHONPATH=/app
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - db-init
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================
+  # SALEOR E-COMMERCE PLATFORM
+  # Full-featured e-commerce API
+  # ==========================================
+  saleor-api:
+    image: ghcr.io/saleor/saleor:3.20
+    container_name: bizosaas-saleor-staging
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://admin:BizOSaaS2025!StagingDB@bizosaas-postgres-staging:5432/saleor_staging
+      - REDIS_URL=redis://bizosaas-redis-staging:6379/7
+      - SECRET_KEY=${SALEOR_SECRET_KEY:-staging-saleor-secret-key-bizosaas-2025}
+      - ALLOWED_HOSTS=stg.coreldove.com,bizosaas-saleor-staging,localhost
+      - ALLOWED_CLIENT_HOSTS=stg.coreldove.com,localhost
+      - DEBUG=False
+      - DEFAULT_FROM_EMAIL=noreply@stg.coreldove.com
+      - CELERY_BROKER_URL=redis://bizosaas-redis-staging:6379/7
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    depends_on:
+      - db-init
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  dokploy-network:
+    external: true
+
+# ==================================================
+# BACKEND SERVICES PROJECT SUMMARY (v2):
+# ==================================================
+# Container Count: 5 (1 init + 4 services)
+# Purpose: Complete backend for SaaS platform
+# Services:
+#   - Database Init - Creates saleor_staging and bizosaas_staging databases
+#   - Brain API (8001) - AI coordinator ✅ SUBDIRECTORY CONTEXT
+#   - Wagtail CMS (8002→4000) - Content management ✅ SUBDIRECTORY CONTEXT
+#   - Django CRM (8003) - Customer management ✅ SUBDIRECTORY CONTEXT
+#   - Saleor API (8000) - E-commerce platform ✅ OFFICIAL IMAGE
+# Build Strategy: Subdirectory context (works with relative COPY paths)
+# Added PYTHONPATH=/app to help with module imports
+# Dependencies: Infrastructure (PostgreSQL, Redis, Vault)
+# ==================================================
