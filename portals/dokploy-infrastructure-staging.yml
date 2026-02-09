@@ -52,18 +52,18 @@ services:
   # Secrets management
   # ==========================================
   vault:
-    image: hashicorp/vault:1.15
+    image: hashicorp/vault:latest
     container_name: bizosaas-vault-staging
     ports:
       - "8201:8200"
     environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=staging-root-token-bizosaas-2025
-      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
-      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_ADDR=http://127.0.0.1:8200
     cap_add:
       - IPC_LOCK
     volumes:
-      - vault_staging_data:/vault/data
+      - vault_staging_data:/vault/file
+      - ./infrastructure/vault/config.hcl:/vault/config/config.hcl
+    command: vault server -config=/vault/config/config.hcl
     networks:
       - dokploy-network
     restart: unless-stopped

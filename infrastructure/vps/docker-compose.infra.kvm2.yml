@@ -10,7 +10,7 @@ services:
   # HashiCorp Vault (Secrets Management)
   # ========================================
   vault:
-    image: vault:1.15
+    image: hashicorp/vault:latest
     container_name: bizosaas-vault
     restart: unless-stopped
     volumes:

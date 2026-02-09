@@ -8,23 +8,22 @@ services:
   # HASHICORP VAULT - Secrets Management (Infrastructure Layer)
   # ========================================================================================
   vault:
-    image: hashicorp/vault:1.15.0
+    image: hashicorp/vault:latest
     container_name: bizosaas-vault
     ports:
       - "8200:8200"
     environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=bizosaas-vault-dev-token-2025
-      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
-      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_ADDR=http://127.0.0.1:8200
     cap_add:
       - IPC_LOCK
     volumes:
-      - vault-data:/vault/data
+      - vault-data:/vault/file
       - vault-logs:/vault/logs
+      - ../../vault/config.hcl:/vault/config/config.hcl:ro
     networks:
       - dokploy-network
     restart: unless-stopped
-    command: ["vault", "server", "-dev"]
+    command: vault server -config=/vault/config/config.hcl
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vault.rule=Host(`vault.bizoholic.com`)"
@@ -45,35 +44,35 @@ services:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=bizosaas-vault-dev-token-2025
       - VAULT_NAMESPACE=bizosaas
-      
+
       # Database Configuration (External shared infrastructure)
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      
+
       # Redis Configuration (External shared infrastructure)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_DB=0
-      
+
       # Event Bus Configuration
       - EVENT_BUS_URL=http://event-bus:8009
       - EVENT_BUS_ENABLED=true
       - TENANT_ISOLATION_ENABLED=true
-      
+
       # JWT & Security (Enhanced with Vault integration)
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - SERVICE_SECRET=${SERVICE_SECRET}
-      
+
       # AI API Keys (Managed by Vault in production)
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      
+
       # Production Settings
       - NODE_ENV=production
       - DEBUG=false
@@ -104,24 +103,24 @@ services:
       - SERVICE_NAME=event-bus
       - SERVICE_PORT=8009
       - DEBUG=false
-      
+
       # Database Configuration (Shared with Brain API)
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      
+
       # Redis Configuration (Message broker and caching)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_DB=1
-      
+
       # Vault Integration
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=bizosaas-vault-dev-token-2025
-      
+
       # Tenant Isolation Settings
       - ENABLE_TENANT_ISOLATION=true
       - MAX_RETRY_ATTEMPTS=3
@@ -131,7 +130,7 @@ services:
       - WORKER_CONCURRENCY=10
       - METRICS_ENABLED=true
       - HEALTH_CHECK_INTERVAL=30
-      
+
       # Security
       - JWT_SECRET=${JWT_SECRET_KEY}
       - ALLOWED_ORIGINS=https://api.bizoholic.com,https://admin.bizoholic.com
@@ -162,22 +161,22 @@ services:
       - SECRET_KEY=${DJANGO_SECRET_KEY}
       - DEBUG=False
       - ALLOWED_HOSTS=crm.bizoholic.com,api.bizoholic.com
-      
+
       # Database Configuration
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
-      
+
       # Vault Integration
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=bizosaas-vault-dev-token-2025
-      
+
       # Brain API Integration
       - BRAIN_API_URL=http://bizosaas-brain:8001
       - BRAIN_API_TOKEN=${SERVICE_SECRET}
-      
+
       # Event Bus Integration
       - EVENT_BUS_URL=http://event-bus:8009
       - ENABLE_EVENT_PUBLISHING=true
-      
+
       # Cache Configuration
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/2
     networks:
@@ -208,21 +207,21 @@ services:
       - SECRET_KEY=${WAGTAIL_SECRET_KEY}
       - DEBUG=False
       - ALLOWED_HOSTS=cms.bizoholic.com,api.bizoholic.com
-      
+
       # Database Configuration
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
-      
+
       # Vault Integration
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=bizosaas-vault-dev-token-2025
-      
+
       # Brain API Integration
       - BRAIN_API_URL=http://bizosaas-brain:8001
       - BRAIN_API_TOKEN=${SERVICE_SECRET}
-      
+
       # Cache Configuration
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/3
-      
+
       # Static Files (for production)
       - STATIC_URL=/static/
       - MEDIA_URL=/media/
@@ -255,22 +254,22 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      
+
       # Vault Integration (for AI API key rotation)
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=bizosaas-vault-dev-token-2025
-      
+
       # Brain API Integration
       - BRAIN_API_URL=http://bizosaas-brain:8001
       - BRAIN_API_TOKEN=${SERVICE_SECRET}
-      
+
       # Event Bus Integration (for AI agent events)
       - EVENT_BUS_URL=http://event-bus:8009
       - PUBLISH_AGENT_EVENTS=true
-      
+
       # Database Configuration (for agent state persistence)
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
-      
+
       # CrewAI Configuration
       - CREWAI_TELEMETRY_OPT_OUT=true
       - AGENT_TIMEOUT=300
@@ -302,20 +301,20 @@ services:
       - BRAIN_API_URL=http://bizosaas-brain:8001
       - BRAIN_API_BASE_URL=https://api.bizoholic.com
       - BRAIN_API_TOKEN=${SERVICE_SECRET}
-      
+
       # Vault Integration (for dashboard secrets)
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=bizosaas-vault-dev-token-2025
-      
+
       # Event Bus Integration (for real-time updates)
       - EVENT_BUS_URL=http://event-bus:8009
       - ENABLE_REAL_TIME_UPDATES=true
-      
+
       # Cache Configuration
       - REDIS_HOST=redis
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_DB=4
-      
+
       # Dashboard Features
       - ENABLE_TENANT_MANAGEMENT=true
       - ENABLE_EVENT_MONITORING=true
@@ -376,12 +375,12 @@ services:
       - PEXELS_API_KEY=${PEXELS_API_KEY:-}
       - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY:-}
       - PIXABAY_API_KEY=${PIXABAY_API_KEY:-}
-      
+
       # Amazon SP-API (for product images)
       - AMAZON_ACCESS_KEY=${AMAZON_ACCESS_KEY:-}
       - AMAZON_SECRET_KEY=${AMAZON_SECRET_KEY:-}
       - AMAZON_PARTNER_TAG=${AMAZON_PARTNER_TAG:-}
-      
+
       - BRAIN_API_URL=http://bizosaas-brain:8001
     networks:
       - dokploy-network
@@ -431,13 +430,13 @@ volumes:
     driver: local
   vault-logs:
     driver: local
-  
+
   # CMS static and media files
   wagtail-static:
     driver: local
   wagtail-media:
     driver: local
-  
+
   # Event Bus logs and cache
   event-bus-logs:
     driver: local
