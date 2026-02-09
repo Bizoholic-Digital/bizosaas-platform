@@ -19,7 +19,7 @@ services:
     volumes:
       - vault-data:/vault/file
       - vault-logs:/vault/logs
-      - ../../../../vault/config.hcl:/vault/config/config.hcl:ro
+      - ./vault-config/config.hcl:/vault/config/config.hcl:ro
     networks:
       - dokploy-network
     restart: unless-stopped
