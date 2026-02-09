@@ -58,7 +58,6 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-BizOSaaSAdmin2025!}
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_INSTALL_PLUGINS=grafana-piechart-panel,redis-datasource,postgres-datasource
       # OIDC Configuration (Stubs, will be finalized after Authentik setup)
       - GF_AUTH_GENERIC_OIDC_ENABLED=true
       - GF_AUTH_GENERIC_OIDC_NAME=Authentik
