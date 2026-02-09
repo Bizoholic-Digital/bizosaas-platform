@@ -23,7 +23,7 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
-    command: [ "vault", "server", "-config=/vault/config/config.hcl" ]
+    command: [ "vault", "server", "-config", "/vault/config/config.hcl" ]
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vault.rule=Host(`vault.bizoholic.com`)"
