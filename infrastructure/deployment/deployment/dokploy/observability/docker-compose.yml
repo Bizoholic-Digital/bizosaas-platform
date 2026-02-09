@@ -1,109 +1,57 @@
-# BizOSaaS Observability Stack - Light Version (Loki + Prometheus)
-# Dokploy Project: observability
+version: "3.8"
 
 services:
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: bizosaas-prometheus
+  alloy:
+    image: grafana/alloy:latest
+    container_name: grafana-alloy
+    restart: always
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=15d'
-      - '--web.enable-lifecycle'
-    volumes:
-      - prometheus-data:/prometheus
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bizosaas-prometheus.rule=Host(`prometheus.bizoholic.net`)"
-      - "traefik.http.services.bizosaas-prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.routers.bizosaas-prometheus.tls=true"
-      - "traefik.http.routers.bizosaas-prometheus.tls.certresolver=letsencrypt"
-
-  loki:
-    image: grafana/loki:latest
-    container_name: bizosaas-loki
-    command: -config.file=/etc/loki/local-config.yaml
-    volumes:
-      - loki-data:/loki
-      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml:ro
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.loki.rule=Host(`loki.bizoholic.net`)"
-      - "traefik.http.services.loki.loadbalancer.server.port=3100"
-      - "traefik.http.routers.loki.tls=true"
-      - "traefik.http.routers.loki.tls.certresolver=letsencrypt"
-
-  promtail:
-    image: grafana/promtail:latest
-    container_name: bizosaas-promtail
-    command: -config.file=/etc/promtail/config.yml
-    volumes:
-      - /var/log:/var/log:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
-    networks:
-      - dokploy-network
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: bizosaas-grafana
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-BizOSaaSAdmin2025!}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      # OIDC Configuration (Stubs, will be finalized after Authentik setup)
-      - GF_AUTH_GENERIC_OIDC_ENABLED=true
-      - GF_AUTH_GENERIC_OIDC_NAME=Authentik
-      - GF_AUTH_GENERIC_OIDC_ALLOW_SIGN_UP=true
-      - GF_AUTH_GENERIC_OIDC_CLIENT_ID=${GRAFANA_OIDC_CLIENT_ID}
-      - GF_AUTH_GENERIC_OIDC_CLIENT_SECRET=${GRAFANA_OIDC_CLIENT_SECRET}
-      - GF_AUTH_GENERIC_OIDC_SCOPES=openid profile email
-      - GF_AUTH_GENERIC_OIDC_AUTH_URL=https://sso.bizoholic.net/application/o/authorize/
-      - GF_AUTH_GENERIC_OIDC_TOKEN_URL=https://sso.bizoholic.net/application/o/token/
-      - GF_AUTH_GENERIC_OIDC_API_URL=https://sso.bizoholic.net/application/o/userinfo/
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
-    networks:
-      - dokploy-network
-    depends_on:
-      - prometheus
-      - loki
-    restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.bizosaas-grafana.rule=Host(`grafana.bizoholic.net`)"
-      - "traefik.http.services.bizosaas-grafana.loadbalancer.server.port=3000"
-      - "traefik.http.routers.bizosaas-grafana.tls=true"
-      - "traefik.http.routers.bizosaas-grafana.tls.certresolver=letsencrypt"
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    env_file:
+      - /etc/dokploy/observability_secrets.env
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: bizosaas-node-exporter
+    container_name: node-exporter
+    restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
     command:
       - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
       - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres-exporter
+    restart: unless-stopped
+    env_file:
+      - /etc/dokploy/observability_secrets.env
+    ports:
+      - "9187:9187"
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: unless-stopped
+    env_file:
+      - /etc/dokploy/observability_secrets.env
+    ports:
+      - "9121:9121"
     networks:
       - dokploy-network
-    restart: unless-stopped
 
 networks:
   dokploy-network:
     external: true
-
-volumes:
-  prometheus-data:
-  loki-data:
-  grafana-data:

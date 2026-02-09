@@ -1,0 +1,74 @@
+logging {
+  level = "info"
+  format = "logfmt"
+}
+
+// ---------------------------------------------------------
+// Prometheus (Metrics)
+// ---------------------------------------------------------
+
+prometheus.remote_write "grafanavargo" {
+  endpoint {
+    url = env("GCLOUD_HOSTED_METRICS_URL")
+
+    basic_auth {
+      username = env("GCLOUD_HOSTED_METRICS_ID")
+      password = env("GCLOUD_RW_API_KEY")
+    }
+  }
+}
+
+// Scrape Node Exporter
+prometheus.scrape "node_exporter" {
+  targets = [{
+    __address__ = "node-exporter:9100",
+  }]
+  forward_to = [prometheus.remote_write.grafanavargo.receiver]
+  job_name   = "node_exporter"
+}
+
+// Scrape Postgres Exporter (Neon DB)
+prometheus.scrape "postgres_exporter" {
+  targets = [{
+    __address__ = "postgres-exporter:9187",
+  }]
+  forward_to = [prometheus.remote_write.grafanavargo.receiver]
+  job_name   = "postgres_exporter"
+}
+
+// Scrape Redis Exporter
+prometheus.scrape "redis_exporter" {
+  targets = [{
+    __address__ = "redis-exporter:9121",
+  }]
+  forward_to = [prometheus.remote_write.grafanavargo.receiver]
+  job_name   = "redis_exporter"
+}
+
+// ---------------------------------------------------------
+// Loki (Logs)
+// ---------------------------------------------------------
+
+loki.write "grafanavargo" {
+  endpoint {
+    url = env("GCLOUD_HOSTED_LOGS_URL")
+
+    basic_auth {
+      username = env("GCLOUD_HOSTED_LOGS_ID")
+      password = env("GCLOUD_RW_API_KEY")
+    }
+  }
+}
+
+// Discover Docker Containers
+discovery.docker "linux" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Scrape Docker Logs
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.linux.targets
+  labels     = {"job" = "docker"}
+  forward_to = [loki.write.grafanavargo.receiver]
+}
