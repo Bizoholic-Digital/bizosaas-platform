@@ -18,10 +18,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.bizoholic.net`)"
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.routers.prometheus.tls=true"
-      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.bizosaas-prometheus.rule=Host(`prometheus.bizoholic.net`)"
+      - "traefik.http.services.bizosaas-prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.bizosaas-prometheus.tls=true"
+      - "traefik.http.routers.bizosaas-prometheus.tls.certresolver=letsencrypt"
 
   loki:
     image: grafana/loki:latest
@@ -80,10 +80,10 @@ services:
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.bizoholic.net`)"
-      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.http.routers.grafana.tls=true"
-      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.bizosaas-grafana.rule=Host(`grafana.bizoholic.net`)"
+      - "traefik.http.services.bizosaas-grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.bizosaas-grafana.tls=true"
+      - "traefik.http.routers.bizosaas-grafana.tls.certresolver=letsencrypt"
 
   node-exporter:
     image: prom/node-exporter:latest
