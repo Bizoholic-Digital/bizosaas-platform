@@ -20,7 +20,6 @@ services:
       - NEXT_PUBLIC_WAGTAIL_URL=https://api.bizoholic.net
       - NODE_ENV=production
     networks:
-      - bizosaas-network
       - dokploy-network
     deploy:
       resources:
@@ -37,8 +36,6 @@ services:
       - "traefik.http.services.thrillring-gaming.loadbalancer.server.port=3007"
 
 networks:
-  bizosaas-network:
-    external: true
   dokploy-network:
     external: true
     name: dokploy-network
