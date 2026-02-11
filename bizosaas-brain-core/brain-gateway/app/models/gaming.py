@@ -19,7 +19,7 @@ class GameCompany(Base):
     
     # Wiki Data
     wiki_content = Column(JSON, default={}) # News, milestones, major releases
-    metadata = Column(JSON, default={}) 
+    meta_data = Column(JSON, default={}) 
     
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -123,5 +123,5 @@ class PlayerGamingStats(Base):
     draws = Column(Integer, default=0)
     total_matches = Column(Integer, default=0)
     
-    metadata = Column(JSON, default={}) 
+    meta_data = Column(JSON, default={}) 
     updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
