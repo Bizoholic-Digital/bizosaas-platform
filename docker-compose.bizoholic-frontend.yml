@@ -1,6 +1,6 @@
 services:
   bizoholic-frontend:
-    image: portals-bizoholicfrontend-pzelzk-bizoholic-frontend:latest
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/bizoholic-frontend:staging
     container_name: bizoholic-frontend-prod
     environment:
       - PORT=3006

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   thrillring-gaming:
-    image: portals-thrillringgamingfrontend-oyqukh-thrillring-gaming:latest
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/thrillring-gaming:staging
     container_name: thrillring-gaming
     environment:
       - PORT=3007
