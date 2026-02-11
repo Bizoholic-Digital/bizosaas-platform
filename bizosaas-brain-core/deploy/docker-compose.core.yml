@@ -28,7 +28,6 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - AI_AGENTS_URL=http://ai-agents:8000
     networks:
-      - brain-network
       - dokploy-network
     deploy:
       resources:
@@ -201,6 +200,4 @@ services:
 # ═══════════════════════════════════════════════════════════════════════════
 networks:
   dokploy-network:
-    external: true
-  brain-network:
     external: true
