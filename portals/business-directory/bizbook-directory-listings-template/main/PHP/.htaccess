@@ -1,0 +1,120 @@
+# RewriteEngine On
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_URI} !^admin
+# RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+RewriteCond %{REQUEST_URI} !^admin
+
+#Change the base path below
+# (i.e)if your using subfolders,type the folders path after = symbol example 
+# (i.e)if your using only main domain means after = symbol add only forward slash /
+
+SetEnvIf Request_URI "^.*" base_path=/
+
+#Profile page URl rewritten
+RewriteRule ^profile/([^/]*)$ %{ENV:BASE_PATH}profile.php?code=$1 [L]
+
+#Company page URl rewritten
+RewriteRule ^company/([^/]*)$ %{ENV:BASE_PATH}company-profile.php?code=$1 [L]
+
+#Target Listing page URl rewritten
+RewriteRule ^listings/([^/]*)$ %{ENV:BASE_PATH}target-listing.php?code=$1 [L]
+
+#Ebook page URl rewritten
+RewriteRule ^ebook/([^/]*)$ %{ENV:BASE_PATH}ebook.php?code=$1 [L]
+
+#General page URl rewritten
+RewriteRule ^promotion/([^/]*)$ %{ENV:BASE_PATH}template-default.php?code=$1 [L]
+
+#Blog page URl rewritten
+RewriteRule ^blog/([^/]*)$ %{ENV:BASE_PATH}blog-details.php?row=$1 [L]
+
+#Event page URl rewritten
+RewriteRule ^event/([^/]*)$ %{ENV:BASE_PATH}event-details.php?row=$1 [L]
+
+#Product page URl rewritten
+RewriteRule ^product/([^/]*)$ %{ENV:BASE_PATH}product-details.php?code=$1 [L]
+
+#Listing page URl rewritten
+RewriteRule ^listing/([^/]*)$ %{ENV:BASE_PATH}listing-details.php?code=$1 [L]
+
+#Job Detail page URl rewritten
+RewriteRule ^job/([^/]*)$ %{ENV:BASE_PATH}jobs/job-details.php?code=$1 [L]
+
+#All Jobs page URl rewritten
+RewriteRule ^all-jobs/([^/]*)$ %{ENV:BASE_PATH}jobs/all-jobs.php?category=$1 [L,QSA]
+
+#Job Profile page URl rewritten
+RewriteRule ^job-profile/([^/]*)$ %{ENV:BASE_PATH}jobs/job-profile.php?code=$1 [L]
+
+#Service Expert Profile page URl rewritten
+RewriteRule ^service-expert/([^/]*)$ %{ENV:BASE_PATH}service-experts/service-experts-profile.php?code=$1 [L]
+
+#All Service Experts page URl rewritten
+RewriteRule ^all-service-experts/([^/]*)$ %{ENV:BASE_PATH}service-experts/all-service-experts.php?category=$1 [L,QSA]
+
+#News Details page URl rewritten
+RewriteRule ^news-detail/([^/]*)$ %{ENV:BASE_PATH}news/news-details.php?code=$1 [L]
+
+#All News page URl rewritten
+RewriteRule ^news-all/([^/]*)$ %{ENV:BASE_PATH}news/news-all.php?category=$1 [L,QSA]
+
+#Place Details page URl rewritten
+RewriteRule ^place/([^/]*)$ %{ENV:BASE_PATH}places/place-details.php?code=$1 [L]
+
+#All Listing page URl rewritten
+RewriteRule ^all-listing/([^/]*)$ %{ENV:BASE_PATH}all-listing.php?category=$1 [L]
+
+RewriteRule ^all-listing/([^/]*)/([^/]*)$ %{ENV:BASE_PATH}all-listing.php?category=$1&&subcategory=$2 [L]
+
+#All Products page URl rewritten
+RewriteRule ^all-products/([^/]*)$ %{ENV:BASE_PATH}all-products.php?category=$1 [L]
+
+# DISABLE CACHING
+<IfModule mod_headers.c>
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+</IfModule>
+
+<FilesMatch "\.(css|flv|gif|htm|html|ico|jpe|jpeg|jpg|js|mp3|mp4|png|pdf|swf|txt)$">
+    <IfModule mod_expires.c>
+        ExpiresActive Off
+    </IfModule>
+    <IfModule mod_headers.c>
+        FileETag None
+        Header unset ETag
+        Header unset Pragma
+        Header unset Cache-Control
+        Header unset Last-Modified
+        Header set Pragma "no-cache"
+        Header set Cache-Control "max-age=0, no-cache, no-store, must-revalidate"
+        Header set Expires "Thu, 1 Jan 1970 00:00:00 GMT"
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_expires.c>
+ExpiresActive On
+ExpiresByType image/jpg "access 1 year"
+ExpiresByType image/jpeg "access 1 year"
+ExpiresByType image/gif "access 1 year"
+ExpiresByType image/png "access 1 year"
+ExpiresByType text/css "access 1 month"
+ExpiresByType text/html "access 1 month"
+ExpiresByType application/pdf "access 1 month"
+ExpiresByType text/x-javascript "access 1 month"
+ExpiresByType application/x-shockwave-flash "access 1 month"
+ExpiresByType image/x-icon "access 1 year"
+ExpiresDefault "access 1 month"
+</IfModule>
+
+#RewriteEngine On
+#RewriteRule ^demo/new/profile/([^\.]+)$ /demo/new/profile.php?profile=$1 [L]
+
+# RewriteEngine On
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteRule ^([^\.]+)$ $1.php [NC,L]

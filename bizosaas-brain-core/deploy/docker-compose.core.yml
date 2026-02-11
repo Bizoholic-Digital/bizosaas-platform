@@ -202,3 +202,5 @@ services:
 networks:
   dokploy-network:
     external: true
+  brain-network:
+    external: true

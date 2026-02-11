@@ -1,0 +1,9 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+SetEnvIf Request_URI "^.*" base_path=/
+
+#Job Home page URl rewritten
+RewriteRule jobs/^([^/]*)$ %{ENV:BASE_PATH}news/index.php?code=$1 [L]
