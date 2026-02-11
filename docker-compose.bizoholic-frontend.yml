@@ -1,17 +1,6 @@
 services:
   bizoholic-frontend:
-    build:
-      context: .
-      dockerfile: brands/bizoholic/frontend/Dockerfile.production
-      args:
-        - SERVICE_PATH=brands/bizoholic/frontend
-        - NEXT_PUBLIC_BRAND=bizoholic
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://api.bizoholic.net}
-        - NEXT_PUBLIC_BRAIN_API_URL=${NEXT_PUBLIC_BRAIN_API_URL:-https://api.bizoholic.net}
-        - NEXT_PUBLIC_WAGTAIL_URL=${NEXT_PUBLIC_WAGTAIL_URL:-https://api.bizoholic.net}
-        - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-https://api.bizoholic.net}
-        - AUTH_SERVICE_URL=${AUTH_SERVICE_URL:-https://api.bizoholic.net/auth}
-        - NEXTAUTH_URL=${NEXTAUTH_URL:-https://www.bizoholic.com}
+    image: portals-bizoholicfrontend-pzelzk-bizoholic-frontend:latest
     container_name: bizoholic-frontend-prod
     environment:
       - PORT=3006

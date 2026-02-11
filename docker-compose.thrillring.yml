@@ -2,15 +2,7 @@ version: '3.8'
 
 services:
   thrillring-gaming:
-    build:
-      context: .
-      dockerfile: brands/thrillring/frontend/Dockerfile
-      args:
-        - SERVICE_PATH=brands/thrillring/frontend
-        - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
-        - NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
-        - NEXT_PUBLIC_GRAPHQL_URL=https://api.bizoholic.net/graphql
-        - NEXT_PUBLIC_WAGTAIL_URL=https://api.bizoholic.net
+    image: portals-thrillringgamingfrontend-oyqukh-thrillring-gaming:latest
     container_name: thrillring-gaming
     environment:
       - PORT=3007
