@@ -1,13 +1,6 @@
 services:
   business-directory:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/business-directory:staging
-    build:
-      context: .
-      dockerfile: portals/business-directory/business-directory/Dockerfile
-      args:
-        - SERVICE_PATH=portals/business-directory/business-directory
-        - NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
-        - NEXT_PUBLIC_APP_URL=https://directory.bizoholic.net
     container_name: bizosaas-business-directory-staging
     environment:
       - NODE_ENV=production
