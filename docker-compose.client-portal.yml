@@ -39,7 +39,7 @@ services:
           cpus: '0.4'
           memory: 512M
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/api/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -57,4 +57,5 @@ services:
 networks:
   dokploy-network:
     external: true
+
 # Trigger redeploy for refresh 1770889079
