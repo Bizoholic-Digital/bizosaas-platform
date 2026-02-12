@@ -57,4 +57,4 @@ services:
 networks:
   dokploy-network:
     external: true
-# Trigger redeploy to fix 404
+# Trigger redeploy for refresh 1770889079

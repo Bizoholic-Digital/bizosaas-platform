@@ -26,7 +26,7 @@ services:
       - VAULT_SECRET_PATH=${VAULT_SECRET_PATH:-bizosaas/stg/admin-dashboard}
       - VAULT_MOUNT_POINT=${VAULT_MOUNT_POINT:-secret}
       - AUTH_TRUST_HOST=true
-      - PORT=3000
+      - PORT=3004
     networks:
       - dokploy-network
     restart: unless-stopped
@@ -36,7 +36,7 @@ services:
           cpus: '0.4'
           memory: 512M
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3004/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -48,10 +48,11 @@ services:
       - "traefik.http.routers.admin-dashboard-stg.tls.certresolver=letsencrypt"
       - "traefik.http.routers.admin-dashboard-stg.priority=1000"
       - "traefik.http.routers.admin-dashboard-stg.service=admin-dashboard-stg-svc"
-      - "traefik.http.services.admin-dashboard-stg-svc.loadbalancer.server.port=3000"
+      - "traefik.http.services.admin-dashboard-stg-svc.loadbalancer.server.port=3004"
       - "traefik.docker.network=dokploy-network"
 
 networks:
   dokploy-network:
     external: true
-# Trigger redeploy to fix 404
+
+# Trigger redeploy for port fix 1770889079
