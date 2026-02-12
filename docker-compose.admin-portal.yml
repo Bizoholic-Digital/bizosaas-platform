@@ -54,3 +54,4 @@ services:
 networks:
   dokploy-network:
     external: true
+# Trigger redeploy to fix 404
