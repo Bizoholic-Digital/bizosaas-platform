@@ -1,7 +1,10 @@
 'use client'
 
 import { createContext, useContext, useEffect, ReactNode } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { useTenantStore } from '@/store/useTenantStore'
+import { brainGateway } from '@/lib/brain-gateway-client'
+import { useAuth } from '@/lib/auth'
 import type { Tenant } from '@/types/tenant'
 
 interface TenantContextValue {
@@ -25,10 +28,49 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     loadTenants,
   } = useTenantStore()
 
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+
   // Load tenants on mount
   useEffect(() => {
     loadTenants()
   }, [loadTenants])
+
+  // Check onboarding status - ONLY for authenticated users on portal routes
+  useEffect(() => {
+    async function checkOnboarding() {
+      // Define routes where onboarding check should NOT run
+      const excludedRoutes = [
+        '/onboarding',
+        '/login',
+        '/signup',
+        '/forgot-password',
+        '/reset-password',
+        '/verify-email',
+        '/',
+      ]
+
+      const isExcludedRoute = excludedRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))
+
+      // Only check onboarding if:
+      // 1. User is authenticated
+      // 2. We have a current tenant
+      // 3. Not currently loading
+      // 4. Not on an excluded route
+      if (isAuthenticated && currentTenant && !isLoading && !isExcludedRoute) {
+        try {
+          const status = await brainGateway.onboarding.getStatus()
+          if (status && !status.is_completed) {
+            router.push('/onboarding')
+          }
+        } catch (err) {
+          console.error('Failed to check onboarding status:', err)
+        }
+      }
+    }
+    checkOnboarding()
+  }, [isAuthenticated, currentTenant, isLoading, pathname, router])
 
   const value: TenantContextValue = {
     currentTenant,
