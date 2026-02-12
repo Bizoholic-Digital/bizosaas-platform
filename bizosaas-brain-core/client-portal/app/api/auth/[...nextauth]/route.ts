@@ -198,6 +198,13 @@ export const authOptions: NextAuthOptions = {
     },
 
     secret: process.env.NEXTAUTH_SECRET || 'development-secret-change-in-production',
+
+    // TRUSTED HOST CONFIGURATION (Required for Dokploy/Traefik)
+    // ------------------------------------------------------------------
+    // NextAuth.js (v4/v5) requires explicit trust implementation when 
+    // running behind a proxy that modifies Host headers.
+    trustHost: true,
+    // ------------------------------------------------------------------
 };
 
 const handler = NextAuth(authOptions);
