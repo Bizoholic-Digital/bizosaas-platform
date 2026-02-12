@@ -108,6 +108,35 @@ class WorkflowService:
             logger.error(f"Failed to start workflow {workflow_id}: {e}")
             return {"status": "error", "message": str(e)}
 
+    async def schedule_workflow(self, tenant_id: str, workflow_id: str, cron_expression: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Schedule a workflow to run recurringly."""
+        workflow = self.db.query(Workflow).filter(Workflow.id == workflow_id, Workflow.tenant_id == tenant_id).first()
+        if not workflow:
+            raise ValueError("Workflow not found")
+            
+        if not self.workflow_port:
+             return {"status": "simulated", "schedule_id": f"sched-{workflow_id}"}
+             
+        schedule_id = f"schedule-{tenant_id}-{workflow_id}"
+        task_queue = f"queue-{tenant_id}"
+        
+        try:
+            await self.workflow_port.create_schedule(
+                schedule_id=schedule_id,
+                workflow_name=workflow.name,
+                args=[params] if params else [],
+                cron_expression=cron_expression,
+                task_queue=task_queue
+            )
+            return {"status": "scheduled", "schedule_id": schedule_id, "cron": cron_expression}
+        except Exception as e:
+            # Check if it already exists, maybe update it?
+            # For now, just error or return success if it's "already exists"
+            if "already exists" in str(e).lower():
+                 return {"status": "already_scheduled", "schedule_id": schedule_id}
+            logger.error(f"Failed to schedule workflow {workflow_id}: {e}")
+            return {"status": "error", "message": str(e)}
+
     async def set_triggers(self, tenant_id: str, workflow_id: str, triggers: List[Dict[str, Any]]) -> bool:
         """Configure autonomous triggers for a workflow"""
         workflow = self.db.query(Workflow).filter(Workflow.id == workflow_id, Workflow.tenant_id == tenant_id).first()

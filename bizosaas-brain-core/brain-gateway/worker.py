@@ -18,6 +18,7 @@ from app.workflows.reporting_workflow import ClientReportingWorkflow
 from app.workflows.intel_workflow import CompetitorIntelWorkflow, LeadScoringWorkflow
 from app.workflows.growth_workflow import SocialListeningWorkflow, TopicalClusterWorkflow
 from app.workflows.infra_outreach_workflow import OutreachAutomationWorkflow, AutoSSLMaintenanceWorkflow
+from app.workflows.seo_audit_workflow import SiteAuditWorkflow, KeywordResearchWorkflow, BacklinkMonitorWorkflow
 from app.activities import (
     validate_connector_credentials,
     save_connector_credentials,
@@ -38,7 +39,21 @@ from app.activities import (
     register_domain_activity,
     provision_infra_activity,
     setup_headless_bundle_activity,
-    verify_site_health_activity
+    setup_headless_bundle_activity,
+    verify_site_health_activity,
+    crawl_site_activity,
+    run_lighthouse_audit_activity,
+    analyze_onpage_seo_activity,
+    check_broken_links_activity,
+    generate_audit_report_activity,
+    store_audit_results_activity,
+    notify_tenant_activity,
+    fetch_seed_keywords_activity,
+    expand_keywords_via_serp_activity,
+    analyze_keyword_metrics_activity,
+    cluster_keywords_activity,
+    fetch_backlink_profile_activity,
+    detect_new_lost_links_activity
 )
 from app.activities.discovery import run_discovery_cycle_activity
 from app.activities.reputation import (
@@ -111,12 +126,21 @@ async def run_worker():
                 val_key_data = f.read()
 
     namespace = os.getenv("TEMPORAL_NAMESPACE", "default").strip()
+    temporal_api_key = os.getenv("TEMPORAL_API_KEY", "").strip()
+
     if val_cert_data and val_key_data:
         client = await Client.connect(
             temporal_url, 
             namespace=namespace,
             tls=True,
             tls_client_cert_config={"client_cert": val_cert_data, "client_private_key": val_key_data}
+        )
+    elif temporal_api_key:
+        client = await Client.connect(
+            temporal_url, 
+            namespace=namespace, 
+            tls=True, 
+            api_key=temporal_api_key
         )
     else:
         client = await Client.connect(temporal_url, namespace=namespace)
@@ -146,7 +170,11 @@ async def run_worker():
             SocialListeningWorkflow,
             TopicalClusterWorkflow,
             OutreachAutomationWorkflow,
-            AutoSSLMaintenanceWorkflow
+            OutreachAutomationWorkflow,
+            AutoSSLMaintenanceWorkflow,
+            SiteAuditWorkflow,
+            KeywordResearchWorkflow,
+            BacklinkMonitorWorkflow
         ],
         activities=[
             validate_connector_credentials,
@@ -194,7 +222,20 @@ async def run_worker():
             deliver_outreach_messages_activity,
             check_ssl_expiry_activity,
             renew_ssl_certificate_activity,
-            verify_ssl_propagation_activity
+            verify_ssl_propagation_activity,
+            crawl_site_activity,
+            run_lighthouse_audit_activity,
+            analyze_onpage_seo_activity,
+            check_broken_links_activity,
+            generate_audit_report_activity,
+            store_audit_results_activity,
+            notify_tenant_activity,
+            fetch_seed_keywords_activity,
+            expand_keywords_via_serp_activity,
+            analyze_keyword_metrics_activity,
+            cluster_keywords_activity,
+            fetch_backlink_profile_activity,
+            detect_new_lost_links_activity
         ],
     )
     

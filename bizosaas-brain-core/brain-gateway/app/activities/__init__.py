@@ -37,6 +37,21 @@ from .provisioning import (
 from .sales import (
     execute_sales_strategy_activity
 )
+from .seo import (
+    crawl_site_activity,
+    run_lighthouse_audit_activity,
+    analyze_onpage_seo_activity,
+    check_broken_links_activity,
+    generate_audit_report_activity,
+    store_audit_results_activity,
+    notify_tenant_activity,
+    fetch_seed_keywords_activity,
+    expand_keywords_via_serp_activity,
+    analyze_keyword_metrics_activity,
+    cluster_keywords_activity,
+    fetch_backlink_profile_activity,
+    detect_new_lost_links_activity
+)
 
 __all__ = [
     "validate_connector_credentials",
@@ -62,5 +77,18 @@ __all__ = [
     "provision_infra_activity",
     "setup_headless_bundle_activity",
     "verify_site_health_activity",
-    "execute_sales_strategy_activity"
+    "execute_sales_strategy_activity",
+    "crawl_site_activity",
+    "run_lighthouse_audit_activity",
+    "analyze_onpage_seo_activity",
+    "check_broken_links_activity",
+    "generate_audit_report_activity",
+    "store_audit_results_activity",
+    "notify_tenant_activity",
+    "fetch_seed_keywords_activity",
+    "expand_keywords_via_serp_activity",
+    "analyze_keyword_metrics_activity",
+    "cluster_keywords_activity",
+    "fetch_backlink_profile_activity",
+    "detect_new_lost_links_activity"
 ]

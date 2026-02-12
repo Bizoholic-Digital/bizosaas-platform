@@ -9,3 +9,4 @@ from .revenue import PortalRevenue, DomainInventory
 from .system import SystemSetting
 from .workflow import Workflow, WorkflowProposal
 from .workflow_execution import WorkflowExecution
+from .onboarding import OnboardingSession

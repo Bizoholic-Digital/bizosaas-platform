@@ -125,7 +125,7 @@ class AdminPrimeCopilot:
         """
         Analyze workflow discovery agent activity.
         """
-        from app.models.workflow_proposal import WorkflowProposal
+        from app.models.workflow import WorkflowProposal
         
         # Proposals in last 7 days
         seven_days_ago = datetime.utcnow() - timedelta(days=7)

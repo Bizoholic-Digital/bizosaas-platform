@@ -59,3 +59,15 @@ class WorkflowPort(ABC):
     ) -> None:
         """Terminate a workflow execution"""
         pass
+
+    @abstractmethod
+    async def create_schedule(
+        self,
+        schedule_id: str,
+        workflow_name: str,
+        args: List[Any],
+        cron_expression: str,
+        task_queue: str
+    ) -> None:
+        """Create a recurring schedule"""
+        pass

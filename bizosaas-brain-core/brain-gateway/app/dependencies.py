@@ -295,6 +295,7 @@ async def get_workflow_port() -> WorkflowPort:
     from app.adapters.temporal_adapter import TemporalAdapter
     temporal_host = os.getenv("TEMPORAL_ADDRESS", "").strip() or os.getenv("TEMPORAL_HOST", "").strip() or "localhost:7233"
     namespace = os.getenv("TEMPORAL_NAMESPACE", "default").strip()
+    temporal_api_key = os.getenv("TEMPORAL_API_KEY", "").strip()
     
     # Check for direct content (Base64)
     cert_content_b64 = os.getenv("TEMPORAL_MTLS_CERT_CONTENT") or os.getenv("TEMPORAL_CLIENT_CERT_CONTENT")
@@ -336,7 +337,8 @@ async def get_workflow_port() -> WorkflowPort:
         host=temporal_host, 
         namespace=namespace,
         client_cert=cert,
-        client_key=key
+        client_key=key,
+        api_key=temporal_api_key
     )
     return _workflow_port
 

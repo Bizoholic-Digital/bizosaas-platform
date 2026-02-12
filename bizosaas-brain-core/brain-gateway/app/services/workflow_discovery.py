@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.models.workflow_proposal import WorkflowProposal
+from app.models.workflow import WorkflowProposal, WorkflowStatus
 from app.models.user import User
 from app.models.onboarding import OnboardingSession
 from app.dependencies import get_db

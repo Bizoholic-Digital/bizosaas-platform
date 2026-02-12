@@ -19,7 +19,8 @@ class TemporalAdapter(WorkflowPort):
         host: str, 
         namespace: str = "default",
         client_cert: Optional[bytes] = None,
-        client_key: Optional[bytes] = None
+        client_key: Optional[bytes] = None,
+        api_key: Optional[str] = None
     ) -> "TemporalAdapter":
         """Factory method to create connected adapter"""
         try:
@@ -29,10 +30,19 @@ class TemporalAdapter(WorkflowPort):
             if client_cert and client_key:
                 tls = TLSConfig(client_cert=client_cert, client_key=client_key)
                 logger.info("Configuring mTLS for Temporal connection")
+            elif api_key:
+                # Temporal Cloud with API Key usually requires TLS=True (default/implicit or explicit simple TLS)
+                tls = True
+                logger.info("Configuring API Key for Temporal connection")
             
             # Connect to Temporal server
-            client = await Client.connect(host, namespace=namespace, tls=tls)
-            logger.info(f"Connected to Temporal at {host} (TLS: {tls is not None})")
+            client = await Client.connect(
+                host, 
+                namespace=namespace, 
+                tls=tls,
+                api_key=api_key
+            )
+            logger.info(f"Connected to Temporal at {host} (TLS: {tls is not None}, API Key: {'Yes' if api_key else 'No'})")
             return cls(client)
         except Exception as e:
             logger.error(f"Failed to connect to Temporal at {host}: {e}")
@@ -118,4 +128,35 @@ class TemporalAdapter(WorkflowPort):
             logger.info(f"Terminated workflow {workflow_id}: {reason}")
         except Exception as e:
             logger.error(f"Failed to terminate workflow {workflow_id}: {e}")
+            raise
+
+    async def create_schedule(
+        self,
+        schedule_id: str,
+        workflow_name: str,
+        args: List[Any],
+        cron_expression: str,
+        task_queue: str
+    ) -> None:
+        from temporalio.client import Schedule, ScheduleActionStartWorkflow, ScheduleSpec, ScheduleIntervalSpec
+        
+        try:
+            # Create schedule
+            await self.client.create_schedule(
+                id=schedule_id,
+                schedule=Schedule(
+                    action=ScheduleActionStartWorkflow(
+                        workflow=workflow_name,
+                        args=args,
+                        task_queue=task_queue,
+                    ),
+                    spec=ScheduleSpec(
+                        cron_expressions=[cron_expression]
+                    ),
+                ),
+            )
+            logger.info(f"Created schedule {schedule_id} for {workflow_name} with cron {cron_expression}")
+        except Exception as e:
+            # Handle "Already Exists" gracefully if needed, or propagate
+            logger.error(f"Failed to create schedule {schedule_id}: {e}")
             raise

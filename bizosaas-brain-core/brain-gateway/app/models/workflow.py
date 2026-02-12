@@ -2,11 +2,21 @@ from sqlalchemy import Column, String, JSON, DateTime, ForeignKey, Boolean, Floa
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
+import enum
 from .base import Base
 from .utils import GUID
 
+class WorkflowStatus(str, enum.Enum):
+    """Workflow lifecycle states"""
+    PROPOSED = "proposed"
+    REFINEMENT_REQUESTED = "refinement_requested"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    ARCHIVED = "archived"
+
 class Workflow(Base):
     __tablename__ = "workflows"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     tenant_id = Column(String, index=True)
@@ -56,13 +66,15 @@ class Workflow(Base):
 
 class WorkflowProposal(Base):
     __tablename__ = "workflow_proposals"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     description = Column(String)
     type = Column(String)
     category = Column(String, default="all")
-    status = Column(String, default="proposed") # 'proposed', 'approved', 'rejected', 'refinement_requested'
+    status = Column(String, default="proposed") # Backwards compatibility or use Enum
+    discovery_method = Column(String) # Added from duplicate model
     workflow_definition = Column(JSON)
     estimated_cost = Column(Float)
     impact_analysis = Column(Text)
@@ -70,6 +82,7 @@ class WorkflowProposal(Base):
     admin_notes = Column(Text)
     admin_feedback = Column(Text)
     suggested_changes = Column(JSON)
+    rejection_reason = Column(Text) # Added from duplicate model
     
     # Audit trail
     approved_by = Column(String)
@@ -105,6 +118,7 @@ class WorkflowProposal(Base):
 
 class ApprovalTask(Base):
     __tablename__ = "approval_tasks"
+    __table_args__ = {'extend_existing': True}
     
     id = Column(GUID, primary_key=True, default=uuid.uuid4)
     tenant_id = Column(String, index=True)

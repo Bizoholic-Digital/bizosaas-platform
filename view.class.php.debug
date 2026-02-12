@@ -1,0 +1,90 @@
+<?php
+class View {
+	var $data = array();
+	var $layout = 'default';
+	
+	function render($viewFile, $layout='default', $printContent=true){
+		
+        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Render Start: View=$viewFile Layout=$layout\n", FILE_APPEND);
+
+		# to prevent sql injection
+		$spText = $_SESSION['text'];
+		if(count($this->data) > 0){
+			foreach ($this->data as $varName => $varValue){
+				$$varName = $varValue;
+			}
+		}
+
+        $vFile = SP_VIEWPATH."/".$viewFile.".ctp.php";
+        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: View Path: $vFile\n", FILE_APPEND);
+
+		ob_start();
+		include($vFile);
+		$viewContent = ob_get_contents();
+		ob_end_clean();
+		
+        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: View Content Length: ".strlen($viewContent)."\n", FILE_APPEND);
+
+		ob_start();
+		if($layout == 'ajax'){
+			if($printContent){
+				print $viewContent;
+			}else{
+				return $viewContent;
+			}
+		}else{
+			$langCtrler = New LanguageController();
+			$spTextPanel = $langCtrler->getLanguageTexts('panel', $_SESSION['lang_code']);
+			$spTextLogin = $langCtrler->getLanguageTexts('login', $_SESSION['lang_code']);
+            
+            $lFile = SP_VIEWPATH."/layout/".$layout.".ctp.php";
+            file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Layout Path: $lFile\n", FILE_APPEND);
+            
+			include($lFile);
+		}
+		
+		if($printContent){
+            $finalContent = ob_get_contents();
+            file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Final Body Length: ".strlen($finalContent)."\n", FILE_APPEND);
+			ob_end_flush();
+		}else{
+			$content = ob_get_contents();
+			ob_end_clean();
+			return $content;
+		}
+	}
+
+	function getPluginViewContent($viewFile){
+		
+		$spText = $_SESSION['text'];
+		if(count($this->data) > 0){
+			foreach ($this->data as $varName => $varValue){
+				$$varName = $varValue;
+			}
+		}
+
+		ob_start();
+		include(PLUGIN_VIEWPATH."/".$viewFile.".ctp.php");
+		$viewContent = ob_get_contents();
+		ob_end_clean();
+		return $viewContent;
+	}
+	
+	// func to fetch the ctp file 
+	public static function fetchFile($viewFile, $data=array()) {            
+		$spText = $_SESSION['text'];
+		if(count($data) > 0){
+			foreach ($data as $varName => $varValue){
+				$$varName = $varValue;
+			}
+		}
+
+		ob_start();
+		include($viewFile);
+		$viewContent = ob_get_contents();
+		ob_end_clean();
+		return $viewContent;
+	}
+
+}
+?>

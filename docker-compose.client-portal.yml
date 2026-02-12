@@ -20,6 +20,7 @@ services:
       - NEXT_PUBLIC_BRAIN_API_URL=https://api.bizoholic.net
       - NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${NEXT_PUBLIC_STRIPE_PUBLIC_KEY}
       - NEXTAUTH_URL=https://app.bizoholic.net
+      - AUTH_TRUST_HOST=true
       - NEXTAUTH_SECRET=${AUTH_SECRET:-BizOSaaS2025!Secret!NextAuth}
       - AUTHENTIK_ISSUER=${AUTH_AUTHENTIK_ISSUER:-https://auth-sso.bizoholic.net/application/o/bizosaas-platform/}
       - AUTHENTIK_CLIENT_ID=${AUTH_AUTHENTIK_ID:-bizosaas-portal}
