@@ -11,11 +11,14 @@ export { ProjectsClient, projectsClient }
 export { ContentClient, contentClient, type ContentListParams }
 export { AnalyticsClient, analyticsClient }
 
+import { OnboardingClient, onboardingClient } from './clients/onboarding'
+
 // Combined brain gateway client
 export const brainGateway = {
   projects: projectsClient,
   content: contentClient,
   analytics: analyticsClient,
+  onboarding: onboardingClient,
 }
 
 // Export all types
