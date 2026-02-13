@@ -80,6 +80,25 @@ export interface Content {
   published_at?: string
 }
 
+export interface AutonomousContentRequest {
+  topic: string
+  persona_id?: string
+  target_cms?: string
+  require_approval?: boolean
+}
+
+export interface ContentWorkflowStatus {
+  workflow_id: string
+  phase: string
+  status: string
+}
+
+export interface ApprovalActionRequest {
+  workflow_id: string
+  phase: string
+  notes?: string
+}
+
 export interface CreateContentData {
   title: string
   slug: string

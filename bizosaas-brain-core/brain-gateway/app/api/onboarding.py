@@ -801,9 +801,58 @@ async def complete_onboarding(
     except Exception as e:
         print(f"Failed to update user metadata: {e}")
 
+    # --- Trigger Backend Workflows ---
+    try:
+        workflow_port = await get_workflow_port()
+        tenant_id_str = str(current_user.tenant_id or current_user.id)
+        
+        # 1. Site Audit Workflow
+        if state.profile.website:
+            await workflow_port.start_workflow(
+                workflow_name="SiteAuditWorkflow",
+                workflow_id=f"seo-audit-{tenant_id_str}-{datetime.now().strftime('%Y%m%d%H%M')}",
+                task_queue="brain-tasks",
+                args=[{
+                    "tenant_id": tenant_id_str,
+                    "url": state.profile.website
+                }]
+            )
+
+        # 2. Keyword Research Workflow
+        seed_keywords = []
+        if state.profile.description:
+            # Simple extraction for now, activities will refine
+            seed_keywords.append(state.profile.industry)
+        
+        await workflow_port.start_workflow(
+            workflow_name="KeywordResearchWorkflow",
+            workflow_id=f"kw-research-{tenant_id_str}-{datetime.now().strftime('%Y%m%d%H%M')}",
+            task_queue="brain-tasks",
+            args=[{
+                "tenant_id": tenant_id_str,
+                "seed_keywords": seed_keywords
+            }]
+        )
+
+        # 3. Schedule Rank Tracker (Daily)
+        try:
+            await workflow_port.create_schedule(
+                schedule_id=f"rank-tracker-{tenant_id_str}",
+                workflow_name="RankTrackerWorkflow",
+                args=[tenant_id_str, [state.profile.website], seed_keywords],
+                cron_expression="0 6 * * *",
+                task_queue="brain-tasks"
+            )
+        except Exception as sched_err:
+            # Handle already exists gracefully
+            print(f"Schedule creation info: {sched_err}")
+
+    except Exception as wf_err:
+        print(f"Failed to trigger onboarding workflows: {wf_err}")
+
     return {
         "status": "success", 
-        "message": f"Onboarding completed. {provisioned_count} tools provisioning.", 
+        "message": f"Onboarding completed. {provisioned_count} tools provisioning. Workflows initiated.", 
         "redirect": "/dashboard"
     }
 

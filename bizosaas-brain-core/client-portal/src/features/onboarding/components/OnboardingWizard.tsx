@@ -10,18 +10,25 @@ import {
     CheckCircle,
     ChevronRight,
     ChevronLeft,
-    Loader2
+    Loader2,
+    Clock
 } from 'lucide-react';
 import { brainGateway } from '@/lib/brain-gateway-client';
 import { BusinessProfileSetup } from './BusinessProfileSetup';
 import { PlatformSelection } from './PlatformSelection';
 import { CredentialsSetup } from './CredentialsSetup';
+import { CampaignBudgetSetup } from './CampaignBudgetSetup';
+import { CampaignStrategySetup } from './CampaignStrategySetup';
 
 const STEPS = [
-    { id: 'profile', title: 'Business Profile', icon: Building2 },
-    { id: 'platforms', title: 'Platform Selection', icon: MapPin },
+    { id: 'profile-basic', title: 'Business Profile', icon: Building2 },
+    { id: 'profile-audience', title: 'Target Audience', icon: MapPin },
+    { id: 'profile-hours', title: 'Hours & Attributes', icon: Clock },
+    { id: 'profile-media', title: 'Social & Media', icon: Shield },
+    { id: 'platforms', title: 'Platform Selection', icon: Zap },
     { id: 'credentials', title: 'Connect Platforms', icon: Shield },
-    { id: 'complete', title: 'Review & Finish', icon: CheckCircle },
+    { id: 'campaign-budget', title: 'Campaign Budget', icon: CheckCircle },
+    { id: 'strategy-summary', title: 'Final Strategy 🚀', icon: CheckCircle },
 ];
 
 export function OnboardingWizard() {
@@ -45,7 +52,9 @@ export function OnboardingWizard() {
         photos: [],
         specialHours: [],
         attributes: {},
-        socialMedia: {}
+        socialMedia: {},
+        targetAudience: { type: 'country-wide', locations: [] },
+        budget: { dailyLimit: 10, currency: 'USD' }
     });
 
     const [platforms, setPlatforms] = useState<any[]>([]);
@@ -147,8 +156,8 @@ export function OnboardingWizard() {
                         return (
                             <div key={step.id} className="flex flex-col items-center relative z-10">
                                 <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${isCompleted ? 'bg-green-500 text-white' :
-                                        isActive ? 'bg-blue-600 text-white' :
-                                            'bg-gray-200 dark:bg-gray-700 text-gray-500'
+                                    isActive ? 'bg-blue-600 text-white' :
+                                        'bg-gray-200 dark:bg-gray-700 text-gray-500'
                                     }`}>
                                     {isCompleted ? <CheckCircle className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
                                 </div>
@@ -182,11 +191,39 @@ export function OnboardingWizard() {
                         <BusinessProfileSetup
                             profile={businessProfile}
                             onUpdate={setBusinessProfile}
-                            onValidate={() => true} // Assuming validation is handled within or lazily
+                            onValidate={() => businessProfile.name && businessProfile.description}
+                            forcedTab="basic"
                         />
                     )}
 
                     {currentStep === 1 && (
+                        <BusinessProfileSetup
+                            profile={businessProfile}
+                            onUpdate={setBusinessProfile}
+                            onValidate={() => businessProfile.targetAudience.locations.length > 0}
+                            forcedTab="basic" // Audience is inside basic for now, or I can split it later
+                        />
+                    )}
+
+                    {currentStep === 2 && (
+                        <BusinessProfileSetup
+                            profile={businessProfile}
+                            onUpdate={setBusinessProfile}
+                            onValidate={() => true}
+                            forcedTab="hours"
+                        />
+                    )}
+
+                    {currentStep === 3 && (
+                        <BusinessProfileSetup
+                            profile={businessProfile}
+                            onUpdate={setBusinessProfile}
+                            onValidate={() => true}
+                            forcedTab="attributes"
+                        />
+                    )}
+
+                    {currentStep === 4 && (
                         <PlatformSelection
                             platforms={platforms}
                             onUpdate={setPlatforms}
@@ -197,7 +234,7 @@ export function OnboardingWizard() {
                         />
                     )}
 
-                    {currentStep === 2 && (
+                    {currentStep === 5 && (
                         <CredentialsSetup
                             platforms={platforms.filter(p => p.enabled)}
                             onConnect={async (id) => { console.log('Connect', id) }}
@@ -207,24 +244,21 @@ export function OnboardingWizard() {
                         />
                     )}
 
-                    {currentStep === 3 && (
-                        <div className="text-center py-12">
-                            <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Almost Ready!</h2>
-                            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-8">
-                                Your business profile and platform integrations are configured. We'll now finalize your setup and transition you to your new dashboard.
-                            </p>
-                            <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg text-left max-w-lg mx-auto">
-                                <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Next Steps:</h3>
-                                <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-2">
-                                    <li>• We'll start indexing your site for SEO analysis</li>
-                                    <li>• Your initial reports will be generated within 24 hours</li>
-                                    <li>• You'll receive an email once everything is ready</li>
-                                </ul>
-                            </div>
-                        </div>
+                    {currentStep === 6 && (
+                        <CampaignBudgetSetup
+                            budget={businessProfile.budget}
+                            onUpdate={(budget) => setBusinessProfile({ ...businessProfile, budget })}
+                        />
+                    )}
+
+                    {currentStep === 7 && (
+                        <CampaignStrategySetup
+                            profile={businessProfile}
+                            platforms={platforms}
+                            budget={businessProfile.budget}
+                            onLaunch={handleComplete}
+                            isLaunching={isSaving}
+                        />
                     )}
                 </div>
 

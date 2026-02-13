@@ -7,51 +7,11 @@ import json
 from datetime import datetime
 from urllib.parse import urlparse
 
+from app.core.intelligence import call_ai_agent_with_rag
+
 logger = logging.getLogger(__name__)
 
-# --- Helper Functions ---
-
-async def _call_ai_agent(agent_type: str, task: str, payload: Dict[str, Any], priority: str = "normal") -> Dict[str, Any]:
-    """Helper to call the AI Agents service."""
-    ai_agents_url = os.getenv("AI_AGENTS_SERVICE_URL", "http://brain-ai-agents:8000")
-    
-    async with httpx.AsyncClient() as client:
-        # Submit Task
-        task_payload = {
-            "agent_type": agent_type,
-            "task_description": task,
-            "input_data": payload,
-            "priority": priority
-        }
-        
-        try:
-            response = await client.post(f"{ai_agents_url}/tasks", json=task_payload, timeout=10.0)
-            response.raise_for_status()
-            task_data = response.json()
-            task_id = task_data["task_id"]
-            
-            # Poll for completion (simplified for activity)
-            # In a real production setup, we might stick with async patterns or improved polling
-            max_retries = 30 # 30 * 2s = 60s timeout for agent response in this activity context
-            for _ in range(max_retries):
-                import asyncio
-                await asyncio.sleep(2)
-                status_resp = await client.get(f"{ai_agents_url}/tasks/{task_id}")
-                if status_resp.status_code == 200:
-                    status_data = status_resp.json()
-                    status = status_data["status"]
-                    if status == "completed":
-                        return status_data["result_data"]
-                    elif status == "failed":
-                        raise Exception(f"Agent task failed: {status_data.get('error_message')}")
-                    elif status == "cancelled":
-                        raise Exception("Agent task cancelled")
-            
-            raise Exception("Timeout waiting for AI agent")
-            
-        except Exception as e:
-            logger.error(f"AI Agent call failed: {e}")
-            raise
+# --- Helper Functions --- (Consolidated in app.core.intelligence)
 
 # --- Site Audit Activities ---
 
@@ -114,11 +74,11 @@ async def analyze_onpage_seo_activity(params: Dict[str, Any]) -> Dict[str, Any]:
     # Helper to clean data for the agent
     clean_pages = [{"url": p["url"], "title": p["title"]} for p in pages]
     
-    # Use AI Agent to analyze structure relevance
-    analysis = await _call_ai_agent(
+    analysis = await call_ai_agent_with_rag(
         agent_type="seo_specialist",
-        task="Analyze on-page SEO structure for these pages",
-        payload={"pages": clean_pages, "tenant_id": tenant_id}
+        task_description="Analyze on-page SEO structure for these pages",
+        payload={"pages": clean_pages},
+        tenant_id=tenant_id
     )
     
     return analysis
@@ -143,11 +103,11 @@ async def generate_audit_report_activity(params: Dict[str, Any]) -> Dict[str, An
     audit_data = params.get("audit_data")
     tenant_id = params.get("tenant_id")
     
-    # Use AI to synthesize all technical data into a readable report
-    report = await _call_ai_agent(
+    report = await call_ai_agent_with_rag(
         agent_type="seo_specialist",
-        task="Generate SEO Site Audit Report",
-        payload={"audit_data": audit_data, "tenant_id": tenant_id}
+        task_description="Generate SEO Site Audit Report",
+        payload={"audit_data": audit_data},
+        tenant_id=tenant_id
     )
     
     return report
@@ -224,10 +184,11 @@ async def cluster_keywords_activity(params: Dict[str, Any]) -> Dict[str, Any]:
     """Group keywords by search intent and topic."""
     keywords_data = params.get("keywords_data", [])
     
-    clusters = await _call_ai_agent(
+    clusters = await call_ai_agent_with_rag(
         agent_type="marketing_strategist", # or seo_specialist
-        task="Cluster keywords by intent",
-        payload={"keywords": keywords_data}
+        task_description="Cluster keywords by intent",
+        payload={"keywords": keywords_data},
+        tenant_id=params.get("tenant_id", "global") # Ensure tenant_id is passed if available
     )
     
     return clusters

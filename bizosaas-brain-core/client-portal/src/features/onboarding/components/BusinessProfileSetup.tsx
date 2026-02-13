@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Building2, MapPin, Phone, Mail, Globe, Clock, Image as ImageIcon,
   Upload, X, Plus, Minus, Edit3, Camera, User,
@@ -33,7 +33,7 @@ interface BusinessContact {
   secondaryPhone?: string;
 }
 
-interface BusinessProfile {
+export interface BusinessProfile {
   name: string;
   description: string;
   category: string;
@@ -66,12 +66,17 @@ interface BusinessProfile {
     linkedin?: string;
     youtube?: string;
   };
+  targetAudience: {
+    type: 'country-wide' | 'city' | 'county' | 'global';
+    locations: string[];
+  };
 }
 
 interface BusinessProfileSetupProps {
   profile: BusinessProfile;
   onUpdate: (profile: BusinessProfile) => void;
   onValidate: () => boolean;
+  forcedTab?: 'basic' | 'contact' | 'hours' | 'attributes' | 'media';
 }
 
 const BUSINESS_CATEGORIES = [
@@ -91,8 +96,15 @@ const DAYS_OF_WEEK = [
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
 ];
 
-export function BusinessProfileSetup({ profile, onUpdate, onValidate }: BusinessProfileSetupProps) {
-  const [activeTab, setActiveTab] = useState<'basic' | 'contact' | 'hours' | 'attributes' | 'media'>('basic');
+export function BusinessProfileSetup({ profile, onUpdate, onValidate, forcedTab }: BusinessProfileSetupProps) {
+  const [activeTab, setActiveTab] = useState<'basic' | 'contact' | 'hours' | 'attributes' | 'media'>(forcedTab || 'basic');
+
+  useEffect(() => {
+    if (forcedTab) {
+      setActiveTab(forcedTab);
+    }
+  }, [forcedTab]);
+
   const [newKeyword, setNewKeyword] = useState('');
   const [newServiceArea, setNewServiceArea] = useState('');
 
@@ -147,6 +159,27 @@ export function BusinessProfileSetup({ profile, onUpdate, onValidate }: Business
     updateProfile({ serviceAreas: profile.serviceAreas.filter(a => a !== area) });
   };
 
+  const addTargetLocation = () => {
+    if (newServiceArea.trim() && !profile.targetAudience.locations.includes(newServiceArea.trim())) {
+      updateProfile({
+        targetAudience: {
+          ...profile.targetAudience,
+          locations: [...profile.targetAudience.locations, newServiceArea.trim()]
+        }
+      });
+      setNewServiceArea('');
+    }
+  };
+
+  const removeTargetLocation = (location: string) => {
+    updateProfile({
+      targetAudience: {
+        ...profile.targetAudience,
+        locations: profile.targetAudience.locations.filter(l => l !== location)
+      }
+    });
+  };
+
   const getSelectedCategory = () => {
     return BUSINESS_CATEGORIES.find(cat => cat.value === profile.category);
   };
@@ -154,7 +187,8 @@ export function BusinessProfileSetup({ profile, onUpdate, onValidate }: Business
   const validateBasicInfo = () => {
     return profile.name.trim() !== '' &&
       profile.description.trim() !== '' &&
-      profile.category !== '';
+      profile.category !== '' &&
+      profile.targetAudience.locations.length > 0;
   };
 
   const validateContactInfo = () => {
@@ -201,6 +235,71 @@ export function BusinessProfileSetup({ profile, onUpdate, onValidate }: Business
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               {profile.description.length}/500 characters
             </p>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+            <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <MapPin className="w-5 h-5 mr-2 text-blue-500" />
+              Target Audience Focus *
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Audience Type
+                </label>
+                <select
+                  value={profile.targetAudience.type}
+                  onChange={(e) => updateProfile({ targetAudience: { ...profile.targetAudience, type: e.target.value as any } })}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="country-wide">Country-wide</option>
+                  <option value="city">Specific City</option>
+                  <option value="county">Specific County</option>
+                  <option value="global">Global Focus</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Add Location
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={newServiceArea}
+                    onChange={(e) => setNewServiceArea(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTargetLocation())}
+                    className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    placeholder={`e.g. ${profile.targetAudience.type === 'country-wide' ? 'United States' : 'New York City'}`}
+                  />
+                  <button
+                    onClick={addTargetLocation}
+                    className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    type="button"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {profile.targetAudience.locations.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {profile.targetAudience.locations.map(loc => (
+                  <span key={loc} className="inline-flex items-center px-3 py-1 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-lg border border-blue-100 dark:border-blue-800 text-sm">
+                    {loc}
+                    <button onClick={() => removeTargetLocation(loc)} className="ml-2 hover:text-red-500" type="button">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {!profile.targetAudience.locations.length && (
+              <p className="text-sm text-amber-600 dark:text-amber-400 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                Please add at least one target location to proceed.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -770,8 +869,8 @@ export function BusinessProfileSetup({ profile, onUpdate, onValidate }: Business
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
               >
                 <Icon className="w-4 h-4" />

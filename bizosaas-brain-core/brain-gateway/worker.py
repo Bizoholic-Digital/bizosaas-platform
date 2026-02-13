@@ -19,6 +19,9 @@ from app.workflows.intel_workflow import CompetitorIntelWorkflow, LeadScoringWor
 from app.workflows.growth_workflow import SocialListeningWorkflow, TopicalClusterWorkflow
 from app.workflows.infra_outreach_workflow import OutreachAutomationWorkflow, AutoSSLMaintenanceWorkflow
 from app.workflows.seo_audit_workflow import SiteAuditWorkflow, KeywordResearchWorkflow, BacklinkMonitorWorkflow
+from app.workflows.content_pipeline_workflow import ContentCreationWorkflow, ContentCalendarWorkflow
+from app.workflows.persona_workflow import PersonaGenerationWorkflow
+from app.workflows.social_content_workflow import SocialContentWorkflow
 from app.activities import (
     validate_connector_credentials,
     save_connector_credentials,
@@ -90,6 +93,29 @@ from app.activities.infra_outreach import (
     check_ssl_expiry_activity,
     renew_ssl_certificate_activity,
     verify_ssl_propagation_activity
+)
+from app.activities.content_pipeline import (
+    content_research_activity,
+    generate_content_outline_activity,
+    revise_content_outline_activity,
+    write_full_content_activity,
+    seo_optimize_content_activity,
+    score_content_quality_activity,
+    create_approval_task_activity,
+    publish_content_activity,
+    generate_monthly_calendar_activity
+)
+from app.activities.persona import (
+    analyze_website_activity,
+    extract_brand_voice_activity,
+    generate_core_persona_activity,
+    adapt_platform_personas_activity
+)
+from app.activities.social_content import (
+    generate_twitter_post_activity,
+    generate_linkedin_post_activity,
+    generate_instagram_facebook_activity,
+    schedule_social_post_activity
 )
 import app.connectors # Ensure connectors are registered
 
@@ -174,7 +200,11 @@ async def run_worker():
             AutoSSLMaintenanceWorkflow,
             SiteAuditWorkflow,
             KeywordResearchWorkflow,
-            BacklinkMonitorWorkflow
+            BacklinkMonitorWorkflow,
+            ContentCreationWorkflow,
+            ContentCalendarWorkflow,
+            PersonaGenerationWorkflow,
+            SocialContentWorkflow
         ],
         activities=[
             validate_connector_credentials,
@@ -235,7 +265,24 @@ async def run_worker():
             analyze_keyword_metrics_activity,
             cluster_keywords_activity,
             fetch_backlink_profile_activity,
-            detect_new_lost_links_activity
+            detect_new_lost_links_activity,
+            content_research_activity,
+            generate_content_outline_activity,
+            revise_content_outline_activity,
+            write_full_content_activity,
+            seo_optimize_content_activity,
+            score_content_quality_activity,
+            create_approval_task_activity,
+            publish_content_activity,
+            generate_monthly_calendar_activity,
+            analyze_website_activity,
+            extract_brand_voice_activity,
+            generate_core_persona_activity,
+            adapt_platform_personas_activity,
+            generate_twitter_post_activity,
+            generate_linkedin_post_activity,
+            generate_instagram_facebook_activity,
+            schedule_social_post_activity
         ],
     )
     

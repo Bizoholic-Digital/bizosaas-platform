@@ -7,7 +7,8 @@ import {
   LayoutDashboard, Users, FileText, ShoppingCart, CreditCard,
   FolderKanban, UsersRound, HeadphonesIcon, MapPin, TrendingUp,
   BarChart3, Bot, Star, Trophy, CheckSquare, Settings, Menu, X,
-  Megaphone, Plug
+  Megaphone, Plug,
+  Search
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -75,6 +76,11 @@ const navigationItems: NavItem[] = [
     href: '/marketing',
     icon: Megaphone,
     feature: 'marketing' as any,
+  },
+  {
+    name: 'SEO',
+    href: '/dashboard/seo',
+    icon: Search,
   },
   {
     name: 'Analytics',

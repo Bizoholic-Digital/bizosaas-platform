@@ -101,12 +101,12 @@ export function useTenantFeature(feature: keyof Tenant['settings']['features']) 
 // Hook to check if user has required role for current tenant
 export function useTenantRole(requiredRole: 'client' | 'partner' | 'moderator' | 'admin') {
   const { currentTenant } = useTenant()
-  const user = useTenantStore((state) => state.user)
+  const user = useTenantStore((state: any) => state.user)
 
   if (!currentTenant || !user) return false
 
   const roleHierarchy = ['client', 'partner', 'moderator', 'admin']
-  const userRole = user.roles.find((r) => r.tenantId === currentTenant.id)
+  const userRole = user.roles.find((r: any) => r.tenantId === currentTenant.id)
 
   if (!userRole) return false
 

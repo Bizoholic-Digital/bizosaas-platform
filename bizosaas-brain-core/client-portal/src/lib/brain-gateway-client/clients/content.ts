@@ -10,6 +10,9 @@ import type {
   UpdateContentData,
   PaginatedResponse,
   PaginationParams,
+  AutonomousContentRequest,
+  ContentWorkflowStatus,
+  ApprovalActionRequest,
 } from '../types'
 
 export interface ContentListParams extends PaginationParams {
@@ -89,6 +92,34 @@ export class ContentClient {
     params?: PaginationParams
   ): Promise<PaginatedResponse<Content>> {
     return this.list({ ...params, content_type: contentType })
+  }
+
+  /**
+   * Start autonomous content creation pipeline
+   */
+  async createAutonomous(data: AutonomousContentRequest): Promise<{ status: string; workflow_id: string }> {
+    return apiClient.post(`${this.basePath}/create`, data)
+  }
+
+  /**
+   * Approve a content phase (HITL)
+   */
+  async approvePhase(data: ApprovalActionRequest): Promise<void> {
+    return apiClient.post(`${this.basePath}/approve`, data)
+  }
+
+  /**
+   * Request revision for a content phase (HITL)
+   */
+  async rejectPhase(data: ApprovalActionRequest): Promise<void> {
+    return apiClient.post(`${this.basePath}/reject`, data)
+  }
+
+  /**
+   * Get status of an autonomous content workflow
+   */
+  async getStatus(workflowId: string): Promise<ContentWorkflowStatus> {
+    return apiClient.get(`${this.basePath}/status/${workflowId}`)
   }
 }
 
