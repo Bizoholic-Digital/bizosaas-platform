@@ -27,26 +27,31 @@ jobs:
         include:
           # Backend Services
           - name: brain-gateway
-            context: ./bizosaas/ai/services/bizosaas-brain
+            context: ./bizosaas-brain-core/brain-gateway
             dockerfile: Dockerfile
-          - name: bizoholic-frontend
-            context: ./bizosaas/frontend/apps/bizoholic-frontend
-            dockerfile: Dockerfile.production
-          - name: coreldove-frontend
-            context: ./bizosaas/frontend/apps/coreldove-frontend
-            dockerfile: Dockerfile.production
-          - name: client-portal
-            context: ./bizosaas/frontend/apps/client-portal
-            dockerfile: Dockerfile.production
-          - name: admin-dashboard
-            context: ./bizosaas/frontend/apps/bizosaas-admin
-            dockerfile: Dockerfile.production
-          - name: business-directory-frontend
-            context: ./bizosaas/frontend/apps/business-directory-frontend
-            dockerfile: Dockerfile.production
+          - name: ai-agents
+            context: ./bizosaas-brain-core/ai-agents
+            dockerfile: Dockerfile
+          # Frontend Services
           - name: thrillring-gaming
-            context: ./bizosaas/frontend/apps/thrillring-gaming
+            context: ./bizosaas-brain-core/thrillring-gaming
             dockerfile: Dockerfile.production
+          - name: bizoholic-frontend
+            context: ./misc/services/bizoholic-frontend
+            dockerfile: Dockerfile
+          # - name: coreldove-frontend
+          #   context: ./bizosaas/frontend/apps/coreldove-frontend
+          #   dockerfile: Dockerfile.production
+          # Portals (Pending Dockerfile/Code Verification)
+          - name: client-portal
+            context: ./bizosaas-brain-core/client-portal
+            dockerfile: Dockerfile
+          # - name: admin-dashboard
+          #   context: ./portals/admin-dashboard
+          #   dockerfile: Dockerfile.production
+          # - name: business-directory-frontend
+          #   context: ./portals/business-directory
+          #   dockerfile: Dockerfile.production
 
     steps:
       - name: Checkout code
