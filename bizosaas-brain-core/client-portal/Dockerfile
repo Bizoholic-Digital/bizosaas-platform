@@ -31,7 +31,7 @@ RUN apk add --no-cache libc6-compat
 COPY package.json package-lock.json* ./
 
 # Install dependencies with clean cache
-RUN npm ci --legacy-peer-deps && \
+RUN npm install --legacy-peer-deps && \
     npm cache clean --force
 
 # ═══════════════════════════════════════════════════════════════════════════

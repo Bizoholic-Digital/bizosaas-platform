@@ -36,9 +36,9 @@ jobs:
           - name: thrillring-gaming
             context: ./bizosaas-brain-core/thrillring-gaming
             dockerfile: Dockerfile.production
-          - name: bizoholic-frontend
-            context: ./misc/services/bizoholic-frontend
-            dockerfile: Dockerfile
+          # - name: bizoholic-frontend
+          #   context: ./misc/services/bizoholic-frontend
+          #   dockerfile: Dockerfile
           # - name: coreldove-frontend
           #   context: ./bizosaas/frontend/apps/coreldove-frontend
           #   dockerfile: Dockerfile.production

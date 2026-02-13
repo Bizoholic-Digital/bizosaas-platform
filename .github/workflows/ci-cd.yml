@@ -80,16 +80,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: 'portals/client-portal/package-lock.json'
+          cache-dependency-path: 'bizosaas-brain-core/client-portal/package-lock.json'
 
       - name: Install dependencies
         run: |
-          cd portals/client-portal
+          cd bizosaas-brain-core/client-portal
           npm ci
 
       - name: Run npm audit
         run: |
-          cd portals/client-portal
+          cd bizosaas-brain-core/client-portal
           npm audit --audit-level=high
 
       - name: Setup Python
