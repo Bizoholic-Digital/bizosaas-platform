@@ -1,0 +1,77 @@
+name: Deploy Client Portal
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - 'portals/client-portal/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-client-portal.yml'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: client-portal
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=staging
+            type=sha,prefix=staging-
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: portals/client-portal/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          platforms: linux/amd64
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+            NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net/brain
+            NEXT_PUBLIC_STRIPE_PUBLIC_KEY=pk_test_placeholder
+            NEXTAUTH_URL=https://app.bizoholic.net
+            SERVICE_PATH=portals/client-portal
+
+  notify-dokploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Trigger Dokploy Deployment (Frontend)
+        run: |
+          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+            -H "X-API-Key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"composeId": "zz6VpI3h8BFXPUTZZb01G"}'

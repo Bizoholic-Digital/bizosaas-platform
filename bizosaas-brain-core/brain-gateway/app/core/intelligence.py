@@ -7,6 +7,8 @@ from typing import Dict, Any, List, Optional
 from app.core.rag import rag_service
 from app.core.kag_service import kag_service
 
+from app.core.vault import get_config_val
+
 logger = logging.getLogger(__name__)
 
 async def call_ai_agent_with_rag(
@@ -22,7 +24,7 @@ async def call_ai_agent_with_rag(
     """
     Consolidated helper to call AI Agents with RAG context injection and result ingestion.
     """
-    ai_agents_url = os.getenv("AI_AGENTS_SERVICE_URL", "http://brain-ai-agents:8000")
+    ai_agents_url = get_config_val("AI_AGENTS_SERVICE_URL", "http://brain-ai-agents:8000")
     
     # 1. RAG Context Retrieval
     context = []

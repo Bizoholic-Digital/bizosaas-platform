@@ -6,8 +6,10 @@ import os
 import json
 from datetime import datetime
 import asyncio
+import re
 
 from app.core.intelligence import call_ai_agent_with_rag
+from app.core.vault import get_config_val
 
 logger = logging.getLogger(__name__)
 
@@ -103,25 +105,40 @@ async def write_full_content_activity(params: Dict[str, Any]) -> str:
 
 @activity.defn
 async def seo_optimize_content_activity(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Optimize draft with meta tags and schema."""
-    draft = params.get("draft")
+    """Optimize draft with deterministic rules for slugs/titles + LLM for metadata."""
+    draft = params.get("draft", "")
+    title = params.get("title", "New Article")
     
-    logger.info("Optimizing content for SEO...")
+    # 1. Deterministic Slug Generation
+    slug = re.sub(r'[^a-z0-9\s-]', '', title.lower())
+    slug = re.sub(r'[\s-]+', '-', slug).strip('-')
+    
+    # 2. Rule-based title check (Max 60 chars)
+    meta_title = title if len(title) <= 60 else title[:57] + "..."
+    
+    logger.info(f"Optimizing content for SEO: {meta_title}")
     
     try:
+        # 3. LLM for Meta Description & Content Refinement (Hybrid)
         optimized = await call_ai_agent_with_rag(
             agent_type="seo_specialist",
-            task_description="Optimize the article for SEO. Generate meta title, description, and slug.",
-            payload={"content": draft},
+            task_description="Refine keywords and generate a compelling meta description.",
+            payload={"content": draft, "suggested_title": meta_title},
             tenant_id=params.get("tenant_id", "global")
         )
-        return optimized
+        return {
+            "body": optimized.get("body", draft),
+            "meta_title": meta_title,
+            "meta_description": optimized.get("meta_description", "No description generated."),
+            "slug": slug,
+            "tags": optimized.get("tags", [])
+        }
     except Exception:
         return {
             "body": draft,
-            "meta_title": "Optimized Title",
-            "meta_description": "Optimized Description",
-            "slug": "optimized-content"
+            "meta_title": meta_title,
+            "meta_description": "Default Description",
+            "slug": slug
         }
 
 @activity.defn
@@ -156,14 +173,69 @@ async def create_approval_task_activity(params: Dict[str, Any]) -> bool:
 
 @activity.defn
 async def publish_content_activity(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Push content to CMS."""
+    """Push content to CMS (Wagtail/WordPress) using secure credentials from Vault."""
     tenant_id = params.get("tenant_id")
     content = params.get("content")
     target = params.get("target") or "wagtail"
     
     logger.info(f"Publishing to {target} for tenant {tenant_id}")
     
-    return {"status": "success", "url": f"https://{tenant_id}.bizosaas.com/blog/new-post"}
+    if target == "wagtail":
+        endpoint = get_config_val("CMS_WAGTAIL_URL")
+        token = get_config_val("CMS_WAGTAIL_API_TOKEN")
+        
+        if not endpoint or not token:
+            return {"status": "error", "message": "Wagtail credentials missing in Vault"}
+            
+        async with httpx.AsyncClient() as client:
+            try:
+                # Basic Wagtail API v2 Page Create
+                res = await client.post(
+                    f"{endpoint}/api/v2/pages/",
+                    headers={"Authorization": f"Token {token}"},
+                    json={
+                        "title": content.get("title", "New Post"),
+                        "slug": content.get("slug", "new-post"),
+                        "show_in_menus": True,
+                        "type": "blog.BlogPage", 
+                        "parent": 3, 
+                        "body": content.get("body", "")
+                    }
+                )
+                if res.status_code in [201, 200]:
+                    return {"status": "success", "id": res.json().get("id"), "url": f"{endpoint}/p/{res.json().get('id')}/"}
+                return {"status": "error", "message": res.text}
+            except Exception as e:
+                return {"status": "error", "message": str(e)}
+                
+    elif target == "wordpress":
+        url = get_config_val("CMS_WORDPRESS_URL")
+        user = get_config_val("CMS_WORDPRESS_USERNAME")
+        password = get_config_val("CMS_WORDPRESS_PASSWORD")
+        
+        if not url or not user or not password:
+            return {"status": "error", "message": "WordPress credentials missing in Vault"}
+            
+        async with httpx.AsyncClient() as client:
+            try:
+                from base64 import b64encode
+                auth = b64encode(f"{user}:{password}".encode()).decode()
+                res = await client.post(
+                    f"{url}/wp-json/wp/v2/posts",
+                    headers={"Authorization": f"Basic {auth}"},
+                    json={
+                        "title": content.get("title", "New Post"),
+                        "content": content.get("body", ""),
+                        "status": "publish" if params.get("instant_publish") else "draft"
+                    }
+                )
+                if res.status_code in [201, 200]:
+                    return {"status": "success", "id": res.json().get("id"), "url": res.json().get("link")}
+                return {"status": "error", "message": res.text}
+            except Exception as e:
+                return {"status": "error", "message": str(e)}
+    
+    return {"status": "error", "message": f"Unsupported target: {target}"}
 
 @activity.defn
 async def generate_monthly_calendar_activity(params: Dict[str, Any]) -> List[Dict[str, Any]]:

@@ -7,6 +7,8 @@ from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 
+from app.core.vault import get_config_val
+
 logger = logging.getLogger(__name__)
 
 class RAGService:
@@ -16,8 +18,8 @@ class RAGService:
     """
     
     def __init__(self):
-        self.db_url = os.getenv("VECTOR_DB_URL") or os.getenv("DATABASE_URL") or "postgresql://postgres:postgres@localhost:5432/bizoholic"
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.db_url = get_config_val("VECTOR_DB_URL") or get_config_val("DATABASE_URL") or "postgresql://postgres:postgres@localhost:5432/bizoholic"
+        self.openai_api_key = get_config_val("OPENAI_API_KEY")
         self.engine = sa.create_engine(self.db_url)
         self.Session = sessionmaker(bind=self.engine)
         self._init_db()

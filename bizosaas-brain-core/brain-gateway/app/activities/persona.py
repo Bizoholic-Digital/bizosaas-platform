@@ -7,25 +7,58 @@ import json
 import asyncio
 
 from app.core.intelligence import call_ai_agent_with_rag
+from app.core.vault import get_config_val
+from bs4 import BeautifulSoup
+import trafilatura
 
 logger = logging.getLogger(__name__)
 
 @activity.defn
-async def analyze_website_activity(tenant_id: str, website_url: str) -> Dict[str, Any]:
-    """Crawl and extract brand-relevant data from website."""
+async def analyze_website_activity(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Crawl and extract brand-relevant data from website deterministically."""
+    tenant_id = params.get("tenant_id")
+    website_url = params.get("website_url")
     logger.info(f"Analyzing website {website_url} for tenant {tenant_id}")
     
     try:
-        insights = await call_ai_agent_with_rag(
-            agent_type="research_specialist",
-            task_description=f"Analyze the website {website_url} to extract brand identity, target audience, and key messaging.",
-            payload={"website_url": website_url},
-            tenant_id=tenant_id
-        )
-        return insights
-    except Exception:
-        # Fallback
-        return {"extracted_content": f"Mocked insights from {website_url}"}
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
+            resp = await client.get(website_url)
+            resp.raise_for_status()
+            html = resp.text
+            
+            # 1. Metadata extraction (Deterministic)
+            soup = BeautifulSoup(html, 'lxml')
+            metadata = {
+                "title": soup.title.string if soup.title else "",
+                "description": "",
+                "keywords": ""
+            }
+            desc_tag = soup.find("meta", attrs={"name": "description"})
+            if desc_tag: metadata["description"] = desc_tag.get("content", "")
+            
+            # 2. Main content extraction (Deterministic)
+            main_text = trafilatura.extract(html)
+            
+            # 3. LLM Interpretation (Hybrid)
+            # We pass the cleaned deterministic data to the agent for "identity" extraction
+            insights = await call_ai_agent_with_rag(
+                agent_type="research_specialist",
+                task_description="Extract brand identity, target audience, and key messaging from the provided website metadata and content.",
+                payload={
+                    "url": website_url,
+                    "metadata": metadata,
+                    "content_sample": main_text[:4000] if main_text else ""
+                },
+                tenant_id=tenant_id
+            )
+            return {
+                "url": website_url,
+                "raw_metadata": metadata,
+                "ai_insights": insights
+            }
+    except Exception as e:
+        logger.error(f"Website analysis failed for {website_url}: {e}")
+        return {"error": str(e), "url": website_url}
 
 @activity.defn
 async def extract_brand_voice_activity(tenant_id: str, website_insights: Dict[str, Any], onboarding_data: Dict[str, Any]) -> Dict[str, Any]:
