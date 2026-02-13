@@ -83,13 +83,30 @@ async def call_ai_agent_with_rag(
                                         "timestamp": os.getenv("CURRENT_TIME", ""),
                                         "tenant_id": tenant_id
                                     }
-                                    await rag_service.ingest_knowledge(
+                                    doc_id = await rag_service.ingest_knowledge(
                                         content=content_to_ingest,
                                         metadata=ingest_metadata,
                                         tenant_id=tenant_id,
                                         agent_id=agent_id
                                     )
-                                    logger.info(f"Ingested agent result for {agent_type} into RAG")
+                                    if doc_id:
+                                        logger.info(f"Ingested agent result for {agent_type} into RAG (ID: {doc_id})")
+                                        # KAG Post-hook: Link result back to context chunks if any
+                                        if context:
+                                            # We just link to the first context chunk for now as a representitive
+                                            # In a more complex setup, we'd link to all or use a 'context' relation
+                                            try:
+                                                # Assuming context chunks are identifiable or we just store the relation
+                                                # Note: KAGService.link_chunks currently takes int IDs. 
+                                                # doc_id is str from RETURNING id. We cast if needed.
+                                                await kag_service.link_chunks(
+                                                    source_id=int(doc_id),
+                                                    target_id=0, # Root/Context placeholder if we don't have the specific chunk ID
+                                                    rel_type="generated_from_context",
+                                                    metadata={"workflow": agent_type, "task": task_description}
+                                                )
+                                            except Exception as ke:
+                                                logger.warning(f"KAG linking failed (non-critical): {ke}")
                             except Exception as e:
                                 logger.error(f"Post-call RAG ingestion failed: {e}")
                                 
