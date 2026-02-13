@@ -1,15 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, Send, CheckCircle2, XCircle, Twitter, Linkedin, Instagram, Facebook, RefreshCw } from 'lucide-react'
+import {
+    Loader2,
+    Send,
+    CheckCircle2,
+    XCircle,
+    Twitter,
+    Linkedin,
+    Instagram,
+    Facebook,
+    RefreshCw
+} from 'lucide-react'
 import { brainGateway } from '@/lib/brain-gateway-client'
-import { toast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 export function SocialManager() {
     const [topic, setTopic] = useState('')
@@ -21,7 +25,6 @@ export function SocialManager() {
 
     const handleGenerate = async () => {
         if (!topic) {
-            toast({ title: 'Topic required', variant: 'destructive' })
             return
         }
 
@@ -34,9 +37,8 @@ export function SocialManager() {
             })
             setWorkflowId(res.workflow_id)
             setStatus('generating')
-            toast({ title: 'Generation started' })
         } catch (err) {
-            toast({ title: 'Failed to start generation', variant: 'destructive' })
+            console.error('Failed to start generation:', err)
         } finally {
             setIsGenerating(false)
         }
@@ -65,10 +67,9 @@ export function SocialManager() {
         if (!workflowId) return
         try {
             await brainGateway.social.approvePost(workflowId)
-            toast({ title: 'Post approved and scheduled!' })
             setStatus('scheduling')
         } catch (err) {
-            toast({ title: 'Failed to approve', variant: 'destructive' })
+            console.error('Failed to approve:', err)
         }
     }
 
@@ -78,97 +79,127 @@ export function SocialManager() {
         if (!notes) return
         try {
             await brainGateway.social.rejectPost(workflowId, notes)
-            toast({ title: 'Revision requested' })
             setStatus('revision_requested')
         } catch (err) {
-            toast({ title: 'Failed to reject', variant: 'destructive' })
+            console.error('Failed to reject:', err)
         }
     }
 
     return (
         <div className="space-y-6">
-            <Card className="border-none shadow-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-                <CardHeader>
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                        <Send className="w-6 h-6 text-blue-400" />
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden text-white">
+                <div className="p-6 border-b border-slate-800 bg-slate-900/50">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <Send className="w-5 h-5 text-blue-400" />
                         Social Content Writer
-                    </CardTitle>
-                    <CardDescription className="text-slate-400">
+                    </h2>
+                    <p className="text-sm text-slate-400 mt-1">
                         Generate and schedule high-impact social media posts using your brand persona.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="topic">What should we write about?</Label>
-                        <Input
+                    </p>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <div className="space-y-2">
+                        <label htmlFor="topic" className="text-sm font-medium text-slate-300">
+                            What should we write about?
+                        </label>
+                        <input
                             id="topic"
+                            type="text"
                             placeholder="e.g. The impact of AI on small business productivity"
                             value={topic}
-                            onChange={(e) => setTopic(e.target.value)}
-                            className="bg-slate-800 border-slate-700 text-white"
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTopic(e.target.value)}
+                            className="w-full bg-slate-800 border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                         />
                     </div>
 
-                    <div className="flex gap-4">
-                        <Tabs value={platform} onValueChange={setPlatform} className="w-full">
-                            <TabsList className="bg-slate-800 border-slate-700">
-                                <TabsTrigger value="twitter" className="gap-2"><Twitter className="w-4 h-4" /> X</TabsTrigger>
-                                <TabsTrigger value="linkedin" className="gap-2"><Linkedin className="w-4 h-4" /> LinkedIn</TabsTrigger>
-                                <TabsTrigger value="instagram" className="gap-2"><Instagram className="w-4 h-4" /> Instagram</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium text-slate-300">Target Platform</label>
+                        <div className="flex p-1 bg-slate-800 rounded-xl border border-slate-700 w-fit">
+                            {[
+                                { id: 'twitter', icon: Twitter, label: 'X' },
+                                { id: 'linkedin', icon: Linkedin, label: 'LinkedIn' },
+                                { id: 'instagram', icon: Instagram, label: 'Instagram' }
+                            ].map((p) => (
+                                <button
+                                    key={p.id}
+                                    onClick={() => setPlatform(p.id)}
+                                    className={cn(
+                                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                                        platform === p.id
+                                            ? "bg-blue-600 text-white shadow-lg"
+                                            : "text-slate-400 hover:text-white"
+                                    )}
+                                >
+                                    <p.icon className="w-4 h-4" />
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                </CardContent>
-                <CardFooter>
-                    <Button
+                </div>
+
+                <div className="p-6 bg-slate-900/50 border-t border-slate-800">
+                    <button
                         onClick={handleGenerate}
                         disabled={isGenerating || (status === 'generating')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                     >
                         {isGenerating || status === 'generating' ? (
-                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                            <RefreshCw className="w-4 h-4 mr-2" />
+                            <RefreshCw className="w-4 h-4" />
                         )}
                         {status === 'generating' ? 'Generating Draft...' : 'Generate Social Post'}
-                    </Button>
-                </CardFooter>
-            </Card>
+                    </button>
+                </div>
+            </div>
 
             {draft && (
-                <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-sm">
-                    <CardHeader>
-                        <div className="flex justify-between items-center">
-                            <CardTitle className="text-lg flex items-center gap-2 text-white">
-                                <CheckCircle2 className="w-5 h-5 text-green-400" />
-                                Draft Preview
-                            </CardTitle>
-                            <Badge variant={status === 'awaiting_approval' ? 'default' : 'secondary'}>
-                                {status?.replace('_', ' ').toUpperCase()}
-                            </Badge>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="p-4 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 whitespace-pre-wrap">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden text-white">
+                    <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-green-400" />
+                            Draft Preview
+                        </h3>
+                        <span className={cn(
+                            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                            status === 'awaiting_approval' ? "bg-amber-900/30 text-amber-400 border border-amber-900/50" : "bg-blue-900/30 text-blue-400 border border-blue-900/50"
+                        )}>
+                            {status?.replace('_', ' ')}
+                        </span>
+                    </div>
+
+                    <div className="p-6 space-y-4">
+                        <div className="p-5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">
                             {draft.text || draft.caption || JSON.stringify(draft)}
                         </div>
+
                         {draft.image_prompt && (
-                            <div className="mt-4 p-3 rounded bg-blue-900/20 border border-blue-900/30 text-xs text-blue-300">
-                                <strong>Image Prompt:</strong> {draft.image_prompt}
+                            <div className="p-3 rounded-lg bg-indigo-900/20 border border-indigo-900/30 text-[11px] text-indigo-300">
+                                <span className="font-bold uppercase mr-2 opacity-70 italic">Image Prompt:</span>
+                                {draft.image_prompt}
                             </div>
                         )}
-                    </CardContent>
+                    </div>
+
                     {status === 'awaiting_approval' && (
-                        <CardFooter className="flex gap-3 justify-end">
-                            <Button variant="outline" onClick={handleReject} className="border-red-900 text-red-400 hover:bg-red-900/20">
-                                <XCircle className="w-4 h-4 mr-2" /> Reject
-                            </Button>
-                            <Button onClick={handleApprove} className="bg-green-600 hover:bg-green-700 text-white">
-                                <CheckCircle2 className="w-4 h-4 mr-2" /> Approve & Schedule
-                            </Button>
-                        </CardFooter>
+                        <div className="p-6 bg-slate-900/50 border-t border-slate-800 flex gap-4">
+                            <button
+                                onClick={handleReject}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-red-900/50 text-red-400 text-sm font-bold hover:bg-red-900/20 transition-all flex items-center justify-center gap-2"
+                            >
+                                <XCircle className="w-4 h-4" /> Request Revision
+                            </button>
+                            <button
+                                onClick={handleApprove}
+                                className="flex-[2] px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 shadow-lg shadow-green-900/20 transition-all flex items-center justify-center gap-2"
+                            >
+                                <CheckCircle2 className="w-4 h-4" /> Approve & Schedule
+                            </button>
+                        </div>
                     )}
-                </Card>
+                </div>
             )}
         </div>
     )
