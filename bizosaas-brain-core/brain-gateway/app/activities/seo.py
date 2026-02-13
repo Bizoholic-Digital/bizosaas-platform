@@ -9,6 +9,9 @@ from urllib.parse import urlparse, urljoin
 
 from app.core.intelligence import call_ai_agent_with_rag
 from app.core.vault import get_config_val
+from app.core.dataforseo_client import dataforseo_client
+from app.core.backlink_monitor import backlink_monitor
+from app.dependencies import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -152,9 +155,26 @@ async def store_audit_results_activity(params: Dict[str, Any]) -> bool:
     return True
 
 @activity.defn
-async def notify_tenant_activity(params: Dict[str, Any]) -> bool:
-    logger.info(f"Notifying {params.get('tenant_id')}: {params.get('summary')}")
-    return True
+async def run_onpage_audit_activity(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Perform deep On-Page audit using DataforSEO."""
+    target_url = params.get("target_url")
+    max_pages = params.get("max_pages", 1)
+    
+    task_id = await dataforseo_client.post_on_page_task(target_url, max_pages)
+    if not task_id:
+        return {"status": "error", "message": "Failed to initiate on-page task"}
+    
+    return {"status": "initiated", "task_id": task_id, "source": "dataforseo"}
+
+@activity.defn
+async def fetch_onpage_results_activity(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Fetch results of a DataforSEO On-Page audit."""
+    task_id = params.get("task_id")
+    if not task_id:
+        return {"status": "error", "message": "Missing task_id"}
+    
+    results = await dataforseo_client.get_on_page_results(task_id)
+    return {"status": "completed", "results": results, "source": "dataforseo"}
 
 # --- Keyword Research Activities ---
 
@@ -164,45 +184,35 @@ async def fetch_seed_keywords_activity(params: Dict[str, Any]) -> List[str]:
 
 @activity.defn
 async def expand_keywords_via_serp_activity(params: Dict[str, Any]) -> List[str]:
-    """Expand keywords using SerpAPI (Related Searches & PAA)."""
+    """Expand keywords using DataforSEO (Google Keywords for Keywords)."""
     seeds = params.get("seeds", [])
-    api_key = get_config_val("SERPAPI_API_KEY")
-    if not api_key: return [f"best {s}" for s in seeds]
+    if not seeds: return []
     
-    import serpapi
-    client = serpapi.Client(api_key=api_key)
+    suggestions = await dataforseo_client.get_keywords_suggestions(seeds)
     expanded = set(seeds)
-    for s in seeds:
-        try:
-            res = client.search({"q": s, "engine": "google"})
-            for paa in res.get("related_questions", []): expanded.add(paa.get("question"))
-            for rs in res.get("related_searches", []): expanded.add(rs.get("query"))
-        except: pass
+    for item in suggestions:
+        if "keyword" in item:
+            expanded.add(item["keyword"])
+    
     return list(expanded)
 
 @activity.defn
 async def analyze_keyword_metrics_activity(params: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Fetch search metrics using SerpAPI proxy."""
+    """Fetch search metrics using DataforSEO."""
     keywords = params.get("keywords", [])
-    api_key = get_config_val("SERPAPI_API_KEY")
-    if not api_key: return [{"keyword": k, "volume": 0} for k in keywords]
+    if not keywords: return []
     
-    import serpapi
-    client = serpapi.Client(api_key=api_key)
-    results = []
-    for k in keywords:
-        try:
-            search = client.search({"q": k, "engine": "google", "num": 1})
-            total = search.get("search_information", {}).get("total_results", 0)
-            results.append({
-                "keyword": k,
-                "volume": int(total / 100000) if total else 500,
-                "difficulty": 35,
-                "cpc": 1.0,
-                "source": "serpapi_proxy"
-            })
-        except: pass
-    return results
+    results = await dataforseo_client.get_keyword_data(keywords)
+    formatted = []
+    for item in results:
+        formatted.append({
+            "keyword": item.get("keyword"),
+            "volume": item.get("search_volume", 0),
+            "difficulty": item.get("competition_level", "medium"),
+            "cpc": item.get("cpc", 0.0),
+            "source": "dataforseo"
+        })
+    return formatted
 
 @activity.defn
 async def cluster_keywords_activity(params: Dict[str, Any]) -> Dict[str, Any]:
@@ -217,18 +227,29 @@ async def cluster_keywords_activity(params: Dict[str, Any]) -> Dict[str, Any]:
 
 @activity.defn
 async def fetch_backlink_profile_activity(params: Dict[str, Any]) -> Dict[str, Any]:
-    """Fetch backlink profile via SerpAPI Discovery."""
+    """Fetch backlink profile via DataforSEO and sync to DB."""
     domain = params.get("domain")
-    api_key = get_config_val("SERPAPI_API_KEY")
-    if not api_key: return {"total_backlinks": 0}
+    tenant_id = params.get("tenant_id")
+    if not domain: return {"total_backlinks": 0}
     
-    import serpapi
-    client = serpapi.Client(api_key=api_key)
-    try:
-        search = client.search({"q": f"link:{domain}", "engine": "google"})
-        total = search.get("search_information", {}).get("total_results", 0)
-        return {"total_backlinks": total, "referring_domains": int(total * 0.4), "source": "serpapi"}
-    except: return {"total_backlinks": 0}
+    # Update aggregate stats
+    summary = await dataforseo_client.get_backlinks_summary(domain)
+    
+    # Synchronize with proprietary monitor (async)
+    # Note: In a real temporal activity, we'd handle the DB session carefully.
+    # For now, we'll return the summary and trigger sync.
+    from app.dependencies import SessionLocal
+    with SessionLocal() as db:
+        await backlink_monitor.synchronize_backlinks(db, tenant_id, domain)
+        report = backlink_monitor.get_links_report(db, tenant_id)
+
+    return {
+        "total_backlinks": summary.get("backlinks", 0),
+        "referring_domains": summary.get("referring_domains", 0),
+        "rank": summary.get("rank", 0),
+        "new_links_tracked": report.get("new_30d", 0),
+        "source": "dataforseo_proprietary"
+    }
 
 @activity.defn
 async def detect_new_lost_links_activity(params: Dict[str, Any]) -> Dict[str, Any]:
