@@ -1,15 +1,15 @@
-name: Deploy MCP Servers
-
+name: Deploy Dokploy MCP
 on:
   push:
     branches: [staging, main]
     paths:
-      - 'mcp-servers/**'
+      - 'mcp/**'
       - '.github/workflows/deploy-mcp-servers.yml'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: dokploy-mcp
 
 jobs:
   build-and-push:
@@ -37,7 +37,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=staging
             type=sha,prefix=staging-
@@ -47,8 +47,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.context }}/Dockerfile
+          context: ./mcp
+          file: ./mcp/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

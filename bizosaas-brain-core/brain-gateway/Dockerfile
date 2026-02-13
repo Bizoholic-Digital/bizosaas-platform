@@ -6,10 +6,15 @@ COPY requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
     gcc \
     curl \
     && rm -rf /var/lib/apt/lists/*
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 

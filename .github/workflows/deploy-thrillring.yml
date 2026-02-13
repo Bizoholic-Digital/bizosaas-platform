@@ -4,7 +4,7 @@ on:
   push:
     branches: [staging, main]
     paths:
-      - 'brands/thrillring/frontend/**'
+      - 'bizosaas-brain-core/thrillring-gaming/**'
       - 'shared/**'
       - '.github/workflows/deploy-thrillring.yml'
   workflow_dispatch:
@@ -49,8 +49,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: brands/thrillring/frontend/Dockerfile
+          context: ./bizosaas-brain-core/thrillring-gaming
+          file: ./bizosaas-brain-core/thrillring-gaming/Dockerfile.production
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
