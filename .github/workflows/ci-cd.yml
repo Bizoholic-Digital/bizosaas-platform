@@ -34,6 +34,10 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,6 +69,10 @@ jobs:
   dependency-check:
     name: Dependency Security Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     steps:
       - uses: actions/checkout@v4
 
@@ -73,6 +81,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: 'bizosaas-brain-core/client-portal/package-lock.json'
 
       - name: Install dependencies
         run: npm ci
@@ -87,13 +96,13 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           pip install -r requirements.txt
           pip install safety bandit
 
       - name: Run Python security check
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           safety check
           bandit -r . -f json -o bandit-report.json || true
 
@@ -101,6 +110,10 @@ jobs:
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: ${{ !inputs.skip_tests }}
     services:
       postgres:
@@ -138,7 +151,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-asyncio httpx
 
@@ -150,18 +163,18 @@ jobs:
 
       - name: Run database migrations
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           python -m pytest tests/test_database_setup.py -v
 
       - name: Run unit tests
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           python -m pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          file: ./n8n/crewai/coverage.xml
+          file: ./bizosaas-brain-core/brain-gateway/coverage.xml
           flags: backend
           name: backend-coverage
 
@@ -169,6 +182,10 @@ jobs:
   test-frontend:
     name: Frontend Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: ${{ !inputs.skip_tests }}
     steps:
       - uses: actions/checkout@v4
@@ -181,23 +198,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd n8n/frontend
+          cd bizosaas-brain-core/client-portal
           npm ci
 
       - name: Run linting
         run: |
-          cd n8n/frontend
+          cd bizosaas-brain-core/client-portal
           npm run lint
 
       - name: Run unit tests
         run: |
-          cd n8n/frontend
+          cd bizosaas-brain-core/client-portal
           npm test -- --coverage --watchAll=false
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          file: ./n8n/frontend/coverage/lcov.info
+          file: ./bizosaas-brain-core/client-portal/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
 
@@ -205,6 +222,10 @@ jobs:
   test-ai-agents:
     name: AI Agent Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: ${{ !inputs.skip_tests }}
     steps:
       - uses: actions/checkout@v4
@@ -216,13 +237,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           pip install -r requirements.txt
           pip install pytest-mock
 
       - name: Test AI Agent Configuration
         run: |
-          cd n8n/crewai
+          cd bizosaas-brain-core/brain-gateway
           python -m pytest tests/test_agents/ -v --tb=short
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
@@ -232,6 +253,10 @@ jobs:
   test-wordpress:
     name: WordPress Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: ${{ !inputs.skip_tests }}
     services:
       mysql:
@@ -252,18 +277,22 @@ jobs:
 
       - name: Setup WordPress Test Environment
         run: |
-          cd n8n/wordpress
+          cd wagtail-build
           bash tests/setup-test-environment.sh
 
       - name: Run WordPress Plugin Tests
         run: |
-          cd n8n/wordpress
+          cd wagtail-build
           ./vendor/bin/phpunit tests/
 
   # End-to-End Tests
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: ${{ !inputs.skip_tests }}
     needs: [test-backend, test-frontend]
     steps:
@@ -303,6 +332,10 @@ jobs:
   performance-tests:
     name: Performance Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' }}
     needs: [e2e-tests]
     steps:
@@ -338,6 +371,10 @@ jobs:
   build:
     name: Build Images
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     needs: [security-scan, dependency-check]
     outputs:
       image-digest: ${{ steps.build.outputs.digest }}
@@ -369,8 +406,8 @@ jobs:
         id: build-crewai
         uses: docker/build-push-action@v5
         with:
-          context: ./n8n/crewai
-          file: ./n8n/crewai/Dockerfile
+          context: ./bizosaas-brain-core/brain-gateway
+          file: ./bizosaas-brain-core/brain-gateway/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-crewai:${{ github.sha }}
           cache-from: type=gha
@@ -380,8 +417,8 @@ jobs:
         id: build-wordpress
         uses: docker/build-push-action@v5
         with:
-          context: ./n8n/wordpress
-          file: ./n8n/wordpress/Dockerfile
+          context: ./wagtail-build
+          file: ./wagtail-build/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-wordpress:${{ github.sha }}
           cache-from: type=gha
@@ -391,8 +428,8 @@ jobs:
         id: build-frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./n8n/frontend
-          file: ./n8n/frontend/Dockerfile
+          context: ./bizosaas-brain-core/client-portal
+          file: ./bizosaas-brain-core/client-portal/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
           cache-from: type=gha
@@ -402,6 +439,10 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     needs: [build, test-backend, test-frontend, test-ai-agents, test-wordpress]
     if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
     environment:
@@ -450,6 +491,10 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     needs: [build, performance-tests]
     if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
     environment:
@@ -520,6 +565,10 @@ jobs:
   rollback:
     name: Emergency Rollback
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}

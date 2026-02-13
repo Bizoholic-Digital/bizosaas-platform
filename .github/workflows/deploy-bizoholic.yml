@@ -19,6 +19,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
@@ -67,6 +71,10 @@ jobs:
   notify-dokploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: success()
     steps:
       - name: Trigger Dokploy Deployment (Frontend)

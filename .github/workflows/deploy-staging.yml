@@ -19,6 +19,10 @@ jobs:
     permissions:
       contents: read
       packages: write
+      security-events: write
+    permissions:
+      contents: read
+      packages: write
 
     strategy:
       matrix:
@@ -86,6 +90,10 @@ jobs:
   deploy-to-dokploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
 
     steps:
