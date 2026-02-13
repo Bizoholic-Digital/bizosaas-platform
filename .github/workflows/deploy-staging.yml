@@ -20,9 +20,7 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    permissions:
-      contents: read
-      packages: write
+
 
     strategy:
       matrix:

@@ -26,7 +26,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   NODE_VERSION: '18'
   PYTHON_VERSION: '3.11'
-  K3S_KUBECONFIG: ${{ secrets.K3S_KUBECONFIG }}
   DOCKER_BUILDKIT: 1
 
 jobs:
@@ -81,13 +80,17 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: 'bizosaas-brain-core/client-portal/package-lock.json'
+          cache-dependency-path: 'portals/client-portal/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd portals/client-portal
+          npm ci
 
       - name: Run npm audit
-        run: npm audit --audit-level=high
+        run: |
+          cd portals/client-portal
+          npm audit --audit-level=high
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -198,23 +201,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd bizosaas-brain-core/client-portal
+          cd portals/client-portal
           npm ci
 
       - name: Run linting
         run: |
-          cd bizosaas-brain-core/client-portal
+          cd portals/client-portal
           npm run lint
 
       - name: Run unit tests
         run: |
-          cd bizosaas-brain-core/client-portal
+          cd portals/client-portal
           npm test -- --coverage --watchAll=false
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          file: ./bizosaas-brain-core/client-portal/coverage/lcov.info
+          file: ./portals/client-portal/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
 
@@ -242,12 +245,12 @@ jobs:
           pip install pytest-mock
 
       - name: Test AI Agent Configuration
+        env:
+          OPENAI_API_KEY_TEST: ${{ secrets.OPENAI_API_KEY_TEST }}
+          ANTHROPIC_API_KEY_TEST: ${{ secrets.ANTHROPIC_API_KEY_TEST }}
         run: |
           cd bizosaas-brain-core/brain-gateway
           python -m pytest tests/test_agents/ -v --tb=short
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY_TEST }}
 
   # WordPress Integration Tests
   test-wordpress:
@@ -377,7 +380,7 @@ jobs:
       security-events: write
     needs: [security-scan, dependency-check]
     outputs:
-      image-digest: ${{ steps.build.outputs.digest }}
+      image-digest: ${{ steps.build-frontend.outputs.digest }}
     steps:
       - uses: actions/checkout@v4
 
@@ -428,8 +431,8 @@ jobs:
         id: build-frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./bizosaas-brain-core/client-portal
-          file: ./bizosaas-brain-core/client-portal/Dockerfile
+          context: ./portals/client-portal
+          file: ./portals/client-portal/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
           cache-from: type=gha
@@ -457,9 +460,11 @@ jobs:
           version: 'v1.28.0'
 
       - name: Configure K3s access
+        env:
+          K3S_KUBECONFIG_STAGING: ${{ secrets.K3S_KUBECONFIG_STAGING }}
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.K3S_KUBECONFIG_STAGING }}" | base64 -d > ~/.kube/config
+          echo "$K3S_KUBECONFIG_STAGING" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
       - name: Update deployment manifests
@@ -482,10 +487,12 @@ jobs:
 
       - name: Notify deployment success
         if: success()
+        env:
+          SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL
         run: |
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Staging deployment successful: ${{ github.sha }}"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+            $SLACK_WEBHOOK_URL
 
   # Deploy to Production
   deploy-production:
@@ -509,9 +516,11 @@ jobs:
           version: 'v1.28.0'
 
       - name: Configure K3s access
+        env:
+          K3S_KUBECONFIG_PRODUCTION: ${{ secrets.K3S_KUBECONFIG_PRODUCTION }}
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.K3S_KUBECONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
+          echo "$K3S_KUBECONFIG_PRODUCTION" | base64 -d > ~/.kube/config
           chmod 600 ~/.kube/config
 
       - name: Create deployment backup
@@ -556,10 +565,12 @@ jobs:
 
       - name: Notify deployment success
         if: success()
+        env:
+          SLACK_WEBHOOK_URL: $SLACK_WEBHOOK_URL
         run: |
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"Production deployment successful: ${{ github.sha }} - https://bizoholic.com"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+            $SLACK_WEBHOOK_URL
 
   # Rollback Job
   rollback:
@@ -581,39 +592,48 @@ jobs:
           version: 'v1.28.0'
 
       - name: Configure K3s access
+        env:
+          K3S_KUBECONFIG_STAGING: ${{ secrets.K3S_KUBECONFIG_STAGING }}
         run: |
           mkdir -p ~/.kube
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            echo "${{ secrets.K3S_KUBECONFIG_PRODUCTION }}" | base64 -d > ~/.kube/config
+            echo "$K3S_KUBECONFIG_PRODUCTION" | base64 -d > ~/.kube/config
             NAMESPACE="production"
           else
-            echo "${{ secrets.K3S_KUBECONFIG_STAGING }}" | base64 -d > ~/.kube/config
+            echo "$K3S_KUBECONFIG_STAGING" | base64 -d > ~/.kube/config
             NAMESPACE="staging"
           fi
           chmod 600 ~/.kube/config
           echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
 
       - name: Rollback to previous version
+        env:
+          NAMESPACE: ${{ env.NAMESPACE }}
         run: |
-          kubectl rollout undo deployment/bizoholic-crewai -n ${{ env.NAMESPACE }}
-          kubectl rollout undo deployment/bizoholic-wordpress -n ${{ env.NAMESPACE }}
-          kubectl rollout undo deployment/bizoholic-frontend -n ${{ env.NAMESPACE }}
+          kubectl rollout undo deployment/bizoholic-crewai -n $NAMESPACE
+          kubectl rollout undo deployment/bizoholic-wordpress -n $NAMESPACE
+          kubectl rollout undo deployment/bizoholic-frontend -n $NAMESPACE
           
           # Wait for rollback to complete
-          kubectl rollout status deployment/bizoholic-crewai -n ${{ env.NAMESPACE }} --timeout=300s
-          kubectl rollout status deployment/bizoholic-wordpress -n ${{ env.NAMESPACE }} --timeout=300s
-          kubectl rollout status deployment/bizoholic-frontend -n ${{ env.NAMESPACE }} --timeout=300s
+          kubectl rollout status deployment/bizoholic-crewai -n $NAMESPACE --timeout=300s
+          kubectl rollout status deployment/bizoholic-wordpress -n $NAMESPACE --timeout=300s
+          kubectl rollout status deployment/bizoholic-frontend -n $NAMESPACE --timeout=300s
 
       - name: Verify rollback
+        env:
+          NAMESPACE: ${{ env.NAMESPACE }}
         run: |
-          if [ "${{ env.NAMESPACE }}" = "production" ]; then
+          if [ "$NAMESPACE" = "production" ]; then
             curl -f https://bizoholic.com/health
           else
             curl -f https://staging.bizoholic.com/health
           fi
 
       - name: Notify rollback
+        env:
+          NAMESPACE: ${{ env.NAMESPACE }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"ALERT: Rollback executed for ${{ env.NAMESPACE }} environment due to deployment failure"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+            --data '{"text":"ALERT: Rollback executed for '$NAMESPACE' environment due to deployment failure"}' \
+            $SLACK_WEBHOOK_URL

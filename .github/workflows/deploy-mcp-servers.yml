@@ -18,26 +18,6 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: brave-search-mcp
-            context: ./mcp-servers/brave-search
-          - name: filesystem-mcp
-            context: ./mcp-servers/filesystem
-          - name: github-mcp
-            context: ./mcp-servers/github
-          - name: google-drive-mcp
-            context: ./mcp-servers/google-drive
-          - name: slack-mcp
-            context: ./mcp-servers/slack
-          - name: fluentcrm-mcp
-            context: ./mcp-servers/fluent-crm
-
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - name: Checkout code

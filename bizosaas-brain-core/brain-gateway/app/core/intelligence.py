@@ -8,6 +8,7 @@ from app.core.rag import rag_service
 from app.core.kag_service import kag_service
 
 from app.core.vault import get_config_val
+from app.core.semantic_cache import semantic_cache
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,19 @@ async def call_ai_agent_with_rag(
         except Exception as e:
             logger.error(f"RAG retrieval failed: {e}")
 
-    # 2. Call AI Agent
+    # 2. Check Semantic Cache (before calling AI agent)
+    cache_key = f"{agent_type}:{task_description}:{json.dumps(payload, sort_keys=True)}"
+    cached_result = None
+    if use_rag:  # Only use cache if RAG is enabled
+        try:
+            cached_result = await semantic_cache.get(cache_key, similarity_threshold=0.95)
+            if cached_result:
+                logger.info(f"Cache HIT for {agent_type} - returning cached response")
+                return json.loads(cached_result)
+        except Exception as e:
+            logger.warning(f"Semantic cache lookup failed (non-critical): {e}")
+
+    # 3. Call AI Agent (cache miss or cache disabled)
     async with httpx.AsyncClient() as client:
         task_payload = {
             "agent_type": agent_type,
@@ -109,6 +122,22 @@ async def call_ai_agent_with_rag(
                                                 logger.warning(f"KAG linking failed (non-critical): {ke}")
                             except Exception as e:
                                 logger.error(f"Post-call RAG ingestion failed: {e}")
+                        
+                        # 4. Cache the successful result
+                        if use_rag:
+                            try:
+                                await semantic_cache.set(
+                                    query=cache_key,
+                                    response=json.dumps(result),
+                                    metadata={
+                                        "agent_type": agent_type,
+                                        "tenant_id": tenant_id,
+                                        "agent_id": agent_id
+                                    }
+                                )
+                                logger.info(f"Cached response for {agent_type}")
+                            except Exception as e:
+                                logger.warning(f"Semantic cache storage failed (non-critical): {e}")
                                 
                         return result
                     elif status == "failed":

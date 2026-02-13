@@ -20,9 +20,6 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - name: Checkout code
@@ -79,8 +76,10 @@ jobs:
     if: success()
     steps:
       - name: Trigger Dokploy Deployment (Frontend)
+        env:
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
         run: |
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
-            -H "X-API-Key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "X-API-Key: $DOKPLOY_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "NlDPTf6BZgSQilinf2YaU"}'

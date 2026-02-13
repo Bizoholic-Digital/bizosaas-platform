@@ -265,10 +265,6 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    needs: integration-tests
-    permissions:
-      security-events: write
-      contents: read
       actions: write
       checks: write
     
