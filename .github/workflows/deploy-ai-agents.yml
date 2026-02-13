@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ai-agents
+  IMAGE_NAME: bizosaas-ai-agents
 
 jobs:
   build-and-push:

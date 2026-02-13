@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: brain-gateway
+  IMAGE_NAME: bizosaas-brain-gateway
 
 jobs:
   build-and-push:

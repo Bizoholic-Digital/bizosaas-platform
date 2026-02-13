@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: client-portal
+  IMAGE_NAME: bizosaas-client-portal
 
 jobs:
   build-and-push:

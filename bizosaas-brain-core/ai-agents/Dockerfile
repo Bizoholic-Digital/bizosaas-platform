@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt hvac==2.0.0
+RUN pip install --upgrade pip && \
+  pip install --no-cache-dir -r requirements.txt hvac==2.0.0
 
 # Copy application code
 COPY . .
