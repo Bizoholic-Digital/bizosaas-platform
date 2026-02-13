@@ -3,10 +3,12 @@ name: Deploy to Staging
 on:
   push:
     branches: [staging, main]
-    paths:
-      - 'bizosaas/**'
-      - 'dokploy-*-ghcr.yml'
-      - '.github/workflows/**'
+    paths-ignore:
+      - '**'
+  #   paths:
+  #     - 'bizosaas/**'
+  #     - 'dokploy-*-ghcr.yml'
+  #     - '.github/workflows/**'
   workflow_dispatch:  # Allow manual triggering
 
 env:
