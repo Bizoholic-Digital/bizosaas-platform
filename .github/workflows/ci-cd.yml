@@ -41,8 +41,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-        with:
-          fetch-depth: 0
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -262,44 +260,6 @@ jobs:
           cd bizosaas-brain-core/brain-gateway
           python -m pytest tests/test_agents/ -v --tb=short
 
-  # WordPress Integration Tests
-  test-wordpress:
-    name: WordPress Integration Tests
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      security-events: write
-    if: ${{ !inputs.skip_tests }}
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: wordpress_test
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
-          - 3306:3306
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup WordPress Test Environment
-        run: |
-          cd wagtail-build
-          bash tests/setup-test-environment.sh
-
-      - name: Run WordPress Plugin Tests
-        run: |
-          cd wagtail-build
-          ./vendor/bin/phpunit tests/
-
   # End-to-End Tests
   e2e-tests:
     name: E2E Tests
@@ -434,16 +394,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push WordPress image
-        id: build-wordpress
-        uses: docker/build-push-action@v5
-        with:
-          context: ./wagtail-build
-          file: ./wagtail-build/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-wordpress:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # WordPress build step removed
 
       - name: Build and push Frontend image
         id: build-frontend
@@ -464,7 +415,7 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    needs: [build, test-backend, test-frontend, test-ai-agents, test-wordpress]
+    needs: [build, test-backend, test-frontend, test-ai-agents]
     if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
     environment:
       name: staging
@@ -496,7 +447,7 @@ jobs:
         run: |
           kubectl apply -f k8s/staging/
           kubectl rollout status deployment/bizoholic-crewai -n staging --timeout=600s
-          kubectl rollout status deployment/bizoholic-wordpress -n staging --timeout=600s
+          # WordPress rollout status removed
           kubectl rollout status deployment/bizoholic-frontend -n staging --timeout=600s
 
       - name: Run smoke tests
@@ -561,7 +512,7 @@ jobs:
           
           # Wait for green deployment to be ready
           kubectl rollout status deployment/bizoholic-crewai-green -n production --timeout=600s
-          kubectl rollout status deployment/bizoholic-wordpress-green -n production --timeout=600s
+          # WordPress rollout status removed
           kubectl rollout status deployment/bizoholic-frontend-green -n production --timeout=600s
           
           # Run health checks on green
@@ -570,7 +521,7 @@ jobs:
           # Switch traffic to green
           kubectl patch service bizoholic-frontend -n production -p '{"spec":{"selector":{"version":"green"}}}'
           kubectl patch service bizoholic-crewai -n production -p '{"spec":{"selector":{"version":"green"}}}'
-          kubectl patch service bizoholic-wordpress -n production -p '{"spec":{"selector":{"version":"green"}}}'          
+          # WordPress service patch removed
           
           # Wait and verify
           sleep 60
@@ -578,7 +529,7 @@ jobs:
           
           # Clean up blue environment
           kubectl delete deployment bizoholic-crewai-blue -n production --ignore-not-found
-          kubectl delete deployment bizoholic-wordpress-blue -n production --ignore-not-found
+          # WordPress deployment deletion removed
           kubectl delete deployment bizoholic-frontend-blue -n production --ignore-not-found
 
       - name: Run post-deployment tests
@@ -635,12 +586,12 @@ jobs:
           NAMESPACE: ${{ env.NAMESPACE }}
         run: |
           kubectl rollout undo deployment/bizoholic-crewai -n $NAMESPACE
-          kubectl rollout undo deployment/bizoholic-wordpress -n $NAMESPACE
+          # WordPress rollback removed
           kubectl rollout undo deployment/bizoholic-frontend -n $NAMESPACE
           
           # Wait for rollback to complete
           kubectl rollout status deployment/bizoholic-crewai -n $NAMESPACE --timeout=300s
-          kubectl rollout status deployment/bizoholic-wordpress -n $NAMESPACE --timeout=300s
+          # WordPress rollback status removed
           kubectl rollout status deployment/bizoholic-frontend -n $NAMESPACE --timeout=300s
 
       - name: Verify rollback
