@@ -28,6 +28,8 @@ from .gohighlevel import GoHighLevelConnector
 from .hubspot import HubSpotConnector
 from .tiktok_ads import TikTokAdsConnector
 from .llm import OpenAIConnector, AnthropicConnector, OpenRouterConnector, GoogleAIConnector
+from .groq import GroqConnector
+from .together import TogetherAIConnector
 from .namecheap import NamecheapConnector
 from .cloudflare import CloudflareConnector
 from .porkbun import PorkbunConnector
@@ -76,6 +78,8 @@ __all__ = [
     "AnthropicConnector",
     "OpenRouterConnector",
     "GoogleAIConnector",
+    "GroqConnector",
+    "TogetherAIConnector",
     "NamecheapConnector",
     "CloudflareConnector",
     "PorkbunConnector",

@@ -69,15 +69,19 @@ class TaskPriority(str, Enum):
     URGENT = "urgent"
 
 class AgentTaskRequest(BaseModel):
+    """Refined task request for agent execution"""
     task_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     tenant_id: str
-    user_id: str
+    user_id: Optional[str] = None
+    agent_name: str
     task_type: str
+    task_description: str = "Task execution"
     input_data: Dict[str, Any]
-    priority: TaskPriority = TaskPriority.NORMAL
-    timeout_seconds: int = 300
-    callback_url: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    config: Dict[str, Any] = Field(default_factory=dict)
+    context: Optional[List[Dict[str, Any]]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 
 class AgentTaskResponse(BaseModel):
     task_id: str
@@ -260,6 +264,42 @@ class BaseAgent(ABC):
         """Default implementation for agent-specific logic"""
         self.logger.warning("Method _execute_agent_logic not implemented by subclass", agent=self.agent_name)
         return {"status": "default_implementation", "message": "Not implemented"}
+    
+    def _get_llm_for_task(self, config: Dict[str, Any]) -> Any:
+        """Get appropriate LangChain LLM for the task based on configuration"""
+        provider = config.get("model_provider", "openrouter")
+        model_name = config.get("model_name")
+        
+        self.logger.info("Selecting LLM for task", provider=provider, model=model_name)
+        
+        try:
+            if provider == "groq":
+                from langchain_community.chat_models import ChatGroq
+                return ChatGroq(
+                    model_name=model_name or "llama-3.1-70b-versatile",
+                    temperature=config.get("temperature", 0.7)
+                )
+            elif provider == "together":
+                from langchain_community.chat_models import ChatTogether
+                return ChatTogether(
+                    together_api_key=None, # Will pick up from env
+                    model=model_name or "mistralai/Mixtral-8x7B-Instruct-v0.1",
+                    temperature=config.get("temperature", 0.7)
+                )
+            else:
+                # Default to OpenRouter (via ChatOpenAI adapter)
+                from langchain_openai import ChatOpenAI
+                return ChatOpenAI(
+                    model_name=model_name or "openai/gpt-4o",
+                    openai_api_base="https://openrouter.ai/api/v1",
+                    openai_api_key=None, # Will pick up from env
+                    temperature=config.get("temperature", 0.7)
+                )
+        except ImportError:
+            self.logger.warning("Target LLM adapter not found, falling back to default")
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(model_name="openai/gpt-4o", openai_api_base="https://openrouter.ai/api/v1")
+
     
     async def _validate_tenant_access(self, tenant_id: str, user_id: str):
         """Validate that user has access to the tenant"""

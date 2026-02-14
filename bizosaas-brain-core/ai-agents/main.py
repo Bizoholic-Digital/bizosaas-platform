@@ -1408,12 +1408,19 @@ async def process_single_task(task_id: str):
             refined_agent = refined_agent_registry[agent_type]
             
             # Prepare task request for refined agent
-            refined_request = BaseAgentTaskRequest(
-                agent_type=agent_type,
+            from agents.base_agent import AgentTaskRequest
+            refined_request = AgentTaskRequest(
+                task_id=task_id,
+                tenant_id=task_data.get("tenant_id", "default"),
+                agent_name=refined_agent.agent_name,
+                task_type=task_data.get("task_type", "general"),
                 task_description=task_data.get("task_description", "Task execution"),
                 input_data=input_data,
-                tenant_id=task_data.get("tenant_id")
+                metadata=json.loads(task_data.get("metadata", "{}")),
+                config=json.loads(task_data.get("config", "{}"))
             )
+
+
             
             try:
                 agent_result = await refined_agent.execute_task(refined_request)

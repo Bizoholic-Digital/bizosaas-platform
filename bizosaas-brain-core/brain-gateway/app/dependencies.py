@@ -4,7 +4,7 @@ import os
 import logging
 from domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from app.ports.workflow_port import WorkflowPort
-from adapters.identity.mock_adapter import MockIdentityAdapter
+from app.adapters.identity.mock_adapter import MockIdentityAdapter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -74,7 +74,7 @@ def get_identity_port() -> IdentityPort:
     
     logger.info(f"Creating AuthentikAdapter with issuer {authentik_issuer}")
     
-    from adapters.identity.authentik_adapter import AuthentikAdapter
+    from app.adapters.identity.authentik_adapter import AuthentikAdapter
     return AuthentikAdapter(issuer=authentik_issuer, audience=authentik_audience)
 
 @lru_cache()
@@ -92,7 +92,7 @@ def get_secret_service():
     # Try Vault first if configured and token is present
     if use_vault and vault_addr and vault_token:
         try:
-            from adapters.vault_adapter import VaultAdapter
+            from app.adapters.vault_adapter import VaultAdapter
             logger.info(f"Attempting to initialize Vault adapter at {vault_addr}")
             vault_adapter = VaultAdapter(
                 vault_url=vault_addr,

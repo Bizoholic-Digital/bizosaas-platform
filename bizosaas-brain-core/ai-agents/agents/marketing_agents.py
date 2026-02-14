@@ -61,7 +61,15 @@ class MarketingStrategistAgent(BaseAgent):
         input_data = task_request.input_data
         task_type = task_request.task_type
         
+        # Apply LLM override if provided in config
+        llm = self._get_llm_for_task(task_request.config)
+        if llm:
+            self.crewai_agent.llm = llm
+            self.logger.info("Applied LLM override to MarketingStrategistAgent", 
+                             provider=task_request.config.get("model_provider"))
+
         # Get cross-client insights before executing the task
+
         insights = await self.get_cross_client_insights(task_request)
         
         # Enrich input data with insights

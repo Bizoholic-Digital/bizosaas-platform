@@ -4,7 +4,7 @@ from typing import Dict, Any, Tuple
 from uuid import UUID
 from sqlalchemy.orm import Session
 from app.models.mcp import UserMcpInstallation, McpRegistry
-from adapters.vault_adapter import VaultAdapter
+from app.adapters.vault_adapter import VaultAdapter
 
 logger = logging.getLogger(__name__)
 
