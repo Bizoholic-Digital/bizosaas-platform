@@ -254,3 +254,9 @@ async def fetch_backlink_profile_activity(params: Dict[str, Any]) -> Dict[str, A
 @activity.defn
 async def detect_new_lost_links_activity(params: Dict[str, Any]) -> Dict[str, Any]:
     return {"new_links": [], "lost_links": []}
+
+@activity.defn
+async def notify_tenant_activity(params: Dict[str, Any]) -> bool:
+    """Mock/Placeholder for tenant activity notification."""
+    logger.info(f"Notification triggered for tenant {params.get('tenant_id')}: {params.get('message')}")
+    return True
