@@ -18,7 +18,7 @@ class VaultAdapter(SecretPort):
         vault_token: Optional[str] = None,
         mount_point: Optional[str] = None
     ):
-        self.vault_url = vault_url or os.getenv("VAULT_ADDR") or os.getenv("VAULT_URL", "http://vault:8200")
+        self.vault_url = vault_url or os.getenv("VAULT_ADDR") or os.getenv("VAULT_URL", "https://vault.bizoholic.net")
         self.vault_token = vault_token or os.getenv("VAULT_TOKEN")
         self.mount_point = mount_point or os.getenv("VAULT_MOUNT_POINT", "secret")
         
