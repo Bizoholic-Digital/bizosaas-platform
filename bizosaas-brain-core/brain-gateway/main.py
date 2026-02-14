@@ -216,6 +216,14 @@ SALEOR_URL = os.getenv("SALEOR_URL", "http://saleor:8000")
 AI_AGENTS_URL = os.getenv("AI_AGENTS_URL")
 
 
+@app.get("/ping")
+async def ping():
+    return {"message": "pong", "version": "c3eb_standardized_ping"}
+
+@app.get("/ping")
+async def ping():
+    return {"message": "pong", "version": "c3eb_standardized_ping"}
+
 @app.get("/health")
 async def health_check():
     import time
