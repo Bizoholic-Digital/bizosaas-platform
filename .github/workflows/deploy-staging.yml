@@ -69,16 +69,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase Registry
+        run: |
+          echo "REPO_LOWER=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.ORG_NAME }}/bizosaas-${{ matrix.name }}
+          images: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}/bizosaas-${{ matrix.name }}
           tags: |
             type=ref,event=branch,suffix=-{{sha}}
             type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,prefix=staging-
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ env.REPO_LOWER }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ env.REPO_LOWER }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
