@@ -1,6 +1,6 @@
 from typing import List
-from domain.entities.project_task import Project, Task
-from domain.ports.project_port import ProjectPort
+from app.domain.entities.project_task import Project, Task
+from app.domain.ports.project_port import ProjectPort
 from app.adapters.project_mgmt.mock_trello import MockTrelloAdapter
 
 class ProjectService:

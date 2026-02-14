@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from typing import Dict, Any, List
 import time
 from app.dependencies import get_current_user, require_role
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 import psutil

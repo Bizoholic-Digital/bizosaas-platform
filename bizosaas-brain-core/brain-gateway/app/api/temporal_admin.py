@@ -9,7 +9,7 @@ from typing import List, Optional, Dict, Any
 import os
 
 from app.dependencies import require_role
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 TEMPORAL_ADDR = os.getenv("TEMPORAL_ADDRESS") or os.getenv("TEMPORAL_HOST", "localhost:7233")
 TEMPORAL_NAMESPACE = os.getenv("TEMPORAL_NAMESPACE", "default")

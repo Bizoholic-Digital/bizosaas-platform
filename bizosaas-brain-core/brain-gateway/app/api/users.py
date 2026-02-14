@@ -5,7 +5,7 @@ from app.dependencies import get_db, get_current_user
 from app.models.user import User
 from app.models.billing import SubscriptionPlan
 from app.services.billing_service import BillingService
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 

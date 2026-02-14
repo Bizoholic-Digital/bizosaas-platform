@@ -14,7 +14,7 @@ from app.dependencies import get_db, require_role, get_secret_service
 from app.domain.services.secret_service import SecretService
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/cms", tags=["cms-admin"])
 

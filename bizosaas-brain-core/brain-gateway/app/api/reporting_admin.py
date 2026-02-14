@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 import datetime
 
 from app.dependencies import require_role
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/reporting", tags=["admin-reporting"])
 

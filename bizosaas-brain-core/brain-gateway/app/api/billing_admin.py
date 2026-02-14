@@ -14,7 +14,7 @@ from app.dependencies import get_db, require_role
 from app.services.billing_service import BillingService
 from app.models.billing import Subscription, Invoice, SubscriptionPlan
 from app.models.user import Tenant
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/billing", tags=["billing-admin"])
 

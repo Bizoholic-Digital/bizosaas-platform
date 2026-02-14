@@ -2,7 +2,7 @@ from functools import lru_cache
 from typing import List, Union, Optional
 import os
 import logging
-from domain.ports.identity_port import IdentityPort, AuthenticatedUser
+from app.domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from app.ports.workflow_port import WorkflowPort
 from app.adapters.identity.mock_adapter import MockIdentityAdapter
 from sqlalchemy import create_engine
@@ -109,7 +109,7 @@ def get_secret_service():
             logger.error(f"Failed to initialize Vault: {e}")
     
     # Fallback to persistent Database storage (Safer than EnvSecretAdapter)
-    from adapters.database_secret_adapter import DatabaseSecretAdapter
+    from app.adapters.database_secret_adapter import DatabaseSecretAdapter
     logger.info("Using DatabaseSecretAdapter for persistent secret storage")
     db_adapter = DatabaseSecretAdapter(session_factory=SessionLocal)
     return SecretService(secret_adapter=db_adapter)
@@ -129,7 +129,7 @@ async def get_current_user(
     """
     # Bypass auth if configured (dev/testing)
     if os.getenv("DISABLE_AUTH", "false").lower() == "true":
-        from domain.ports.identity_port import AuthenticatedUser
+        from app.domain.ports.identity_port import AuthenticatedUser
         return AuthenticatedUser(
             id="00000000-0000-0000-0000-000000000001",
             email="system@bizosaas.local",

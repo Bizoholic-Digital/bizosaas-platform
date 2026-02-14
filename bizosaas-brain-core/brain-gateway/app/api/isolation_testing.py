@@ -9,7 +9,7 @@ from datetime import datetime
 
 from app.dependencies import get_db, require_role
 from app.services.isolation_testing import MultiTenantIsolationTester
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/security/isolation", tags=["security-testing"])
 

@@ -10,7 +10,7 @@ from uuid import UUID
 
 from app.dependencies import get_db, require_role
 from app.services.directory_admin_service import DirectoryTaskService, DirectoryFineTuner
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/directory", tags=["directory-admin"])
 

@@ -10,7 +10,7 @@ from datetime import datetime
 
 from app.dependencies import get_db, require_role
 from app.services.workflow_monitor import WorkflowMonitor
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/workflows/metrics", tags=["workflow-metrics"])
 

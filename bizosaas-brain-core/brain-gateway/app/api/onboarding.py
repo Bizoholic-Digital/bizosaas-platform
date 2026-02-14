@@ -6,7 +6,7 @@ from datetime import datetime
 from enum import Enum
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_identity_port, get_current_user, get_secret_service, get_workflow_port, get_audit_service, require_feature, require_role
-from domain.ports.identity_port import IdentityPort, AuthenticatedUser
+from app.domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from app.services.audit_service import AuditService
 from app.domain.services.secret_service import SecretService
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 from app.dependencies import get_db, require_role
 from app.models.mcp import McpRegistry, UserMcpInstallation, McpCategory
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 import random
 
 router = APIRouter(prefix="/api/admin/mcp", tags=["admin-mcp"])

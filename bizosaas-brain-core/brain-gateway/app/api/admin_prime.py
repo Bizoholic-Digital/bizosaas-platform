@@ -9,7 +9,7 @@ from typing import Optional
 
 from app.dependencies import get_db, require_role
 from app.services.admin_prime import AdminPrimeCopilot
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/prime", tags=["admin-prime"])
 

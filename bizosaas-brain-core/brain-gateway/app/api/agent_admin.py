@@ -12,7 +12,7 @@ from uuid import UUID
 
 from app.dependencies import get_db, require_role
 from app.models.agent import Agent, AgentOptimization
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/agents", tags=["agent-admin"])
 

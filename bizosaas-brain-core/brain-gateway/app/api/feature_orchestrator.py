@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from app.dependencies import get_db, require_role
 from app.services.feature_orchestrator import FeatureOrchestrator, FeatureScope
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/features", tags=["feature-orchestrator"])
 

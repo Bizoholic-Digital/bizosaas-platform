@@ -9,7 +9,7 @@ from typing import List
 
 from app.dependencies import get_db, require_role
 from app.services.cost_optimization import CostOptimizationEngine
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/billing/optimization", tags=["cost-optimization"])
 

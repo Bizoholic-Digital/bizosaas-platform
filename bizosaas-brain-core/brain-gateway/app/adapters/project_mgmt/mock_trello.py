@@ -2,8 +2,8 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import uuid
 
-from domain.ports.project_port import ProjectPort
-from domain.entities.project_task import Project, Task, TaskStatus
+from app.domain.ports.project_port import ProjectPort
+from app.domain.entities.project_task import Project, Task, TaskStatus
 
 class MockTrelloAdapter(ProjectPort):
     """

@@ -6,7 +6,7 @@ import logging
 
 from app.dependencies import get_db, require_role, get_current_user
 from app.models.revenue import DomainInventory, DomainSearchHistory, PortalRevenue
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from app.connectors.registry import ConnectorRegistry
 from app.domain.services.secret_service import SecretService
 from app.dependencies import get_secret_service

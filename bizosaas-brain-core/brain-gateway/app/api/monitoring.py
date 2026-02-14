@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from app.services.monitoring_service import MonitoringService
 from app.dependencies import get_current_user
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter()
 monitor = MonitoringService()

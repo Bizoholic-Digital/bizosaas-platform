@@ -5,7 +5,7 @@ import logging
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorConfig, ConnectorStatus
 from app.middleware.auth import get_current_user
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from app.dependencies import get_secret_service
 from app.domain.services.secret_service import SecretService
 

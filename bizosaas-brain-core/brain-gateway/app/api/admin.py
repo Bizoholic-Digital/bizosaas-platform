@@ -7,7 +7,7 @@ import logging
 from typing import Dict, Any, List, Optional
 from app.dependencies import get_current_user, require_role, get_db, get_identity_port
 from sqlalchemy.orm import Session
-from domain.ports.identity_port import AuthenticatedUser, IdentityPort
+from app.domain.ports.identity_port import AuthenticatedUser, IdentityPort
 
 from app.services.audit_service import AuditService, get_audit_service
 router = APIRouter(prefix="/api/admin", tags=["admin"])

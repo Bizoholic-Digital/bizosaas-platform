@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.middleware.auth import get_current_user
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from app.store import active_connectors
 from app.connectors.registry import ConnectorRegistry
 from app.connectors.base import ConnectorType, ConnectorStatus

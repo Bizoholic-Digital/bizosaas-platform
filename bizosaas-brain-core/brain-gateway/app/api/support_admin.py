@@ -6,7 +6,7 @@ import datetime
 
 from app.dependencies import get_db, require_role
 from app.models.support import SupportTicket
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/admin/support", tags=["admin-support"])
 

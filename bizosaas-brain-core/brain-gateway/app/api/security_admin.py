@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 import datetime
 
 from app.dependencies import require_role, get_db
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from sqlalchemy.orm import Session
 from app.models.user import User, AuditLog
 from uuid import UUID

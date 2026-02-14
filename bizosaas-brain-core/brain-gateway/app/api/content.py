@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user, get_workflow_port
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from datetime import datetime
 
 router = APIRouter(prefix="/api/content", tags=["content"])

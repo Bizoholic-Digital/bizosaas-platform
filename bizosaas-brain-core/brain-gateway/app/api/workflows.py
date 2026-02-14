@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db, get_current_user, get_workflow_service
 from app.models.workflow import Workflow
 from app.domain.services.workflow_service import WorkflowService
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from pydantic import BaseModel
 from datetime import datetime
 

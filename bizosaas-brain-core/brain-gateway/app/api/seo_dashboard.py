@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Body
 from typing import List, Dict, Any, Optional
 from app.dependencies import get_current_user, get_workflow_service
 from app.domain.services.workflow_service import WorkflowService
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/seo", tags=["seo"])

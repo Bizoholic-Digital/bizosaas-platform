@@ -12,7 +12,7 @@ import logging
 
 from app.dependencies import get_db, require_role
 from app.models.workflow import Workflow, WorkflowProposal
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/admin/workflows", tags=["admin-workflows"])
