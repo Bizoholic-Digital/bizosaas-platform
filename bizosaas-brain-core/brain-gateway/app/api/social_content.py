@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
-from app.services.workflow_service import workflow_service
+from app.domain.services.workflow_service import workflow_service
 from app.core.tenant import get_tenant_id
 import logging
 
