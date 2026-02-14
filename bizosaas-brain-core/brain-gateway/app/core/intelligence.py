@@ -7,10 +7,70 @@ from typing import Dict, Any, List, Optional
 from app.core.rag import rag_service
 from app.core.kag_service import kag_service
 
-from app.core.vault import get_config_val
+from app.core.vault import get_config_val, vault_service
+
 from app.core.semantic_cache import semantic_cache
 
 logger = logging.getLogger(__name__)
+
+async def _select_llm_config(agent_type: str, task_description: str, tenant_id: str = "global") -> Dict[str, Any]:
+    """
+    Intelligently select LLM provider and model based on task type and complexity.
+    Now supports tenant-specific fine-tuned models via Vault lookup.
+    """
+    # 1. Check for tenant-specific fine-tuned model in Vault
+    fine_tuned_model_id = None
+    if tenant_id != "global":
+        try:
+            path = f"tenants/{tenant_id}/fine_tuning/active_model"
+            active_model_data = await vault_service.secret_adapter.get_secret(path)
+            if active_model_data:
+                fine_tuned_model_id = active_model_data.get("model_id")
+                logger.info(f"Found fine-tuned model for tenant {tenant_id}: {fine_tuned_model_id}")
+        except Exception as e:
+            logger.warning(f"Failed to lookup fine-tuned model for {tenant_id}: {e}")
+
+    # If we have a fine-tuned model, prioritize it for the agent (usually Together AI)
+    if fine_tuned_model_id:
+        return {
+            "model_provider": "together_ai",
+            "model_name": fine_tuned_model_id,
+            "temperature": 0.7
+        }
+
+    # fallback to default logic
+    # Simple/Fast tasks -> Groq (Llama 3.1 70B)
+    speed_optimized_tasks = [
+        "content_creator", "seo_specialist", "social_media_specialist",
+        "quality_scorer", "meta_tag_generator"
+    ]
+    
+    # Complex/Reasoning tasks -> OpenRouter (Claude 3.5 Sonnet / GPT-4o)
+    reasoning_heavy_tasks = [
+        "marketing_strategist", "competitive_analysis_specialist",
+        "brand_positioning_specialist", "master_orchestrator"
+    ]
+    
+    if agent_type in speed_optimized_tasks:
+        return {
+            "model_provider": "groq",
+            "model_name": "llama-3.1-70b-versatile",
+            "temperature": 0.7
+        }
+    elif agent_type in reasoning_heavy_tasks:
+        return {
+            "model_provider": "openrouter",
+            "model_name": "openai/gpt-4o", # Default choice for high reasoning
+            "temperature": 0.5
+        }
+    
+    # Default fallback
+    return {
+        "model_provider": "openrouter",
+        "model_name": "openai/gpt-4o-mini",
+        "temperature": 0.7
+    }
+
 
 async def call_ai_agent_with_rag(
     agent_type: str, 
@@ -24,8 +84,13 @@ async def call_ai_agent_with_rag(
 ) -> Dict[str, Any]:
     """
     Consolidated helper to call AI Agents with RAG context injection and result ingestion.
+    Now with intelligent multi-model routing.
     """
     ai_agents_url = get_config_val("AI_AGENTS_SERVICE_URL", "http://brain-ai-agents:8000")
+    
+    # Select optimal LLM configuration for this task (now async)
+    llm_config = await _select_llm_config(agent_type, task_description, tenant_id=tenant_id)
+
     
     # 1. RAG Context Retrieval
     context = []
@@ -45,7 +110,8 @@ async def call_ai_agent_with_rag(
             logger.error(f"RAG retrieval failed: {e}")
 
     # 2. Check Semantic Cache (before calling AI agent)
-    cache_key = f"{agent_type}:{task_description}:{json.dumps(payload, sort_keys=True)}"
+    # Include LLM config in cache key to avoid cross-model cache collisions
+    cache_key = f"{agent_type}:{task_description}:{llm_config['model_name']}:{json.dumps(payload, sort_keys=True)}"
     cached_result = None
     if use_rag:  # Only use cache if RAG is enabled
         try:
@@ -62,8 +128,10 @@ async def call_ai_agent_with_rag(
             "agent_type": agent_type,
             "task_description": task_description,
             "input_data": payload,
-            "priority": priority
+            "priority": priority,
+            "config": llm_config # Inject the selected LLM config
         }
+
         
         try:
             response = await client.post(f"{ai_agents_url}/tasks", json=task_payload, timeout=10.0)
