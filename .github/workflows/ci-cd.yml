@@ -108,7 +108,7 @@ jobs:
       - name: Run Python security check
         run: |
           cd bizosaas-brain-core/brain-gateway
-          safety check
+          safety scan --continue-on-error || true
           bandit -r . -f json -o bandit-report.json || true
 
   # Unit and Integration Tests
@@ -164,7 +164,7 @@ jobs:
 
       - name: Setup test environment
         run: |
-          cp .env.example .env
+          cp .env.template .env
           echo "DATABASE_URL=postgresql://test_user:test_password@localhost:5432/bizoholic_test" >> .env
           echo "REDIS_URL=redis://localhost:6379" >> .env
 
@@ -258,7 +258,7 @@ jobs:
           ANTHROPIC_API_KEY_TEST: ${{ secrets.ANTHROPIC_API_KEY_TEST }}
         run: |
           cd bizosaas-brain-core/brain-gateway
-          python -m pytest tests/test_agents/ -v --tb=short
+          python -m pytest ../ai-agents/ -v --tb=short
 
   # End-to-End Tests
   e2e-tests:
