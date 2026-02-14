@@ -201,13 +201,12 @@ try:
             logger.info(f"OTLP Exporter configured for {otlp_endpoint}")
         except Exception as e:
             logger.warning(f"Failed to configure OTLP exporter: {e}")
+
+    trace.set_tracer_provider(tracer_provider)
+    FastAPIInstrumentor.instrument_app(app)
             
 except ImportError:
     logger.warning("OpenTelemetry dependencies not found. Tracing disabled.")
-    FastAPIInstrumentor = None
-
-trace.set_tracer_provider(tracer_provider)
-FastAPIInstrumentor.instrument_app(app)
 
 # ----------------------------------------------------------------------------
 
