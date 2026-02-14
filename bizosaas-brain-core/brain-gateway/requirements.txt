@@ -34,3 +34,4 @@ google-analytics-data>=0.18.2
 google-api-python-client>=2.116.0
 ShopifyAPI>=12.4.0
 structlog>=24.1.0
+setuptools>=70.0.0
