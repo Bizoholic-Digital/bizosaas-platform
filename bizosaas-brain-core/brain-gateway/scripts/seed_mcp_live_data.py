@@ -14,7 +14,7 @@ sys.path.append(os.getcwd())
 def load_vault_secrets_sync():
     """Synchronously load secrets from Vault into environment variables."""
     try:
-        from adapters.vault_adapter import VaultAdapter
+        from app.adapters.vault_adapter import VaultAdapter
         mount_point = os.getenv("VAULT_MOUNT_POINT", "bizosaas")
         vault = VaultAdapter(mount_point=mount_point)
         if vault.client and vault.client.is_authenticated():

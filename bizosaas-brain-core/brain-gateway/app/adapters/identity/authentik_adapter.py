@@ -6,7 +6,7 @@ from jwt import PyJWKClient
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-from domain.ports.identity_port import IdentityPort, AuthenticatedUser
+from app.domain.ports.identity_port import IdentityPort, AuthenticatedUser
 
 logger = logging.getLogger(__name__)
 

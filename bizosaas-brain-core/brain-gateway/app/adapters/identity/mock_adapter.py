@@ -1,5 +1,5 @@
 from typing import Optional, Dict
-from domain.ports.identity_port import IdentityPort, AuthenticatedUser
+from app.domain.ports.identity_port import IdentityPort, AuthenticatedUser
 
 class MockIdentityAdapter(IdentityPort):
     """

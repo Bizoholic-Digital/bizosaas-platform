@@ -9,7 +9,7 @@ from app.middleware.auth import get_current_user
 
 # Mock Auth
 async def override_get_current_user():
-    from domain.ports.identity_port import AuthenticatedUser
+    from app.domain.ports.identity_port import AuthenticatedUser
     return AuthenticatedUser(
         id="user_1",
         email="test@example.com",

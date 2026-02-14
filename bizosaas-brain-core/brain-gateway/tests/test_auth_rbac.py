@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from main import app
 from app.dependencies import get_current_user, require_role
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 from uuid import uuid4
 
 client = TestClient(app, raise_server_exceptions=False)

@@ -82,4 +82,4 @@ jobs:
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
+            -d '{"composeId": "QiOdwXQi4ZQCM3Qg_KNcl"}'

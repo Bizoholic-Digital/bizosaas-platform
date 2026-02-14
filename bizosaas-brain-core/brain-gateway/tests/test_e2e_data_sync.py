@@ -3,7 +3,7 @@ import uuid
 from fastapi.testclient import TestClient
 from main import app
 from unittest.mock import patch, MagicMock, AsyncMock
-from domain.ports.identity_port import AuthenticatedUser
+from app.domain.ports.identity_port import AuthenticatedUser
 
 client = TestClient(app)
 

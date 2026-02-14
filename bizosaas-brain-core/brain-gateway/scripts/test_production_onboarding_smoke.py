@@ -10,7 +10,7 @@ sys.path.append(os.getcwd())
 from app.dependencies import SessionLocal
 from app.services.mcp_installation_service import McpInstallationService
 from app.models.mcp import UserMcpInstallation, McpRegistry
-from adapters.vault_adapter import VaultAdapter
+from app.adapters.vault_adapter import VaultAdapter
 
 async def run_smoke_test():
     print("🚀 Starting Final Production Onboarding Smoke Test [Bizoholic]")
