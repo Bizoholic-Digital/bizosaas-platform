@@ -111,7 +111,7 @@ jobs:
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"composeId": "uimFISkhg1KACigb2CaGz"}'
+            -d '{"composeId": "QiOdwXQi4ZQCM3Qg_KNcl"}'
 
       - name: Wait for Backend to be healthy
         run: sleep 60
@@ -121,7 +121,7 @@ jobs:
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
             -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"composeId": "hU2yhYOqv3_ftKGGvcAiv"}'
+            -d '{"composeId": "zz6VpI3h8BFXPUTZZb01G"}'
 
       - name: Deployment complete
         run: |
