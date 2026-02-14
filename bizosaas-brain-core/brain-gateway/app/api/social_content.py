@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
-from app.domain.services.workflow_service import workflow_service
+from app.ports.workflow_port import WorkflowPort
+from app.dependencies import get_workflow_port
 from app.core.tenant import get_tenant_id
 import logging
 
@@ -20,7 +21,8 @@ class SocialPostRequest(BaseModel):
 @router.post("/generate")
 async def generate_social_content(
     request: SocialPostRequest,
-    tenant_id: str = Depends(get_tenant_id)
+    tenant_id: str = Depends(get_tenant_id),
+    workflow_port: WorkflowPort = Depends(get_workflow_port)
 ):
     """Trigger a social media content generation workflow."""
     try:
@@ -28,9 +30,9 @@ async def generate_social_content(
         params = request.dict()
         params["tenant_id"] = tenant_id
         
-        await workflow_service.start_workflow(
-            "SocialContentWorkflow",
-            params,
+        await workflow_port.start_workflow(
+            workflow_name="SocialContentWorkflow",
+            args=[params],
             workflow_id=workflow_id,
             task_queue="brain-tasks"
         )
@@ -40,31 +42,42 @@ async def generate_social_content(
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/status/{workflow_id}")
-async def get_social_workflow_status(workflow_id: str):
+async def get_social_workflow_status(
+    workflow_id: str,
+    workflow_port: WorkflowPort = Depends(get_workflow_port)
+):
     """Query the status of a social content workflow."""
     try:
-        status = await workflow_service.query_workflow(workflow_id, "get_status")
-        draft = await workflow_service.query_workflow(workflow_id, "get_draft")
+        status = await workflow_port.get_workflow_status(workflow_id)
+        draft = await workflow_port.query_workflow(workflow_id, "get_draft")
         return {"workflow_id": workflow_id, "status": status, "draft": draft}
     except Exception as e:
         logger.error(f"Failed to query social workflow: {e}")
         raise HTTPException(status_code=404, detail="Workflow not found or inaccessible")
 
 @router.post("/approve/{workflow_id}")
-async def approve_social_post(workflow_id: str, notes: Optional[str] = None):
+async def approve_social_post(
+    workflow_id: str, 
+    notes: Optional[str] = None,
+    workflow_port: WorkflowPort = Depends(get_workflow_port)
+):
     """Approve a social post for scheduling."""
     try:
-        await workflow_service.signal_workflow(workflow_id, "approve_post", notes)
+        await workflow_port.signal_workflow(workflow_id, "approve_post", [notes])
         return {"status": "approved"}
     except Exception as e:
         logger.error(f"Failed to signal approval: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/reject/{workflow_id}")
-async def reject_social_post(workflow_id: str, notes: str):
+async def reject_social_post(
+    workflow_id: str, 
+    notes: str,
+    workflow_port: WorkflowPort = Depends(get_workflow_port)
+):
     """Reject a social post and request revision."""
     try:
-        await workflow_service.signal_workflow(workflow_id, "request_revision", notes)
+        await workflow_port.signal_workflow(workflow_id, "request_revision", [notes])
         return {"status": "revision_requested"}
     except Exception as e:
         logger.error(f"Failed to signal rejection: {e}")
