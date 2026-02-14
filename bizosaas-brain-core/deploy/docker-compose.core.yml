@@ -19,13 +19,14 @@ services:
       - REDIS_URL=${REDIS_URL}
       - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS}
       - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
-      - VAULT_URL=${VAULT_URL}
+      - VAULT_URL=${VAULT_URL:-http://vault:8200}
       - VAULT_TOKEN=${VAULT_TOKEN}
       - SHOPIFY_CLIENT_ID=${SHOPIFY_CLIENT_ID}
       - SHOPIFY_CLIENT_SECRET=${SHOPIFY_CLIENT_SECRET}
       - SHOPIFY_APP_URL=${SHOPIFY_APP_URL}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LANGCACHE_API_KEY=${LANGCACHE_API_KEY}
       - AI_AGENTS_URL=http://ai-agents:8000
     networks:
       - dokploy-network
@@ -59,8 +60,6 @@ services:
           cpus: '0.2'
           memory: 256M
     restart: unless-stopped
-
-
 
   # ========================================
   # AI Agents Service

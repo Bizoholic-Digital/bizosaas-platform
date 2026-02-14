@@ -178,28 +178,33 @@ app.include_router(graphql_app, prefix="/graphql")
 Instrumentator().instrument(app).expose(app)
 
 # OpenTelemetry Foundation
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+try:
+    from opentelemetry import trace, metrics
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-# Set up tracing
-resource = Resource(attributes={
-    SERVICE_NAME: "brain-gateway"
-})
+    # Set up tracing
+    resource = Resource(attributes={
+        SERVICE_NAME: "brain-gateway"
+    })
 
-tracer_provider = TracerProvider(resource=resource)
-# Only add OTLP exporter if endpoint is configured
-otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-if otlp_endpoint:
-    try:
-        otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
-        tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-        logger.info(f"OTLP Exporter configured for {otlp_endpoint}")
-    except Exception as e:
-        logger.warning(f"Failed to initialize OTLP exporter: {e}")
+    tracer_provider = TracerProvider(resource=resource)
+    # Only add OTLP exporter if endpoint is configured
+    otlp_endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+    if otlp_endpoint:
+        try:
+            otlp_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
+            tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+            logger.info(f"OTLP Exporter configured for {otlp_endpoint}")
+        except Exception as e:
+            logger.warning(f"Failed to configure OTLP exporter: {e}")
+            
+except ImportError:
+    logger.warning("OpenTelemetry dependencies not found. Tracing disabled.")
+    FastAPIInstrumentor = None
 
 trace.set_tracer_provider(tracer_provider)
 FastAPIInstrumentor.instrument_app(app)
