@@ -2,7 +2,7 @@
 # Update frontend compose with inline content
 
 API_KEY="bizoholicKRGZxqgQXBDBzumvvnMhiEZLmnetMTAWwTnFztwuGofadbHagGbJiiMZTqczBDKY"
-COMPOSE_ID="hU2yhYOqv3_ftKGGvcAiv"
+COMPOSE_ID="zz6VpI3h8BFXPUTZZb01G"
 
 # Read compose file
 COMPOSE_CONTENT=$(cat dokploy-frontend-staging-local.yml)

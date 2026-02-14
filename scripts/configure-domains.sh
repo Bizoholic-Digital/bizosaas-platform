@@ -3,7 +3,7 @@
 
 API_KEY="agent_supportUMExjyxtGrPXnqZoTkKEeBAhAdHnTWpNqyUbFfbVPSYgIiGCNCCcsZpGnMaRvCbi"
 DOKPLOY_URL="https://dk.bizoholic.com"
-FRONTEND_COMPOSE_ID="hU2yhYOqv3_ftKGGvcAiv"
+FRONTEND_COMPOSE_ID="zz6VpI3h8BFXPUTZZb01G"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

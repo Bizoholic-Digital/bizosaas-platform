@@ -10,8 +10,8 @@ set -e
 # ========================================
 DOKPLOY_URL="https://dk.bizoholic.com"
 API_KEY="agent_supportUMExjyxtGrPXnqZoTkKEeBAhAdHnTWpNqyUbFfbVPSYgIiGCNCCcsZpGnMaRvCbi"
-BACKEND_COMPOSE_ID="uimFISkhg1KACigb2CaGz"
-FRONTEND_COMPOSE_ID="hU2yhYOqv3_ftKGGvcAiv"
+BACKEND_COMPOSE_ID="QiOdwXQi4ZQCM3Qg_KNcl"
+FRONTEND_COMPOSE_ID="zz6VpI3h8BFXPUTZZb01G"
 
 # Colors
 RED='\033[0;31m'
