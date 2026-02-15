@@ -3,6 +3,8 @@ from .registry import ConnectorRegistry
 from .wordpress import WordPressConnector
 from .zoho_crm import ZohoCRMConnector
 from .google_analytics import GoogleAnalyticsConnector
+from .google_drive import GoogleDriveConnector
+from .slack import SlackConnector
 from .shopify import ShopifyConnector
 from .google_tag_manager import GoogleTagManagerConnector
 from .google_ads import GoogleAdsConnector
@@ -50,6 +52,8 @@ __all__ = [
     "WordPressConnector",
     "ZohoCRMConnector",
     "GoogleAnalyticsConnector",
+    "GoogleDriveConnector",
+    "SlackConnector",
     "ShopifyConnector",
     "GoogleTagManagerConnector",
     "GoogleAdsConnector",

@@ -15,7 +15,7 @@ from app.workflows.seo_workflow import RankTrackerWorkflow
 from app.workflows.ecommerce_workflow import EcommerceSetupWorkflow
 from app.workflows.reputation_workflow import ReputationManagementWorkflow
 from app.workflows.reporting_workflow import ClientReportingWorkflow
-from app.workflows.intel_workflow import CompetitorIntelWorkflow, LeadScoringWorkflow
+from app.workflows.intel_workflow import CompetitorIntelWorkflow, LeadScoringWorkflow, DeepResearchWorkflow
 from app.workflows.growth_workflow import SocialListeningWorkflow, TopicalClusterWorkflow
 from app.workflows.infra_outreach_workflow import OutreachAutomationWorkflow, AutoSSLMaintenanceWorkflow
 from app.workflows.seo_audit_workflow import SiteAuditWorkflow, KeywordResearchWorkflow, BacklinkMonitorWorkflow
@@ -76,7 +76,10 @@ from app.activities.intel import (
     trigger_intel_alert_activity,
     enrich_lead_data_activity,
     score_lead_activity,
-    route_to_sales_activity
+    route_to_sales_activity,
+    google_search_activity,
+    web_scrape_activity,
+    analyze_research_activity
 )
 from app.activities.growth import (
     monitor_brand_mentions_activity,
@@ -204,7 +207,9 @@ async def run_worker():
             ContentCreationWorkflow,
             ContentCalendarWorkflow,
             PersonaGenerationWorkflow,
-            SocialContentWorkflow
+            PersonaGenerationWorkflow,
+            SocialContentWorkflow,
+            DeepResearchWorkflow
         ],
         activities=[
             validate_connector_credentials,
@@ -282,7 +287,10 @@ async def run_worker():
             generate_twitter_post_activity,
             generate_linkedin_post_activity,
             generate_instagram_facebook_activity,
-            schedule_social_post_activity
+            schedule_social_post_activity,
+            google_search_activity,
+            web_scrape_activity,
+            analyze_research_activity
         ],
     )
     

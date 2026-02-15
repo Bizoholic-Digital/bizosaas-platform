@@ -8,21 +8,32 @@ class CompetitorIntelWorkflow:
     async def run(self, tenant_id: str, competitors: List[str]) -> Dict[str, Any]:
         """
         Competitor Intelligence Workflow:
-        1. Scrape competitor sites for pricing and ads.
-        2. Detect changes and new campaigns.
-        3. Trigger alerts or strategy refinement.
+        1. Search for recent news/updates about competitors.
+        2. Scrape competitor sites for pricing and ads.
+        3. Detect changes and new campaigns.
+        4. Trigger alerts or strategy refinement.
         """
-        # Step 1: Scrape Competitors
+        # Step 1: Search for New Updates
+        news_findings = []
+        for comp in competitors:
+            news = await workflow.execute_activity(
+                "google_search_activity",
+                args=[tenant_id, f"{comp} latest news and marketing updates"],
+                start_to_close_timeout=timedelta(minutes=5)
+            )
+            news_findings.append({"competitor": comp, "news": news})
+
+        # Step 2: Scrape Competitors
         intel_data = await workflow.execute_activity(
             "scrape_competitor_data_activity",
             args=[tenant_id, competitors],
             start_to_close_timeout=timedelta(minutes=15)
         )
 
-        # Step 2: Analyze Shifts
+        # Step 3: Analyze Shifts
         analysis = await workflow.execute_activity(
             "analyze_competitor_shifts_activity",
-            args=[tenant_id, intel_data],
+            args=[tenant_id, intel_data, news_findings],
             start_to_close_timeout=timedelta(minutes=10)
         )
 
@@ -77,5 +88,49 @@ class LeadScoringWorkflow:
             "status": "scored",
             "score": scoring_res.get("score"),
             "category": scoring_res.get("category"),
+            "timestamp": workflow.now().isoformat()
+        }
+
+@workflow.defn
+class DeepResearchWorkflow:
+    @workflow.run
+    async def run(self, tenant_id: str, topic: str) -> Dict[str, Any]:
+        """
+        Deep Research Workflow:
+        1. Search for topic using Brave Search.
+        2. Scrape top results.
+        3. Synthesize research report.
+        """
+        # Step 1: Perform Search
+        search_results = await workflow.execute_activity(
+            "google_search_activity",
+            args=[tenant_id, topic],
+            start_to_close_timeout=timedelta(minutes=5)
+        )
+
+        # Step 2: Scrape top 3 relevant results
+        urls = [res.get("url") for res in search_results[:3] if res.get("url")]
+        content_outputs = []
+        
+        for url in urls:
+            content = await workflow.execute_activity(
+                "web_scrape_activity",
+                args=[tenant_id, url],
+                start_to_close_timeout=timedelta(minutes=5)
+            )
+            content_outputs.append(content)
+
+        # Step 3: Analyze and Synthesize
+        synthesis = await workflow.execute_activity(
+            "analyze_research_activity",
+            args=[tenant_id, content_outputs],
+            start_to_close_timeout=timedelta(minutes=10)
+        )
+
+        return {
+            "status": "completed",
+            "topic": topic,
+            "report": synthesis.get("report"),
+            "sources": urls,
             "timestamp": workflow.now().isoformat()
         }

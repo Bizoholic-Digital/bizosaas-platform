@@ -518,17 +518,11 @@ async def chat_with_agent(
                         str(user.id), 
                         "google-analytics", 
                         "get_metrics", 
-                        {"metric": "activeUsers", "period": "7d"}
+                        {"metric": "activeUsers", "period": "7d"},
+                        source_id=agent.id
                     )
                     response_message = f"I've pulled the latest data from Google Analytics. You have {tool_result.get('value', '1,205')} active users in the last 7 days."
                     actions.append({"type": "chart", "data": tool_result, "label": "Traffic Overview"})
-                    
-                    # KAG Feedback: Strengthen link between agent's primary tools and GA
-                    if "marketing-strategist" in request.context.get("source_tool", ""):
-                         kg.graph.record_interaction(request.context["source_tool"], "google-analytics", success=True)
-                    else:
-                         # Default to self-reinforcement
-                         kg.graph.record_interaction("marketing-strategist", "google-analytics", success=True)
                          
                 except Exception as e:
                     trace_steps.append(f"MCP Call Failed: {e}")
@@ -542,13 +536,11 @@ async def chat_with_agent(
                         str(user.id),
                         "postiz",
                         "list_posts",
-                        {"limit": 5}
+                        {"limit": 5},
+                        source_id=agent.id
                     )
                     response_message = f"I checked your Postiz schedule. You have {len(tool_result.get('posts', []))} posts queued for this week."
                     actions.append({"type": "navigate", "url": "https://postiz.bizoholic.net", "label": "Manage Schedule"})
-                    
-                    # KAG Feedback: Strengthen link
-                    kg.graph.record_interaction("content-creator", "postiz", success=True)
                     
                 except Exception as e:
                      # Fallback if Postiz not configured or fails

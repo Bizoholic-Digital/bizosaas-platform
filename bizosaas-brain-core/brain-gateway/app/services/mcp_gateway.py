@@ -42,9 +42,10 @@ class MCPGateway:
                 
         return all_tools
 
-    async def call_tool(self, user_id: str, mcp_slug: str, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    async def call_tool(self, user_id: str, mcp_slug: str, tool_name: str, arguments: Dict[str, Any], source_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Executes a specific tool call on an MCP server.
+        Automatically records the interaction in the Knowledge Graph for KAG feedback.
         """
         installation = self.db.query(UserMcpInstallation).filter(
             UserMcpInstallation.user_id == user_id,
@@ -54,7 +55,23 @@ class MCPGateway:
         if not installation:
             raise ValueError(f"Active MCP installation for '{mcp_slug}' not found for user {user_id}")
             
-        return await self._execute_tool_on_server(installation, tool_name, arguments)
+        success = False
+        try:
+            result = await self._execute_tool_on_server(installation, tool_name, arguments)
+            success = True
+            return result
+        except Exception as e:
+            logger.error(f"Tool call failed: {e}")
+            raise
+        finally:
+            # KAG Feedback Loop: Record the interaction
+            if source_id:
+                try:
+                    from app.services.knowledge_graph import KnowledgeGraph
+                    kg = KnowledgeGraph()
+                    kg.record_interaction(self.db, source_id, mcp_slug, success=success)
+                except Exception as kag_e:
+                    logger.warning(f"Failed to record KAG interaction: {kag_e}")
 
     async def _fetch_tools_from_server(self, installation: UserMcpInstallation) -> List[Dict[str, Any]]:
         """
