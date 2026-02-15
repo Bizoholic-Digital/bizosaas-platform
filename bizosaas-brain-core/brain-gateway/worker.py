@@ -212,7 +212,9 @@ async def run_worker():
             SocialContentWorkflow,
             DeepResearchWorkflow,
             PodcastCreationWorkflow,
-            VideoScriptWorkflow
+            VideoScriptWorkflow,
+            AutonomousOptimizationWorkflow,
+            CampaignOptimizationWorkflow
         ],
         activities=[
             validate_connector_credentials,
