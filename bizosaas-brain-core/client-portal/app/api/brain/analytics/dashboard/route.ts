@@ -30,7 +30,7 @@ const mockAnalyticsData = {
     {
       campaign_id: 'camp_002',
       name: 'Facebook Marketing Campaign',
-      channel: 'facebook_ads', 
+      channel: 'facebook_ads',
       status: 'active',
       spend: 2100,
       leads: 67,
@@ -62,7 +62,7 @@ const mockAnalyticsData = {
     },
     facebook_ads: {
       leads: 67,
-      spend: 2100, 
+      spend: 2100,
       revenue: 7230,
       roi: 344.3,
       trend: 'up'
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
       }
     } catch (analyticsError) {
       console.warn('[CLIENT-PORTAL] Analytics dashboard connection failed, trying Brain Gateway:', analyticsError);
-      
+
       // Fallback to Brain Gateway
       try {
         const brainUrl = `${BRAIN_API_URL}/api/analytics/dashboards`;
@@ -174,14 +174,15 @@ export async function GET(request: NextRequest) {
       } catch (brainError) {
         console.warn('[CLIENT-PORTAL] Brain Gateway analytics failed:', brainError);
         console.log('[CLIENT-PORTAL] Using fallback analytics data');
-        
+
         return NextResponse.json(mockAnalyticsData);
       }
     }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('[CLIENT-PORTAL] Analytics dashboard API error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch analytics data', details: error.message },
+      { error: 'Failed to fetch analytics data', details: errorMessage },
       { status: 500 }
     );
   }

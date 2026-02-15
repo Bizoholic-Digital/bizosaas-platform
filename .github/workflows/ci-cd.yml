@@ -167,6 +167,7 @@ jobs:
 
       - name: Setup test environment
         run: |
+          cd bizosaas-brain-core/brain-gateway
           cp .env.template .env
           echo "DATABASE_URL=postgresql://test_user:test_password@localhost:5432/bizoholic_test" >> .env
           echo "REDIS_URL=redis://localhost:6379" >> .env
@@ -353,6 +354,8 @@ jobs:
   build:
     name: Build Images
     runs-on: ubuntu-latest
+    env:
+      REPO_LOWER: ""
     permissions:
       contents: read
       packages: write
@@ -375,6 +378,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase Registry
+        run: |
+          echo "REPO_LOWER=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -391,9 +398,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./bizosaas-brain-core/brain-gateway
-          file: ./bizosaas-brain-core/brain-gateway/Dockerfile
+          file: Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-crewai:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-crewai:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -404,9 +411,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./bizosaas-brain-core/client-portal
-          file: ./bizosaas-brain-core/client-portal/Dockerfile
+          file: Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -420,6 +427,8 @@ jobs:
       security-events: write
     needs: [build, test-backend, test-frontend, test-ai-agents]
     if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    env:
+      REPO_LOWER: ""
     environment:
       name: staging
       url: https://staging.bizoholic.com
@@ -427,6 +436,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Lowercase Registry
+        run: |
+          echo "REPO_LOWER=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
@@ -444,7 +457,7 @@ jobs:
       - name: Update deployment manifests
         run: |
           sed -i 's|IMAGE_TAG|${{ github.sha }}|g' k8s/staging/*.yaml
-          sed -i 's|REGISTRY_URL|${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}|g' k8s/staging/*.yaml
+          sed -i 's|REGISTRY_URL|${{ env.REGISTRY }}/${{ env.REPO_LOWER }}|g' k8s/staging/*.yaml
 
       - name: Deploy to staging
         run: |
@@ -478,6 +491,8 @@ jobs:
       security-events: write
     needs: [build, performance-tests]
     if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
+    env:
+      REPO_LOWER: ""
     environment:
       name: production
       url: https://app.bizoholic.com
@@ -485,6 +500,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Lowercase Registry
+        run: |
+          echo "REPO_LOWER=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
@@ -506,7 +525,7 @@ jobs:
       - name: Update deployment manifests
         run: |
           sed -i 's|IMAGE_TAG|${{ github.sha }}|g' k8s/production/*.yaml
-          sed -i 's|REGISTRY_URL|${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}|g' k8s/production/*.yaml
+          sed -i 's|REGISTRY_URL|${{ env.REGISTRY }}/${{ env.REPO_LOWER }}|g' k8s/production/*.yaml
 
       - name: Deploy with blue-green strategy
         run: |
