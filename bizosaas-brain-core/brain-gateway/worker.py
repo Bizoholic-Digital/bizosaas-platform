@@ -23,6 +23,7 @@ from app.workflows.content_pipeline_workflow import ContentCreationWorkflow, Con
 from app.workflows.persona_workflow import PersonaGenerationWorkflow
 from app.workflows.social_content_workflow import SocialContentWorkflow
 from app.workflows.multimedia_workflow import PodcastCreationWorkflow, VideoScriptWorkflow
+from app.workflows.analytics_workflow import PlatformAnalyticsWorkflow
 from app.activities import (
     validate_connector_credentials,
     save_connector_credentials,
@@ -57,7 +58,11 @@ from app.activities import (
     analyze_keyword_metrics_activity,
     cluster_keywords_activity,
     fetch_backlink_profile_activity,
-    detect_new_lost_links_activity
+    detect_new_lost_links_activity,
+    aggregate_workflow_metrics_activity,
+    aggregate_tenant_usage_activity,
+    aggregate_campaign_performance_activity,
+    generate_platform_insights_activity
 )
 from app.activities.discovery import run_discovery_cycle_activity
 from app.activities.reputation import (
@@ -214,7 +219,8 @@ async def run_worker():
             PodcastCreationWorkflow,
             VideoScriptWorkflow,
             AutonomousOptimizationWorkflow,
-            CampaignOptimizationWorkflow
+            CampaignOptimizationWorkflow,
+            PlatformAnalyticsWorkflow
         ],
         activities=[
             validate_connector_credentials,
@@ -300,7 +306,11 @@ async def run_worker():
             synthesize_audio_activity,
             generate_video_script_activity,
             generate_storyboard_activity,
-            generate_video_metadata_activity
+            generate_video_metadata_activity,
+            aggregate_workflow_metrics_activity,
+            aggregate_tenant_usage_activity,
+            aggregate_campaign_performance_activity,
+            generate_platform_insights_activity
         ],
     )
     

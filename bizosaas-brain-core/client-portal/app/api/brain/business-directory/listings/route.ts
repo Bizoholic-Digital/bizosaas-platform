@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const response = await fetch(`${BRAIN_API_URL}/api/brain/business-directory/listings`, {
       method: 'POST',
       headers: {
@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Business Directory Create Listing API error:', response.status);
-      return NextResponse.json({ 
-        success: false, 
+      return NextResponse.json({
+        success: false,
         message: 'Failed to create listing. Using fallback response.',
         listing: {
           id: Date.now().toString(),
@@ -170,11 +170,12 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Business Directory Create Listing API error:', error);
-    return NextResponse.json({ 
-      success: false, 
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[CLIENT-PORTAL] Error creating listing:', error);
+    return NextResponse.json({
+      success: false,
       message: 'Failed to create listing',
-      error: error.message 
+      error: errorMessage
     }, { status: 500 });
   }
 }

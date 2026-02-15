@@ -1,0 +1,13 @@
+   ▲ Next.js 14.1.0
+
+   Creating an optimized production build ...
+Compiler edge-server unexpectedly exited with code: null and signal: SIGTERM
+ ✓ Compiled successfully
+   Skipping linting
+   Checking validity of types ...
+Failed to compile.
+
+app/api/auth/[...nextauth]/route.ts
+Type error: Route "app/api/auth/[...nextauth]/route.ts" does not match the required types of a Next.js Route.
+  "authOptions" is not a valid Route export field.
+

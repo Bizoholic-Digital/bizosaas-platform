@@ -44,6 +44,12 @@ from .multimedia import (
     generate_storyboard_activity,
     generate_video_metadata_activity
 )
+from .analytics import (
+    aggregate_workflow_metrics_activity,
+    aggregate_tenant_usage_activity,
+    aggregate_campaign_performance_activity,
+    generate_platform_insights_activity
+)
 from .seo import (
     crawl_site_activity,
     run_lighthouse_audit_activity,
@@ -106,5 +112,9 @@ __all__ = [
     "synthesize_audio_activity",
     "generate_video_script_activity",
     "generate_storyboard_activity",
-    "generate_video_metadata_activity"
+    "generate_video_metadata_activity",
+    "aggregate_workflow_metrics_activity",
+    "aggregate_tenant_usage_activity",
+    "aggregate_campaign_performance_activity",
+    "generate_platform_insights_activity"
 ]
