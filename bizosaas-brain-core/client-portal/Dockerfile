@@ -25,7 +25,11 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 # Install dependencies for node-gyp
-RUN apk add --no-cache libc6-compat
+# Install system dependencies
+RUN apk add --no-cache libc6-compat git
+
+# Disable Next.js telemetry
+ENV NEXT_TELEMETRY_DISABLED 1
 
 # Copy package files
 COPY package.json package-lock.json* ./
