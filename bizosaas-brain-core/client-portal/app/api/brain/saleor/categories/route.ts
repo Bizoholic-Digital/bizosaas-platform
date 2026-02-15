@@ -9,18 +9,23 @@ const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:
 
 // GET /api/brain/saleor/categories - Fetch category hierarchy and analytics
 export async function GET(request: NextRequest) {
+  let parent_id: string | null = null;
+  let page = '1';
+  let limit = '50';
+  let include_analytics = false;
+
   try {
     const searchParams = request.nextUrl.searchParams
-    const parent_id = searchParams.get('parent_id')
+    parent_id = searchParams.get('parent_id')
     const level = searchParams.get('level')
     const status = searchParams.get('status')
     const search = searchParams.get('search')
     const include_products = searchParams.get('include_products') === 'true'
-    const include_analytics = searchParams.get('include_analytics') === 'true'
+    include_analytics = searchParams.get('include_analytics') === 'true'
     const sort_by = searchParams.get('sort_by') || 'name'
     const order = searchParams.get('order') || 'asc'
-    const page = searchParams.get('page') || '1'
-    const limit = searchParams.get('limit') || '50'
+    page = searchParams.get('page') || '1'
+    limit = searchParams.get('limit') || '50'
 
     let url = `${BRAIN_API_URL}/api/brain/saleor/categories`
     const params = new URLSearchParams()

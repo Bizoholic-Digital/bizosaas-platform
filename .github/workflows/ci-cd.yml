@@ -16,13 +16,13 @@ on:
         required: false
         default: false
         type: boolean
-  push:
-    branches: [staging, main]
-    paths:
-      - 'bizosaas-brain-core/**'
-      - 'portals/**'
-      - 'shared/**'
-      - '.github/workflows/**'
+#   push:
+#     branches: [staging, main]
+#     paths:
+#       - 'bizosaas-brain-core/**'
+#       - 'portals/**'
+#       - 'shared/**'
+#       - '.github/workflows/**'
 
 env:
   REGISTRY: ghcr.io
@@ -426,7 +426,7 @@ jobs:
       packages: write
       security-events: write
     needs: [build, test-backend, test-frontend, test-ai-agents]
-    if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
+    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
     env:
       REPO_LOWER: ""
     environment:
@@ -591,6 +591,7 @@ jobs:
       - name: Configure K3s access
         env:
           K3S_KUBECONFIG_STAGING: ${{ secrets.K3S_KUBECONFIG_STAGING }}
+          K3S_KUBECONFIG_PRODUCTION: ${{ secrets.K3S_KUBECONFIG_PRODUCTION }}
         run: |
           mkdir -p ~/.kube
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
