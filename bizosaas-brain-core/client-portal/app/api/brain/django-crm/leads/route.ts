@@ -72,7 +72,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching leads from Django CRM via Brain API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching leads from Django CRM via Brain API:', errorMessage)
 
     // Return fallback leads data
     const fallbackData = {
@@ -245,8 +246,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/brain/django-crm/leads - Create new lead
 export async function POST(request: NextRequest) {
+  let body: any = {}
   try {
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const { first_name, last_name, email, company } = body
@@ -305,10 +307,10 @@ export async function POST(request: NextRequest) {
       score: data.score || 0
     })
   } catch (error) {
-    console.error('Error creating lead via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating lead via Django CRM API:', errorMessage)
 
     // Return development fallback
-    const body = await request.json()
     const fallbackData = {
       success: true,
       lead: {
@@ -383,10 +385,11 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error updating lead via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to update lead', details: error.message },
+      { error: 'Failed to update lead', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -422,9 +425,10 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error deleting lead via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to delete lead', details: error.message },
+      { error: 'Failed to delete lead', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

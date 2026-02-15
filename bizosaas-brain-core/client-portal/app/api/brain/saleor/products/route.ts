@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data);
 
   } catch (error) {
-    console.error("Saleor Products API Error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Saleor Products API Error:", errorMessage);
 
     // Return comprehensive fallback data for development
     const fallbackData = {
@@ -282,8 +283,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error creating product:", error);
-    return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Error creating product:", errorMessage);
+    return NextResponse.json({ error: "Failed to create product", details: errorMessage }, { status: 500 });
   }
 }
 
@@ -323,7 +325,8 @@ export async function PUT(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error updating product:", error);
-    return NextResponse.json({ error: "Failed to update product" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error("Error updating product:", errorMessage);
+    return NextResponse.json({ error: "Failed to update product", details: errorMessage }, { status: 500 });
   }
 }

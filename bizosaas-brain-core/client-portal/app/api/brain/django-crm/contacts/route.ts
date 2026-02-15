@@ -69,7 +69,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.log('[CLIENT-PORTAL] Using fallback contacts data:', error.message)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.log('[CLIENT-PORTAL] Using fallback contacts data:', errorMessage)
 
     // Return fallback contacts data
     const fallbackData = {
@@ -283,8 +284,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/brain/django-crm/contacts - Create new contact
 export async function POST(request: NextRequest) {
+  let body: any = {}
   try {
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const { first_name, last_name, email } = body
@@ -344,10 +346,10 @@ export async function POST(request: NextRequest) {
       contact: data.contact
     })
   } catch (error) {
-    console.error('Error creating contact via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating contact via Django CRM API:', errorMessage)
 
     // Return development fallback
-    const body = await request.json()
     const fallbackData = {
       success: true,
       contact: {
@@ -420,11 +422,11 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating contact via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Failed to update contact', details: error.message },
+      { error: 'Failed to update contact', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -459,10 +461,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting contact via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting contact via Django CRM API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete contact', details: error.message },
+      { error: 'Failed to delete contact', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

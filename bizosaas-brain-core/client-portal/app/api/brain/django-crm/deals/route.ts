@@ -73,7 +73,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.log('[CLIENT-PORTAL] Using fallback deals data:', error.message)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.log('[CLIENT-PORTAL] Using fallback deals data:', errorMessage)
 
     // Return fallback deals data
     const fallbackData = {
@@ -338,8 +339,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/brain/django-crm/deals - Create new deal
 export async function POST(request: NextRequest) {
+  let body: any = {}
   try {
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const { title, value, stage, contact_id } = body
@@ -397,10 +399,10 @@ export async function POST(request: NextRequest) {
       probability: data.probability || 50
     })
   } catch (error) {
-    console.error('Error creating deal via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating deal via Django CRM API:', errorMessage)
 
     // Return development fallback
-    const body = await request.json()
     const fallbackData = {
       success: true,
       deal: {
@@ -473,11 +475,12 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating deal via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating deal via Django CRM API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update deal', details: error.message },
+      { error: 'Failed to update deal', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -512,10 +515,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting deal via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting deal via Django CRM API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete deal', details: error.message },
+      { error: 'Failed to delete deal', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

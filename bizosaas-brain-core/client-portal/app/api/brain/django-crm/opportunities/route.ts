@@ -44,7 +44,8 @@ export async function GET(request: NextRequest) {
         const data = await response.json()
         return NextResponse.json(data)
     } catch (error) {
-        console.error('Error fetching opportunities from Django CRM via Brain API:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error fetching opportunities from Django CRM via Brain API:', errorMessage)
 
         // Fallback data
         const fallbackData = {
@@ -87,8 +88,9 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error creating opportunity:', error);
-        return NextResponse.json({ error: 'Failed to create opportunity' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error creating opportunity:', errorMessage);
+        return NextResponse.json({ error: 'Failed to create opportunity', details: errorMessage }, { status: 500 });
     }
 }
 
@@ -128,7 +130,8 @@ export async function PUT(request: NextRequest) {
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Error updating opportunity:', error);
-        return NextResponse.json({ error: 'Failed to update opportunity' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error updating opportunity:', errorMessage);
+        return NextResponse.json({ error: 'Failed to update opportunity', details: errorMessage }, { status: 500 });
     }
 }

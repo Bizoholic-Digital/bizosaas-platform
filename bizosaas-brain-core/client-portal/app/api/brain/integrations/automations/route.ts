@@ -328,13 +328,13 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Brain API integrations/automations error:', response.status);
-      
+
       if (type === 'templates') {
         let filteredTemplates = fallbackAutomationTemplates;
         if (category) {
           filteredTemplates = fallbackAutomationTemplates.filter(template => template.category === category);
         }
-        
+
         return NextResponse.json({
           templates: filteredTemplates.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredTemplates.length,
@@ -353,7 +353,7 @@ export async function GET(request: NextRequest) {
         if (status) {
           filteredLogs = filteredLogs.filter(log => log.status === status);
         }
-        
+
         return NextResponse.json({
           logs: filteredLogs.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredLogs.length,
@@ -368,7 +368,7 @@ export async function GET(request: NextRequest) {
         if (status) {
           filteredAutomations = fallbackAutomations.filter(automation => automation.status === status);
         }
-        
+
         return NextResponse.json({
           automations: filteredAutomations.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredAutomations.length,
@@ -383,8 +383,8 @@ export async function GET(request: NextRequest) {
             paused: filteredAutomations.filter(a => a.status === 'paused').length,
             failed: filteredAutomations.filter(a => a.status === 'failed').length,
             totalRuns: filteredAutomations.reduce((sum, a) => sum + a.stats.totalRuns, 0),
-            successRate: (filteredAutomations.reduce((sum, a) => sum + a.stats.successfulRuns, 0) / 
-                         filteredAutomations.reduce((sum, a) => sum + a.stats.totalRuns, 0) * 100)
+            successRate: (filteredAutomations.reduce((sum, a) => sum + a.stats.successfulRuns, 0) /
+              filteredAutomations.reduce((sum, a) => sum + a.stats.totalRuns, 0) * 100)
           }
         });
       }
@@ -392,10 +392,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(await response.json());
   } catch (error) {
-    console.error('Integrations automations API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Integrations automations API error:', errorMessage);
     const urlParams = new URL(request.url).searchParams;
     const type = urlParams.get('type');
-    
+
     if (type === 'templates') {
       return NextResponse.json({
         templates: fallbackAutomationTemplates,
@@ -443,7 +444,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { action, ...data } = body;
-    
+
     const response = await fetch(`${BRAIN_API_URL}/api/brain/integrations/automations`, {
       method: 'POST',
       headers: {
@@ -456,7 +457,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Brain API integrations/automations POST error:', response.status);
-      
+
       // Handle different actions with fallback responses
       switch (action) {
         case 'create':
@@ -484,7 +485,7 @@ export async function POST(request: NextRequest) {
             isTemplate: false
           };
           return NextResponse.json({ success: true, automation: mockAutomation });
-          
+
         case 'create_from_template':
           const templateAutomation = {
             id: `auto_${Date.now()}`,
@@ -510,20 +511,20 @@ export async function POST(request: NextRequest) {
             isTemplate: false
           };
           return NextResponse.json({ success: true, automation: templateAutomation });
-          
+
         case 'update':
           return NextResponse.json({ success: true, message: 'Automation updated successfully' });
-          
+
         case 'toggle_status':
           return NextResponse.json({ success: true, message: 'Automation status toggled successfully' });
-          
+
         case 'test_run':
-          return NextResponse.json({ 
-            success: true, 
+          return NextResponse.json({
+            success: true,
             runId: `run_${Date.now()}`,
             message: 'Test execution started successfully'
           });
-          
+
         case 'duplicate':
           const duplicatedAutomation = {
             id: `auto_${Date.now()}`,
@@ -549,7 +550,7 @@ export async function POST(request: NextRequest) {
             isTemplate: false
           };
           return NextResponse.json({ success: true, automation: duplicatedAutomation });
-          
+
         default:
           return NextResponse.json({ success: true, message: 'Automation action processed successfully' });
       }
@@ -569,7 +570,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const automationId = searchParams.get('automation_id');
-    
+
     if (!automationId) {
       return NextResponse.json({ error: 'Automation ID is required' }, { status: 400 });
     }

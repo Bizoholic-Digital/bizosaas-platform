@@ -173,13 +173,13 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Brain API integrations/apis error:', response.status);
-      
+
       if (type === 'logs') {
         let filteredLogs = fallbackApiLogs;
         if (keyId) {
           filteredLogs = fallbackApiLogs.filter(log => log.apiKeyId === keyId);
         }
-        
+
         return NextResponse.json({
           logs: filteredLogs.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredLogs.length,
@@ -196,7 +196,7 @@ export async function GET(request: NextRequest) {
           dailyLimit: fallbackApiKeys.reduce((sum, key) => sum + key.usage.dailyLimit, 0),
           monthlyLimit: fallbackApiKeys.reduce((sum, key) => sum + key.usage.monthlyLimit, 0)
         };
-        
+
         return NextResponse.json({
           usage: totalUsage,
           keyUsage: fallbackApiKeys.map(key => ({
@@ -217,7 +217,7 @@ export async function GET(request: NextRequest) {
         if (environment) {
           filteredKeys = filteredKeys.filter(key => key.environment === environment);
         }
-        
+
         return NextResponse.json({
           apiKeys: filteredKeys.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredKeys.length,
@@ -240,10 +240,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(await response.json());
   } catch (error) {
-    console.error('Integrations APIs API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Integrations APIs API error:', errorMessage);
     const urlParams = new URL(request.url).searchParams;
     const type = urlParams.get('type');
-    
+
     if (type === 'logs') {
       return NextResponse.json({
         logs: fallbackApiLogs,
@@ -298,7 +299,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { action, ...data } = body;
-    
+
     const response = await fetch(`${BRAIN_API_URL}/api/brain/integrations/apis`, {
       method: 'POST',
       headers: {
@@ -311,7 +312,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Brain API integrations/apis POST error:', response.status);
-      
+
       // Handle different actions with fallback responses
       switch (action) {
         case 'create':
@@ -346,30 +347,30 @@ export async function POST(request: NextRequest) {
             description: data.description || ''
           };
           return NextResponse.json({ success: true, apiKey: mockApiKey });
-          
+
         case 'regenerate':
           const newKey = `${data.keyPrefix}${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-          return NextResponse.json({ 
-            success: true, 
+          return NextResponse.json({
+            success: true,
             newKey,
             maskedKey: `${data.keyPrefix}••••••••••••••••••••••••`
           });
-          
+
         case 'update_permissions':
           return NextResponse.json({ success: true, message: 'API key permissions updated successfully' });
-          
+
         case 'toggle_status':
           return NextResponse.json({ success: true, message: 'API key status toggled successfully' });
-          
+
         case 'rotate':
           const rotatedKey = `${data.keyPrefix}${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-          return NextResponse.json({ 
-            success: true, 
+          return NextResponse.json({
+            success: true,
             newKey: rotatedKey,
             maskedKey: `${data.keyPrefix}••••••••••••••••••••••••`,
             message: 'API key rotated successfully. Please update your applications.'
           });
-          
+
         default:
           return NextResponse.json({ success: true, message: 'API key action processed successfully' });
       }
@@ -389,7 +390,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const keyId = searchParams.get('key_id');
-    
+
     if (!keyId) {
       return NextResponse.json({ error: 'API key ID is required' }, { status: 400 });
     }

@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Brain API integrations/webhooks error:', response.status);
-      
+
       if (type === 'logs') {
         let filteredLogs = fallbackWebhookLogs;
         if (webhookId) {
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
         if (status) {
           filteredLogs = filteredLogs.filter(log => log.status === status);
         }
-        
+
         return NextResponse.json({
           logs: filteredLogs.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredLogs.length,
@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
         if (status) {
           filteredWebhooks = fallbackWebhooks.filter(webhook => webhook.status === status);
         }
-        
+
         return NextResponse.json({
           webhooks: filteredWebhooks.slice(parseInt(offset), parseInt(offset) + parseInt(limit)),
           total: filteredWebhooks.length,
@@ -189,10 +189,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(await response.json());
   } catch (error) {
-    console.error('Integrations webhooks API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Integrations webhooks API error:', errorMessage);
     const urlParams = new URL(request.url).searchParams;
     const type = urlParams.get('type');
-    
+
     if (type === 'logs') {
       return NextResponse.json({
         logs: fallbackWebhookLogs,
@@ -228,7 +229,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { action, ...data } = body;
-    
+
     const response = await fetch(`${BRAIN_API_URL}/api/brain/integrations/webhooks`, {
       method: 'POST',
       headers: {
@@ -241,7 +242,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error('Brain API integrations/webhooks POST error:', response.status);
-      
+
       // Handle different actions with fallback responses
       switch (action) {
         case 'create':
@@ -261,13 +262,13 @@ export async function POST(request: NextRequest) {
             security: data.security || { signatureVerification: true, ipWhitelist: [] }
           };
           return NextResponse.json({ success: true, webhook: mockWebhook });
-          
+
         case 'update':
           return NextResponse.json({ success: true, message: 'Webhook updated successfully' });
-          
+
         case 'test':
-          return NextResponse.json({ 
-            success: true, 
+          return NextResponse.json({
+            success: true,
             testResult: {
               status: 'success',
               statusCode: 200,
@@ -275,16 +276,16 @@ export async function POST(request: NextRequest) {
               timestamp: new Date().toISOString()
             }
           });
-          
+
         case 'toggle_status':
           return NextResponse.json({ success: true, message: 'Webhook status toggled successfully' });
-          
+
         case 'regenerate_secret':
-          return NextResponse.json({ 
-            success: true, 
-            secret: `whsec_${Math.random().toString(36).substring(2, 15)}` 
+          return NextResponse.json({
+            success: true,
+            secret: `whsec_${Math.random().toString(36).substring(2, 15)}`
           });
-          
+
         default:
           return NextResponse.json({ success: true, message: 'Webhook action processed successfully' });
       }
@@ -304,7 +305,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const webhookId = searchParams.get('webhook_id');
-    
+
     if (!webhookId) {
       return NextResponse.json({ error: 'Webhook ID is required' }, { status: 400 });
     }

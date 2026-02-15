@@ -77,7 +77,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching activities from Django CRM via Brain API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching activities from Django CRM via Brain API:', errorMessage);
 
     // Return fallback activities data
     const fallbackData = {
@@ -352,8 +353,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/brain/django-crm/activities - Create new activity
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const { type, subject, assigned_to } = body
@@ -411,10 +413,10 @@ export async function POST(request: NextRequest) {
       activity: data.activity
     })
   } catch (error) {
-    console.error('Error creating activity via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating activity via Django CRM API:', errorMessage);
 
-    // Return development fallback
-    const body = await request.json()
+    // Use the already parsed body
     const fallbackData = {
       success: true,
       activity: {
@@ -487,11 +489,12 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating activity via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating activity via Django CRM API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update activity', details: error.message },
+      { error: 'Failed to update activity', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -526,10 +529,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting activity via Django CRM API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting activity via Django CRM API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete activity', details: error.message },
+      { error: 'Failed to delete activity', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

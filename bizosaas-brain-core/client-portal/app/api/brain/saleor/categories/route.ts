@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
     const order = searchParams.get('order') || 'asc'
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '50'
-    
+
     let url = `${BRAIN_API_URL}/api/brain/saleor/categories`
     const params = new URLSearchParams()
-    
+
     if (parent_id) params.set('parent_id', parent_id)
     if (level) params.set('level', level)
     if (status) params.set('status', status)
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     params.set('order', order)
     params.set('page', page)
     params.set('limit', limit)
-    
+
     url += `?${params.toString()}`
 
     const response = await fetch(url, {
@@ -54,8 +54,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching categories from Saleor via Brain API:', error)
-    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching categories from Saleor via Brain API:', errorMessage);
+
     // Return comprehensive fallback category data
     const fallbackData = {
       categories: [
@@ -457,16 +458,17 @@ export async function GET(request: NextRequest) {
       ] : [],
       source: "fallback"
     }
-    
+
     return NextResponse.json(fallbackData, { status: 200 })
   }
 }
 
 // POST /api/brain/saleor/categories - Create new category
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json()
-    
+    body = await request.json()
+
     // Validate required fields
     const { name, slug } = body
     if (!name || !slug) {
@@ -531,10 +533,10 @@ export async function POST(request: NextRequest) {
       level: data.level || 0
     })
   } catch (error) {
-    console.error('Error creating category via Saleor API:', error)
-    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating category via Saleor API:', errorMessage);
+
     // Return development fallback
-    const body = await request.json()
     const fallbackData = {
       success: true,
       category: {
@@ -554,7 +556,7 @@ export async function POST(request: NextRequest) {
       hierarchy_updated: body.parent_id !== null,
       source: "fallback"
     }
-    
+
     return NextResponse.json(fallbackData, { status: 201 })
   }
 }
@@ -564,7 +566,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     const { category_id } = body
-    
+
     if (!category_id) {
       return NextResponse.json(
         { error: 'Category ID is required' },
@@ -611,11 +613,12 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating category via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating category via Saleor API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update category', details: error.message },
+      { error: 'Failed to update category', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -626,7 +629,7 @@ export async function DELETE(request: NextRequest) {
     const categoryId = searchParams.get('categoryId')
     const move_products_to = searchParams.get('move_products_to')
     const delete_children = searchParams.get('delete_children') === 'true'
-    
+
     if (!categoryId) {
       return NextResponse.json(
         { error: 'Category ID is required' },
@@ -655,10 +658,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting category via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting category via Saleor API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete category', details: error.message },
+      { error: 'Failed to delete category', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

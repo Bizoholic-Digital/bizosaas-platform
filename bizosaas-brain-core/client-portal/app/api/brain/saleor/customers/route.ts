@@ -11,9 +11,11 @@ const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:
 
 // GET /api/brain/saleor/customers - Fetch customers with analytics
 export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const page = searchParams.get('page') || '1'
+  const limit = searchParams.get('limit') || '20'
   try {
     const session = await getServerSession(authOptions);
-    const searchParams = request.nextUrl.searchParams
     const segment = searchParams.get('segment')
     const status = searchParams.get('status')
     const search = searchParams.get('search')
@@ -21,8 +23,6 @@ export async function GET(request: NextRequest) {
     const date_to = searchParams.get('date_to')
     const sort_by = searchParams.get('sort_by') || 'created_at'
     const order = searchParams.get('order') || 'desc'
-    const page = searchParams.get('page') || '1'
-    const limit = searchParams.get('limit') || '20'
     const include_analytics = searchParams.get('include_analytics') === 'true'
 
     let url = `${BRAIN_API_URL}/api/brain/saleor/customers`
@@ -70,7 +70,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching customers from Saleor via Brain API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching customers from Saleor via Brain API:', errorMessage);
 
     // Return comprehensive fallback customer data
     const fallbackData = {
@@ -389,8 +390,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/brain/saleor/customers - Create or update customer
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const { email, first_name, last_name } = body
@@ -450,10 +452,10 @@ export async function POST(request: NextRequest) {
       loyalty_tier: data.loyalty_tier || 'bronze'
     })
   } catch (error) {
-    console.error('Error creating customer via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating customer via Saleor API:', errorMessage);
 
-    // Return development fallback
-    const body = await request.json()
+    // Use the already parsed body
     const fallbackData = {
       success: true,
       customer: {
@@ -527,11 +529,12 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating customer via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating customer via Saleor API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update customer', details: error.message },
+      { error: 'Failed to update customer', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -567,10 +570,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting customer via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting customer via Saleor API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete customer', details: error.message },
+      { error: 'Failed to delete customer', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

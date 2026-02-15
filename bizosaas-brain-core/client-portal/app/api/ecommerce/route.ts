@@ -281,14 +281,14 @@ export async function GET(request: NextRequest) {
     const dateRange = searchParams.get('dateRange') || '30d'
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    
+
     console.log('[CLIENT-PORTAL] GET e-commerce data', { section, dateRange, page, limit })
-    
+
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300))
-    
+
     let responseData: any = {}
-    
+
     switch (section) {
       case 'overview':
         responseData = {
@@ -297,7 +297,7 @@ export async function GET(request: NextRequest) {
           analytics: mockEcommerceData.analytics
         }
         break
-        
+
       case 'orders':
         const startIndex = (page - 1) * limit
         responseData = {
@@ -310,7 +310,7 @@ export async function GET(request: NextRequest) {
           }
         }
         break
-        
+
       case 'products':
         const productStartIndex = (page - 1) * limit
         responseData = {
@@ -323,7 +323,7 @@ export async function GET(request: NextRequest) {
           }
         }
         break
-        
+
       case 'customers':
         responseData = {
           customers: mockEcommerceData.customers,
@@ -334,17 +334,17 @@ export async function GET(request: NextRequest) {
           }
         }
         break
-        
+
       case 'integrations':
         responseData = {
           integrations: mockEcommerceData.integrations
         }
         break
-        
+
       default:
         responseData = mockEcommerceData
     }
-    
+
     return NextResponse.json({
       success: true,
       data: responseData,
@@ -354,11 +354,12 @@ export async function GET(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error fetching e-commerce data:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching e-commerce data:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to fetch e-commerce data', details: error.message },
+      { error: 'Failed to fetch e-commerce data', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -367,12 +368,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, data } = body
-    
+
     console.log(`[CLIENT-PORTAL] POST e-commerce action: ${action}`)
-    
+
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     if (action === 'create_order') {
       const newOrder = {
         id: 'order_' + Date.now(),
@@ -386,7 +387,7 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString(),
         products: data.products || []
       }
-      
+
       return NextResponse.json({
         success: true,
         message: 'Order created successfully',
@@ -394,7 +395,7 @@ export async function POST(request: NextRequest) {
         source: "fallback"
       })
     }
-    
+
     if (action === 'create_product') {
       const newProduct = {
         id: 'product_' + Date.now(),
@@ -408,7 +409,7 @@ export async function POST(request: NextRequest) {
         tags: data.tags || [],
         created_at: new Date().toISOString()
       }
-      
+
       return NextResponse.json({
         success: true,
         message: 'Product created successfully',
@@ -416,18 +417,19 @@ export async function POST(request: NextRequest) {
         source: "fallback"
       })
     }
-    
+
     return NextResponse.json({
       success: true,
       message: 'Action completed successfully',
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error creating e-commerce item:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating e-commerce item:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to create item', details: error.message },
+      { error: 'Failed to create item', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -436,19 +438,19 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     const { type, id, updates } = body
-    
+
     console.log(`[CLIENT-PORTAL] PUT update ${type}: ${id}`)
-    
+
     if (!type || !id) {
       return NextResponse.json(
         { error: 'Type and ID are required' },
         { status: 400 }
       )
     }
-    
+
     // Simulate update delay
     await new Promise(resolve => setTimeout(resolve, 400))
-    
+
     return NextResponse.json({
       success: true,
       message: `${type} updated successfully`,
@@ -458,11 +460,12 @@ export async function PUT(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error updating e-commerce item:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating e-commerce item:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update item', details: error.message },
+      { error: 'Failed to update item', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -472,19 +475,19 @@ export async function DELETE(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const type = searchParams.get('type')
     const id = searchParams.get('id')
-    
+
     console.log(`[CLIENT-PORTAL] DELETE ${type}: ${id}`)
-    
+
     if (!type || !id) {
       return NextResponse.json(
         { error: 'Type and ID are required' },
         { status: 400 }
       )
     }
-    
+
     // Simulate deletion delay
     await new Promise(resolve => setTimeout(resolve, 350))
-    
+
     return NextResponse.json({
       success: true,
       message: `${type} deleted successfully`,
@@ -493,10 +496,11 @@ export async function DELETE(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error deleting e-commerce item:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting e-commerce item:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete item', details: error.message },
+      { error: 'Failed to delete item', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

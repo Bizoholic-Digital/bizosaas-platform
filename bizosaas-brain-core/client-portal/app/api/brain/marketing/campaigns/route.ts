@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
     const channel = searchParams.get('channel')
     const budget_min = searchParams.get('budget_min')
     const budget_max = searchParams.get('budget_max')
-    
+
     let url = `${BRAIN_API_URL}/api/brain/marketing/campaigns`
     const params = new URLSearchParams()
-    
+
     if (status) params.set('status', status)
     if (type) params.set('type', type)
     if (search) params.set('search', search)
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     params.set('limit', limit)
     params.set('sort', sort)
     params.set('order', order)
-    
+
     url += `?${params.toString()}`
 
     const response = await fetch(url, {
@@ -54,8 +54,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching campaigns from Marketing API via Brain API:', error)
-    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching campaigns from Marketing API via Brain API:', errorMessage);
+
     // Return fallback campaigns data
     const fallbackData = {
       campaigns: [
@@ -267,16 +268,17 @@ export async function GET(request: NextRequest) {
       },
       source: "fallback"
     }
-    
+
     return NextResponse.json(fallbackData, { status: 200 })
   }
 }
 
 // POST /api/brain/marketing/campaigns - Create new campaign
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json()
-    
+    body = await request.json()
+
     // Validate required fields
     const { name, type, channels, budget, timeline, targeting } = body
     if (!name || !type || !channels || !budget || !timeline || !targeting) {
@@ -339,10 +341,10 @@ export async function POST(request: NextRequest) {
       ai_recommendations: data.ai_recommendations || []
     })
   } catch (error) {
-    console.error('Error creating campaign via Marketing API:', error)
-    
-    // Return development fallback
-    const body = await request.json()
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating campaign via Marketing API:', errorMessage);
+
+    // Use the already parsed body
     const fallbackData = {
       success: true,
       campaign: {
@@ -379,7 +381,7 @@ export async function POST(request: NextRequest) {
       ],
       source: "fallback"
     }
-    
+
     return NextResponse.json(fallbackData, { status: 201 })
   }
 }
@@ -389,7 +391,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     const { campaign_id } = body
-    
+
     if (!campaign_id) {
       return NextResponse.json(
         { error: 'Campaign ID is required' },
@@ -434,11 +436,12 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating campaign via Marketing API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating campaign via Marketing API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update campaign', details: error.message },
+      { error: 'Failed to update campaign', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -447,7 +450,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const campaignId = searchParams.get('campaignId')
-    
+
     if (!campaignId) {
       return NextResponse.json(
         { error: 'Campaign ID is required' },
@@ -472,10 +475,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error deleting campaign via Marketing API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting campaign via Marketing API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete campaign', details: error.message },
+      { error: 'Failed to delete campaign', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

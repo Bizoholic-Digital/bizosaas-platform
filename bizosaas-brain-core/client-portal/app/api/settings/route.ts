@@ -67,7 +67,7 @@ const mockSettingsData = {
     },
     facebook_ads: {
       enabled: true,
-      status: "connected", 
+      status: "connected",
       last_sync: "2024-09-25T09:15:00Z",
       account_id: "987654321"
     },
@@ -104,7 +104,7 @@ const mockSettingsData = {
       {
         timestamp: "2024-09-24T16:45:00Z",
         ip_address: "192.168.1.100",
-        device: "Chrome on macOS", 
+        device: "Chrome on macOS",
         location: "San Francisco, CA"
       }
     ]
@@ -119,7 +119,7 @@ const mockSettingsData = {
       permissions: ["read", "write"]
     },
     {
-      id: "key_002", 
+      id: "key_002",
       name: "Development API Key",
       key: "bzo_test_********************************",
       created_at: "2024-09-10T14:15:00Z",
@@ -133,10 +133,10 @@ const mockSettingsData = {
 export async function GET(request: NextRequest) {
   try {
     console.log('[CLIENT-PORTAL] GET settings data')
-    
+
     // Simulate slight delay for realism
     await new Promise(resolve => setTimeout(resolve, 100))
-    
+
     return NextResponse.json({
       success: true,
       data: mockSettingsData,
@@ -144,11 +144,12 @@ export async function GET(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error fetching settings:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching settings:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to fetch settings', details: error.message },
+      { error: 'Failed to fetch settings', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -157,9 +158,9 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     const { section, data } = body
-    
+
     console.log(`[CLIENT-PORTAL] PUT settings section: ${section}`)
-    
+
     // Validate section
     const validSections = ['user_settings', 'tenant_settings', 'integrations', 'security', 'api_keys']
     if (!validSections.includes(section)) {
@@ -168,10 +169,10 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       )
     }
-    
+
     // Simulate update
     await new Promise(resolve => setTimeout(resolve, 200))
-    
+
     return NextResponse.json({
       success: true,
       message: `${section} updated successfully`,
@@ -179,11 +180,12 @@ export async function PUT(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error updating settings:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating settings:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update settings', details: error.message },
+      { error: 'Failed to update settings', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -192,9 +194,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { action, data } = body
-    
+
     console.log(`[CLIENT-PORTAL] POST settings action: ${action}`)
-    
+
     if (action === 'create_api_key') {
       const newKey = {
         id: 'key_' + Date.now(),
@@ -204,7 +206,7 @@ export async function POST(request: NextRequest) {
         last_used: null,
         permissions: data.permissions || ['read']
       }
-      
+
       return NextResponse.json({
         success: true,
         message: 'API key created successfully',
@@ -212,7 +214,7 @@ export async function POST(request: NextRequest) {
         source: "fallback"
       })
     }
-    
+
     return NextResponse.json({
       success: true,
       message: 'Setting created successfully',
@@ -220,11 +222,12 @@ export async function POST(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error creating setting:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating setting:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to create setting', details: error.message },
+      { error: 'Failed to create setting', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -234,19 +237,19 @@ export async function DELETE(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const section = searchParams.get('section')
     const id = searchParams.get('id')
-    
+
     console.log(`[CLIENT-PORTAL] DELETE settings section: ${section}, id: ${id}`)
-    
+
     if (!section || !id) {
       return NextResponse.json(
         { error: 'Section and ID are required' },
         { status: 400 }
       )
     }
-    
+
     // Simulate deletion
     await new Promise(resolve => setTimeout(resolve, 150))
-    
+
     return NextResponse.json({
       success: true,
       message: `Setting deleted successfully`,
@@ -254,10 +257,11 @@ export async function DELETE(request: NextRequest) {
       source: "fallback"
     })
   } catch (error) {
-    console.error('Error deleting setting:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error deleting setting:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to delete setting', details: error.message },
+      { error: 'Failed to delete setting', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

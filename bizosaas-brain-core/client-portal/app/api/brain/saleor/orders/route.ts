@@ -11,16 +11,16 @@ const BRAIN_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:
 
 // GET /api/brain/saleor/orders - Fetch all orders
 export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams
+  const page = searchParams.get('page') || '1'
+  const limit = searchParams.get('limit') || '20'
   try {
     const session = await getServerSession(authOptions);
-    const searchParams = request.nextUrl.searchParams
     const status = searchParams.get('status')
     const payment_status = searchParams.get('payment_status')
     const customer = searchParams.get('customer')
     const date_from = searchParams.get('date_from')
     const date_to = searchParams.get('date_to')
-    const page = searchParams.get('page') || '1'
-    const limit = searchParams.get('limit') || '20'
 
     let url = `${BRAIN_API_URL}/api/brain/saleor/orders`
     const params = new URLSearchParams()
@@ -64,7 +64,8 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error fetching orders from Saleor via Brain API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error fetching orders from Saleor via Brain API:', errorMessage);
 
     // Return fallback orders data
     const fallbackData = {
@@ -240,8 +241,9 @@ export async function GET(request: NextRequest) {
 
 // POST /api/brain/saleor/orders - Create new order
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json()
+    body = await request.json()
 
     // Validate required fields
     const { customer_id, items } = body
@@ -307,10 +309,10 @@ export async function POST(request: NextRequest) {
       inventory_reserved: data.inventory_reserved || false
     })
   } catch (error) {
-    console.error('Error creating order via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error creating order via Saleor API:', errorMessage);
 
-    // Return development fallback
-    const body = await request.json()
+    // Use the already parsed body
     const fallbackData = {
       success: true,
       order: {
@@ -319,7 +321,7 @@ export async function POST(request: NextRequest) {
         customer_id: body.customer_id,
         status: 'pending',
         payment_status: 'pending',
-        total: body.items?.reduce((sum, item) => sum + (parseFloat(item.unit_price) * parseInt(item.quantity)), 0) || 0,
+        total: body.items?.reduce((sum: number, item: any) => sum + (parseFloat(item.unit_price) * parseInt(item.quantity)), 0) || 0,
         items_count: body.items?.length || 0,
         created_at: new Date().toISOString(),
         items: body.items || []
@@ -376,11 +378,12 @@ export async function PUT(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error updating order via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error updating order via Saleor API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update order', details: error.message },
+      { error: 'Failed to update order', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }
 
@@ -417,10 +420,11 @@ export async function DELETE(request: NextRequest) {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error('Error cancelling order via Saleor API:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error cancelling order via Saleor API:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to cancel order', details: error.message },
+      { error: 'Failed to cancel order', details: errorMessage },
       { status: 500 }
-    )
+    );
   }
 }

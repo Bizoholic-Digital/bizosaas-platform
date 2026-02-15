@@ -23,7 +23,8 @@ export async function GET(request: NextRequest) {
       brainStatus = "unhealthy_response";
     }
   } catch (error) {
-    console.warn("Backend health check failed:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.warn("Backend health check failed:", errorMessage);
     brainStatus = "unreachable";
   }
 

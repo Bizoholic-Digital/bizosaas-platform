@@ -44,11 +44,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           router.push("/");
         }
       } else {
-<<<<<<< HEAD:bizosaas-brain-core/client-portal/components/auth/LoginForm.tsx
-        setError("Login failed. Please check your credentials and try again.");
-=======
         setError("Invalid email or password. Please try again.");
->>>>>>> 689624bdacbb85634f44c01400300bc3ce37e57e:bizosaas-platform/frontend/apps/client-portal/components/auth/LoginForm.tsx
       }
     } catch (err: any) {
       setError(err.message || "Network error. Please check your connection and try again.");
