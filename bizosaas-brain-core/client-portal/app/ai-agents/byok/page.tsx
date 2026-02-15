@@ -202,7 +202,7 @@ export default function BYOKManagementPage() {
                                             {SERVICE_CATALOG[selectedService as ServiceId].keyTypes.map((type) => (
                                                 <SelectItem key={type} value={type}>
                                                     {type.replace('_', ' ')}
-                                                    {(SERVICE_CATALOG[selectedService as ServiceId].requiredKeys as any[]).includes(type) && (
+                                                    {(SERVICE_CATALOG[selectedService as ServiceId].requiredKeys as unknown as readonly string[]).includes(type) && (
                                                         <Badge variant="destructive" className="ml-2">Required</Badge>
                                                     )}
                                                 </SelectItem>
