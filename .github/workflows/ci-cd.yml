@@ -1,10 +1,6 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches: [ main, development, staging ]
-  pull_request:
-    branches: [ main, development ]
   workflow_dispatch:
     inputs:
       environment:

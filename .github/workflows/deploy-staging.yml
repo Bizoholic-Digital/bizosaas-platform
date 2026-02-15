@@ -85,8 +85,6 @@ jobs:
             type=sha,prefix=staging-
           labels: |
             org.opencontainers.image.source=https://github.com/${{ env.REPO_LOWER }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ env.REPO_LOWER }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
