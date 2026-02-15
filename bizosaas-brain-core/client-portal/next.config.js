@@ -21,7 +21,7 @@ const nextConfig = {
 
   // Configure for FastAPI Brain integration (centralized business logic)
   env: {
-    BRAIN_API_BASE_URL: process.env.BRAIN_API_BASE_URL || 'http://localhost:8001/api',
+    BRAIN_API_BASE_URL: process.env.BRAIN_API_BASE_URL || 'http://brain-gateway:8000',
     SITE_NAME: 'Bizoholic - AI Marketing Automation',
     SITE_URL: process.env.SITE_URL || 'http://localhost:3000',
   },
@@ -36,8 +36,8 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
-        port: '8001',
+        hostname: process.env.IMAGES_HOSTNAME || 'brain-gateway',
+        port: process.env.IMAGES_PORT || '8000',
         pathname: '/media/**',
       },
       {
@@ -52,8 +52,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${process.env.BRAIN_API_BASE_URL || 'http://localhost:8001/api'}/:path*`,
+        source: '/api/((?!auth).*)',
+        destination: `${process.env.BRAIN_API_BASE_URL || 'http://brain-gateway:8000'}/api/:path*`,
       },
     ];
   },
