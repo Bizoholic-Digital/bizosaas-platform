@@ -22,6 +22,7 @@ from app.workflows.seo_audit_workflow import SiteAuditWorkflow, KeywordResearchW
 from app.workflows.content_pipeline_workflow import ContentCreationWorkflow, ContentCalendarWorkflow
 from app.workflows.persona_workflow import PersonaGenerationWorkflow
 from app.workflows.social_content_workflow import SocialContentWorkflow
+from app.workflows.multimedia_workflow import PodcastCreationWorkflow, VideoScriptWorkflow
 from app.activities import (
     validate_connector_credentials,
     save_connector_credentials,
@@ -209,7 +210,9 @@ async def run_worker():
             PersonaGenerationWorkflow,
             PersonaGenerationWorkflow,
             SocialContentWorkflow,
-            DeepResearchWorkflow
+            DeepResearchWorkflow,
+            PodcastCreationWorkflow,
+            VideoScriptWorkflow
         ],
         activities=[
             validate_connector_credentials,
@@ -290,7 +293,12 @@ async def run_worker():
             schedule_social_post_activity,
             google_search_activity,
             web_scrape_activity,
-            analyze_research_activity
+            analyze_research_activity,
+            generate_podcast_script_activity,
+            synthesize_audio_activity,
+            generate_video_script_activity,
+            generate_storyboard_activity,
+            generate_video_metadata_activity
         ],
     )
     

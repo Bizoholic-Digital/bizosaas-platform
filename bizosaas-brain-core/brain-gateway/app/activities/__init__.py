@@ -37,6 +37,13 @@ from .provisioning import (
 from .sales import (
     execute_sales_strategy_activity
 )
+from .multimedia import (
+    generate_podcast_script_activity,
+    synthesize_audio_activity,
+    generate_video_script_activity,
+    generate_storyboard_activity,
+    generate_video_metadata_activity
+)
 from .seo import (
     crawl_site_activity,
     run_lighthouse_audit_activity,
@@ -90,5 +97,10 @@ __all__ = [
     "analyze_keyword_metrics_activity",
     "cluster_keywords_activity",
     "fetch_backlink_profile_activity",
-    "detect_new_lost_links_activity"
+    "detect_new_lost_links_activity",
+    "generate_podcast_script_activity",
+    "synthesize_audio_activity",
+    "generate_video_script_activity",
+    "generate_storyboard_activity",
+    "generate_video_metadata_activity"
 ]
