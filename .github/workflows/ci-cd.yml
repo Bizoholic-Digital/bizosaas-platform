@@ -16,6 +16,13 @@ on:
         required: false
         default: false
         type: boolean
+  push:
+    branches: [staging, main]
+    paths:
+      - 'bizosaas-brain-core/**'
+      - 'portals/**'
+      - 'shared/**'
+      - '.github/workflows/**'
 
 env:
   REGISTRY: ghcr.io
@@ -203,23 +210,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd portals/client-portal
+          cd bizosaas-brain-core/client-portal
           npm ci
 
       - name: Run linting
         run: |
-          cd portals/client-portal
+          cd bizosaas-brain-core/client-portal
           npm run lint
 
       - name: Run unit tests
         run: |
-          cd portals/client-portal
+          cd bizosaas-brain-core/client-portal
           npm test -- --coverage --watchAll=false
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         with:
-          file: ./portals/client-portal/coverage/lcov.info
+          file: ./bizosaas-brain-core/client-portal/coverage/lcov.info
           flags: frontend
           name: frontend-coverage
 
@@ -396,8 +403,8 @@ jobs:
         id: build-frontend
         uses: docker/build-push-action@v5
         with:
-          context: ./portals/client-portal
-          file: ./portals/client-portal/Dockerfile
+          context: ./bizosaas-brain-core/client-portal
+          file: ./bizosaas-brain-core/client-portal/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
           cache-from: type=gha
