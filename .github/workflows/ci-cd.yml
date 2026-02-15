@@ -413,9 +413,7 @@ jobs:
       security-events: write
     needs: [build, test-backend, test-frontend, test-ai-agents]
     if: github.ref == 'refs/heads/development' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
-    environment:
-      name: staging
-      url: https://staging.bizoholic.com
+    environment: staging
     steps:
       - uses: actions/checkout@v4
         with:
@@ -471,9 +469,7 @@ jobs:
       security-events: write
     needs: [build, performance-tests]
     if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.environment == 'production')
-    environment:
-      name: production
-      url: https://bizoholic.com
+    environment: production
     steps:
       - uses: actions/checkout@v4
         with:
