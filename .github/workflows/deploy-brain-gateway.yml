@@ -15,6 +15,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      REPO_LOWER: ""
     permissions:
       contents: read
       packages: write
@@ -73,17 +75,17 @@ jobs:
   notify-dokploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    env:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
     permissions:
       contents: read
       packages: write
       security-events: write
     if: success()
     steps:
-      - name: Trigger Dokploy Deployment (Backend)
-        env:
-          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+      - name: Trigger Dokploy Deployment (Gateway)
         run: |
           curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
-            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{"composeId": "QiOdwXQi4ZQCM3Qg_KNcl"}'

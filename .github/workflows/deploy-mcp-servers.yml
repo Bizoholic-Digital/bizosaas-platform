@@ -14,6 +14,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      REPO_LOWER: ""
     permissions:
       contents: read
       packages: write
