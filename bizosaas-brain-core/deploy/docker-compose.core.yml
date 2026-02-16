@@ -37,10 +37,7 @@ services:
           memory: 512M
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
-      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
-      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
-      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+      - "traefik.docker.network=dokploy-network"
     restart: unless-stopped
 
   # ========================================
