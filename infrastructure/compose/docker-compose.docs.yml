@@ -1,7 +1,7 @@
 services:
   bizosaas-docs:
     build:
-      context: ../../bizosaas-brain-core/docs/bizosaas-docs
+      context: ../../bizosaas-brain-core./../bizosaas-brain-core/docs/bizosaas-docs
       dockerfile: Dockerfile
     container_name: bizosaas-docs
     ports:
