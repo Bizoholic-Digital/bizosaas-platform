@@ -83,6 +83,7 @@ class ScheduleConfig(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
 
 
 # Global schedule configuration instance
