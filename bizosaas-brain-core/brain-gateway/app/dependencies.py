@@ -6,6 +6,7 @@ from app.domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from app.ports.workflow_port import WorkflowPort
 from app.adapters.identity.mock_adapter import MockIdentityAdapter
 from app.database import engine, SessionLocal, get_db
+from sqlalchemy.orm import Session
 
 # ============================================================================
 # Database Query Profiling
