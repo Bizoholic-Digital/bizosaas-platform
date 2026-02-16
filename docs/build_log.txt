@@ -1,0 +1,11 @@
+
+> bizosaas-docs@0.0.0 build
+> docusaurus build
+
+[INFO] [en] Creating an optimized production build...
+[webpackbar] ℹ Compiling Client
+[webpackbar] ℹ Compiling Server
+[webpackbar] ✔ Server: Compiled successfully in 2.52s
+[webpackbar] ✔ Client: Compiled successfully in 3.08s
+[SUCCESS] Generated static files in "build".
+[INFO] Use `npm run serve` command to test your build locally.

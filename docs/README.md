@@ -1,50 +1,41 @@
-# BizOSaaS Brain Core 🧠
+# Website
 
-**Modular Plug-and-Play API Gateway & AI Orchestrator**
+This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
-This repository contains the core "Brain" of the BizOSaaS platform, designed to be a lightweight, modular hub that connects existing business tools (WordPress, Zoho CRM, Shopify, etc.) with advanced AI agents.
+### Installation
 
-## 🏗️ Architecture
+```
+$ yarn
+```
 
-- **Brain Gateway**: FastAPI-based central API gateway (Port 8000).
-- **AI Agents**: CrewAI orchestration service for 93+ specialized agents.
-- **Auth Service**: Centralized SSO and identity management.
-- **Client Portal**: Next.js dashboard for managing connectors and AI tasks.
-- **Connectors**: Plug-and-play integration framework (WordPress, Zoho, GA4).
+### Local Development
 
-## 🚀 Getting Started
+```
+$ yarn start
+```
 
-### Prerequisites
-- Docker & Docker Compose
-- Python 3.11+
-- Node.js 18+
+This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
 
-### Setup
+### Build
 
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd bizosaas-brain-core
-   ```
+```
+$ yarn build
+```
 
-2. **Start the Core Services**
-   ```bash
-   docker compose up -d
-   ```
+This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
-3. **Access the Client Portal**
-   Open [http://localhost:3000](http://localhost:3000)
+### Deployment
 
-## 🔌 Connectors
+Using SSH:
 
-Configure your integrations in the Client Portal > Connectors tab.
-- **WordPress**: Install the BizOSaaS plugin on your WP site.
-- **Zoho CRM**: Authenticate via OAuth.
-- **Google Analytics**: Connect your GA4 property.
+```
+$ USE_SSH=true yarn deploy
+```
 
-## 🤖 AI Agents
+Not using SSH:
 
-Access the AI Assistant via the Client Portal to trigger workflows:
-- "Audit my website SEO"
-- "Create a marketing campaign for Black Friday"
-- "Analyze my sales data from Zoho"
+```
+$ GIT_USER=<Your GitHub username> yarn deploy
+```
+
+If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.

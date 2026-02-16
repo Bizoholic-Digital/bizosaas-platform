@@ -1,8 +1,8 @@
 services:
   bizosaas-docs:
     build:
-      context: .
-      dockerfile: Dockerfile.docs
+      context: ../../docs
+      dockerfile: Dockerfile
     container_name: bizosaas-docs
     ports:
       - "3000:3000"
