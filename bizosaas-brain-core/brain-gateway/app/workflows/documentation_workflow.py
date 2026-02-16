@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 @workflow.defn
 class DocumentationWorkflow:
-    \"\"\"
+    """
     Workflow to orchestrate the generation and update of BizoSaaS documentation.
-    \"\"\"
+    """
     @workflow.run
     async def run(self, params: Dict[str, Any]) -> Dict[str, Any]:
         tenant_id = params.get("tenant_id", "default")

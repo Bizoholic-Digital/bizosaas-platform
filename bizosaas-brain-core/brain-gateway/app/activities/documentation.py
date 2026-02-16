@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 @activity.defn
 async def generate_documentation_activity(params: Dict[str, Any]) -> Dict[str, Any]:
-    \"\"\"
+    """
     Trigger the DocumentationAgent in the ai-agents service to generate documentation.
-    \"\"\"
+    """
     tenant_id = params.get("tenant_id", "default")
     task_type = params.get("task_type")  # e.g., "api_doc_generation", "user_guide_generation"
     input_data = params.get("input_data", {})
@@ -72,9 +72,9 @@ async def generate_documentation_activity(params: Dict[str, Any]) -> Dict[str, A
 
 @activity.defn
 async def update_docusaurus_content_activity(params: Dict[str, Any]) -> Dict[str, Any]:
-    \"\"\"
+    """
     Update the Docusaurus site content with generated documentation.
-    \"\"\"
+    """
     content = params.get("content")
     relative_path = params.get("relative_path")  # Path relative to docusaurus docs folder
     
