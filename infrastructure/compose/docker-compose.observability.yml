@@ -19,7 +19,7 @@ services:
     image: prom/prometheus:v2.47.0
     container_name: brain-prometheus
     volumes:
-      - ../../bizosaas-brain-core/observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
