@@ -5,25 +5,7 @@ import logging
 from app.domain.ports.identity_port import IdentityPort, AuthenticatedUser
 from app.ports.workflow_port import WorkflowPort
 from app.adapters.identity.mock_adapter import MockIdentityAdapter
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-
-logger = logging.getLogger(__name__)
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    # Use a default or warn
-    logger.warning("DATABASE_URL not set!")
-    DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/bizosaas"
-
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-    pool_recycle=300,
-    pool_size=10,
-    max_overflow=20
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from app.database import engine, SessionLocal, get_db
 
 # ============================================================================
 # Database Query Profiling
@@ -49,12 +31,6 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
     except ImportError:
         pass
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @lru_cache()
 def get_identity_port() -> IdentityPort:
