@@ -13,6 +13,9 @@ from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, Field
 import structlog
+import httpx
+import json
+import os
 
 # Shared imports with fallbacks for testing/local env
 try:
@@ -45,6 +48,8 @@ from .cross_client_learning import (
     learning_engine
 )
 
+from .prompt_registry import prompt_registry
+
 # Configure structured logging
 logger = structlog.get_logger(__name__)
 
@@ -54,6 +59,8 @@ class AgentRole(str, Enum):
     ANALYTICS = "analytics"
     OPERATIONS = "operations"
     WORKFLOW = "workflow"
+    TECHNICAL = "technical"
+
 
 class TaskStatus(str, Enum):
     PENDING = "pending"
@@ -109,7 +116,15 @@ class BaseAgent(ABC):
         self.version = version
         self.logger = structlog.get_logger().bind(agent=agent_name)
         
+        # Standardized Tool Registry
+        self.available_tools = []
+        self._initialize_base_tools()
+        
+        # Prompt Registry
+        self.prompt_registry = prompt_registry
+
         # Integration components
+
         self.event_bus: Optional[EventBus] = None
         self.redis_client = None
         self.postgres_session = None
@@ -123,12 +138,30 @@ class BaseAgent(ABC):
         self.success_count = 0
         self.failure_count = 0
         self.avg_execution_time = 0.0
-        
+
+    def _initialize_base_tools(self):
+
+        """Initialize core sharing tools across all agents"""
+        try:
+            from tools.connector_tools import get_all_tools
+            self.available_tools.extend(get_all_tools())
+        except ImportError:
+            self.logger.warning("Connector tools not found for standardization")
+
+    async def _get_prompt(self, name: str, variables: Optional[Dict[str, Any]] = None) -> str:
+
+        """Convenience method to retrieve prompt from registry"""
+        return await self.prompt_registry.get_prompt(name, variables)
+
     async def initialize(self):
+
         """Initialize agent with required services"""
         try:
             self.redis_client = await get_redis_client()
             self.event_bus = EventBus(self.redis_client)
+            
+            # Initialize gateway connectivity
+            self.gateway_url = os.getenv("BRAIN_GATEWAY_URL", "http://brain-gateway:8000")
             
             # Initialize cross-client learning engine
             if self.learning_enabled:
@@ -137,11 +170,63 @@ class BaseAgent(ABC):
                 
             self.logger.info("Agent initialized successfully", 
                            agent=self.agent_name, 
-                           learning_enabled=self.learning_enabled)
+                           learning_enabled=self.learning_enabled,
+                           gateway_url=self.gateway_url)
         except Exception as e:
             self.logger.error("Failed to initialize agent", agent=self.agent_name, error=str(e))
             raise
     
+    async def _retrieve_rag_context(self, query: str, tenant_id: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """Retrieve relevant context from Global RAG Service"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.gateway_url}/api/brain/rag/retrieve",
+                    json={
+                        "query": query,
+                        "tenant_id": tenant_id,
+                        "agent_id": self.agent_role.value,
+                        "limit": limit
+                    },
+                    timeout=5.0
+                )
+                if response.status_code == 200:
+                    return response.json().get("context", [])
+        except Exception as e:
+            self.logger.warning("Failed to retrieve RAG context", error=str(e))
+        return []
+
+    async def _store_memory(self, content: str, tenant_id: str, metadata: Optional[Dict[str, Any]] = None):
+        """Store agent execution result in long-term memory"""
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    f"{self.gateway_url}/api/brain/rag/memory/store",
+                    json={
+                        "content": content,
+                        "tenant_id": tenant_id,
+                        "agent_id": self.agent_role.value,
+                        "metadata": metadata or {}
+                    },
+                    timeout=5.0
+                )
+        except Exception as e:
+            self.logger.warning("Failed to store memory", error=str(e))
+
+    async def _get_persona_context(self, tenant_id: str) -> Dict[str, Any]:
+        """Fetch brand persona for the tenant"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{self.gateway_url}/api/persona/tenant/{tenant_id}",
+                    timeout=5.0
+                )
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            self.logger.warning("Failed to fetch persona context", error=str(e))
+        return {}
+
     async def execute_task(self, task_request: AgentTaskRequest) -> AgentTaskResponse:
         """Execute an agent task with full monitoring and error handling"""
         start_time = datetime.now(timezone.utc)
@@ -161,8 +246,39 @@ class BaseAgent(ABC):
             # Update task status to running
             await self._update_task_status(task_request.task_id, TaskStatus.RUNNING)
             
+            # Phase 11A: RAG Context Enrichment
+            if task_request.config.get("use_rag", True):
+                rag_context = await self._retrieve_rag_context(
+                    query=task_request.task_description,
+                    tenant_id=task_request.tenant_id
+                )
+                if rag_context:
+                    if not task_request.context:
+                        task_request.context = []
+                    task_request.context.extend(rag_context)
+                    self.logger.info("Augmented task with RAG context", chunks=len(rag_context))
+
+            # Phase 11B: Persona Injection
+            if task_request.config.get("use_persona", True):
+                persona = await self._get_persona_context(task_request.tenant_id)
+                if persona:
+                    task_request.input_data["brand_persona"] = persona
+                    self.logger.info("Injected brand persona into task")
+
             # Execute the actual agent logic
             result = await self._execute_agent_logic(task_request)
+            
+            # Phase 11A: Post-execution Memory Storage
+            if task_request.config.get("store_memory", True) and result:
+                await self._store_memory(
+                    content=json.dumps(result) if isinstance(result, dict) else str(result),
+                    tenant_id=task_request.tenant_id,
+                    metadata={
+                        "task_id": task_request.task_id,
+                        "task_type": task_request.task_type,
+                        "type": "task_result"
+                    }
+                )
             
             # Calculate execution time
             execution_time_ms = int((asyncio.get_event_loop().time() - execution_start) * 1000)

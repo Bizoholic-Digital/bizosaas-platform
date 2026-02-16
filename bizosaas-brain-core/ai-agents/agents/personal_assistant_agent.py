@@ -6,6 +6,9 @@ from enum import Enum
 
 from .base_agent import BaseAgent, AgentRole, AgentTaskRequest, AgentTaskResponse, TaskStatus
 from .orchestration import HierarchicalCrewOrchestrator, OrchestrationMode
+from .intelligent_routing import IntelligentRouter
+from langchain_core.messages import HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
 
 class PersonalAssistantAgent(BaseAgent):
     """
@@ -22,6 +25,11 @@ class PersonalAssistantAgent(BaseAgent):
         )
         self.orchestrator = HierarchicalCrewOrchestrator()
         self.brain_gateway_url = os.getenv("BRAIN_GATEWAY_URL", "http://brain-gateway:8000")
+        
+        # Initialize Intelligent Router
+        llm = self._get_llm_for_task({"temperature": 0.0})
+        self.router = IntelligentRouter(self.orchestrator, llm)
+        self.memory = MemorySaver()
         
     async def _execute_agent_logic(self, task_request: AgentTaskRequest) -> Dict[str, Any]:
         """
@@ -45,16 +53,30 @@ class PersonalAssistantAgent(BaseAgent):
                     "agent_name": "csm"
                 }
 
-        # Specialized Routing
-        if any(word in message for word in ["seo", "keyword", "search"]):
-            return await self._delegate_to_workflow("seo_specialist", task_request)
-        elif any(word in message for word in ["marketing", "campaign", "strategy"]):
-            return await self._delegate_to_workflow("marketing_strategist", task_request)
-        elif any(word in message for word in ["audit", "digital presence", "presence"]):
-            return await self._delegate_to_workflow("comprehensive_digital_audit", task_request)
-        elif any(word in message for word in ["ecommerce", "store", "sales"]):
-            return await self._delegate_to_workflow("ecommerce_specialist", task_request)
-        
+        # Advanced Intent Classification via LangGraph
+        try:
+            config = {"configurable": {"thread_id": task_request.user_id or "default"}}
+            state_input = {"messages": [HumanMessage(content=message)]}
+            
+            # Run the router
+            graph_result = await self.router.ainvoke(state_input, config)
+            
+            # Check for HITL (Approval required)
+            if graph_result.get("is_sensitive") and not graph_result.get("approved"):
+                return {
+                    "response": f"I've identified that you want to start the '{graph_result.get('candidate_workflow')}' workflow. Since this is a sensitive action, I need your confirmation to proceed.",
+                    "suggestions": ["Confirm and Proceed", "Cancel"],
+                    "agent_name": "personal_assistant",
+                    "metadata": {"requires_approval": True, "workflow_id": graph_result.get("candidate_workflow")}
+                }
+
+            routing_result = graph_result.get("routing_result")
+            if routing_result and routing_result.get("status") == "initiated":
+                 return await self._delegate_to_workflow(routing_result["workflow_id"], task_request)
+                 
+        except Exception as e:
+            self.logger.error(f"Intelligent routing failed, falling back: {e}")
+
         # Knowledge Retrieval via RAG
         rag_context = await self._get_rag_context(message)
         
@@ -68,11 +90,60 @@ class PersonalAssistantAgent(BaseAgent):
             }
         
         # Default conversational response
+        default_response = await self._get_prompt("general_assistant_prompt", {"input": message or "How can you help me?"})
         return {
-            "response": "Hello! I'm your BizOSaas Personal Assistant. I can help you with SEO, Marketing, E-commerce, or run a full Digital Audit for your business. What would you like to focus on today?",
-            "suggestions": ["Run a Digital Audit", "Optimize my SEO", "Create a Marketing Plan"],
+            "response": default_response,
+            "suggestions": ["Run a Digital Audit", "Optimize my SEO", "Create a Marketing Plan", "Launch a Campaign"],
             "agent_name": "personal_assistant"
         }
+
+    async def _classify_intent(self, message: str) -> Optional[str]:
+        """Classify user intent into a specific workflow ID using LLM"""
+        try:
+            from langchain.prompts import PromptTemplate
+            from langchain.schema import HumanMessage, SystemMessage
+            
+            # Get available workflows
+            workflows = list(self.orchestrator.workflow_definitions.keys())
+            # Add standalone agents if needed (usually covered by workflows or specialized agents)
+            # For now, focus on workflows as they are the primary "skills"
+            
+            prompt = f"""
+            You are the Routing System for the BizOSaas Personal Assistant.
+            Your job is to map the user's message to the most appropriate Workflow ID.
+            
+            Available Workflows:
+            {", ".join(workflows)}
+            
+            Additional Options:
+            - general_chat (if the message is greeting, small talk, or vague)
+            - unknown (if you are unsure)
+            
+            User Message: "{message}"
+            
+            Return ONLY the Workflow ID (or general_chat/unknown). Do not add any explanation.
+            """
+            
+            # Use the agent's configured LLM (fast model preferred)
+            llm = self._get_llm_for_task(config={"temperature": 0.0, "model_provider": "groq"}) # Fast model
+            
+            response = await llm.ainvoke([HumanMessage(content=prompt)])
+            intent = response.content.strip().lower()
+            
+            # Validate intent
+            if intent in workflows:
+                return intent
+            if intent == "general_chat":
+                return "general_chat"
+                
+            return None
+            
+        except ImportError:
+            self.logger.warning("LangChain not available for intent classification")
+            return None
+        except Exception as e:
+            self.logger.error(f"Intent classification error: {e}")
+            return None
 
     async def _get_rag_context(self, query: str) -> List[str]:
         """Call Brain Gateway RAG API to get context"""

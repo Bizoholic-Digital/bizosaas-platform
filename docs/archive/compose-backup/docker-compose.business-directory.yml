@@ -1,0 +1,59 @@
+services:
+  business-directory:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/business-directory:staging
+    container_name: bizosaas-business-directory-staging
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+      - API_URL=https://api.bizoholic.net
+      - NEXT_PUBLIC_APP_URL=https://directory.bizoholic.net
+      - PORT=3005
+      - NEXTAUTH_URL=https://directory.bizoholic.net
+      - NEXTAUTH_SECRET=${AUTH_SECRET:-BizOSaaS2025!Secret!NextAuth}
+      - AUTH_SECRET=${AUTH_SECRET:-BizOSaaS2025!Secret!NextAuth}
+      - AUTHENTIK_ISSUER=${AUTH_AUTHENTIK_ISSUER:-https://auth-sso.bizoholic.net/application/o/bizosaas-platform/}
+      - AUTHENTIK_CLIENT_ID=${AUTH_AUTHENTIK_ID:-bizosaas-portal}
+      - AUTHENTIK_CLIENT_SECRET=${AUTH_AUTHENTIK_SECRET:-BizOSaaS2024!AuthentikSecret}
+      - AUTH_AUTHENTIK_ID=${AUTH_AUTHENTIK_ID:-bizosaas-portal}
+      - AUTH_AUTHENTIK_SECRET=${AUTH_AUTHENTIK_SECRET:-BizOSaaS2024!AuthentikSecret}
+      - AUTH_AUTHENTIK_ISSUER=${AUTH_AUTHENTIK_ISSUER:-https://auth-sso.bizoholic.net/application/o/bizosaas-platform/}
+      - AUTH_TRUST_HOST=true
+      - AUTH_SUCCESS_URL=https://directory.bizoholic.net/dashboard
+      - BRAIN_GATEWAY_URL=${BRAIN_GATEWAY_URL:-http://bizosaas-brain-staging:8000}
+      - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:-AIzaSyBZxfvuglTrcCIZZfSVDTltjBWTgEuRLto}
+      - VAULT_ADDR=${VAULT_URL:-}
+      - VAULT_TOKEN=${VAULT_TOKEN:-}
+      - VAULT_SECRET_PATH=${VAULT_SECRET_PATH:-bizosaas/stg/business-directory}
+    networks:
+      - dokploy-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/api/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      # Insecure Router (Port 80)
+      - "traefik.http.routers.business-directory-stg.rule=Host(`directory.bizoholic.net`)"
+      - "traefik.http.routers.business-directory-stg.entrypoints=web"
+      - "traefik.http.routers.business-directory-stg.priority=1000"
+      # Secure Router (Port 443)
+      - "traefik.http.routers.business-directory-stg-secure.rule=Host(`directory.bizoholic.net`)"
+      - "traefik.http.routers.business-directory-stg-secure.entrypoints=websecure"
+      - "traefik.http.routers.business-directory-stg-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.business-directory-stg-secure.priority=1000"
+      - "traefik.http.routers.business-directory-stg-secure.service=business-directory-stg-svc"
+      - "traefik.http.services.business-directory-stg-svc.loadbalancer.server.port=3005"
+
+networks:
+  dokploy-network:
+    external: true

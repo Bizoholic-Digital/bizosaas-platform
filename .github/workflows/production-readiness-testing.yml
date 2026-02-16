@@ -98,7 +98,7 @@ jobs:
       security-events: write
     strategy:
       matrix:
-        portal: [client-portal, admin-dashboard]
+        portal: [client-portal, admin-portal]
     
     steps:
       - uses: actions/checkout@v4

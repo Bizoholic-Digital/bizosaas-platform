@@ -301,15 +301,121 @@ class CampaignLaunchCrew(BaseAgent):
             description="Multi-agent crew for comprehensive marketing campaign launches",
             version="2.0.0"
         )
+
+        # Initialize specialized agents
+        self.strategist = MarketingStrategistAgent().crewai_agent
+        self.content_creator = ContentCreatorAgent().crewai_agent
+        self.seo_specialist = SEOSpecialistAgent().crewai_agent
     
     async def _execute_agent_logic(self, task_request: AgentTaskRequest) -> Dict[str, Any]:
         """Execute campaign launch workflow"""
+        input_data = task_request.input_data
+        
+        campaign_name = input_data.get('campaign_name', 'Unnamed Campaign')
+        product_focused = input_data.get('product', 'General Brand')
+        goals = input_data.get('goals', {})
+        channels = input_data.get('channels', ['blog', 'social_media', 'email'])
+        target_audience = input_data.get('target_audience', 'General Market')
+        
+        # 1. Strategy Task
+        strategy_task = Task(
+            description=f"""
+            Develop a comprehensive launch strategy for '{campaign_name}' focusing on '{product_focused}'.
+            
+            Goals: {goals}
+            Target Audience: {target_audience}
+            Selected Channels: {', '.join(channels)}
+            
+            Deliverables:
+            1. Unified Campaign Message & Hook
+            2. Channel-specific strategies
+            3. Content Calendar Outline
+            4. KPI Targets
+            """,
+            agent=self.strategist,
+            expected_output="Detailed campaign strategy document with messaging, timeline, and KPIs."
+        )
+
+        # 2. Content Creation Tasks (Dynamic based on channels)
+        content_tasks = []
+        
+        if 'blog' in channels:
+            blog_task = Task(
+                description=f"""
+                Create a high-value blog post for the campaign '{campaign_name}'.
+                
+                Topic: Launching {product_focused}
+                Audience: {target_audience}
+                Key Message: (Refer to Strategy)
+                
+                Requirements:
+                - SEO optimized
+                - Persuasive storytelling
+                - Clear CTA
+                """,
+                agent=self.content_creator,
+                expected_output="Ready-to-publish blog post content."
+            )
+            content_tasks.append(blog_task)
+
+        if 'social_media' in channels:
+            social_task = Task(
+                description=f"""
+                Create a sequence of 5 social media posts for '{campaign_name}'.
+                
+                Platform Mix: LinkedIn, Twitter/X, Instagram
+                Focus: Engagement and Click-throughs
+                
+                Include:
+                - Post copy
+                - Image ideas/descriptions
+                - Hashtags
+                """,
+                agent=self.content_creator,
+                expected_output="5-post social media sequence."
+            )
+            content_tasks.append(social_task)
+            
+        # 3. SEO Optimization Task
+        seo_task = Task(
+             description=f"""
+             Review and optimize all campaign assets for '{campaign_name}' for maximum visibility.
+             
+             1. Keyword optimization for the blog post
+             2. Hashtag strategy for social media
+             3. Technical checks for landing page recommendations
+             """,
+             agent=self.seo_specialist,
+             expected_output="SEO optimization report and refined keyword strategy."
+        )
+
+        # 4. Final Compilation Task
+        compilation_task = Task(
+            description=f"""
+            Compile all campaign assets and strategy into a Final Launch Package for '{campaign_name}'.
+            
+            Review the Strategy, Content, and SEO reports.
+            Create a Master Execution Plan.
+            """,
+            agent=self.strategist,
+            expected_output="Master Execution Plan containing all deliverables and launch instructions."
+        )
+
+        # Execute Crew
+        campaign_crew = Crew(
+            agents=[self.strategist, self.content_creator, self.seo_specialist],
+            tasks=[strategy_task, *content_tasks, seo_task, compilation_task],
+            process=Process.sequential,
+            verbose=True
+        )
+
+        result = campaign_crew.kickoff()
+
         return {
             "campaign_id": str(uuid.uuid4()),
-            "launch_plan": {},
-            "resource_allocation": {},
-            "timeline": {},
-            "success_metrics": {},
+            "campaign_name": campaign_name,
+            "status": "ready_for_review",
+            "launch_package": str(result),
             "generated_at": datetime.now(timezone.utc).isoformat()
         }
 

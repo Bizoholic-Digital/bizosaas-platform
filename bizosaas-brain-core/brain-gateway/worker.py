@@ -24,6 +24,8 @@ from app.workflows.persona_workflow import PersonaGenerationWorkflow
 from app.workflows.social_content_workflow import SocialContentWorkflow
 from app.workflows.multimedia_workflow import PodcastCreationWorkflow, VideoScriptWorkflow
 from app.workflows.analytics_workflow import PlatformAnalyticsWorkflow
+from app.workflows.documentation_workflow import DocumentationWorkflow
+
 from app.activities import (
     validate_connector_credentials,
     save_connector_credentials,
@@ -62,8 +64,11 @@ from app.activities import (
     aggregate_workflow_metrics_activity,
     aggregate_tenant_usage_activity,
     aggregate_campaign_performance_activity,
-    generate_platform_insights_activity
+    generate_platform_insights_activity,
+    generate_documentation_activity,
+    update_docusaurus_content_activity
 )
+
 from app.activities.discovery import run_discovery_cycle_activity
 from app.activities.reputation import (
     fetch_latest_reviews_activity,
@@ -180,6 +185,17 @@ async def run_worker():
     else:
         client = await Client.connect(temporal_url, namespace=namespace)
     
+    # Initialize default analytics schedules
+    try:
+        from app.services.schedule_manager import get_schedule_manager
+        schedule_manager = await get_schedule_manager(client)
+        await schedule_manager.initialize_default_schedules()
+        logging.info("Analytics schedules initialized successfully")
+    except Exception as e:
+        logging.error(f"Failed to initialize analytics schedules: {e}")
+        # Don't fail worker startup if schedule initialization fails
+
+    
     worker = Worker(
         client,
         task_queue="brain-tasks",
@@ -220,8 +236,10 @@ async def run_worker():
             VideoScriptWorkflow,
             AutonomousOptimizationWorkflow,
             CampaignOptimizationWorkflow,
-            PlatformAnalyticsWorkflow
+            PlatformAnalyticsWorkflow,
+            DocumentationWorkflow
         ],
+
         activities=[
             validate_connector_credentials,
             save_connector_credentials,
@@ -310,8 +328,11 @@ async def run_worker():
             aggregate_workflow_metrics_activity,
             aggregate_tenant_usage_activity,
             aggregate_campaign_performance_activity,
-            generate_platform_insights_activity
+            generate_platform_insights_activity,
+            generate_documentation_activity,
+            update_docusaurus_content_activity
         ],
+
     )
     
     logging.info("Starting Temporal Worker for Connectors...")

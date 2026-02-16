@@ -5,6 +5,7 @@
 !tsconfig.json
 !next.config.json
 !*.schema.json
+
 *.log
 *.webp
 .venv/
@@ -22,8 +23,10 @@ project_dump.json
 project_details_kvm2.json
 project_details_kvm2_v2.json
 project_list.json
-credentials.md
 .env
+
+# Credentials
+credentials.md
 
 # Dependencies
 node_modules/

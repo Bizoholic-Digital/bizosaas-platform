@@ -31,9 +31,6 @@ jobs:
       - name: Fix Git Safe Directory
         run: git config --global --add safe.directory '*'
 
-      - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory $GITHUB_WORKSPACE
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 

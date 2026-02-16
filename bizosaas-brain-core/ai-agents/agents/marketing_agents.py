@@ -68,8 +68,11 @@ class MarketingStrategistAgent(BaseAgent):
             self.logger.info("Applied LLM override to MarketingStrategistAgent", 
                              provider=task_request.config.get("model_provider"))
 
-        # Get cross-client insights before executing the task
+        # Get managed prompts
+        self.crewai_agent.backstory = await self._get_prompt("marketing_strategist_backstory")
+        self.crewai_agent.goal = await self._get_prompt("marketing_strategist_goal", {"tenant_id": task_request.tenant_id})
 
+        # Get cross-client insights before executing the task
         insights = await self.get_cross_client_insights(task_request)
         
         # Enrich input data with insights

@@ -21,6 +21,7 @@ from .operations_agents import *
 from .workflow_crews import *
 from .crm_agents import *
 from .impact_analysis_agent import ImpactAnalysisAgent
+from .documentation_agent import DocumentationAgent
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,8 @@ class HierarchicalCrewOrchestrator:
             DigitalAuditCrew, CampaignLaunchCrew, ProductLaunchCrew,
             CompetitorAnalysisCrew, MarketResearchCrew, ContentStrategyCrew,
             ReputationManagementCrew, LeadQualificationCrew,
-            ImpactAnalysisAgent
+            ImpactAnalysisAgent,
+            DocumentationAgent
         ]
         
         for agent_class in agent_classes:
@@ -246,6 +248,15 @@ class HierarchicalCrewOrchestrator:
                 orchestration_mode=OrchestrationMode.SEQUENTIAL,
                 priority=WorkflowPriority.HIGH,
                 timeout_minutes=45
+            ),
+            "campaign_launch": WorkflowDefinition(
+                workflow_id="campaign_launch",
+                name="Multi-Channel Campaign Launch",
+                description="Comprehensive marketing campaign creation and launch",
+                agent_sequence=["campaign_launch_crew"],
+                orchestration_mode=OrchestrationMode.SEQUENTIAL,
+                priority=WorkflowPriority.HIGH,
+                timeout_minutes=60
             )
         }
     

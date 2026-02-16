@@ -484,77 +484,65 @@ async def chat_with_agent(
         # 2. Initialize MCP Gateway & Knowledge Graph
         from app.services.mcp_gateway import MCPGateway
         from app.services.knowledge_graph import build_platform_knowledge_graph
+        from app.core.intelligence import call_ai_agent_with_rag
         
         trace_steps = []
         actions = []
         suggestions = []
         
-        mcp_gateway = MCPGateway(db)
         # KAG: Build graph to find related context
         # In production, this would be cached
         if "analyze" in request.message.lower() or "suggest" in request.message.lower():
-            kg = await build_platform_knowledge_graph(db)
-            # Find tools related to this agent's core tools
-            related_tools = []
-            for tool_slug in agent.tools:
-                related_tools.extend(kg.graph.adjacency.get(tool_slug, []))
-            if related_tools:
-                trace_steps.append(f"KAG: Discovered related tools context: {', '.join(related_tools)}")
+            try:
+                kg = await build_platform_knowledge_graph(db)
+                # Find tools related to this agent's core tools
+                related_tools = []
+                for tool_slug in agent.tools:
+                    related_tools.extend(kg.graph.adjacency.get(tool_slug, []))
+                if related_tools:
+                    trace_steps.append(f"KAG: Discovered related tools context: {', '.join(related_tools)}")
+                    # Add to context for the agent
+                    if not request.context:
+                        request.context = {}
+                    request.context["related_tools"] = related_tools
+            except Exception as e:
+                # Non-critical KAG failure
+                trace_steps.append(f"KAG Discovery Failed: {e}")
 
-        # 3. Tool Execution Logic (Simple ReAct Simulation for v1)
-        response_message = ""
-        
-        # Check if we should use a real MCP tool based on keywords
-        # This simulates the LLM deciding to call a tool
-        message_lower = request.message.lower()
-        
+        # 3. Call Real AI Agent via Intelligence Service
         try:
-            if agent.id == "marketing-strategist" and ("analytics" in message_lower or "traffic" in message_lower):
-                # Attempt to get Google Analytics data via MCP
-                trace_steps.append("Decided to call Google Analytics MCP")
-                try:
-                    # In a real scenario, the LLM extracts these args
-                    tool_result = await mcp_gateway.call_tool(
-                        str(user.id), 
-                        "google-analytics", 
-                        "get_metrics", 
-                        {"metric": "activeUsers", "period": "7d"},
-                        source_id=agent.id
-                    )
-                    response_message = f"I've pulled the latest data from Google Analytics. You have {tool_result.get('value', '1,205')} active users in the last 7 days."
-                    actions.append({"type": "chart", "data": tool_result, "label": "Traffic Overview"})
-                         
-                except Exception as e:
-                    trace_steps.append(f"MCP Call Failed: {e}")
-                    response_message = generate_agent_response(agent, request.message, request.context)
-                    
-            elif agent.id == "content-creator" and ("post" in message_lower or "schedule" in message_lower):
-                # Attempt to use Postiz MCP
-                trace_steps.append("Decided to call Postiz MCP")
-                try:
-                    tool_result = await mcp_gateway.call_tool(
-                        str(user.id),
-                        "postiz",
-                        "list_posts",
-                        {"limit": 5},
-                        source_id=agent.id
-                    )
-                    response_message = f"I checked your Postiz schedule. You have {len(tool_result.get('posts', []))} posts queued for this week."
-                    actions.append({"type": "navigate", "url": "https://postiz.bizoholic.net", "label": "Manage Schedule"})
-                    
-                except Exception as e:
-                     # Fallback if Postiz not configured or fails
-                    trace_steps.append(f"MCP Call Failed: {e}")
-                    response_message = generate_agent_response(agent, request.message, request.context)
-
-            else:
-                 # Default logic
-                 response_message = generate_agent_response(agent, request.message, request.context)
+            # Prepare payload
+            payload = request.context or {}
+            payload["message"] = request.message
+            payload["history"] = conversations.get(f"user_{user.id}:{agent_id}", [])[-5:] # Last 5 messages context
+            
+            # Execute Agent Task
+            result = await call_ai_agent_with_rag(
+                agent_type=agent.id,
+                task_description=request.message,
+                payload=payload,
+                tenant_id=user.tenant_id or "default_tenant",
+                agent_id=str(user.id),
+                priority="high",
+                use_rag=True
+            )
+            
+            # Parse Result
+            response_message = result.get("response", "I processed your request but didn't get a proper response.")
+            suggestions = result.get("suggestions", [])
+            actions = result.get("actions", [])
+            
+            # Standardize actions if they come in different format
+            if not actions and result.get("action_code"):
+                # Handle lagacy action format if any
+                pass
 
         except Exception as e:
             # Fallback to static response if anything breaks
             print(f"Agent execution error: {e}")
+            trace_steps.append(f"Agent Execution Failed: {e}")
             response_message = generate_agent_response(agent, request.message, request.context)
+            response_message += f"\n\n(Note: Real agent execution failed, fell back to basic response. Error: {str(e)})"
 
         # 4. Store Conversation
         conversation_id = f"user_{user.id}:{agent_id}"

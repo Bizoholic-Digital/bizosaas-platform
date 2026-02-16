@@ -4,14 +4,14 @@ on:
   push:
     branches: [staging, main]
     paths:
-      - 'bizosaas-brain-core/client-portal/**'
+      - 'portals/client-portal/**'
       - 'shared/**'
       - '.github/workflows/deploy-client-portal.yml'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: bizosaas-client-portal
+  IMAGE_NAME: client-portal
 
 jobs:
   build-and-push:
@@ -24,11 +24,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Fix Git Safe Directory
-        run: git config --global --add safe.directory '*'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -58,8 +53,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./bizosaas-brain-core/client-portal
-          file: ./bizosaas-brain-core/client-portal/Dockerfile
+          context: ./portals/client-portal
+          file: ./portals/client-portal/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -72,7 +67,7 @@ jobs:
             NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net/brain
             NEXT_PUBLIC_STRIPE_PUBLIC_KEY=pk_test_placeholder
             NEXTAUTH_URL=https://app.bizoholic.net
-            SERVICE_PATH=bizosaas-brain-core/client-portal
+            SERVICE_PATH=portals/client-portal
 
   notify-dokploy:
     needs: build-and-push

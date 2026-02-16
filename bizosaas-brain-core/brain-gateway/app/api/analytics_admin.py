@@ -16,7 +16,14 @@ from app.models.workflow_execution import WorkflowExecution
 from app.models.platform_metrics import PlatformMetrics
 from app.domain.ports.identity_port import AuthenticatedUser
 from datetime import datetime, timedelta
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, desc, desc
+from fastapi.responses import StreamingResponse
+from app.services.report_generator import ReportGenerator
+
+from fastapi.responses import StreamingResponse
+from app.services.report_generator import ReportGenerator
+from fastapi.responses import StreamingResponse
+from app.services.report_generator import ReportGenerator
 
 router = APIRouter(prefix="/api/admin/analytics", tags=["analytics-admin"])
 
@@ -341,3 +348,108 @@ async def get_cost_breakdown(
         "cost_by_tenant": cost_by_tenant[:10],  # Top 10 tenants
         "generated_at": datetime.utcnow().isoformat()
     }
+
+@router.get("/export/csv")
+async def export_analytics_csv(
+    report_type: str = "workflow_metrics",
+    days: int = 30,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """
+    Export analytics data as CSV.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    data = []
+    filename = f"{report_type}_{datetime.now().strftime('%Y%m%d')}.csv"
+    
+    if report_type == "workflow_metrics":
+        executions = db.query(WorkflowExecution).filter(
+            WorkflowExecution.started_at >= cutoff
+        ).all()
+        data = [
+            {
+                "id": str(e.id),
+                "workflow_name": e.workflow_name,
+                "status": e.status,
+                "duration_seconds": e.duration_seconds,
+                "cost_usd": e.cost_estimate,
+                "started_at": e.started_at.isoformat() if e.started_at else None,
+                "tenant_id": e.tenant_id
+            }
+            for e in executions
+        ]
+    elif report_type == "tenant_usage":
+        tenants = db.query(Tenant).all()
+        for t in tenants:
+            wf_count = db.query(func.count(WorkflowExecution.id)).filter(
+                WorkflowExecution.tenant_id == str(t.id),
+                WorkflowExecution.started_at >= cutoff
+            ).scalar()
+            cost = db.query(func.sum(WorkflowExecution.cost_estimate)).filter(
+                WorkflowExecution.tenant_id == str(t.id),
+                WorkflowExecution.started_at >= cutoff
+            ).scalar() or 0
+            data.append({
+                "tenant_name": t.name,
+                "tenant_id": str(t.id),
+                "workflow_count": wf_count,
+                "total_cost": cost
+            })
+            
+    buffer = ReportGenerator.generate_csv(data)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@router.get("/export/pdf")
+async def export_analytics_pdf(
+    days: int = 30,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(require_role("Super Admin"))
+):
+    """
+    Export analytics summary as PDF.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    
+    total_execs = db.query(func.count(WorkflowExecution.id)).filter(
+        WorkflowExecution.started_at >= cutoff
+    ).scalar()
+    total_cost = db.query(func.sum(WorkflowExecution.cost_estimate)).filter(
+        WorkflowExecution.started_at >= cutoff
+    ).scalar() or 0
+    
+    summary_data = {
+        "Report Period": f"Last {days} days",
+        "Total Executions": str(total_execs),
+        "Total Platform Cost": f"${round(total_cost, 2)}"
+    }
+    
+    wf_stats = db.query(
+        WorkflowExecution.workflow_name,
+        func.count(WorkflowExecution.id).label('count')
+    ).filter(
+        WorkflowExecution.started_at >= cutoff
+    ).group_by(WorkflowExecution.workflow_name).order_by(desc('count')).limit(5).all()
+    
+    wf_rows = [[s.workflow_name, str(s.count)] for s in wf_stats]
+    
+    tables = [
+        {
+            "title": "Top Workflows by Volume",
+            "headers": ["Workflow Name", "Executions"],
+            "rows": wf_rows
+        }
+    ]
+    
+    buffer = ReportGenerator.generate_pdf_report("Platform Analytics Report", summary_data, tables)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=analytics_report.pdf"}
+    )

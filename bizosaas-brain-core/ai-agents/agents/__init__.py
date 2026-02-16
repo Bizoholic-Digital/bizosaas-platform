@@ -58,6 +58,10 @@ from .master_orchestrator import (
     MasterOrchestratorAgent as RefinedMasterOrchestratorAgent
 )
 
+from .documentation_agent import (
+    DocumentationAgent
+)
+
 from .refined_ecommerce_agents import (
     RefinedProductSourcingAgent,
     RefinedInventoryManagementAgent,
@@ -263,6 +267,9 @@ __all__ = [
 
     # Refined AI Ecosystem - Category 10 (QA)
     "RefinedQualityAssuranceAgent",
+    
+    # Documentation
+    "DocumentationAgent",
     
     # Refined Workflows
     "ContentCreationWorkflow",

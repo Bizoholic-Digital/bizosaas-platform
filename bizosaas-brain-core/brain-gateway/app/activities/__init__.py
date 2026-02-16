@@ -50,6 +50,7 @@ from .analytics import (
     aggregate_campaign_performance_activity,
     generate_platform_insights_activity
 )
+from .alerts import check_platform_alerts_activity
 from .seo import (
     crawl_site_activity,
     run_lighthouse_audit_activity,
@@ -64,6 +65,11 @@ from .seo import (
     cluster_keywords_activity,
     fetch_backlink_profile_activity,
     detect_new_lost_links_activity
+)
+
+from .documentation import (
+    generate_documentation_activity,
+    update_docusaurus_content_activity
 )
 
 __all__ = [
@@ -116,5 +122,8 @@ __all__ = [
     "aggregate_workflow_metrics_activity",
     "aggregate_tenant_usage_activity",
     "aggregate_campaign_performance_activity",
-    "generate_platform_insights_activity"
+    "generate_platform_insights_activity",
+    "generate_documentation_activity",
+    "update_docusaurus_content_activity"
 ]
+

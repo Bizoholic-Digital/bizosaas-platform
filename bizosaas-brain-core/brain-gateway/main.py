@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization, directory_admin, admin_mcp, tenant_management, billing_admin, cms_admin, analytics_admin, agent_admin, temporal_admin, triggers, domains, support_admin, reporting_admin, security_admin, shopify, shopify_oauth, gaming, monitoring, seo_dashboard, content, persona, social_content
+from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization, directory_admin, admin_mcp, tenant_management, billing_admin, cms_admin, analytics_admin, agent_admin, temporal_admin, triggers, domains, support_admin, reporting_admin, security_admin, shopify, shopify_oauth, gaming, monitoring, seo_dashboard, content, persona, social_content, schedules_admin, alerts_admin
 from app.seeds.connectors import seed_connectors
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -139,6 +139,8 @@ app.include_router(tenant_management.router)  # Tenant Management Dashboard
 app.include_router(billing_admin.router)     # Billing Administration
 app.include_router(cms_admin.router)         # CMS & WordPress Administration
 app.include_router(analytics_admin.router)   # Analytics & Intelligence Admin
+app.include_router(schedules_admin.router)    # Schedule Management Admin
+app.include_router(alerts_admin.router)       # Alerting System Admin
 app.include_router(agent_admin.router)       # AI Agent Management Admin
 app.include_router(temporal_admin.router)     # Temporal & Workflow Administration
 app.include_router(temporal_admin.router_sys) # System Configuration Admin

@@ -12,3 +12,4 @@ from .workflow_execution import WorkflowExecution
 from .onboarding import OnboardingSession
 from .seo import TrackedBacklink
 from .platform_metrics import PlatformMetrics
+from .alert_history import AlertHistory

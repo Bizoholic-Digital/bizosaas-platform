@@ -25,17 +25,13 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 
 # Install dependencies for node-gyp
-# Install system dependencies
-RUN apk add --no-cache libc6-compat git
-
-# Disable Next.js telemetry
-ENV NEXT_TELEMETRY_DISABLED 1
+RUN apk add --no-cache libc6-compat
 
 # Copy package files
 COPY package.json package-lock.json* ./
 
 # Install dependencies with clean cache
-RUN npm install --legacy-peer-deps && \
+RUN npm ci --legacy-peer-deps && \
     npm cache clean --force
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -54,13 +50,6 @@ COPY . .
 # Build configuration
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-
-# Build Arguments
-ARG NEXT_PUBLIC_API_BASE_URL
-ARG NEXT_PUBLIC_BRAIN_GATEWAY_URL
-ARG NEXT_PUBLIC_STRIPE_PUBLIC_KEY
-ARG NEXTAUTH_URL
-ARG SERVICE_PATH
 
 # Build the application
 RUN npm run build

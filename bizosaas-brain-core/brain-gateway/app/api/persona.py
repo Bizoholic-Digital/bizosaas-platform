@@ -63,6 +63,20 @@ async def get_persona(
     persona_data = (tenant.settings or {}).get("persona", {})
     return persona_data
 
+@router.get("/tenant/{tenant_id}", include_in_schema=False)
+async def get_tenant_persona_internal(
+    tenant_id: str,
+    db: Session = Depends(get_db)
+):
+    """Internal endpoint to retrieve brand persona for a specific tenant."""
+    # TODO: Add system token validation
+    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+    if not tenant:
+        return {}
+    
+    persona_data = (tenant.settings or {}).get("persona", {})
+    return persona_data
+
 @router.put("/")
 async def update_persona(
     request: PersonaUpdateRequest,
