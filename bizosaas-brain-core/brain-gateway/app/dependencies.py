@@ -8,6 +8,8 @@ from app.adapters.identity.mock_adapter import MockIdentityAdapter
 from app.database import engine, SessionLocal, get_db
 from sqlalchemy.orm import Session
 
+logger = logging.getLogger(__name__)
+
 # ============================================================================
 # Database Query Profiling
 # ============================================================================

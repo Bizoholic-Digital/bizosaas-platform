@@ -115,3 +115,12 @@ curl -H "Authorization: Bearer <clerk-token>" \
 - The change is **backward compatible** if the table is empty
 - No data loss occurs during migration
 - The index improves query performance for user-specific MCP lookups
+
+## Migration 006: Support Ticket Messages
+
+### Run
+```bash
+docker exec -it brain-postgres psql -U postgres -d bizosaas -f /path/to/bizosaas-brain-core/brain-gateway/migrations/006_support_ticket_messages.sql
+# OR
+docker exec -i brain-postgres psql -U postgres -d bizosaas < migrations/006_support_ticket_messages.sql
+```

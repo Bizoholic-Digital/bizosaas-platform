@@ -212,3 +212,95 @@ class AuthentikAdapter(IdentityPort):
         # This is a platform convention rather than a native Authentik 'toggle'
         # Authentik MFA is usually enforced by policies checking user attributes.
         return await self.update_user_metadata(user_id, {"mfa_enabled": enabled})
+
+    async def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a user by email from Authentik."""
+        if not self.api_token:
+            logger.warning("AUTHENTIK_API_TOKEN not set")
+            return None
+
+        async with httpx.AsyncClient() as client:
+            try:
+                # Authentik filters users via query params
+                response = await client.get(
+                    f"{self.api_base}/core/users/",
+                    headers={"Authorization": f"Bearer {self.api_token}"},
+                    params={"email": email}
+                )
+                if response.status_code == 200:
+                    results = response.json().get("results", [])
+                    if results:
+                        return results[0]
+            except Exception as e:
+                logger.error(f"Authentik API Error (Get User): {e}")
+        return None
+
+    async def check_user_exists(self, email: str) -> bool:
+        """Check if a user exists by email."""
+        user = await self.get_user_by_email(email)
+        return user is not None
+
+    async def create_user(self, email: str, name: str, password: str, attributes: Dict[str, Any] = None) -> Optional[AuthenticatedUser]:
+        """Create a new user in Authentik."""
+        if not self.api_token:
+            logger.error("AUTHENTIK_API_TOKEN not set, cannot create user")
+            # In dev/testing we might want to fail loudly, but avoiding crash for now
+            return None
+
+        async with httpx.AsyncClient() as client:
+            try:
+                # 1. Create the user core object
+                user_data = {
+                    "username": email,  # Use email as username
+                    "name": name,
+                    "email": email,
+                    "is_active": True,
+                    "path": "users" # Default path (no leading/trailing slashes)
+                }
+                
+                # Create User
+                response = await client.post(
+                    f"{self.api_base}/core/users/",
+                    headers={"Authorization": f"Bearer {self.api_token}"},
+                    json=user_data
+                )
+                
+                if response.status_code != 201:
+                    logger.error(f"Failed to create user in Authentik: {response.text}")
+                    return None
+                    
+                created_user = response.json()
+                user_pk = created_user['pk'] # Authentik internal ID (integer)
+                user_uid = created_user['uid'] # UUID
+                
+                # 2. Set Password
+                if password:
+                    pass_response = await client.post(
+                        f"{self.api_base}/core/users/{user_pk}/set_password/",
+                        headers={"Authorization": f"Bearer {self.api_token}"},
+                        json={"password": password}
+                    )
+                    if pass_response.status_code not in [200, 204]:
+                         logger.error(f"Failed to set password for user {email}")
+
+                # 3. Update Attributes (e.g. company, phone)
+                if attributes:
+                    attr_response = await client.patch(
+                        f"{self.api_base}/core/users/{user_pk}/",
+                        headers={"Authorization": f"Bearer {self.api_token}"},
+                        json={"attributes": attributes}
+                    )
+
+                # Return AuthenticatedUser object
+                return AuthenticatedUser(
+                    id=str(user_uid), # Use UUID as ID
+                    email=email,
+                    name=name,
+                    roles=["client"], # Default role
+                    tenant_id="default",
+                    attributes=attributes or {}
+                )
+
+            except Exception as e:
+                logger.error(f"Authentik API Error (Create User): {e}")
+                return None

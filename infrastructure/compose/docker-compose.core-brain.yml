@@ -75,7 +75,7 @@ services:
       dockerfile: Dockerfile
     container_name: brain-gateway
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/bizosaas}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@brain-postgres:5432/bizosaas}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - TEMPORAL_ADDRESS=ap-south-2.aws.api.temporal.io:7233
       - TEMPORAL_HOST=ap-south-2.aws.api.temporal.io:7233
@@ -83,7 +83,9 @@ services:
       - TEMPORAL_MTLS_KEY=/app/certs/client.key
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - AUTHENTIK_API_TOKEN=6biYjnzt4bqVR5zcbeba0Mfeg8A9uGv0PqBMAQxMQRtbKK8RRbhhjo1FSnH4
     volumes:
+      - ../../bizosaas-brain-core/brain-gateway:/app
       - ../client.pem:/app/certs/client.pem:ro
       - ../client.key:/app/certs/client.key:ro
     networks:
@@ -100,6 +102,7 @@ services:
       - "traefik.http.routers.brain-gateway-v2.entrypoints=websecure"
       - "traefik.http.routers.brain-gateway-v2.tls.certresolver=letsencrypt"
       - "traefik.http.services.brain-gateway-v2.loadbalancer.server.port=8000"
+    command: sh -c "pip install langcache reportlab pydantic-settings && uvicorn main:app --host 0.0.0.0 --port 8000"
 
   ai-agents:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
