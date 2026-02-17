@@ -1,88 +1,16 @@
 services:
-  postiz-postgres:
-    image: postgres:14-alpine
-    container_name: postiz-postgres
-    restart: always
-    environment:
-      - POSTGRES_PASSWORD=PostizSecure2026!
-      - POSTGRES_USER=postiz
-      - POSTGRES_DB=postiz
-    volumes:
-      - postiz-db-data:/var/lib/postgresql/data
-    networks:
-      - dokploy-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postiz" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postiz-redis:
-    image: redis:7-alpine
-    container_name: postiz-redis
-    restart: always
-    networks:
-      - dokploy-network
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  temporal-postgresql:
-    image: postgres:15-alpine
-    container_name: temporal-postgresql
-    restart: always
-    environment:
-      - POSTGRES_PASSWORD=temporal
-      - POSTGRES_USER=temporal
-    networks:
-      - dokploy-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U temporal" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  temporal:
-    image: temporalio/auto-setup:1.24.2
-    container_name: temporal
-    restart: always
-    environment:
-      # Temporal uses its own DB
-      - DB=postgres12
-      - DB_PORT=5432
-      - POSTGRES_USER=temporal
-      - POSTGRES_PWD=temporal
-      - POSTGRES_SEEDS=temporal-postgresql
-      - ENABLE_ES=false
-    networks:
-      - dokploy-network
-    depends_on:
-      temporal-postgresql:
-        condition: service_healthy
-
+  # Postiz App
   postiz-app:
     image: ghcr.io/gitroomhq/postiz-app:latest
     container_name: postiz-app
     restart: always
-    depends_on:
-      postiz-postgres:
-        condition: service_healthy
-      postiz-redis:
-        condition: service_healthy
-      temporal:
-        condition: service_started
     environment:
-      # Database & Redis
-      - POSTGRES_PASSWORD=PostizSecure2026!
-      - POSTGRES_USER=postiz
-      - POSTGRES_DB=postiz
-      - DATABASE_URL=postgresql://postiz:PostizSecure2026!@postiz-postgres:5432/postiz
-      - REDIS_URL=redis://postiz-redis:6379
+      # Database & Redis (Externalized to Neon / Redis Cloud)
+      - DATABASE_URL=${POSTIZ_DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
 
       # Security
-      - JWT_SECRET=iyQ+Z0egmGAHdkBEsGPe5+u78WcDj0OWniocepqvQvc=
+      - JWT_SECRET=${POSTIZ_JWT_SECRET:-iyQ+Z0egmGAHdkBEsGPe5+u78WcDj0OWniocepqvQvc=}
 
       # URLs
       - MAIN_URL=https://postiz.bizoholic.net
@@ -90,8 +18,10 @@ services:
       - NEXT_PUBLIC_BACKEND_URL=https://postiz.bizoholic.net/api
       - BACKEND_INTERNAL_URL=http://localhost:3000
 
-      # Temporal
-      - TEMPORAL_ADDRESS=temporal:7233
+      # Temporal (Externalized to Temporal Cloud)
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
+      - TEMPORAL_API_KEY=${TEMPORAL_API_KEY}
 
       # General
       - IS_GENERAL_INSTANCE=true
@@ -100,16 +30,12 @@ services:
       - NEXT_PUBLIC_UPLOAD_DIRECTORY=/uploads
 
       # AI Integration
-      - OPENAI_API_KEY=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
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
 
       # Authentik SSO Configuration
       - POSTIZ_GENERIC_OAUTH=true
-      # Note: User must replace these placeholders or we assume they are injected if defined in Dokploy UI. 
-      # Since user asked to avoid manual copy/paste, I'll put placeholders and ask user to confirm specific IDs if needed, 
-      # or if they provided them in a previous message I missed (they said <Client ID from Authentik>).
-      # I will leave the placeholders as the user provided them with <...>.
-      - CLIENT_ID=<Client ID from Authentik>
-      - CLIENT_SECRET=<Client Secret from Authentik>
+      - CLIENT_ID=${POSTIZ_AUTHENTIK_CLIENT_ID}
+      - CLIENT_SECRET=${POSTIZ_AUTHENTIK_CLIENT_SECRET}
       - POSTIZ_OAUTH_URL=https://auth.bizoholic.net/application/o/authorize/
       - POSTIZ_OAUTH_AUTH_URL=https://auth.bizoholic.net/application/o/authorize/
       - POSTIZ_OAUTH_TOKEN_URL=https://auth.bizoholic.net/application/o/token/
@@ -130,7 +56,6 @@ services:
       - "traefik.docker.network=dokploy-network"
 
 volumes:
-  postiz-db-data:
   postiz-uploads:
 
 

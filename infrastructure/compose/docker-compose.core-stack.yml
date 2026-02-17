@@ -1,0 +1,76 @@
+services:
+  brain-gateway:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
+    container_name: bizosaas-brain-staging
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - TEMPORAL_ADDRESS=${TEMPORAL_ADDRESS}
+      - TEMPORAL_NAMESPACE=${TEMPORAL_NAMESPACE}
+      - TEMPORAL_API_KEY=${TEMPORAL_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - VAULT_URL=${VAULT_URL:-http://brain-vault:8200}
+      - VAULT_TOKEN=${VAULT_TOKEN}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTHENTIK_CLIENT_ID=${AUTHENTIK_CLIENT_ID}
+      - AUTHENTIK_CLIENT_SECRET=${AUTHENTIK_CLIENT_SECRET}
+      - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
+      - POSTIZ_API_KEY=${POSTIZ_API_KEY}
+      - POSTIZ_API_URL=${POSTIZ_API_URL}
+      - AI_AGENTS_URL=http://bizosaas-ai-agents-staging:8000
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.brain-gateway.rule=Host(`api.bizoholic.net`)"
+      - "traefik.http.routers.brain-gateway.entrypoints=websecure"
+      - "traefik.http.routers.brain-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.brain-gateway.loadbalancer.server.port=8000"
+    restart: unless-stopped
+
+  ai-agents:
+    image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
+    container_name: bizosaas-ai-agents-staging
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - BRAIN_API_URL=http://bizosaas-brain-staging:8000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - VAULT_ADDR=${VAULT_URL:-http://brain-vault:8200}
+      - VAULT_TOKEN=${VAULT_TOKEN}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    restart: unless-stopped
+
+  github-mcp:
+    image: ghcr.io/modelcontextprotocol/servers/github:latest
+    container_name: brain-mcp-github
+    environment:
+      - GITHUB_PERSONAL_ACCESS_TOKEN=${GITHUB_TOKEN}
+    networks:
+      - dokploy-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+    restart: unless-stopped
+
+networks:
+  dokploy-network:
+    external: true
