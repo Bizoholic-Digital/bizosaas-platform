@@ -2,7 +2,7 @@ services:
   # Postiz App
   postiz-app:
     image: ghcr.io/gitroomhq/postiz-app:latest
-    container_name: postiz-app
+    container_name: postiz-app-modular
     restart: always
     environment:
       # Database & Redis (Externalized to Neon / Redis Cloud)

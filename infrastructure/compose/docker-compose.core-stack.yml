@@ -1,7 +1,7 @@
 services:
   brain-gateway:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/brain-gateway:staging
-    container_name: bizosaas-brain-staging
+    container_name: brain-gateway-modular
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
@@ -19,7 +19,7 @@ services:
       - AUTHENTIK_ISSUER=${AUTHENTIK_ISSUER}
       - POSTIZ_API_KEY=${POSTIZ_API_KEY}
       - POSTIZ_API_URL=${POSTIZ_API_URL}
-      - AI_AGENTS_URL=http://bizosaas-ai-agents-staging:8000
+      - AI_AGENTS_URL=http://ai-agents-modular:8000
     networks:
       - dokploy-network
     deploy:
@@ -38,11 +38,11 @@ services:
 
   ai-agents:
     image: ghcr.io/bizoholic-digital/bizosaas-platform/ai-agents:staging
-    container_name: bizosaas-ai-agents-staging
+    container_name: ai-agents-modular
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
-      - BRAIN_API_URL=http://bizosaas-brain-staging:8000
+      - BRAIN_API_URL=http://brain-gateway-modular:8000
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
