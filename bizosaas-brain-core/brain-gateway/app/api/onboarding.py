@@ -660,6 +660,34 @@ async def scan_website_tags(payload: Dict[str, Any]):
                 if slug in ["fluent-crm", "hubspot", "salesforce", "zoho", "pipedrive", "activecampaign", "gohighlevel"]:
                     detected["crm"] = slug.replace("-crm", "crm")
 
+            # 5. Advanced Framework Detection (Next.js, React, Wagtail)
+            # Wagtail often headless, but might leak headers or specific API patterns if not careful
+            # React/Next.js detection via DOM markers
+            
+            if "next" not in detected.get("frameworks", []):
+                if "/_next/static/" in html or "__NEXT_DATA__" in html:
+                    detected.setdefault("frameworks", []).append("nextjs")
+                    if detected["cms"] == "none":
+                         detected["cms"] = "possible_headless"
+
+            if "react" not in detected.get("frameworks", []):
+                if "data-reactroot" in html or "_react" in html or "react-dom" in html:
+                     detected.setdefault("frameworks", []).append("react")
+
+            # Wagtail Detection (API or Generator)
+            if "wagtail" not in html.lower(): # Basic check
+                 # Check for specific Wagtail API patterns if visible in JS bundles
+                 if "/api/v2/pages" in html or "/api/v2/images" in html:
+                      detected["cms"] = "wagtail"
+            else:
+                 detected["cms"] = "wagtail"
+                 
+            # Tailwind Detection
+            if "text-" in html and "bg-" in html and "p-" in html: # Heuristic
+                 detected.setdefault("css_framework", "tailwind")
+
+
+
     except Exception as e:
         print(f"Quick scan failed for {website_url}: {e}")
         return {"status": "error", "message": str(e)}
