@@ -37,7 +37,7 @@ async def check_platform_alerts_activity() -> Dict[str, Any]:
         activity_logger.info("Alerts are disabled globally.")
         return {"status": "disabled", "alerts_triggered": 0}
 
-    engine = create_engine(settings.DATABASE_URL)
+    engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True, pool_recycle=300, pool_size=5, max_overflow=10)
     SessionLocal = sessionmaker(bind=engine)
     db = SessionLocal()
     

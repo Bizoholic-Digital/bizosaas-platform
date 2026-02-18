@@ -21,7 +21,7 @@ class FineTuningPipeline:
     
     def __init__(self):
         self.db_url = get_config_val("VECTOR_DB_URL") or get_config_val("DATABASE_URL")
-        self.engine = sa.create_engine(self.db_url)
+        self.engine = sa.create_engine(self.db_url, pool_pre_ping=True, pool_recycle=300, pool_size=5, max_overflow=10)
         self.Session = sessionmaker(bind=self.engine)
         self.base_model = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
 

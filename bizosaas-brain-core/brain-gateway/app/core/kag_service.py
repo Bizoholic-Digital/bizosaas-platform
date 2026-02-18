@@ -14,7 +14,7 @@ class KAGService:
     
     def __init__(self):
         self.db_url = os.getenv("VECTOR_DB_URL") or os.getenv("DATABASE_URL") or "postgresql://postgres:postgres@localhost:5432/bizoholic"
-        self.engine = sa.create_engine(self.db_url)
+        self.engine = sa.create_engine(self.db_url, pool_pre_ping=True, pool_recycle=300, pool_size=5, max_overflow=10)
         self.Session = sessionmaker(bind=self.engine)
         self._init_db()
 

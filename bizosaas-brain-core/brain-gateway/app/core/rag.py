@@ -20,7 +20,7 @@ class RAGService:
     def __init__(self):
         self.db_url = get_config_val("VECTOR_DB_URL") or get_config_val("DATABASE_URL") or "postgresql://postgres:postgres@localhost:5432/bizoholic"
         self.openai_api_key = get_config_val("OPENAI_API_KEY")
-        self.engine = sa.create_engine(self.db_url)
+        self.engine = sa.create_engine(self.db_url, pool_pre_ping=True, pool_recycle=300, pool_size=5, max_overflow=10)
         self.Session = sessionmaker(bind=self.engine)
         self._init_db()
 
