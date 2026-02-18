@@ -57,10 +57,9 @@ class SemanticCache:
                 )
             )
             
-            if result and len(result) > 0:
-                # Assuming result[0] is an object with 'response' attribute
-                # based on standard LangCache SDK common patterns
-                match = result[0]
+            if result and hasattr(result, "data") and len(result.data) > 0:
+                # result.data is the list of hits
+                match = result.data[0]
                 logger.info(f"LangCache HIT for query: {query[:50]}...")
                 return match.response
             

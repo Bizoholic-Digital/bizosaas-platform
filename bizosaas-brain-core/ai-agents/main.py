@@ -15,6 +15,13 @@ import logging
 import asyncio
 import json
 from enum import Enum
+from dotenv import load_dotenv
+
+# Load environment variables
+loaded = load_dotenv()
+logging.info(f"Loading .env in ai-agents: {loaded}")
+if loaded:
+    logging.info(f"Loaded REDIS_URL from env: {os.getenv('REDIS_URL', 'NOT_FOUND')[:20]}...")
 
 # Shared imports with fallbacks
 try:
@@ -137,7 +144,8 @@ try:
         VideoContentMachineWorkflow,
         SEMAdCampaignWorkflow,
         OnboardingStrategyWorkflow,
-        RefinedQualityAssuranceAgent
+        RefinedQualityAssuranceAgent,
+        RelationExtractionAgent
     )
 except ImportError as e:
     logging.warning(f"BizOSaas centralized agents import failed: {e}. Running in mock mode.")
@@ -255,6 +263,9 @@ class AgentType(str, Enum):
 
     # Cat 10: Quality Assurance
     QUALITY_ASSURANCE = "quality_assurance"
+    
+    # Cat 11: Knowledge & Graph
+    RELATION_EXTRACTION = "relation_extraction"
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -454,6 +465,9 @@ async def setup_centralized_agents():
             
             # Register QA Agent
             refined_agent_registry[AgentType.QUALITY_ASSURANCE.value] = RefinedQualityAssuranceAgent()
+            
+            # Register Knowledge Agents
+            refined_agent_registry[AgentType.RELATION_EXTRACTION.value] = RelationExtractionAgent()
             
             # Register Refined Workflows
             refined_agent_registry["content_creation_workflow"] = ContentCreationWorkflow()

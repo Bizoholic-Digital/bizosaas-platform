@@ -43,7 +43,7 @@ class VaultAdapter(SecretPort):
             )
             logger.info("Authenticated to Vault using AppRole")
         else:
-            raise ValueError("Must provide either vault_token or vault_role_id + vault_secret_id")
+            raise ValueError("Must provide either vault_token or both vault_role_id and vault_secret_id")
         
         if not self.client.is_authenticated():
             raise ConnectionError("Failed to authenticate to Vault")

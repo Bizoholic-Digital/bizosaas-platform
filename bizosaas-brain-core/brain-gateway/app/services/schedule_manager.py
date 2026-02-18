@@ -7,7 +7,7 @@ of Temporal schedules for analytics workflows.
 
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from temporalio.client import Client, Schedule, ScheduleActionStartWorkflow, ScheduleSpec, ScheduleIntervalSpec, ScheduleCalendarSpec
 from temporalio.common import RetryPolicy
@@ -71,7 +71,7 @@ class ScheduleManager:
                         **self._parse_cron(cron)
                     )
                 ],
-                timezone=timezone_str
+                time_zone_name=timezone_str
             )
             
             # Create workflow action
@@ -82,8 +82,8 @@ class ScheduleManager:
                 task_queue="default",
                 retry_policy=RetryPolicy(
                     maximum_attempts=3,
-                    initial_interval_ms=1000,
-                    maximum_interval_ms=10000
+                    initial_interval=timedelta(seconds=1),
+                    maximum_interval=timedelta(seconds=10)
                 )
             )
             

@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Default to Marketing Theme (Bizoholic) */
+    --background: 222 47% 11%; /* #0f172a */
+    --foreground: 210 40% 98%; /* #f8fafc */
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%; /* #3b82f6 Blue */
+    --primary-foreground: 222 47.4% 11.2%;
+
+    --secondary: 142 71% 45%; /* #22c55e Green */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.5rem;
+  }
+
+  /* Marketing Theme (Bizoholic) - Navy/Blue/Green */
+  [data-theme="marketing"] {
+    --background: 224 71% 4%; /* #020617 Deep Navy */
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 8%; /* Darker card */
+    --card-foreground: 210 40% 98%;
+    
+    --primary: 221 83% 53%; /* #2563eb Blue */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 142 71% 45%; /* #22c55e Green */
+    --secondary-foreground: 210 40% 98%;
+    
+    --accent: 199 89% 48%; /* #0ea5e9 Sky (Gradient support) */
+    --accent-foreground: 210 40% 98%;
+  }
+
+  /* Gaming Theme (Thrillring) - Purple/Pink/Cyan */
+  [data-theme="gaming"] {
+    --background: 260 50% 5%; /* Deep purple black */
+    --foreground: 280 20% 98%;
+    
+    --card: 260 50% 8%;
+    --card-foreground: 280 20% 98%;
+    
+    --primary: 320 90% 60%; /* Neon Pink */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 180 100% 50%; /* Cyan */
+    --secondary-foreground: 260 50% 5%;
+    
+    --accent: 270 90% 60%; /* Purple */
+    --accent-foreground: 210 40% 98%;
+    
+    --radius: 0.25rem; /* Sharper corners for gaming */
+  }
+
+  /* Directory Theme - Slate/Indigo/Amber */
+  [data-theme="directory"] {
+    --background: 220 20% 97%; /* Light slate (Light mode default?) or keep dark for platform consistency */
+    --foreground: 220 20% 10%;
+    
+    /* Let's keep dark mode consistency for now as requested "Bizoholic UI standard" */
+    --background: 222 47% 11%; 
+    --foreground: 213 31% 91%;
+
+    --card: 222 47% 10%;
+    --card-foreground: 213 31% 91%;
+    
+    --primary: 250 80% 60%; /* Indigo */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 40 90% 60%; /* Amber */
+    --secondary-foreground: 220 20% 10%;
+    
+    --accent: 220 20% 20%;
+    --accent-foreground: 210 40% 98%;
+    
+    --radius: 0.75rem; /* Softer corners */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

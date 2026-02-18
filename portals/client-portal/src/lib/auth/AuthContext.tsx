@@ -19,6 +19,7 @@ interface AuthContextType {
   tenants: Tenant[]
   currentTenant: Tenant | null
   switchTenant: (tenantId: string) => Promise<void>
+  getToken: () => Promise<string | null>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -134,6 +135,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  const getToken = async (): Promise<string | null> => {
+    return authClient.getAccessToken()
+  }
+
   const currentTenant = tenants.find(t => t.id === user?.tenant_id) || null
 
   const value: AuthContextType = {
@@ -147,6 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     tenants,
     currentTenant,
     switchTenant,
+    getToken,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -72,6 +72,10 @@ from .quality_assurance_agent import (
     RefinedQualityAssuranceAgent
 )
 
+from .knowledge_agents import (
+    RelationExtractionAgent
+)
+
 from .ecommerce_agents import (
     ProductSourcingAgent,
     EcommerceAgent,
@@ -283,5 +287,7 @@ __all__ = [
     "ECommerceInventoryLogisticsWorkflow",
     "FullDigitalMarketing360Workflow",
     "VideoContentMachineWorkflow",
-    "SEMAdCampaignWorkflow"
+    "SEMAdCampaignWorkflow",
+    "OnboardingStrategyWorkflow",
+    "RelationExtractionAgent"
 ]

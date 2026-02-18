@@ -7,14 +7,9 @@ const nextConfig = {
   basePath: process.env.BASE_PATH || '',
 
   // Transpile local packages from monorepo if needed
-  // transpilePackages: [
-  //   '@bizoholic-digital/ui-components',
-  //   '@bizoholic-digital/auth',
-  //   '@bizoholic-digital/api-client',
-  //   '@bizoholic-digital/hooks',
-  //   '@bizoholic-digital/utils',
-  //   '@bizoholic-digital/animated-components',
-  // ],
+  transpilePackages: [
+    '@bizosaas/ui',
+  ],
 
   // Base path for portal access
   // basePath: '/portal', // Removed for subdomain architecture (client.bizoholic.com)

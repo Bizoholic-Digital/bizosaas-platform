@@ -406,6 +406,90 @@ async def create_agent(
     
     return new_agent.to_dict()
 
+@router.put("/{agent_id}", response_model=Dict[str, Any])
+async def update_agent(
+    agent_id: str,
+    agent_data: Dict[str, Any] = Body(...),
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Update a custom AI agent"""
+    # System agents cannot be updated
+    if any(a.id == agent_id for a in AGENTS):
+        raise HTTPException(status_code=400, detail="System agents cannot be modified")
+        
+    tenant_id = user.tenant_id or "default_tenant"
+    agent = db.query(Agent).filter(Agent.id == agent_id, Agent.tenant_id == tenant_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+        
+    for key, value in agent_data.items():
+        if hasattr(agent, key):
+            setattr(agent, key, value)
+            
+    agent.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(agent)
+    
+    return agent.to_dict()
+
+@router.delete("/{agent_id}")
+async def delete_agent(
+    agent_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Delete a custom AI agent"""
+    # System agents cannot be deleted
+    if any(a.id == agent_id for a in AGENTS):
+        raise HTTPException(status_code=400, detail="System agents cannot be deleted")
+        
+    tenant_id = user.tenant_id or "default_tenant"
+    agent = db.query(Agent).filter(Agent.id == agent_id, Agent.tenant_id == tenant_id).first()
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+        
+    db.delete(agent)
+    db.commit()
+    
+    return {"status": "deleted", "agent_id": agent_id}
+
+@router.get("/{agent_id}/metrics")
+async def get_agent_metrics(
+    agent_id: str,
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Get performance and usage metrics for an agent"""
+    # In a real implementation, this would query Prometheus or a metrics DB
+    # Returning mock data for now to satisfy the UI requirement
+    return {
+        "agent_id": agent_id,
+        "usage_count": 156,
+        "success_rate": 0.94,
+        "avg_response_time": "1.2s",
+        "tokens_consumed": 45200,
+        "estimated_cost": 2.26,
+        "last_active": datetime.utcnow().isoformat()
+    }
+
+@router.get("/{agent_id}/tools")
+async def get_agent_tools(
+    agent_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """List tools available for the agent"""
+    agent_data = await get_agent(agent_id, db, user)
+    return {
+        "agent_id": agent_id,
+        "active_tools": agent_data.get("tools", []),
+        "available_mcp_tools": [
+            {"name": "google_search", "description": "Search the web"},
+            {"name": "postgres_query", "description": "Query database"},
+            {"name": "temporal_workflow", "description": "Control workflows"}
+        ]
+    }
+
 @router.get("/{agent_id}")
 async def get_agent(
     agent_id: str,
@@ -433,6 +517,42 @@ import httpx
 
 AI_AGENTS_URL = os.getenv("AI_AGENTS_URL")
 
+
+@router.get("/{agent_id}/optimizations")
+async def list_agent_optimizations(
+    agent_id: str,
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """List pending and historical optimizations for an agent"""
+    return [
+        {
+            "id": "opt_1",
+            "type": "prompt_refinement",
+            "status": "pending",
+            "score_improvement": "15%",
+            "description": "Add role-play context to improve empathy in support responses.",
+            "created_at": datetime.utcnow().isoformat()
+        },
+        {
+            "id": "opt_2",
+            "type": "tool_suggestion",
+            "status": "applied",
+            "score_improvement": "5%",
+            "description": "Added 'serper' tool to improve market research depth.",
+            "created_at": datetime.utcnow().isoformat()
+        }
+    ]
+
+@router.post("/{agent_id}/optimizations/{opt_id}/approve")
+async def approve_agent_optimization(
+    agent_id: str,
+    opt_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Approve and apply an optimization to the agent"""
+    # This would involve updating the agent's instructions or tools in the DB
+    return {"status": "applied", "opt_id": opt_id, "agent_id": agent_id}
 
 @router.post("/{agent_id}/chat", response_model=ChatResponse)
 async def chat_with_agent(

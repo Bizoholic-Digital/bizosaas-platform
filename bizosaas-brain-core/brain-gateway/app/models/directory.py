@@ -26,7 +26,7 @@ class DirectoryListing(Base):
     video_url = Column(String(512), nullable=True)
     
     # Business Details
-    category = Column(String(100), nullable=True)
+    category = Column(String(100), nullable=True, index=True)
     description = Column(Text, nullable=True)
     hours_of_operation = Column(JSON, nullable=True)
     amenities = Column(JSON, nullable=True, default=[]) # List of amenity strings
@@ -58,8 +58,8 @@ class DirectoryListing(Base):
     canonical_url = Column(String(255), nullable=True)
     
     # Status
-    status = Column(String(50), default="active") # active, inactive, suspended
-    visibility = Column(String(50), default="public") # public, private, unlisted
+    status = Column(String(50), default="active", index=True) # active, inactive, suspended
+    visibility = Column(String(50), default="public", index=True) # public, private, unlisted
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)

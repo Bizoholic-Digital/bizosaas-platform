@@ -22,8 +22,8 @@ class Workflow(Base):
     tenant_id = Column(String, index=True)
     name = Column(String, nullable=False)
     description = Column(String)
-    type = Column(String) # 'Marketing', 'E-commerce', 'Content', etc.
-    status = Column(String, default="running") # 'running', 'paused', 'error', 'active'
+    type = Column(String, index=True) # 'Marketing', 'E-commerce', 'Content', etc.
+    status = Column(String, default="running", index=True) # 'running', 'paused', 'error', 'active'
     category = Column(String, default="all")  # 'infrastructure', 'hitl', 'all'
     config = Column(JSON, default={}) # retries, timeout, etc.
     workflow_blueprint = Column(JSON)  # Complete workflow definition from agent proposal

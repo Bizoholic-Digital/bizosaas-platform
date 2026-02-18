@@ -1,6 +1,10 @@
 import os
 import httpx
 import asyncio
+from dotenv import load_dotenv
+
+# Load .env variables early
+load_dotenv()
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 import logging
@@ -12,8 +16,23 @@ def load_vault_secrets_sync():
     """Synchronously load secrets from Vault into environment variables."""
     try:
         from app.adapters.vault_adapter import VaultAdapter
+        vault_url = os.getenv("VAULT_URL", "http://vault:8200")
+        vault_token = os.getenv("VAULT_TOKEN")
+        vault_role_id = os.getenv("VAULT_ROLE_ID")
+        vault_secret_id = os.getenv("VAULT_SECRET_ID")
         mount_point = os.getenv("VAULT_MOUNT_POINT", "secret")
-        vault = VaultAdapter(mount_point=mount_point)
+        
+        if not vault_token and not (vault_role_id and vault_secret_id):
+            print("WARNING: Vault credentials not found, skipping secrets load.")
+            return
+
+        vault = VaultAdapter(
+            vault_url=vault_url,
+            vault_token=vault_token,
+            vault_role_id=vault_role_id,
+            vault_secret_id=vault_secret_id,
+            mount_point=mount_point
+        )
         if vault.client and vault.client.is_authenticated():
             print("INFO: Connected to Vault. Loading secrets early...")
             
@@ -163,6 +182,9 @@ app.include_router(metrics_api.router)
 app.include_router(websockets.router)
 from app.api import directory
 app.include_router(directory.router)
+
+from app.routers import tags
+app.include_router(tags.router)
 
 from app.routers import oauth
 from app.api import rag

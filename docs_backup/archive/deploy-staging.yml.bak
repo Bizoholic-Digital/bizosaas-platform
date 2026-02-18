@@ -1,0 +1,135 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [staging, main]
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  REGISTRY: ghcr.io
+  ORG_NAME: bizoholic-digital
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      REPO_LOWER: ""
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+
+
+    strategy:
+      matrix:
+        include:
+          # Backend Services
+          - name: brain-gateway
+            context: ./bizosaas-brain-core/brain-gateway
+            dockerfile: Dockerfile
+          - name: ai-agents
+            context: ./bizosaas-brain-core/ai-agents
+            dockerfile: Dockerfile
+          # Frontend Services
+          # - name: thrillring-gaming
+          #   context: ./bizosaas-brain-core/thrillring-gaming
+          #   dockerfile: Dockerfile.production
+          # - name: bizoholic-frontend
+          #   context: ./misc/services/bizoholic-frontend
+          #   dockerfile: Dockerfile
+          # - name: coreldove-frontend
+          #   context: ./bizosaas/frontend/apps/coreldove-frontend
+          #   dockerfile: Dockerfile.production
+          # Portals (Pending Dockerfile/Code Verification)
+          - name: client-portal
+            context: ./bizosaas-brain-core/client-portal
+            dockerfile: Dockerfile
+          # - name: admin-dashboard
+          #   context: ./portals/admin-dashboard
+          #   dockerfile: Dockerfile.production
+          # - name: business-directory-frontend
+          #   context: ./portals/business-directory
+          #   dockerfile: Dockerfile.production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase Registry
+        run: |
+          echo "REPO_LOWER=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.REPO_LOWER }}/bizosaas-${{ matrix.name }}
+          tags: |
+            type=ref,event=branch,suffix=-{{sha}}
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/staging' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,prefix=staging-
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ env.REPO_LOWER }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          platforms: linux/amd64
+
+  deploy-to-dokploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Wait for images to be available
+        run: sleep 30
+
+      - name: Deploy Backend to Dokploy
+        env:
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+        run: |
+          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"composeId": "QiOdwXQi4ZQCM3Qg_KNcl"}'
+
+      - name: Wait for Backend to be healthy
+        run: sleep 60
+
+      - name: Deploy Frontend to Dokploy
+        env:
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+        run: |
+          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"composeId": "zz6VpI3h8BFXPUTZZb01G"}'
+
+      - name: Deployment complete
+        run: |
+          echo "✅ Deployment triggered successfully"
+          echo "Monitor at: https://dk.bizoholic.com"

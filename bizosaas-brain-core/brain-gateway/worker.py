@@ -2,6 +2,11 @@ import asyncio
 import logging
 from temporalio.client import Client
 from temporalio.worker import Worker
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 from app.workflows.connector_setup import ConnectorSetupWorkflow, ConnectorSyncWorkflow
 from app.workflows.marketing_workflow import LeadNurtureWorkflow, MarketingCampaignWorkflow
 from app.workflows.strategic_marketing_workflow import StrategicMarketingWorkflow
@@ -25,6 +30,8 @@ from app.workflows.social_content_workflow import SocialContentWorkflow
 from app.workflows.multimedia_workflow import PodcastCreationWorkflow, VideoScriptWorkflow
 from app.workflows.analytics_workflow import PlatformAnalyticsWorkflow
 from app.workflows.documentation_workflow import DocumentationWorkflow
+from app.workflows.optimization_workflow import AutonomousOptimizationWorkflow, CampaignOptimizationWorkflow
+from app.workflows.kag_workflow import KAGExtractionWorkflow
 
 from app.activities import (
     validate_connector_credentials,
@@ -131,6 +138,17 @@ from app.activities.social_content import (
     generate_instagram_facebook_activity,
     schedule_social_post_activity
 )
+from app.activities.kag import (
+    extract_relations_activity,
+    link_graph_activity
+)
+from app.activities.multimedia import (
+    generate_podcast_script_activity,
+    synthesize_audio_activity,
+    generate_video_script_activity,
+    generate_storyboard_activity,
+    generate_video_metadata_activity
+)
 import app.connectors # Ensure connectors are registered
 
 async def run_worker():
@@ -221,14 +239,12 @@ async def run_worker():
             SocialListeningWorkflow,
             TopicalClusterWorkflow,
             OutreachAutomationWorkflow,
-            OutreachAutomationWorkflow,
             AutoSSLMaintenanceWorkflow,
             SiteAuditWorkflow,
             KeywordResearchWorkflow,
             BacklinkMonitorWorkflow,
             ContentCreationWorkflow,
             ContentCalendarWorkflow,
-            PersonaGenerationWorkflow,
             PersonaGenerationWorkflow,
             SocialContentWorkflow,
             DeepResearchWorkflow,
@@ -237,7 +253,8 @@ async def run_worker():
             AutonomousOptimizationWorkflow,
             CampaignOptimizationWorkflow,
             PlatformAnalyticsWorkflow,
-            DocumentationWorkflow
+            DocumentationWorkflow,
+            KAGExtractionWorkflow
         ],
 
         activities=[
@@ -297,7 +314,6 @@ async def run_worker():
             fetch_seed_keywords_activity,
             expand_keywords_via_serp_activity,
             analyze_keyword_metrics_activity,
-            cluster_keywords_activity,
             fetch_backlink_profile_activity,
             detect_new_lost_links_activity,
             content_research_activity,
@@ -330,7 +346,9 @@ async def run_worker():
             aggregate_campaign_performance_activity,
             generate_platform_insights_activity,
             generate_documentation_activity,
-            update_docusaurus_content_activity
+            update_docusaurus_content_activity,
+            extract_relations_activity,
+            link_graph_activity
         ],
 
     )

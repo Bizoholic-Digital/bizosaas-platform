@@ -1,0 +1,70 @@
+<?php
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: index.php START\n", FILE_APPEND);
+
+include_once("includes/sp-load.php");
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: sp-load.php included\n", FILE_APPEND);
+
+include_once(SP_CTRLPATH."/index.ctrl.php");
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: index.ctrl.php included\n", FILE_APPEND);
+
+include_once(SP_CTRLPATH."/directory.ctrl.php");
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: directory.ctrl.php included\n", FILE_APPEND);
+
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Before IndexController instantiation\n", FILE_APPEND);
+$controller = New IndexController();
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: IndexController instantiated\n", FILE_APPEND);
+
+$controller->view->menu = 'home';
+
+// set site details according to customizer plugin
+$custSiteInfo = getCustomizerDetails();
+if (!empty($custSiteInfo['site_title'])) $controller->set('spTitle', $custSiteInfo['site_title']);
+if (!empty($custSiteInfo['site_description'])) $controller->set('spDescription', $custSiteInfo['site_description']);
+if (!empty($custSiteInfo['site_keywords'])) $controller->set('spKeywords', $custSiteInfo['site_keywords']);
+
+if($_SERVER['REQUEST_METHOD'] == 'GET') {
+        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Method is GET\n", FILE_APPEND);
+        if (isset($_GET['sec'])) {
+            file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Section: " . $_GET['sec'] . "\n", FILE_APPEND);
+        } else {
+            file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Section empty\n", FILE_APPEND);
+        }
+
+        switch($_GET['sec'] ?? '') {          
+                case "news":
+                        include_once(SP_CTRLPATH."/information.ctrl.php");
+                        $infoCtrler = new InformationController();
+                        $infoCtrler->showNews($_GET);
+                        break;
+                
+                case "showdiv":
+                        $areaId = $_GET['div_id'];
+                        ?>
+                        <script type="text/javascript">
+                        $('#dialogContent').html($("#<?php echo $areaId;?>").html());
+                        </script>
+                        <?php
+                        break;
+                        
+        case "sync_all_se":
+            include_once(SP_CTRLPATH."/searchengine.ctrl.php");
+            $seCtrler = new SearchEngineController();
+            $seCtrler->doSyncSearchEngines(true, true);
+            break;
+
+                default:
+                        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Calling controller->index()\n", FILE_APPEND);
+                        $controller->index($_GET);
+                        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: controller->index() RETURNED\n", FILE_APPEND);
+                        break;
+        }
+} elseif($_SERVER['REQUEST_METHOD'] == 'POST') {
+        file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: Method is POST\n", FILE_APPEND);
+        switch($_POST['sec'] ?? '') {     
+            default:
+                        $controller->index($_POST);
+                        break;
+        }
+}
+file_put_contents("/var/www/html/tmp/debug.txt", "DEBUG: index.php END\n", FILE_APPEND);
+?>

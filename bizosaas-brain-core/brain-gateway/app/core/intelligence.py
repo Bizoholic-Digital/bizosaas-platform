@@ -86,7 +86,8 @@ async def call_ai_agent_with_rag(
     Consolidated helper to call AI Agents with RAG context injection and result ingestion.
     Now with intelligent multi-model routing.
     """
-    ai_agents_url = get_config_val("AI_AGENTS_SERVICE_URL", "http://brain-ai-agents:8000")
+    # Use AI_AGENTS_URL to match .env
+    ai_agents_url = get_config_val("AI_AGENTS_URL", "http://localhost:8001")
     
     # Select optimal LLM configuration for this task (now async)
     llm_config = await _select_llm_config(agent_type, task_description, tenant_id=tenant_id)
@@ -134,7 +135,7 @@ async def call_ai_agent_with_rag(
 
         
         try:
-            response = await client.post(f"{ai_agents_url}/tasks", json=task_payload, timeout=10.0)
+            response = await client.post(f"{ai_agents_url}/tasks", json=task_payload, timeout=30.0)
             response.raise_for_status()
             task_data = response.json()
             task_id = task_data["task_id"]

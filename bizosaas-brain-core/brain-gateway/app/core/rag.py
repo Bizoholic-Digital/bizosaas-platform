@@ -47,23 +47,37 @@ class RAGService:
             logger.error(f"Failed to initialize RAG database: {e}")
 
     async def _get_embeddings(self, text: str) -> List[float]:
-        """Fetch embeddings from OpenAI"""
-        if not self.openai_api_key:
-            logger.warning("OPENAI_API_KEY not set, returning mock embeddings")
+        """Fetch embeddings from configured provider (Together, OpenRouter, or OpenAI)"""
+        api_key = get_config_val("TOGETHER_API_KEY") or get_config_val("OPENAI_API_KEY")
+        
+        if not api_key:
+            logger.warning("No embedding API key set, returning mock embeddings")
             return [0.0] * 1536
             
         async with httpx.AsyncClient() as client:
             try:
+                # Determine endpoint and model
+                if get_config_val("TOGETHER_API_KEY"):
+                    url = "https://api.together.xyz/v1/embeddings"
+                    model = "togethercomputer/m2-bert-80M-8k-retrieval" # Together default
+                elif api_key.startswith("sk-or-"):
+                    url = "https://openrouter.ai/api/v1/embeddings"
+                    model = "openai/text-embedding-3-small"
+                else:
+                    url = "https://api.openai.com/v1/embeddings"
+                    model = "text-embedding-3-small"
+
                 response = await client.post(
-                    "https://api.openai.com/v1/embeddings",
-                    headers={"Authorization": f"Bearer {self.openai_api_key}"},
-                    json={"input": text, "model": "text-embedding-3-small"},
+                    url,
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    json={"input": text, "model": model},
                     timeout=10.0
                 )
                 response.raise_for_status()
                 return response.json()["data"][0]["embedding"]
             except Exception as e:
-                logger.error(f"OpenAI embedding error: {e}")
+                logger.error(f"Embedding error with {url}: {e}")
+                # Fallback to local zeros with correct dimensions (1536)
                 return [0.0] * 1536
 
     async def ingest_knowledge(self, content: str, metadata: Dict[str, Any], tenant_id: str = "global", agent_id: str = "global") -> str:
@@ -88,6 +102,43 @@ class RAGService:
                 )
                 doc_id = str(result.scalar())
                 session.commit()
+                
+                # Trigger KAG extraction via Temporal Workflow
+                try:
+                    from temporalio.client import Client
+                    import os
+                    
+                    async def trigger_kag_workflow():
+                        try:
+                            # Connect to Temporal
+                            temporal_url = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
+                            namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
+                            api_key = os.getenv("TEMPORAL_API_KEY")
+                            
+                            client = await Client.connect(
+                                temporal_url,
+                                namespace=namespace,
+                                api_key=api_key,
+                                tls=bool(api_key)
+                            )
+                            
+                            # Execute Workflow - pass arguments as a list for positional arguments
+                            await client.execute_workflow(
+                                "KAGExtractionWorkflow",
+                                args=[int(doc_id), content, tenant_id],
+                                id=f"kag-extract-{doc_id}",
+                                task_queue="brain-tasks"
+                            )
+                        except Exception as e:
+                            logger.error(f"Failed to trigger KAG Temporal workflow: {e}")
+
+                    # Launch as a background task to avoid blocking the API response
+                    import asyncio
+                    asyncio.create_task(trigger_kag_workflow())
+                    
+                except Exception as ke:
+                    logger.warning(f"KAG extraction trigger setup failed: {ke}")
+                
                 return doc_id
             except Exception as e:
                 logger.error(f"Failed to ingest knowledge: {e}")

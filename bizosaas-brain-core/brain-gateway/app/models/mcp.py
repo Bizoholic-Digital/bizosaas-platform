@@ -58,13 +58,13 @@ class McpRegistry(Base):
     is_recommended = Column(Boolean, default=False)  # Quality score >= 80
     
     # Configuration
-    category_id = Column(GUID, ForeignKey("mcp_categories.id"), nullable=False)
+    category_id = Column(GUID, ForeignKey("mcp_categories.id"), nullable=False, index=True)
     capabilities = Column(JSON, default=list)  # ["products", "orders", "analytics"]
     mcp_config = Column(JSON, nullable=False)  # { "type": "docker", "image": "...", "env": [...] }
     is_official = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
-    rating = Column(Integer, default=0)
-    install_count = Column(Integer, default=0)
+    rating = Column(Integer, default=0, index=True)
+    install_count = Column(Integer, default=0, index=True)
     
     # Sync Metadata
     external_id = Column(String(100), nullable=True) # ID in external market (mcpmarket.com)
@@ -85,7 +85,7 @@ class UserMcpInstallation(Base):
     user_id = Column(String(255), nullable=False, index=True)  # Clerk user IDs are strings
     mcp_id = Column(GUID, ForeignKey("mcp_registry.id", ondelete="CASCADE"), nullable=False)
     
-    status = Column(String(20), default="pending", nullable=False)  # pending, installed, configured, error, stopped
+    status = Column(String(20), default="pending", nullable=False, index=True)  # pending, installed, configured, error, stopped
     config = Column(JSON, nullable=True)  # User-specific config overrides
     credentials_path = Column(String(255), nullable=True)  # Vault path
     error_message = Column(Text, nullable=True)

@@ -6,7 +6,12 @@ Provides standardized metrics for monitoring connector operations, workflows, an
 from opentelemetry import metrics
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
-from opentelemetry.exporter.prometheus import PrometheusMetricReader
+try:
+    from opentelemetry.exporter.prometheus import PrometheusMetricReader
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    logging.warning("OpenTelemetry Prometheus exporter not found. Prometheus metrics disabled.")
+    PROMETHEUS_AVAILABLE = False
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 import os
 import logging
@@ -19,8 +24,13 @@ resource = Resource(attributes={
 })
 
 # Use Prometheus exporter for metrics
-prometheus_reader = PrometheusMetricReader()
-meter_provider = MeterProvider(resource=resource, metric_readers=[prometheus_reader])
+if PROMETHEUS_AVAILABLE:
+    prometheus_reader = PrometheusMetricReader()
+    meter_provider = MeterProvider(resource=resource, metric_readers=[prometheus_reader])
+else:
+    # Use fallback or no-op provider
+    meter_provider = MeterProvider(resource=resource)
+
 metrics.set_meter_provider(meter_provider)
 
 # Get meter

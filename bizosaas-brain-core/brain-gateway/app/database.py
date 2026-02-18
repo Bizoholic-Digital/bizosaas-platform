@@ -3,6 +3,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 import logging
+from dotenv import load_dotenv
+
+# Ensure env vars are loaded
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
