@@ -88,6 +88,7 @@ class RedisCloudCache:
     def cache_result(self, ttl: int = 3600, prefix: str = "generic"):
         """
         Decorator to cache the result of an async function using LangCache Cloud API.
+        Automatically ignores 'db' and 'session' arguments for key generation.
         """
         def decorator(func: Callable[..., Any]):
             @functools.wraps(func)
@@ -95,8 +96,24 @@ class RedisCloudCache:
                 if not self.client:
                     return await func(*args, **kwargs)
 
+                # Filter out arguments that shouldn't be part of the cache key
+                # (e.g., database sessions)
+                cache_args = list(args)
+                cache_kwargs = kwargs.copy()
+                
+                # Heuristic: exclude objects that look like DB sessions
+                filtered_args = []
+                for a in cache_args:
+                    if "Session" not in str(type(a)):
+                        filtered_args.append(a)
+                
+                filtered_kwargs = {
+                    k: v for k, v in cache_kwargs.items() 
+                    if k not in ["db", "session"] and "Session" not in str(type(v))
+                }
+
                 # Generate a unique key
-                key_content = f"{func.__module__}:{func.__name__}:{args}:{kwargs}"
+                key_content = f"{func.__module__}:{func.__name__}:{filtered_args}:{filtered_kwargs}"
                 key_hash = hashlib.md5(key_content.encode()).hexdigest()
                 cache_key = f"cache:{prefix}:{key_hash}"
 

@@ -90,7 +90,7 @@ const navigationItems: NavItem[] = [
   },
   {
     name: 'AI Agents',
-    href: '/ai-agents',
+    href: '/dashboard/agents',
     icon: Bot,
     feature: 'aiAgents' as any,
   },

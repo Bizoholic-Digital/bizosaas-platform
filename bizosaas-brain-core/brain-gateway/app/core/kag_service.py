@@ -3,6 +3,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from typing import List, Dict, Any, Optional
 import os
+import asyncio
 from neo4j import GraphDatabase
 
 logger = logging.getLogger(__name__)
@@ -61,42 +62,51 @@ class KAGService:
         if self.neo4j_driver:
             self.neo4j_driver.close()
 
-    def link_chunks(self, source_id: int, target_id: int, rel_type: str, weight: float = 1.0, metadata: Optional[Dict] = None):
+    async def link_chunks(self, source_id: int, target_id: int, rel_type: str, weight: float = 1.0, metadata: Optional[Dict] = None):
         """Create a link between two knowledge chunks in both SQL and Graph DBs"""
         # 1. Store in PostgreSQL for referential integrity
-        with self.Session() as session:
-            try:
-                session.execute(
-                    sa.text("""
-                        INSERT INTO knowledge_links (source_id, target_id, relationship_type, weight, metadata)
-                        VALUES (:source_id, :target_id, :rel_type, :weight, :metadata)
-                        ON CONFLICT (source_id, target_id, relationship_type) DO UPDATE SET weight = :weight, metadata = :metadata
-                    """),
-                    {
-                        "source_id": source_id,
-                        "target_id": target_id,
-                        "rel_type": rel_type,
-                        "weight": weight,
-                        "metadata": metadata
-                    }
-                )
-                session.commit()
-            except Exception as e:
-                logger.error(f"Failed to link chunks in SQL: {e}")
-                session.rollback()
+        def _sql_link():
+            with self.Session() as session:
+                try:
+                    session.execute(
+                        sa.text("""
+                            INSERT INTO knowledge_links (source_id, target_id, relationship_type, weight, metadata)
+                            VALUES (:source_id, :target_id, :rel_type, :weight, :metadata)
+                            ON CONFLICT (source_id, target_id, relationship_type) 
+                            DO UPDATE SET weight = :weight, metadata = :metadata
+                        """),
+                        {
+                            "source_id": source_id,
+                            "target_id": target_id,
+                            "rel_type": rel_type,
+                            "weight": weight,
+                            "metadata": metadata
+                        }
+                    )
+                    session.commit()
+                except Exception as e:
+                    logger.error(f"Failed to link chunks in SQL: {e}")
+                    session.rollback()
+
+        # Run SQL in thread to avoid blocking loop
+        await asyncio.to_thread(_sql_link)
 
         # 2. Store in Neo4j for high-performance retrieval
         if self.neo4j_driver:
             try:
-                with self.neo4j_driver.session() as session:
-                    session.execute_write(
-                        self._neo4j_create_rel,
-                        source_id,
-                        target_id,
-                        rel_type,
-                        weight,
-                        metadata or {}
-                    )
+                # Driver sessions are thin objects, but the work should be async if possible
+                # Neo4j python driver has an experimental async API, but for now we'll stick to to_thread or session
+                def _neo4j_link():
+                    with self.neo4j_driver.session() as session:
+                        session.execute_write(
+                            self._neo4j_create_rel,
+                            source_id,
+                            target_id,
+                            rel_type,
+                            weight,
+                            metadata or {}
+                        )
+                await asyncio.to_thread(_neo4j_link)
             except Exception as e:
                 logger.error(f"Failed to link chunks in Neo4j: {e}")
 
@@ -159,13 +169,17 @@ class KAGService:
     def _neo4j_get_related(tx, chunk_id, depth):
         query = (
             "MATCH (s:Chunk {id: $chunk_id})-[r:RELATED*1..$depth]->(t:Chunk) "
-            "RETURN t.id AS id, r[size(r)-1].type AS relationship, r[size(r)-1].weight AS weight"
+            "RETURN t.id AS id, t.content AS content, r[size(r)-1].type AS relationship, r[size(r)-1].weight AS weight"
         )
         result = tx.run(query, chunk_id=chunk_id, depth=depth)
-        # Note: In a real scenario, we'd still need SQL for the 'content' if not mirrored in Neo4j
-        # For Phase 7C, we assuming we might need to join back to SQL or mirror content.
-        # Let's mirror minimal data first.
-        return [{"id": record["id"], "relationship": record["relationship"], "weight": record["weight"]} for record in result]
+        return [
+            {
+                "id": record["id"], 
+                "content": record.get("content"),
+                "relationship": record["relationship"], 
+                "weight": record["weight"]
+            } for record in result
+        ]
 
     async def extract_and_link(self, chunk_id: int, content: str, tenant_id: str = "global"):
         """

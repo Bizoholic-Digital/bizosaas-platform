@@ -1,4 +1,4 @@
-#!/home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/ai-agents/venv_new/bin/python3.12
+#!/home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/ai-agents/venv_new/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

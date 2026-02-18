@@ -139,16 +139,69 @@ export interface CreateCampaignData {
   end_date?: string
 }
 
-// Agent types (for CrewAI orchestration)
+// Agent types
 export interface Agent {
   id: string
   name: string
+  description: string
   role: string
-  goal: string
-  backstory: string
+  category: string
+  status: 'active' | 'paused' | 'archived'
+  capabilities: string[]
   tools: string[]
-  status: 'idle' | 'busy' | 'error'
-  created_at: string
+  icon: string
+  color: string
+  cost_tier: 'standard' | 'premium' | 'enterprise'
+  instructions?: string
+  tenant_id: string
+  is_system?: boolean
+  created_at?: string
+  updated_at?: string
+}
+
+export interface AgentCreate {
+  name: string
+  description: string
+  role: string
+  category?: string
+  capabilities?: string[]
+  tools?: string[]
+  icon?: string
+  color?: string
+  cost_tier?: string
+  instructions?: string
+}
+
+export interface AgentUpdate {
+  name?: string
+  description?: string
+  role?: string
+  category?: string
+  capabilities?: string[]
+  tools?: string[]
+  icon?: string
+  color?: string
+  cost_tier?: string
+  instructions?: string
+  status?: 'active' | 'paused' | 'archived'
+}
+
+export interface AgentOptimization {
+  id: string
+  agent_id: string
+  type: 'prompt' | 'performance' | 'cost' | 'latency'
+  description: string
+  improvement: string
+  impact: 'High' | 'Medium' | 'Low'
+  status: 'pending' | 'approved' | 'rejected' | 'executed'
+  auto_execute: boolean
+  potential_savings?: {
+    amount: number
+    currency: string
+    period: string
+  }
+  suggested_at: string
+  executed_at?: string
 }
 
 export interface AgentTask {

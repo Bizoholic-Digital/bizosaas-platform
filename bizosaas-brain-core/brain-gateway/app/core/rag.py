@@ -6,6 +6,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
+import asyncio
 
 from app.core.vault import get_config_val
 
@@ -59,7 +60,7 @@ class RAGService:
                 # Determine endpoint and model
                 if get_config_val("TOGETHER_API_KEY"):
                     url = "https://api.together.xyz/v1/embeddings"
-                    model = "togethercomputer/m2-bert-80M-8k-retrieval" # Together default
+                    model = "BAAI/bge-large-en-v1.5" # More standard Together model
                 elif api_key.startswith("sk-or-"):
                     url = "https://openrouter.ai/api/v1/embeddings"
                     model = "openai/text-embedding-3-small"
@@ -75,6 +76,9 @@ class RAGService:
                 )
                 response.raise_for_status()
                 return response.json()["data"][0]["embedding"]
+            except httpx.HTTPStatusError as e:
+                logger.error(f"Embedding error with {url}: {e.response.status_code} - {e.response.text}")
+                return [0.0] * 1536
             except Exception as e:
                 logger.error(f"Embedding error with {url}: {e}")
                 # Fallback to local zeros with correct dimensions (1536)
@@ -103,41 +107,14 @@ class RAGService:
                 doc_id = str(result.scalar())
                 session.commit()
                 
-                # Trigger KAG extraction via Temporal Workflow
+                # Trigger Knowledge Graph (KAG) extraction
                 try:
-                    from temporalio.client import Client
-                    import os
-                    
-                    async def trigger_kag_workflow():
-                        try:
-                            # Connect to Temporal
-                            temporal_url = os.getenv("TEMPORAL_ADDRESS", "localhost:7233")
-                            namespace = os.getenv("TEMPORAL_NAMESPACE", "default")
-                            api_key = os.getenv("TEMPORAL_API_KEY")
-                            
-                            client = await Client.connect(
-                                temporal_url,
-                                namespace=namespace,
-                                api_key=api_key,
-                                tls=bool(api_key)
-                            )
-                            
-                            # Execute Workflow - pass arguments as a list for positional arguments
-                            await client.execute_workflow(
-                                "KAGExtractionWorkflow",
-                                args=[int(doc_id), content, tenant_id],
-                                id=f"kag-extract-{doc_id}",
-                                task_queue="brain-tasks"
-                            )
-                        except Exception as e:
-                            logger.error(f"Failed to trigger KAG Temporal workflow: {e}")
-
+                    from app.core.kag_service import kag_service
                     # Launch as a background task to avoid blocking the API response
-                    import asyncio
-                    asyncio.create_task(trigger_kag_workflow())
-                    
+                    asyncio.create_task(kag_service.extract_and_link(int(doc_id), content, tenant_id))
+                    logger.info(f"Triggered KAG extraction for chunk {doc_id}")
                 except Exception as ke:
-                    logger.warning(f"KAG extraction trigger setup failed: {ke}")
+                    logger.warning(f"KAG extraction trigger failed: {ke}")
                 
                 return doc_id
             except Exception as e:
@@ -166,7 +143,7 @@ class RAGService:
             try:
                 result = session.execute(
                     sa.text(f"""
-                        SELECT content, 1 - (embedding <=> :query_embedding) as similarity
+                        SELECT id, content, 1 - (embedding <=> :query_embedding) as similarity
                         FROM knowledge_chunks
                         WHERE {filter_clause}
                         ORDER BY embedding <=> :query_embedding
@@ -175,7 +152,31 @@ class RAGService:
                     params
                 )
                 
-                return [row.content for row in result]
+                rows = result.fetchall()
+                primary_results = [row.content for row in rows]
+                primary_ids = [row.id for row in rows]
+                
+                # 2. Knowledge Graph (KAG) Expansion
+                try:
+                    from app.core.kag_service import kag_service
+                    
+                    related_chunks = []
+                    for chunk_id in primary_ids:
+                        # Get related chunks from graph (Postgres or Neo4j fallback)
+                        related = await kag_service.get_related_knowledge(chunk_id, depth=1)
+                        for rel in related:
+                            if rel.get("content") and rel["content"] not in primary_results:
+                                related_chunks.append(rel["content"])
+                                
+                    if related_chunks:
+                        logger.info(f"Added {len(related_chunks)} related chunks via Knowledge Graph")
+                        # Combine results and remove duplicates while maintaining order
+                        combined = primary_results + [c for c in related_chunks if c not in primary_results]
+                        return combined[:limit] 
+                except Exception as ke:
+                    logger.warning(f"KAG expansion failed: {ke}")
+
+                return primary_results
             except Exception as e:
                 logger.error(f"Failed to retrieve context: {e}")
                 return []

@@ -9,6 +9,9 @@
 *.log
 *.webp
 .venv/
+venv/
+venv_new/
+node_modules/
 __pycache__/
 *.pyc
 .system_generated/

@@ -29,10 +29,18 @@ class VaultService:
                         self._client = None
                     else:
                         logger.info(f"Connected to Vault at {self.vault_url} for {self.secret_path}")
+                        # Add adapter for more complex operations
+                        from app.adapters.vault_adapter import VaultAdapter
+                        self.secret_adapter = VaultAdapter(
+                            vault_url=self.vault_url,
+                            vault_token=self.token,
+                            mount_point=self.mount_point
+                        )
                 except Exception as e:
                     logger.error(f"Failed to connect to Vault: {str(e)}")
             else:
                 logger.warning("VAULT_TOKEN not provided. Vault integration disabled.")
+                self.secret_adapter = None
 
     def get_secret(self, key: str, default: Any = None) -> Any:
         # 1. Try Vault

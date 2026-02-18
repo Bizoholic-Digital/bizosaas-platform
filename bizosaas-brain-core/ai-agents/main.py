@@ -69,8 +69,9 @@ except ImportError:
             self.user_id = "system"
             
     def require_permission(*args, **kwargs):
-        def decorator(func): return func
-        return decorator
+        async def dependency():
+            return UserContext()
+        return dependency
     def event_handler(*args, **kwargs):
         def decorator(func): return func
         return decorator

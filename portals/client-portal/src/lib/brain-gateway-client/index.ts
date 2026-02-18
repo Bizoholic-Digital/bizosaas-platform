@@ -10,15 +10,12 @@ import { AnalyticsClient, analyticsClient } from './clients/analytics'
 export { ProjectsClient, projectsClient }
 export { ContentClient, contentClient, type ContentListParams }
 export { AnalyticsClient, analyticsClient }
+export { AgentsClient, agentsClient } from './clients/agents'
 
 import { BaseApiClient, apiClient } from './utils/base-client'
 import { OnboardingClient, onboardingClient } from './clients/onboarding'
 import { PersonaClient, personaClient } from './clients/persona'
-import { SeoClient } from './clients/seo'
-import { SocialClient } from './clients/social'
-
-const seoClient = new SeoClient(apiClient)
-const socialClient = new SocialClient(apiClient)
+import { AgentsClient, agentsClient } from './clients/agents'
 
 // Combined brain gateway client
 export const brainGateway = {
@@ -29,6 +26,7 @@ export const brainGateway = {
   persona: personaClient,
   seo: seoClient,
   social: socialClient,
+  agents: agentsClient,
 }
 
 // Export all types

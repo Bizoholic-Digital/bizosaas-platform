@@ -6,7 +6,7 @@ import uuid
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, get_current_user
-from app.models.agent import Agent
+from app.models.agent import Agent, AgentOptimization
 from app.domain.ports.identity_port import AuthenticatedUser
 
 router = APIRouter(prefix="/api/agents", tags=["ai-agents"])
@@ -21,6 +21,49 @@ class AgentConfig(BaseModel):
     tools: List[str]
     icon: str
     color: str
+    category: Optional[str] = "general"
+    status: Optional[str] = "active"
+    cost_tier: Optional[str] = "standard"
+    instructions: Optional[str] = None
+    tenant_id: str = "global"
+
+class AgentCreate(BaseModel):
+    name: str
+    description: str
+    role: str
+    category: Optional[str] = "general"
+    capabilities: List[str] = []
+    tools: List[str] = []
+    icon: Optional[str] = "🤖"
+    color: Optional[str] = "#4f46e5"
+    cost_tier: Optional[str] = "standard"
+    instructions: Optional[str] = None
+
+class AgentUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    role: Optional[str] = None
+    category: Optional[str] = None
+    capabilities: Optional[List[str]] = None
+    tools: Optional[List[str]] = None
+    icon: Optional[str] = None
+    color: Optional[str] = None
+    cost_tier: Optional[str] = None
+    instructions: Optional[str] = None
+    status: Optional[str] = None
+
+class AgentOptimizationResponse(BaseModel):
+    id: str
+    agent_id: str
+    type: str
+    description: str
+    improvement: str
+    impact: str
+    status: str
+    auto_execute: bool
+    potentialSavings: Optional[Dict[str, Any]] = None
+    suggestedAt: Optional[str] = None
+    executedAt: Optional[str] = None
 
 class ChatMessage(BaseModel):
     role: str  # "user" or "assistant"
@@ -358,7 +401,10 @@ AGENTS = [
 # Mock conversation storage
 conversations: Dict[str, List[ChatMessage]] = {}
 
-@router.get("/", response_model=List[Dict[str, Any]])
+from app.core.redis_cache import redis_cache
+
+@router.get("/", response_model=List[AgentConfig])
+@redis_cache.cache_result(ttl=300, prefix="agents_list")
 async def list_agents(
     db: Session = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
@@ -368,18 +414,30 @@ async def list_agents(
     
     # Get custom agents from DB
     custom_agents = db.query(Agent).filter(Agent.tenant_id == tenant_id).all()
-    custom_agents_dict = [a.to_dict() for a in custom_agents]
+    custom_agents_list = [
+        AgentConfig(
+            id=a.id,
+            name=a.name,
+            description=a.description,
+            role=a.role,
+            capabilities=a.capabilities,
+            tools=a.tools,
+            icon=a.icon,
+            color=a.color,
+            category=a.category,
+            status=a.status,
+            cost_tier=a.cost_tier,
+            instructions=a.instructions,
+            tenant_id=a.tenant_id
+        ) for a in custom_agents
+    ]
     
-    # Combine with system agents
-    system_agents_dict = [a.dict() for a in AGENTS]
-    for sa in system_agents_dict:
-        sa["is_system"] = True
-        
-    return system_agents_dict + custom_agents_dict
+    # Combine with system agents (which are already AgentConfig)
+    return AGENTS + custom_agents_list
 
-@router.post("/", response_model=Dict[str, Any])
+@router.post("/", response_model=AgentConfig)
 async def create_agent(
-    agent_data: Dict[str, Any] = Body(...),
+    agent_data: AgentCreate,
     db: Session = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):
@@ -388,15 +446,16 @@ async def create_agent(
     
     new_agent = Agent(
         tenant_id=tenant_id,
-        name=agent_data.get("name"),
-        description=agent_data.get("description"),
-        role=agent_data.get("role"),
-        category=agent_data.get("category", "general"),
-        capabilities=agent_data.get("capabilities", []),
-        tools=agent_data.get("tools", []),
-        icon=agent_data.get("icon", "🤖"),
-        color=agent_data.get("color", "#4f46e5"),
-        instructions=agent_data.get("instructions"),
+        name=agent_data.name,
+        description=agent_data.description,
+        role=agent_data.role,
+        category=agent_data.category,
+        capabilities=agent_data.capabilities,
+        tools=agent_data.tools,
+        icon=agent_data.icon,
+        color=agent_data.color,
+        cost_tier=agent_data.cost_tier,
+        instructions=agent_data.instructions,
         created_by=user.email
     )
     
@@ -404,12 +463,26 @@ async def create_agent(
     db.commit()
     db.refresh(new_agent)
     
-    return new_agent.to_dict()
+    return AgentConfig(
+        id=new_agent.id,
+        name=new_agent.name,
+        description=new_agent.description,
+        role=new_agent.role,
+        capabilities=new_agent.capabilities,
+        tools=new_agent.tools,
+        icon=new_agent.icon,
+        color=new_agent.color,
+        category=new_agent.category,
+        status=new_agent.status,
+        cost_tier=new_agent.cost_tier,
+        instructions=new_agent.instructions,
+        tenant_id=new_agent.tenant_id
+    )
 
-@router.put("/{agent_id}", response_model=Dict[str, Any])
+@router.put("/{agent_id}", response_model=AgentConfig)
 async def update_agent(
     agent_id: str,
-    agent_data: Dict[str, Any] = Body(...),
+    agent_data: AgentUpdate,
     db: Session = Depends(get_db),
     user: AuthenticatedUser = Depends(get_current_user)
 ):
@@ -423,7 +496,8 @@ async def update_agent(
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
         
-    for key, value in agent_data.items():
+    update_dict = agent_data.dict(exclude_unset=True)
+    for key, value in update_dict.items():
         if hasattr(agent, key):
             setattr(agent, key, value)
             
@@ -431,7 +505,21 @@ async def update_agent(
     db.commit()
     db.refresh(agent)
     
-    return agent.to_dict()
+    return AgentConfig(
+        id=agent.id,
+        name=agent.name,
+        description=agent.description,
+        role=agent.role,
+        capabilities=agent.capabilities,
+        tools=agent.tools,
+        icon=agent.icon,
+        color=agent.color,
+        category=agent.category,
+        status=agent.status,
+        cost_tier=agent.cost_tier,
+        instructions=agent.instructions,
+        tenant_id=agent.tenant_id
+    )
 
 @router.delete("/{agent_id}")
 async def delete_agent(
@@ -451,8 +539,40 @@ async def delete_agent(
         
     db.delete(agent)
     db.commit()
-    
-    return {"status": "deleted", "agent_id": agent_id}
+    return {"status": "success", "message": "Agent deleted"}
+
+from app.services.agent_service import AgentService
+
+@router.get("/optimizations", response_model=Dict[str, Any])
+async def list_agent_optimizations(
+    agent_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """List AI-suggested optimizations for the tenant's agents"""
+    # Verify agent belongs to tenant if specified
+    if agent_id:
+        tenant_id = user.tenant_id or "default_tenant"
+        agent = db.query(Agent).filter(Agent.id == agent_id, Agent.tenant_id == tenant_id).first()
+        if not agent and not any(a.id == agent_id for a in AGENTS):
+            raise HTTPException(status_code=404, detail="Agent not found")
+
+    optimizations = AgentService.get_agent_optimizations(db, agent_id)
+    return {
+        "optimizations": [opt.to_dict() for opt in optimizations]
+    }
+
+@router.post("/optimizations/{opt_id}/approve")
+async def approve_agent_optimization(
+    opt_id: str,
+    db: Session = Depends(get_db),
+    user: AuthenticatedUser = Depends(get_current_user)
+):
+    """Approve an optimization for execution"""
+    opt = AgentService.approve_optimization(db, opt_id)
+    if not opt:
+        raise HTTPException(status_code=404, detail="Optimization not found")
+    return {"status": "success", "optimization": opt.to_dict()}
 
 @router.get("/{agent_id}/metrics")
 async def get_agent_metrics(
@@ -490,7 +610,7 @@ async def get_agent_tools(
         ]
     }
 
-@router.get("/{agent_id}")
+@router.get("/{agent_id}", response_model=AgentConfig)
 async def get_agent(
     agent_id: str,
     db: Session = Depends(get_db),
@@ -500,9 +620,7 @@ async def get_agent(
     # Check system agents first
     agent = next((a for a in AGENTS if a.id == agent_id), None)
     if agent:
-        data = agent.dict()
-        data["is_system"] = True
-        return data
+        return agent
         
     # Check custom agents
     tenant_id = user.tenant_id or "default_tenant"
@@ -510,7 +628,21 @@ async def get_agent(
     if not custom_agent:
         raise HTTPException(status_code=404, detail="Agent not found")
         
-    return custom_agent.to_dict()
+    return AgentConfig(
+        id=custom_agent.id,
+        name=custom_agent.name,
+        description=custom_agent.description,
+        role=custom_agent.role,
+        capabilities=custom_agent.capabilities,
+        tools=custom_agent.tools,
+        icon=custom_agent.icon,
+        color=custom_agent.color,
+        category=custom_agent.category,
+        status=custom_agent.status,
+        cost_tier=custom_agent.cost_tier,
+        instructions=custom_agent.instructions,
+        tenant_id=custom_agent.tenant_id
+    )
 
 import os
 import httpx

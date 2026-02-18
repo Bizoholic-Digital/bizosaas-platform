@@ -13,7 +13,7 @@ class RelationExtractionAgent(BaseAgent):
     
     def __init__(self):
         super().__init__(
-            agent_name="relation_extractor",
+            agent_name="relation_extraction",
             agent_role=AgentRole.TECHNICAL,
             description="Extracts entities and relationships from text for Knowledge Graph population",
             version="1.0.0"

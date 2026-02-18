@@ -92,6 +92,17 @@ async def call_ai_agent_with_rag(
     # Select optimal LLM configuration for this task (now async)
     llm_config = await _select_llm_config(agent_type, task_description, tenant_id=tenant_id)
 
+    # 0. Prompt Enhancement (New Phase 7E)
+    from app.core.prompt_enhancer import prompt_enhancer
+    enhanced = await prompt_enhancer.enhance_prompt(
+        agent_type=agent_type,
+        task_description=task_description,
+        input_data=payload,
+        tenant_id=tenant_id
+    )
+    task_description = enhanced["task_description"]
+    payload = enhanced["input_data"]
+
     
     # 1. RAG Context Retrieval
     context = []
@@ -210,12 +221,16 @@ async def call_ai_agent_with_rag(
                                 
                         return result
                     elif status == "failed":
+                        logger.error(f"Agent task failed: {status_data.get('error_message')}. Full response: {status_data}")
                         raise Exception(f"Agent task failed: {status_data.get('error_message')}")
                     elif status == "cancelled":
                         raise Exception("Agent task cancelled")
             
             raise Exception("Timeout waiting for AI agent")
             
+        except httpx.HTTPStatusError as e:
+            logger.error(f"AI Agent call HTTP error: {e.response.status_code} - {e.response.text}")
+            raise
         except Exception as e:
             logger.error(f"AI Agent call failed: {e}")
             raise

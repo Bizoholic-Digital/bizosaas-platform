@@ -123,3 +123,18 @@ class VaultAdapter(SecretPort):
     ) -> bool:
         """Rotate secret (creates new version in Vault)"""
         return await self.store_secret(path, new_secret_data)
+
+    def get_secret_sync(self, path: str) -> Optional[Dict[str, Any]]:
+        """Retrieve secret from Vault KV v2 (synchronous)"""
+        try:
+            response = self.client.secrets.kv.v2.read_secret_version(
+                path=path,
+                mount_point=self.mount_point
+            )
+            return response['data']['data']
+        except hvac.exceptions.InvalidPath:
+            logger.warning(f"Secret not found: {path}")
+            return None
+        except Exception as e:
+            logger.error(f"Failed to retrieve secret from Vault (sync): {e}")
+            return None

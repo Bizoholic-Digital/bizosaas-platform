@@ -7,6 +7,8 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 from uuid import UUID
+from app.core.redis_cache import redis_cache
+from sqlalchemy import String
 
 router = APIRouter()
 
@@ -102,11 +104,13 @@ class ToolCallRequest(BaseModel):
 
 # Routes
 @router.get("/categories", response_model=List[CategoryResponse])
-def get_categories(db: Session = Depends(get_db)):
+@redis_cache.cache_result(ttl=3600, prefix="mcp_categories")
+async def get_categories(db: Session = Depends(get_db)):
     return db.query(McpCategory).order_by(McpCategory.sort_order).all()
 
 @router.get("/registry", response_model=List[McpResponse])
-def get_registry(
+@redis_cache.cache_result(ttl=600, prefix="mcp_registry")
+async def get_registry(
     category: Optional[str] = None, 
     recommended_only: bool = False,
     search: Optional[str] = None,

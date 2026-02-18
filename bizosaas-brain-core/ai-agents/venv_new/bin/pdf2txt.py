@@ -1,4 +1,4 @@
-#!/home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/ai-agents/venv_new/bin/python3.12
+#!/home/alagiri/projects/bizosaas-platform/bizosaas-brain-core/ai-agents/venv_new/bin/python3
 """A command line tool for extracting text and images from PDF and
 output it to plain text, html, xml or tags.
 """
