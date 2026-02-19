@@ -15,3 +15,4 @@ from .platform_metrics import PlatformMetrics
 from .alert_history import AlertHistory
 from .tag_config import TagConfig
 from .prompt import PromptTemplate
+from .marketplace import AffiliatePartner, ThemeTemplate

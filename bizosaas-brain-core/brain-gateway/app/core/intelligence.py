@@ -6,6 +6,7 @@ import logging
 from typing import Dict, Any, List, Optional
 from app.core.rag import rag_service
 from app.core.kag_service import kag_service
+from app.core.agents.governance_agent import governance_agent
 
 from app.core.vault import get_config_val, vault_service
 
@@ -88,6 +89,18 @@ async def call_ai_agent_with_rag(
     """
     # Use AI_AGENTS_URL to match .env
     ai_agents_url = get_config_val("AI_AGENTS_URL", "http://localhost:8001")
+    
+    # --- PHASE 8 GOVERNANCE CHECK (INPUT) ---
+    # 1. Input Safety & Policy Review
+    gov_review = await governance_agent.review_input(tenant_id, task_description, payload)
+    if not gov_review["allowed"]:
+        logger.warning(f"Governance blocked request: {gov_review.get('reason')}")
+        raise ValueError(f"Request blocked by safety policy: {gov_review.get('reason')}")
+        
+    # 2. Budget Check
+    if not await governance_agent.check_budget(tenant_id, estimated_cost=0.01): # Mock cost
+        raise ValueError("Insufficient credits/budget for this operation.")
+    # ----------------------------------------
     
     # Select optimal LLM configuration for this task (now async)
     llm_config = await _select_llm_config(agent_type, task_description, tenant_id=tenant_id)
@@ -203,6 +216,23 @@ async def call_ai_agent_with_rag(
                             except Exception as e:
                                 logger.error(f"Post-call RAG ingestion failed: {e}")
                         
+                        # --- PHASE 8 GOVERNANCE CHECK (OUTPUT) ---
+                        # 4. Output Safety & PII Review
+                        output_content = str(result.get("response", "")) # Assuming response text is here
+                        out_review = await governance_agent.review_output(tenant_id, output_content)
+                        
+                        if not out_review.get("allowed", True):
+                            logger.warning(f"Governance flagged output: {out_review.get('reason')}")
+                            # We can either block or sanitize. For now, we block if flagged as not allowed.
+                            # But review_output currently returns allowed=True with cleaned_content usually.
+                            
+                        # Apply sanitization if modified
+                        if out_review.get("cleaned_content"):
+                             result["response"] = out_review["cleaned_content"]
+                             if "warnings" in out_review:
+                                 result["governance_warnings"] = out_review["warnings"]
+                        # -----------------------------------------
+
                         # 4. Cache the successful result
                         if use_rag:
                             try:

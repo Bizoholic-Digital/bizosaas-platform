@@ -28,6 +28,7 @@ def seed_mcp_registry():
             {"name": "Advertising", "slug": "advertising", "description": "Ad platforms", "icon": "Megaphone", "sort_order": 8},
             {"name": "Communication", "slug": "communication", "description": "Messaging & chat", "icon": "MessageCircle", "sort_order": 9},
             {"name": "Utilities", "slug": "utilities", "description": "Storage and automation tools", "icon": "Terminal", "sort_order": 10},
+            {"name": "Design & UI/UX", "slug": "design-uiux", "description": "Cloud design and prototyping tools", "icon": "Palette", "sort_order": 11},
         ]
         
         categories = {}
@@ -121,6 +122,12 @@ def seed_mcp_registry():
             {"name": "n8n", "slug": "n8n", "category_slug": "utilities", "description": "Fair-code workflow automation tool.", "vendor_name": "n8n.io", "sort_order": 5, "is_featured": True, "capabilities": ["workflows", "nodes", "webhooks"], "mcp_config": {"type": "docker", "image": "bizosaas/mcp-n8n:latest"}, "is_official": True},
             {"name": "Pabbly Connect", "slug": "pabbly", "category_slug": "utilities", "description": "Connect apps and automate workflows.", "vendor_name": "Pabbly", "sort_order": 6, "capabilities": ["automation", "integration", "workflows"], "mcp_config": {"type": "docker", "image": "bizosaas/mcp-pabbly:latest"}, "is_official": True},
             {"name": "GitHub", "slug": "github", "category_slug": "utilities", "description": "Code hosting and version control.", "vendor_name": "Microsoft", "sort_order": 7, "capabilities": ["repos", "issues", "actions"], "mcp_config": {"type": "docker", "image": "bizosaas/mcp-github:latest"}, "is_official": True},
+
+            # --- Design & UI/UX ---
+            {"name": "Google Stitch", "slug": "stitch-mcp", "category_slug": "design-uiux", "description": "AI-powered UI/UX design extraction and generation.", "vendor_name": "Google", "sort_order": 1, "is_featured": True, "capabilities": ["design_extraction", "screen_generation", "code_fetch"], "mcp_config": {"type": "sse", "url": "https://stitch.bizoholic.net/mcp"}, "is_official": True},
+            {"name": "Figma Dev Mode", "slug": "figma-mcp", "category_slug": "design-uiux", "description": "Extract variables, styles, and assets from Figma files.", "vendor_name": "Figma", "sort_order": 2, "is_featured": True, "capabilities": ["styles", "variables", "assets", "inspect"], "mcp_config": {"type": "docker", "image": "bizosaas/mcp-figma:latest"}, "is_official": True},
+            {"name": "Canva Remote", "slug": "canva-mcp", "category_slug": "design-uiux", "description": "Automate social media and brand asset generation in Canva.", "vendor_name": "Canva", "sort_order": 3, "capabilities": ["brand_assets", "templates", "generation"], "mcp_config": {"type": "docker", "image": "bizosaas/mcp-canva:latest"}, "is_official": True},
+            {"name": "V0.dev Integration", "slug": "v0-dev-mcp", "category_slug": "design-uiux", "description": "Screenshot-to-React generation using V0.dev API.", "vendor_name": "Vercel", "sort_order": 4, "is_featured": True, "capabilities": ["screenshot_to_react", "ui_refinement"], "mcp_config": {"type": "http", "url": "https://api.v0.dev/mcp"}, "is_official": True},
         ]
         
         # Remove old categories that are no longer needed

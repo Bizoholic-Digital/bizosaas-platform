@@ -395,6 +395,17 @@ AGENTS = [
         tools=["all-connectors", "fraud-check"],
         icon="🚚",
         color="#3B82F6"
+    ),
+    # Category 10: Compliance & Trust
+    AgentConfig(
+        id="compliance_specialist",
+        name="Compliance Specialist",
+        description="Regulatory expert for GDPR, SOC2, HIPAA, and ISO 27001 compliance",
+        role="Compliance Officer",
+        capabilities=["Regulatory Audit", "Policy Analysis", "Risk Assessment", "Data Privacy"],
+        tools=["compliance-check", "policy-audit", "risk-assess"],
+        icon="⚖️",
+        color="#10B981"
     )
 ]
 

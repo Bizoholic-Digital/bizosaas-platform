@@ -78,6 +78,12 @@ class PromptEnhancer:
 
     async def _find_template(self, agent_type: str, tenant_id: str) -> Optional[PromptTemplate]:
         """Find the best matching template (tenant-specific > platform default)"""
+        
+        # Special case for Master Orchestrator fast-path (if not overridden in DB)
+        if agent_type == "master_orchestrator":
+             # We check DB first, but if not found, we return a virtual template
+             pass # Logic continues below
+             
         with self.Session() as session:
             try:
                 # 1. Try tenant-specific template
@@ -95,7 +101,29 @@ class PromptEnhancer:
                     PromptTemplate.is_default == True
                 ).first()
                 
-                return template
+                if template:
+                    return template
+                    
+                # 3. Fallback for Master Orchestrator
+                if agent_type == "master_orchestrator":
+                    from app.core.prompts.orchestrator_prompts import MASTER_ORCHESTRATOR_SYSTEM_PROMPT
+                    return PromptTemplate(
+                        name="master_orchestrator",
+                        template_text=MASTER_ORCHESTRATOR_SYSTEM_PROMPT + "\n\nUSER REQUEST: {task}",
+                        tenant_id="system",
+                        strategy="direct"
+                    )
+                
+                # 4. Fallback for Compliance Specialist
+                if agent_type == "compliance_specialist":
+                    from app.core.prompts.compliance_prompts import COMPLIANCE_SPECIALIST_SYSTEM_PROMPT
+                    return PromptTemplate(
+                        name="compliance_specialist",
+                        template_text=COMPLIANCE_SPECIALIST_SYSTEM_PROMPT + "\n\nUSER QUESTION: {task}",
+                        tenant_id="system",
+                        strategy="direct"
+                    )
+
             except Exception as e:
                 logger.error(f"Failed to find template for {agent_type}: {e}")
         return None

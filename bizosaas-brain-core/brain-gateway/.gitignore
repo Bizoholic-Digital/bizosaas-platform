@@ -1,0 +1,53 @@
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ─── Virtual environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+venv_new/
+env/
+
+# ─── Environment & Secrets ────────────────────────────────────────────────────
+# NEVER commit real .env files — use .env.template for scaffolding
+.env
+.env.*
+!.env.template
+
+# Additional secret files
+*.secret
+*_secrets.*
+credentials.md
+secrets.json
+*.pem
+*.key
+
+# ─── Logs & Data ──────────────────────────────────────────────────────────────
+*.log
+*.pid
+*.sqlite
+*.db
+
+# ─── Test / Caches ────────────────────────────────────────────────────────────
+.pytest_cache/
+.hypothesis/
+.cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ─── IDE & OS ─────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ─── Build artifacts ──────────────────────────────────────────────────────────
+*.whl
