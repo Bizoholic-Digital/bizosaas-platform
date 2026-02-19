@@ -1,0 +1,92 @@
+name: Deploy (Reusable)
+# Reusable workflow to DRY-up all per-service deploy workflows.
+# Builds a Docker image, pushes to GHCR, and notifies Dokploy.
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+        description: "Docker image name, e.g. 'admin-portal'"
+      context_path:
+        required: true
+        type: string
+        description: "Docker build context path, e.g. './portals/admin-portal'"
+      dockerfile_path:
+        required: true
+        type: string
+        description: "Path to Dockerfile, e.g. './portals/admin-portal/Dockerfile'"
+      dokploy_compose_id:
+        required: true
+        type: string
+        description: "Dokploy composeId to trigger after build"
+      build_args:
+        required: false
+        type: string
+        default: ""
+        description: "Newline-separated Docker build-args"
+    secrets:
+      DOKPLOY_API_KEY:
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Lowercase repo name
+        run: echo "REPO_LOWER=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.REPO_LOWER }}/${{ inputs.service_name }}
+          tags: |
+            type=raw,value=staging
+            type=sha,prefix=staging-
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ env.REPO_LOWER }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.context_path }}
+          file: ${{ inputs.dockerfile_path }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          platforms: linux/amd64
+          build-args: ${{ inputs.build_args }}
+
+  notify-dokploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Trigger Dokploy Deployment
+        run: |
+          curl -X POST "https://dk.bizoholic.com/api/compose.deploy" \
+            -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"composeId": "${{ inputs.dokploy_compose_id }}"}'

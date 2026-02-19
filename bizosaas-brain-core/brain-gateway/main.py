@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
-from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization, directory_admin, admin_mcp, tenant_management, billing_admin, cms_admin, analytics_admin, agent_admin, temporal_admin, triggers, domains, support_admin, reporting_admin, security_admin, shopify, shopify_oauth, gaming, monitoring, seo_dashboard, content, persona, social_content, schedules_admin, alerts_admin, auth, client_tasks, prompts, affiliate_partners, theme_catalog, collaboration
+from app.api import connectors, agents, cms, onboarding, support, crm, ecommerce, billing, admin, mcp, marketing, campaigns, users, workflows, discovery, metrics as metrics_api, websockets, workflow_governance, workflow_metrics, admin_prime, feature_orchestrator, alerts, predictive_analytics, isolation_testing, cost_optimization, directory_admin, admin_mcp, tenant_management, billing_admin, cms_admin, analytics_admin, agent_admin, temporal_admin, triggers, domains, support_admin, reporting_admin, security_admin, shopify, shopify_oauth, gaming, monitoring, seo_dashboard, content, persona, social_content, schedules_admin, alerts_admin, auth, client_tasks, prompts, affiliate_partners, theme_catalog, collaboration, cron_jobs
 from app.seeds.connectors import seed_connectors
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -145,6 +145,7 @@ app.include_router(prompts.router)
 app.include_router(affiliate_partners.router, prefix="/api/affiliates", tags=["Affiliates"])
 app.include_router(theme_catalog.router, prefix="/api/themes", tags=["Themes"])
 app.include_router(collaboration.router)
+app.include_router(cron_jobs.router)
 app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(mcp.router, prefix="/api/mcp", tags=["MCP Marketplace"])

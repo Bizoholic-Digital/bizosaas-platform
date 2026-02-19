@@ -1,0 +1,25 @@
+name: Deploy Business Directory
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - 'portals/business-directory/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-business-directory.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_reusable-deploy.yml
+    with:
+      service_name: business-directory
+      context_path: ./portals/business-directory
+      dockerfile_path: ./portals/business-directory/Dockerfile
+      dokploy_compose_id: "biz-directory-compose-id"
+      build_args: |
+        NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+        NEXTAUTH_URL=https://directory.bizoholic.net
+        SERVICE_PATH=portals/business-directory
+    secrets:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}

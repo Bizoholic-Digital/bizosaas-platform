@@ -1,0 +1,22 @@
+name: Deploy Wagtail CMS
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - 'cms/**'
+      - '.github/workflows/deploy-wagtail.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_reusable-deploy.yml
+    with:
+      service_name: wagtail-cms
+      context_path: ./cms
+      dockerfile_path: ./cms/Dockerfile
+      dokploy_compose_id: "wagtail-compose-id"
+      build_args: |
+        SERVICE_PATH=cms
+    secrets:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}

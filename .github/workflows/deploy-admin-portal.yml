@@ -1,0 +1,26 @@
+name: Deploy Admin Portal
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - 'portals/admin-portal/**'
+      - 'shared/**'
+      - '.github/workflows/deploy-admin-portal.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_reusable-deploy.yml
+    with:
+      service_name: admin-portal
+      context_path: ./portals/admin-portal
+      dockerfile_path: ./portals/admin-portal/Dockerfile
+      dokploy_compose_id: "Ff4XVRhPuSZbmeDwPwfmG"
+      build_args: |
+        NEXT_PUBLIC_API_BASE_URL=https://api.bizoholic.net
+        NEXT_PUBLIC_BRAIN_GATEWAY_URL=https://api.bizoholic.net/brain
+        NEXTAUTH_URL=https://admin.bizoholic.net
+        SERVICE_PATH=portals/admin-portal
+    secrets:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}

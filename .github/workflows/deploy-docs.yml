@@ -1,0 +1,22 @@
+name: Deploy BizOSaaS Docs
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_reusable-deploy.yml
+    with:
+      service_name: bizosaas-docs
+      context_path: ./docs
+      dockerfile_path: ./docs/Dockerfile
+      dokploy_compose_id: "docs-compose-id"
+      build_args: |
+        SERVICE_PATH=docs
+    secrets:
+      DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}

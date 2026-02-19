@@ -406,6 +406,17 @@ AGENTS = [
         tools=["compliance-check", "policy-audit", "risk-assess"],
         icon="⚖️",
         color="#10B981"
+    ),
+    # Category 11: Safety & Security
+    AgentConfig(
+        id="safety_monitor",
+        name="Safety Monitor",
+        description="Continuously scans platform activity for anomalies, isolation breaches, and security threats",
+        role="Security Sentinel",
+        capabilities=["Anomaly Detection", "Tenant Isolation Enforcement", "Threat Intelligence", "Health Monitoring"],
+        tools=["audit-log-scan", "isolation-check", "health-probe"],
+        icon="🛡️",
+        color="#EF4444"
     )
 ]
 
